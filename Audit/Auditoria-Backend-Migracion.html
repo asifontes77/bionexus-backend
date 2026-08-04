@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auditoría de Arquitectura y Migración - Backend NestJS</title>
+    <style>
+        :root {
+            --primary: #121f3d;
+            --secondary: #e0234e;
+            --info: #0ea5e9;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --success: #10b981;
+            --bg-light: #f8fafc;
+            --border: #e2e8f0;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-main);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 2.5rem 2rem;
+            text-align: center;
+            border-bottom: 4px solid var(--secondary);
+        }
+
+        header h1 {
+            margin: 0 0 0.5rem 0;
+            font-size: 2.2rem;
+        }
+
+        header p {
+            margin: 0;
+            color: #cbd5e1;
+            font-size: 1.1rem;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .section {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            margin-bottom: 2rem;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .section-header {
+            background-color: #f1f5f9;
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+        }
+
+        .section-header h2 {
+            margin: 0;
+            font-size: 1.4rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .section-number {
+            background: var(--secondary);
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .section-body {
+            padding: 1.5rem;
+        }
+
+        .alert {
+            padding: 1rem 1.25rem;
+            border-radius: 6px;
+            margin-bottom: 1.25rem;
+            border-left: 4px solid;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .alert-danger {
+            background-color: #fef2f2;
+            border-left-color: var(--danger);
+            color: #991b1b;
+        }
+
+        .alert-warning {
+            background-color: #fffbeb;
+            border-left-color: var(--warning);
+            color: #92400e;
+        }
+
+        .alert-info {
+            background-color: #f0f9ff;
+            border-left-color: var(--info);
+            color: #075985;
+        }
+
+        .alert-title {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .code-block {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 1.25rem;
+            border-radius: 6px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+            position: relative;
+        }
+        
+        .code-title {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: #333;
+            color: #ccc;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.75rem;
+            border-bottom-left-radius: 6px;
+        }
+
+        .version-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1.5rem;
+        }
+
+        .version-table th, .version-table td {
+            text-align: left;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .version-table th {
+            font-weight: 600;
+            background-color: #f8fafc;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.05em;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.6rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-outdated { background: #fee2e2; color: #b91c1c; }
+        .status-warning { background: #fef3c7; color: #b45309; }
+        .status-good { background: #d1fae5; color: #047857; }
+
+        .steps-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            counter-reset: step-counter;
+        }
+
+        .step-item {
+            position: relative;
+            padding-left: 3.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .step-item::before {
+            counter-increment: step-counter;
+            content: counter(step-counter);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 2.25rem;
+            height: 2.25rem;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .step-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        hr {
+            border: 0;
+            border-top: 1px solid var(--border);
+            margin: 2rem 0;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Auditoría Técnica y Plan de Migración</h1>
+        <p>Sistema TORO Backend &middot; Evaluación de Escalabilidad y Seguridad</p>
+    </header>
+
+    <div class="container">
+
+        <!-- 1. Evaluación de Versiones -->
+        <div class="section">
+            <div class="section-header">
+                <h2><span class="section-number">1</span> Evaluación de Versiones NestJS y Ecosistema</h2>
+            </div>
+            <div class="section-body">
+                <p>El proyecto actualmente utiliza la major version <strong>v9</strong> de NestJS, liberada a mediados de 2022. Existen mayores versiones LTS en el mercado (v10) que incorporan mejoras sustanciales en rendimiento (SWC) e inyección de dependencias más rápida.</p>
+                
+                <table class="version-table">
+                    <thead>
+                        <tr>
+                            <th>Paquete</th>
+                            <th>Versión Actual</th>
+                            <th>Target Recomendado</th>
+                            <th>Estado / Riesgo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>@nestjs/core</code> / <code>common</code></td>
+                            <td>^9.0.0</td>
+                            <td>^10.0.0 (Latest v10)</td>
+                            <td><span class="status-outdated">Desactualizado (Migración Requiere Trabajo)</span></td>
+                        </tr>
+                        <tr>
+                            <td><code>typeorm</code></td>
+                            <td>^0.3.16</td>
+                            <td>^0.3.x (Latest)</td>
+                            <td><span class="status-good">Estable (Solo parches menores necesarios)</span></td>
+                        </tr>
+                        <tr>
+                            <td><code>typescript</code></td>
+                            <td>^4.7.4</td>
+                            <td>^5.1.x o superior</td>
+                            <td><span class="status-outdated">Desactualizado</span></td>
+                        </tr>
+                        <tr>
+                            <td>Node.js (Types)</td>
+                            <td>18.15.11</td>
+                            <td>^20.x (LTS actual)</td>
+                            <td><span class="status-warning">Actualizar entorno a Node 20 LTS</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 2. Deuda Técnica y Seguridad -->
+        <div class="section">
+            <div class="section-header">
+                <h2><span class="section-number">2</span> Deuda Técnica y Riesgos Críticos de Seguridad</h2>
+            </div>
+            <div class="section-body">
+                
+                <div class="alert alert-danger">
+                    <div>
+                        <span class="alert-title">CRÍTICO: Sincronización Automática de Base de Datos</span>
+                        La opción <code>synchronize: true</code> está habilitada en TypeOrmModule. En cualquier entorno fuera de desarrollo local, esto puede destruir tablas o alterar el esquema irremediablemente.
+                    </div>
+                </div>
+
+                <div class="alert alert-warning">
+                    <div>
+                        <span class="alert-title">ALTO: Credenciales y secretos codificados en el código (Hardcoding)</span>
+                        Contraseñas de la base de datos (<code>'Toro2024'</code>) están expuestas en texto claro en <code>app.module.ts</code>. Esto viola prácticas estándar de DevOps y normativas de seguridad (ISO 27001 / OWASP).
+                    </div>
+                </div>
+
+                <div class="alert alert-info">
+                    <div>
+                        <span class="alert-title">MEDIO: Falta validación global (ValidationPipe)</span>
+                        Es indispensable confirmar que se ha implementado la validación de DTOs utilizando <code>class-validator</code> y <code>class-transformer</code> a nivel global, para evitar inyección de datos maliciosos.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Plan de Migración -->
+        <div class="section">
+            <div class="section-header">
+                <h2><span class="section-number">3</span> Estrategia de Actualización de Core (NestJS 9 a 10)</h2>
+            </div>
+            <div class="section-body">
+                <p>Pasos recomendados para realizar una migración segura sin romper la funcionalidad en producción.</p>
+
+                <ul class="steps-list">
+                    <li class="step-item">
+                        <div class="step-title">Auditoría previa y actualización de Node.js</div>
+                        <p>Asegurarse de tener instalado Node.js v20.x localmente. Borrar <code>node_modules</code> y <code>package-lock.json</code>.</p>
+                        <pre class="code-block"><span class="code-title">Bash</span>nvm use 20
+rm -rf node_modules package-lock.json</pre>
+                    </li>
+                    <li class="step-item">
+                        <div class="step-title">Actualizar el framework (CLI y dependencias Core)</div>
+                        <p>Utilizar la herramienta de CLI de Nest para forzar la actualización del ecosistema.</p>
+                        <pre class="code-block"><span class="code-title">Bash</span>npm check-updates -u
+# O manualmente:
+npm i -g @nestjs/cli
+nest update -t 10</pre>
+                    </li>
+                    <li class="step-item">
+                        <div class="step-title">Actualización de TypeScript y ecosistema Reactivo</div>
+                        <p>NestJS v10 abandonó RxJS v7 interno y cambió la compatibilidad. Asegurar compatibilidad de Types.</p>
+                        <pre class="code-block"><span class="code-title">Bash</span>npm i typescript@5.1.x rxjs@7.8.1 reflect-metadata@0.2.1</pre>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 4. Mejores Prácticas -->
+        <div class="section">
+            <div class="section-header">
+                <h2><span class="section-number">4</span> Modernización y Patrones de Arquitectura</h2>
+            </div>
+            <div class="section-body">
+                <p>Propuesta de refactorización de configuración (<code>app.module.ts</code>) implementando el patrón <strong>ConfigModule asíncrono y variables de entorno</strong>.</p>
+                
+                <h3>Refactorización: TypeOrm y Variables de Entorno</h3>
+                <p>Configurar TypeORM de manera segura utilizando <code>ConfigModule</code> y cargando `TypeOrmModule.forRootAsync`.</p>
+                
+                <pre class="code-block"><span class="code-title">app.module.ts (Refactorizado)</span>import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+
+@Module({
+  imports: [
+    // 1. Inicializar gestión de variables de entorno (.env)
+    ConfigModule.forRoot({
+      isGlobal: true, 
+      envFilePath: '.env', // No commitear en GIT
+    }),
+
+    // 2. Carga asíncrona de base de datos
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        type: 'mysql',
+        host: configService.get&lt;string&gt;('DB_HOST'),
+        port: configService.get&lt;number&gt;('DB_PORT'),
+        username: configService.get&lt;string&gt;('DB_USERNAME'),
+        password: configService.get&lt;string&gt;('DB_PASSWORD'),
+        database: configService.get&lt;string&gt;('DB_NAME'),
+        entities: [__dirname + '/**/*.entity{.ts,.js}'],
+        
+        // CRÍTICO: Nunca sincronizar en prod, usar Migraciones
+        synchronize: configService.get&lt;string&gt;('NODE_ENV') === 'development',
+        
+        // Logs de DB (útil en dev)
+        logging: configService.get&lt;string&gt;('NODE_ENV') === 'development',
+      }),
+    }),
+    
+    // ... [Resto de tus módulos] ...
+  ],
+})
+export class AppModule {}</pre>
+
+                <h3>Habilitar Validaciones y Transformaciones Globales</h3>
+                <p>Añadir interceptores de seguridad en <code>main.ts</code> para validar los DTOs por defecto y evitar payload polution.</p>
+                
+                <pre class="code-block"><span class="code-title">main.ts (Update)</span>import { ValidationPipe } from '@nestjs/common';
+// ...
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+  
+  // Habilitar la validación global de DTOs automatizada
+  app.useGlobalPipes(new ValidationPipe({
+    whitelist: true, // Borra campos no definidos en el DTO
+    forbidNonWhitelisted: true, // Retorna error 400 si hay campos extra
+    transform: true, // Transforma primitivos a string, int, boolean implícitamente
+  }));
+
+  // CORS de forma segura
+  app.enableCors({ origin: '*' /* reemplazar por dominios permitidos */ });
+
+  await app.listen(process.env.PORT || 3000);
+}</pre>
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        Hecho con 💡 por GitHub Copilot para el equipo de Desarrollo - 2026
+    </footer>
+
+</body>
+</html>

@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auditoría de Arquitectura - Toro Backend</title>
+    <style>
+        :root {
+            --primary: #e0234e;
+            --secondary: #1a1a2e;
+            --accent: #4a4e69;
+            --bg-light: #f4f6f9;
+            --bg-dark: #16213e;
+            --text-dark: #2d3748;
+            --text-light: #e2e8f0;
+            --border-radius: 8px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: var(--secondary);
+            color: white;
+            padding: 2rem 5%;
+            text-align: center;
+            border-bottom: 5px solid var(--primary);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            letter-spacing: 1px;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #a0aec0;
+            margin-top: 5px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2rem;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+        }
+
+        .card-header {
+            background-color: var(--bg-dark);
+            color: white;
+            padding: 1rem 1.5rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+
+        .card-header::before {
+            content: '';
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background-color: var(--primary);
+            border-radius: 50%;
+            margin-right: 15px;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px 15px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        th {
+            background-color: #f7fafc;
+            color: var(--text-dark);
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            background-color: #e6ffed;
+            color: #22863a;
+            border: 1px solid #b7ebc6;
+        }
+        
+        .badge.warning {
+            background-color: #fffbdd;
+            color: #735c0f;
+            border: 1px solid #e1dfa4;
+        }
+
+        .dependencies-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+        }
+
+        .dep-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background-color: #f7fafc;
+            border-radius: 4px;
+            border-left: 3px solid var(--accent);
+        }
+
+        .code-block {
+            background-color: #282c34;
+            color: #abb2bf;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', Courier, monospace;
+            overflow-x: auto;
+            font-size: 0.9rem;
+        }
+
+        .dir-structure {
+            font-family: monospace;
+            line-height: 1.5;
+        }
+
+        .folder { color: #1e3a8a; font-weight: bold; }
+        .file { color: #4b5563; }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: #718096;
+            font-size: 0.9rem;
+            margin-top: 3rem;
+            border-top: 1px solid #e2e8f0;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Auditoría de Arquitectura</h1>
+        <div class="subtitle">Análisis del Workspace - Sistema TORO Backend (NestJS)</div>
+    </header>
+
+    <div class="container">
+        
+        <!-- 1. Versiones y Dependencias -->
+        <div class="card">
+            <div class="card-header">1. Versiones y Dependencias Clave</div>
+            <div class="card-body">
+                <p>El proyecto está desarrollado utilizando el framework <strong>NestJS v9.0.0</strong>.</p>
+                
+                <h3>Core / Framework</h3>
+                <div class="dependencies-grid">
+                    <div class="dep-item"><span>@nestjs/common</span> <span class="badge">^9.0.0</span></div>
+                    <div class="dep-item"><span>@nestjs/core</span> <span class="badge">^9.0.0</span></div>
+                    <div class="dep-item"><span>@nestjs/config</span> <span class="badge">^2.3.4</span></div>
+                    <div class="dep-item"><span>express</span> <span class="badge">^4.19.2</span></div>
+                </div>
+
+                <h3>ORM y Base de Datos</h3>
+                <div class="dependencies-grid">
+                    <div class="dep-item"><span>typeorm</span> <span class="badge">^0.3.16</span></div>
+                    <div class="dep-item"><span>@nestjs/typeorm</span> <span class="badge">^9.0.1</span></div>
+                    <div class="dep-item"><span>mysql2</span> <span class="badge">^3.3.1</span></div>
+                </div>
+
+                <h3>Seguridad y Autenticación</h3>
+                <div class="dependencies-grid">
+                    <div class="dep-item"><span>@nestjs/passport</span> <span class="badge">^9.0.3</span></div>
+                    <div class="dep-item"><span>@nestjs/jwt</span> <span class="badge">^10.0.3</span></div>
+                    <div class="dep-item"><span>passport-jwt</span> <span class="badge">^4.0.1</span></div>
+                    <div class="dep-item"><span>passport-local</span> <span class="badge">^1.0.0</span></div>
+                    <div class="dep-item"><span>bcrypt</span> <span class="badge">^5.1.0</span></div>
+                    <div class="dep-item"><span>cors</span> <span class="badge">^2.8.5</span></div>
+                </div>
+
+                <h3>Utilidades Adicionales</h3>
+                <div class="dependencies-grid">
+                    <div class="dep-item"><span>@nestjs/websockets</span> <span class="badge">^9.4.3</span></div>
+                    <div class="dep-item"><span>nodemailer</span> <span class="badge">^6.9.4</span></div>
+                    <div class="dep-item"><span>puppeteer</span> <span class="badge">^21.1.0</span></div>
+                    <div class="dep-item"><span>node-thermal-printer</span> <span class="badge">^4.4.2</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Estructura de Directorios -->
+        <div class="card">
+            <div class="card-header">2. Estructura de Proyecto (Arquitectura Modular)</div>
+            <div class="card-body">
+                <p>El proyecto sigue fielmente los principios de arquitectura modular de NestJS, agrupando cada entidad de negocio en su propio directorio con sus respectivos controladores, servicios, entidades y DTOs.</p>
+                
+                <pre class="code-block dir-structure" style="margin: 0;">
+├── <span class="folder">public/</span> (Archivos estáticos)
+│   ├── <span class="file">index.html</span>
+│   ├── <span class="folder">images/</span>
+│   ├── <span class="folder">pdf/</span>
+│   └── <span class="folder">signatures/</span>
+├── <span class="folder">src/</span>
+│   ├── <span class="file">app.module.ts</span>          <span style="color: #6a9955;">// Módulo Raíz</span>
+│   ├── <span class="file">app.controller.ts</span>      <span style="color: #6a9955;">// Controlador principal</span>
+│   ├── <span class="file">app.service.ts</span>         <span style="color: #6a9955;">// Servicio principal</span>
+│   ├── <span class="file">main.ts</span>                <span style="color: #6a9955;">// Entry point de la aplicación</span>
+│   ├── <span class="folder">antibiotic/</span>            <span style="color: #6a9955;">// Ejemplo de módulo de negocio</span>
+│   │   ├── <span class="file">antibiotic.controller.ts</span>
+│   │   ├── <span class="file">antibiotic.service.ts</span>
+│   │   ├── <span class="file">antibiotic.entity.ts</span>
+│   │   ├── <span class="file">antibiotic.module.ts</span>
+│   │   └── <span class="folder">dto/</span>
+│   ├── <span class="folder">[Otros Módulos Clínicos/Laboratorio]</span>
+│   │   ├── exams/, exam_group/, exam_lists/, laboratory/, patients/
+│   │   ├── sample_type/, special_test_items/, special_test_lab/
+│   │   ├── list_germs/, parasiticforms/, routines/
+│   │   └── group_ht/, group_ht_items/
+│   ├── <span class="folder">[Otros Módulos Comerciales/Facturación]</span>
+│   │   ├── invoice/, invoice_items/, cash_register/, type_payment/
+│   │   ├── way_pay/, way_pay_items/, tax/, dollar_value/
+│   │   └── client/, customer_accounts_receivable/
+│   ├── <span class="folder">[Otros Módulos Administrativos]</span>
+│   │   └── users/, license/
+│   └── <span class="folder">websockets/</span>            <span style="color: #6a9955;">// Implementación WebSockets Socket.io</span>
+├── <span class="folder">test/</span>
+│   └── <span class="file">app.e2e-spec.ts</span>
+├── <span class="file">package.json</span>
+└── <span class="file">nest-cli.json</span></pre>
+            </div>
+        </div>
+
+        <!-- 3. Base de Datos -->
+        <div class="card">
+            <div class="card-header">3. Conexión a Base de Datos e Infraestructura</div>
+            <div class="card-body">
+                <p>El proyecto utiliza <strong>TypeORM</strong> sobre una base de datos <strong>MySQL</strong>. </p>
+                
+                <span class="badge warning">Observación de Seguridad</span>
+                <p style="font-size: 0.9rem; color: #718096; margin-top: 5px;">Las credenciales de la base de datos están "hardcodeadas" (incrustadas) en el <code>app.module.ts</code>. Deberían migrarse al uso de variables de entorno mediante <code>@nestjs/config</code> (que ya está en <code>package.json</code>).</p>
+
+                <div class="code-block">
+TypeOrmModule.forRoot({
+  type: 'mysql',
+  host: '127.0.0.1',
+  port: 3306,
+  username: 'root',
+  password: '***',
+  database: 'databasetoro',
+  entities: [__dirname + '/**/*.entity{.ts,.js}'],
+  synchronize: true, // ¡Peligroso en producción!
+})
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. Seguridad -->
+        <div class="card">
+            <div class="card-header">4. Sistema de Autenticación y Seguridad</div>
+            <div class="card-body">
+                <p>Basado en las dependencias analizadas, la aplicación implementa:</p>
+                <ul>
+                    <li><strong>Autenticación:</strong> Basada en Tokens JWT (JSON Web Tokens) usando <code>@nestjs/passport</code>, <code>passport-jwt</code> y <code>@nestjs/jwt</code>.</li>
+                    <li><strong>Estrategias Passport:</strong> Emplea <code>passport-local</code> (probablemente para login con usuario/contraseña) y <code>passport-jwt</code> (para proteger endpoints validando el token en los headers).</li>
+                    <li><strong>Encriptación:</strong> Uso de <code>bcrypt</code> (v5.1.0) para el hasheo de contraseñas de usuarios.</li>
+                    <li><strong>CORS:</strong> Habilitado a través de los paquetes estándar, permitiendo la comunicación con el frontend/clientes externos.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 5. Endpoints principales -->
+        <div class="card">
+            <div class="card-header">5. Módulos y Dominio de la API</div>
+            <div class="card-body">
+                <p>El backend expone una API robusta orientada a un sistema de gestión médico/laboratorio y facturación, con los siguientes dominios principales abstraídos de los módulos (<code>AppModule</code>):</p>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Categoría</th>
+                            <th>Módulos NestJS Involucrados</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Clínica / Laboratorio</strong></td>
+                            <td>ExamsModule, ExamGroupModule, LaboratoryModule, PatientsModule, SampleTypeModule, SpecialTestLabModule, AntibioticModule, ParasiticformsModule, ListGermsModule</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Facturación e Ingresos</strong></td>
+                            <td>InvoiceModule, InvoiceitemsModule, Cash_registerModule, DollarvalueModule, TaxModule, TypePaymentModule, WaypayModule</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Administración y Usuarios</strong></td>
+                            <td>UsersModule, ClientModule, LicenseModule</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Comunicación Tiempo Real</strong></td>
+                            <td>Manejo a través de WebSockets (Socket.io) para posibles notificaciones en vivo.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        Generado automáticamente por GitHub Copilot &bull; Análisis de Workspace &bull; 2026
+    </footer>
+
+</body>
+</html>
