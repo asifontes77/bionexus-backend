@@ -7,7 +7,6 @@ import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from '../users/jwt.constants';
 import { JwtStrategy } from '../users/jwt.strategy';
 import { LaboratoryModule } from 'src/laboratory/laboratory.module';
-import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
@@ -17,7 +16,6 @@ import { ConfigModule } from '@nestjs/config';
       signOptions: { expiresIn: '20h' },
     }),
     LaboratoryModule,
-    ConfigModule.forRoot(),
   ],
   controllers: [PatientsController],
   providers: [PatientsService, JwtStrategy],
