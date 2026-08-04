@@ -3,21 +3,14 @@ import { Customer_accounts_receivableController } from './customer_accounts_rece
 import { CustomerAccountsReceivableService } from './customer_accounts_receivable.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Customeraccountsreceivable } from './customer_accounts_receivable.entity';
-import { JwtModule } from '@nestjs/jwt';
-import { jwtConstants } from '../users/jwt.constants';
-import { JwtStrategy } from '../users/jwt.strategy';
 import { UsersModule } from 'src/users/users.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Customeraccountsreceivable]), 
-    UsersModule,
-    JwtModule.register({
-      secret: jwtConstants.secret,
-      signOptions: { expiresIn: '20h'},
-    })
+    UsersModule
   ],
   controllers: [Customer_accounts_receivableController],
-  providers: [CustomerAccountsReceivableService, JwtStrategy]
+  providers: [CustomerAccountsReceivableService]
 })
 export class CustomerAccountsReceivableModule {}

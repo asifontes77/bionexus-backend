@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { SecurityModule } from './security/security.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ExamsModule } from './exams/exams.module';
@@ -38,6 +39,7 @@ import { NestFactory } from '@nestjs/core';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    SecurityModule,
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({

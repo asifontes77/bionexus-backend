@@ -3,9 +3,6 @@ import { ExamsController } from './exams.controller';
 import { ExamsService } from './exams.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Exam } from './exams.entity';
-import { JwtModule } from '@nestjs/jwt';
-import { jwtConstants } from '../users/jwt.constants';
-import { JwtStrategy } from '../users/jwt.strategy';
 import { UsersModule } from 'src/users/users.module';
 import { PatientsModule } from 'src/patients/patients.module';
 
@@ -13,14 +10,10 @@ import { PatientsModule } from 'src/patients/patients.module';
   imports: [
     TypeOrmModule.forFeature([Exam]), 
     UsersModule,
-    PatientsModule,
-    JwtModule.register({
-      secret: jwtConstants.secret,
-      signOptions: { expiresIn: '20h'},
-    })
+    PatientsModule
   ],
   controllers: [ExamsController],
-  providers: [ExamsService, JwtStrategy],
+  providers: [ExamsService],
   exports: [ExamsService]
 })
 export class ExamsModule {}

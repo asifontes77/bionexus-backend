@@ -3,20 +3,12 @@ import { InvoiceitemsController } from './invoiceitems.controller';
 import { InvoiceitemsService } from './invoiceitems.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Invoiceitems } from './invoiceitems.entity';
-import { JwtModule } from '@nestjs/jwt';
-import { jwtConstants } from '../users/jwt.constants';
-import { JwtStrategy } from '../users/jwt.strategy';
 
 @Module({
     imports: [
-    TypeOrmModule.forFeature([Invoiceitems]),
-        JwtModule.register({
-          secret: jwtConstants.secret,
-          signOptions: { expiresIn: '20h'},
-        })
+    TypeOrmModule.forFeature([Invoiceitems])
       ],
       controllers: [ InvoiceitemsController],
-      providers: [InvoiceitemsService, JwtStrategy]
+      providers: [InvoiceitemsService]
   })
   export class InvoiceitemsModule {}
-  
