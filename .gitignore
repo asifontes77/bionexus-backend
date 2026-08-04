@@ -36,6 +36,5 @@ lerna-debug.log*
 
 # files
 .env
-src/main.ts
 local.key
 local.crt
