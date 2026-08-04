@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Auditoria Backend TORO - 05-seguridad-integraciones</title>
+<style>
+body{margin:0;background:#f8fafc;color:#172033;font-family:Segoe UI,Arial,sans-serif;line-height:1.5}
+header{background:#111827;color:#fff;border-bottom:5px solid #e0234e;padding:32px 22px}
+header div,main{max-width:1350px;margin:auto}main{padding:26px 16px}
+.notice,.file{background:#fff;border:1px solid #cbd5e1;border-radius:9px;margin-bottom:22px;box-shadow:0 3px 10px rgba(15,23,42,.06)}
+.notice{padding:18px}.file-header{background:#eef2ff;border-bottom:1px solid #cbd5e1;padding:13px 17px}
+.file-header h2{font-size:1.1rem;margin:0 0 6px;overflow-wrap:anywhere}.meta{color:#475569;font-size:.88rem}
+pre{margin:0;padding:17px;white-space:pre-wrap;overflow-wrap:anywhere;tab-size:4;font-family:Consolas,Courier New,monospace;font-size:.84rem;line-height:1.46}
+.ln{display:inline-block;color:#64748b;min-width:5.7em;user-select:none}.redacted{color:#b91c1c;font-weight:700}
+footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
+<header><div>
+<h1>Auditoria Backend TORO - 05-seguridad-integraciones</h1>
+<p>Parte: 1</p>
+<p>Raiz auditada: C:\Users\Alexis\Documents\Sistema TORO\Aplicacion\Toro Backend</p>
+<p>Generado: 04-08-2026 08:55 a. m.</p>
+</div></header><main>
+<section class="notice"><strong>Extraccion estatica de solo lectura.</strong>
+<p>Los posibles secretos fueron reemplazados por [REDACTED]. Los numeros de linea corresponden al archivo original.</p></section>
+<section class="file">
+<div class="file-header">
+<h2>docs\audit\backend\11-websockets-integraciones.md</h2>
+<div class="meta">Lineas: 2 | Bytes: 82 | SHA256: FCAA96E9E413C3889B341172ECBBCD71E470AACC9C948F1F17D35B987AFC5C9C</div>
+</div><pre>
+<span class="ln">    1 | </span># 12. WebSockets e Integraciones
+<span class="ln">    2 | </span>(Documento en preparaci&#243;n durante la Pasada 12)
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\users\jwt.strategy.ts</h2>
+<div class="meta">Lineas: 19 | Bytes: 611 | SHA256: 8110A2C280E087C6B31B86C76285A9358A35C5C5538D06370A654BBC7E7C1560</div>
+</div><pre>
+<span class="ln">    1 | </span>import { Injectable } from &quot;@nestjs/common&quot;;
+<span class="ln">    2 | </span>import { PassportStrategy } from &quot;@nestjs/passport&quot;;
+<span class="ln">    3 | </span>import { ExtractJwt, Strategy } from &quot;passport-jwt&quot;;
+<span class="ln">    4 | </span>import { jwtConstants } from &quot;./jwt.constants&quot;;
+<span class="ln">    5 | </span>
+<span class="ln">    6 | </span>@Injectable()
+<span class="ln">    7 | </span>export class JwtStrategy extends PassportStrategy(Strategy) {
+<span class="ln">    8 | </span>    constructor() {
+<span class="ln">    9 | </span>        super({
+<span class="ln">   10 | </span>          jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+<span class="ln">   11 | </span>          ignoreExpiration: false,
+<span class="ln">   12 | </span>          secretOrKey: jwtConstants.secret,
+<span class="ln">   13 | </span>        });
+<span class="ln">   14 | </span>      }
+<span class="ln">   15 | </span>    
+<span class="ln">   16 | </span>      async validate(payload: any) {
+<span class="ln">   17 | </span>        return { userId: payload.id, username: payload.name };
+<span class="ln">   18 | </span>      }
+<span class="ln">   19 | </span>}
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\users\jwt-user.guard.ts</h2>
+<div class="meta">Lineas: 7 | Bytes: 167 | SHA256: F14DBC3ECC660F6257D81AE5C3503F7B634758CB1495D44BE7DC18E33578A7B0</div>
+</div><pre>
+<span class="ln">    1 | </span>import { Injectable } from &quot;@nestjs/common&quot;;
+<span class="ln">    2 | </span>import { AuthGuard } from &quot;@nestjs/passport&quot;;
+<span class="ln">    3 | </span>
+<span class="ln">    4 | </span>@Injectable()
+<span class="ln">    5 | </span>export class JwtUserGuard extends AuthGuard(&#39;jwt&#39;) {
+<span class="ln">    6 | </span>
+<span class="ln">    7 | </span>}
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\websockets\websocket.gateway.ts</h2>
+<div class="meta">Lineas: 18 | Bytes: 508 | SHA256: 5C9ADE4EADFDC5B17EE863DCABFCB9E771847AC348209330A073D2DF6E3871DC</div>
+</div><pre>
+<span class="ln">    1 | </span>import { OnGatewayConnection, OnGatewayDisconnect, WebSocketGateway, WebSocketServer } from &quot;@nestjs/websockets&quot;;
+<span class="ln">    2 | </span>import {Server, Socket} from &#39;socket.io&#39;
+<span class="ln">    3 | </span>
+<span class="ln">    4 | </span>@WebSocketGateway()
+<span class="ln">    5 | </span>export class WebsocketGateway
+<span class="ln">    6 | </span>implements OnGatewayConnection, OnGatewayDisconnect
+<span class="ln">    7 | </span>{
+<span class="ln">    8 | </span>  @WebSocketServer()
+<span class="ln">    9 | </span>  server: Server;
+<span class="ln">   10 | </span>
+<span class="ln">   11 | </span>  handleConnection(client: Socket) {
+<span class="ln">   12 | </span>      console.log(`Client connected: ${client.id}`);
+<span class="ln">   13 | </span>  }
+<span class="ln">   14 | </span>
+<span class="ln">   15 | </span>  handleDisconnect(client: Socket) {
+<span class="ln">   16 | </span>    console.log(`Client disconnected: ${client.id}`);
+<span class="ln">   17 | </span>  }
+<span class="ln">   18 | </span>}
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\websockets\websocket.module.ts</h2>
+<div class="meta">Lineas: 7 | Bytes: 179 | SHA256: 4AA28C8CAAA7766B3D023AB1A2AF217E5774B6EC94644DA37EC2F21BCA354885</div>
+</div><pre>
+<span class="ln">    1 | </span>import { Module } from &quot;@nestjs/common&quot;;
+<span class="ln">    2 | </span>import { WebsocketGateway } from &quot;./websocket.gateway&quot;;
+<span class="ln">    3 | </span>
+<span class="ln">    4 | </span>@Module({
+<span class="ln">    5 | </span>  providers: [WebsocketGateway],
+<span class="ln">    6 | </span>})
+<span class="ln">    7 | </span>export class GatewayModule {}
+
+</pre></section>
+
+</main><footer>Fin de parte</footer></body></html>

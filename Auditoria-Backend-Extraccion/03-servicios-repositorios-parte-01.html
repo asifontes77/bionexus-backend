@@ -1,0 +1,2376 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Auditoria Backend TORO - 03-servicios-repositorios</title>
+<style>
+body{margin:0;background:#f8fafc;color:#172033;font-family:Segoe UI,Arial,sans-serif;line-height:1.5}
+header{background:#111827;color:#fff;border-bottom:5px solid #e0234e;padding:32px 22px}
+header div,main{max-width:1350px;margin:auto}main{padding:26px 16px}
+.notice,.file{background:#fff;border:1px solid #cbd5e1;border-radius:9px;margin-bottom:22px;box-shadow:0 3px 10px rgba(15,23,42,.06)}
+.notice{padding:18px}.file-header{background:#eef2ff;border-bottom:1px solid #cbd5e1;padding:13px 17px}
+.file-header h2{font-size:1.1rem;margin:0 0 6px;overflow-wrap:anywhere}.meta{color:#475569;font-size:.88rem}
+pre{margin:0;padding:17px;white-space:pre-wrap;overflow-wrap:anywhere;tab-size:4;font-family:Consolas,Courier New,monospace;font-size:.84rem;line-height:1.46}
+.ln{display:inline-block;color:#64748b;min-width:5.7em;user-select:none}.redacted{color:#b91c1c;font-weight:700}
+footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
+<header><div>
+<h1>Auditoria Backend TORO - 03-servicios-repositorios</h1>
+<p>Parte: 1</p>
+<p>Raiz auditada: C:\Users\Alexis\Documents\Sistema TORO\Aplicacion\Toro Backend</p>
+<p>Generado: 04-08-2026 08:55 a. m.</p>
+</div></header><main>
+<section class="notice"><strong>Extraccion estatica de solo lectura.</strong>
+<p>Los posibles secretos fueron reemplazados por [REDACTED]. Los numeros de linea corresponden al archivo original.</p></section>
+<section class="file">
+<div class="file-header">
+<h2>src\antibiotic\antibiotic.service.ts</h2>
+<div class="meta">Lineas: 70 | Bytes: 1986 | SHA256: 8B2BEA650F417B0320BFE1A37CFBAD75F06F5A2B89BA65B71E2949976424055E</div>
+</div><pre>
+<span class="ln">    1 | </span>import { HttpException, HttpStatus, Injectable } from &#39;@nestjs/common&#39;;
+<span class="ln">    2 | </span>import { InjectRepository } from &#39;@nestjs/typeorm&#39;;
+<span class="ln">    3 | </span>import { Antibiotic } from &#39;./antibiotic.entity&#39;;
+<span class="ln">    4 | </span>import { Repository } from &#39;typeorm&#39;;
+<span class="ln">    5 | </span>import { CreateAntibioticDto } from &#39;./dto/create-antibiotic.dto&#39;;
+<span class="ln">    6 | </span>import { UpdateAntibioticDto } from &#39;./dto/update-antibiotic.dto&#39;;
+<span class="ln">    7 | </span>
+<span class="ln">    8 | </span>@Injectable()
+<span class="ln">    9 | </span>export class AntibioticService {
+<span class="ln">   10 | </span>  constructor(
+<span class="ln">   11 | </span>    @InjectRepository(Antibiotic)
+<span class="ln">   12 | </span>    private antibioticRepository: Repository&lt;Antibiotic&gt;,
+<span class="ln">   13 | </span>  ) {}
+<span class="ln">   14 | </span>
+<span class="ln">   15 | </span>  async getAntibioticLists() {
+<span class="ln">   16 | </span>    return this.antibioticRepository.find();
+<span class="ln">   17 | </span>  }
+<span class="ln">   18 | </span>
+<span class="ln">   19 | </span>  async getAntibioticListsOrder() {
+<span class="ln">   20 | </span>    const examListFound = this.antibioticRepository.find({
+<span class="ln">   21 | </span>      where: {
+<span class="ln">   22 | </span>        annulled: false,
+<span class="ln">   23 | </span>      },
+<span class="ln">   24 | </span>      order: {
+<span class="ln">   25 | </span>        description: &#39;ASC&#39;,
+<span class="ln">   26 | </span>      },
+<span class="ln">   27 | </span>    });
+<span class="ln">   28 | </span>    if (!examListFound) {
+<span class="ln">   29 | </span>      return new HttpException(&#39;examen no encontrado&#39;, HttpStatus.NOT_FOUND);
+<span class="ln">   30 | </span>    }
+<span class="ln">   31 | </span>    return examListFound;
+<span class="ln">   32 | </span>  }
+<span class="ln">   33 | </span>
+<span class="ln">   34 | </span>  async getAntibiotic(id: number) {
+<span class="ln">   35 | </span>    const antibioticFound = this.antibioticRepository.findOne({
+<span class="ln">   36 | </span>      where: {
+<span class="ln">   37 | </span>        id,
+<span class="ln">   38 | </span>      },
+<span class="ln">   39 | </span>    });
+<span class="ln">   40 | </span>    if (!antibioticFound) {
+<span class="ln">   41 | </span>      return new HttpException(
+<span class="ln">   42 | </span>        &#39;antibiotico no encontrado&#39;,
+<span class="ln">   43 | </span>        HttpStatus.NOT_FOUND,
+<span class="ln">   44 | </span>      );
+<span class="ln">   45 | </span>    }
+<span class="ln">   46 | </span>    return antibioticFound;
+<span class="ln">   47 | </span>  }
+<span class="ln">   48 | </span>
+<span class="ln">   49 | </span>  async createAntibiotic(antibiotic: CreateAntibioticDto) {
+<span class="ln">   50 | </span>    const newAntibiotic = this.antibioticRepository.create(antibiotic);
+<span class="ln">   51 | </span>    return this.antibioticRepository.save(newAntibiotic);
+<span class="ln">   52 | </span>  }
+<span class="ln">   53 | </span>
+<span class="ln">   54 | </span>  async updateAntibiotic(id: number, antibiotic: UpdateAntibioticDto) {
+<span class="ln">   55 | </span>    const antibioticFound = await this.antibioticRepository.findOne({
+<span class="ln">   56 | </span>      where: {
+<span class="ln">   57 | </span>        id,
+<span class="ln">   58 | </span>      },
+<span class="ln">   59 | </span>    });
+<span class="ln">   60 | </span>    if (!antibioticFound) {
+<span class="ln">   61 | </span>      return new HttpException(
+<span class="ln">   62 | </span>        &#39;antibiotico no encontrado&#39;,
+<span class="ln">   63 | </span>        HttpStatus.NOT_FOUND,
+<span class="ln">   64 | </span>      );
+<span class="ln">   65 | </span>    }
+<span class="ln">   66 | </span>    const updateAntibiotic = Object.assign(antibioticFound, antibiotic);
+<span class="ln">   67 | </span>    return this.antibioticRepository.save(updateAntibiotic);
+<span class="ln">   68 | </span>  }
+<span class="ln">   69 | </span>}
+<span class="ln">   70 | </span>
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\app.service.ts</h2>
+<div class="meta">Lineas: 9 | Bytes: 150 | SHA256: 5D4242D50092A353E5AB1F06663A89DBC714C7D9D70072EA03C83C5B14750F05</div>
+</div><pre>
+<span class="ln">    1 | </span>import { Injectable } from &#39;@nestjs/common&#39;;
+<span class="ln">    2 | </span>
+<span class="ln">    3 | </span>@Injectable()
+<span class="ln">    4 | </span>export class AppService {
+<span class="ln">    5 | </span>  getHello(): string {
+<span class="ln">    6 | </span>    return &#39;Hello World!&#39;;
+<span class="ln">    7 | </span>  }
+<span class="ln">    8 | </span>}
+<span class="ln">    9 | </span>
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\cash_register\cash_register.service.ts</h2>
+<div class="meta">Lineas: 64 | Bytes: 1934 | SHA256: 5B39CF80FF7ACD9E930F27993AEC451063E76766FC601806B51C337D1EB9D281</div>
+</div><pre>
+<span class="ln">    1 | </span>import { HttpException, HttpStatus, Injectable } from &#39;@nestjs/common&#39;;
+<span class="ln">    2 | </span>import { InjectRepository } from &#39;@nestjs/typeorm&#39;;
+<span class="ln">    3 | </span>import { cash_register } from &#39;./cash_register.entity&#39;;
+<span class="ln">    4 | </span>import { Repository } from &#39;typeorm&#39;;
+<span class="ln">    5 | </span>import { CreateCash_registerDto } from &#39;./dto/create-cash_register.dto&#39;;
+<span class="ln">    6 | </span>import { UpdateCash_registerDto } from &#39;./dto/update-cash_register.dto&#39;;
+<span class="ln">    7 | </span>
+<span class="ln">    8 | </span>Injectable();
+<span class="ln">    9 | </span>export class Cash_registerService {
+<span class="ln">   10 | </span>  constructor(
+<span class="ln">   11 | </span>    @InjectRepository(cash_register)
+<span class="ln">   12 | </span>    private cash_registerRepository: Repository&lt;cash_register&gt;,
+<span class="ln">   13 | </span>  ) {}
+<span class="ln">   14 | </span>
+<span class="ln">   15 | </span>  async getCash_registerLists() {
+<span class="ln">   16 | </span>    return this.cash_registerRepository.find();
+<span class="ln">   17 | </span>  }
+<span class="ln">   18 | </span>
+<span class="ln">   19 | </span>  async getCash_register(id: number) {
+<span class="ln">   20 | </span>    const cash_registerFound = this.cash_registerRepository.find({
+<span class="ln">   21 | </span>      where: {
+<span class="ln">   22 | </span>        id,
+<span class="ln">   23 | </span>      },
+<span class="ln">   24 | </span>    });
+<span class="ln">   25 | </span>    if (!cash_registerFound) {
+<span class="ln">   26 | </span>      return new HttpException(
+<span class="ln">   27 | </span>        &#39;movimiento de caja no encontrado&#39;,
+<span class="ln">   28 | </span>        HttpStatus.NOT_FOUND,
+<span class="ln">   29 | </span>      );
+<span class="ln">   30 | </span>    }
+<span class="ln">   31 | </span>    return cash_registerFound;
+<span class="ln">   32 | </span>  }
+<span class="ln">   33 | </span>
+<span class="ln">   34 | </span>  async createCash_register(
+<span class="ln">   35 | </span>    cash_register: CreateCash_registerDto,
+<span class="ln">   36 | </span>  ): Promise&lt;any&gt; {
+<span class="ln">   37 | </span>    return this.cash_registerRepository.save(cash_register);
+<span class="ln">   38 | </span>  }
+<span class="ln">   39 | </span>
+<span class="ln">   40 | </span>  async updateCash_register(id: number, newCash: UpdateCash_registerDto) {
+<span class="ln">   41 | </span>    const cashFound = await this.cash_registerRepository.findOne({
+<span class="ln">   42 | </span>      where: {
+<span class="ln">   43 | </span>        id,
+<span class="ln">   44 | </span>      },
+<span class="ln">   45 | </span>    });
+<span class="ln">   46 | </span>    if (!cashFound) {
+<span class="ln">   47 | </span>      return new HttpException(
+<span class="ln">   48 | </span>        &#39;movimiento de caja no encontrado&#39;,
+<span class="ln">   49 | </span>        HttpStatus.NOT_FOUND,
+<span class="ln">   50 | </span>      );
+<span class="ln">   51 | </span>    }
+<span class="ln">   52 | </span>    const updateCash = Object.assign(cashFound, newCash);
+<span class="ln">   53 | </span>    return this.cash_registerRepository.save(updateCash);
+<span class="ln">   54 | </span>  }
+<span class="ln">   55 | </span>
+<span class="ln">   56 | </span>  async getCash_registerDateResult(admission: Date, idUser: number) {
+<span class="ln">   57 | </span>    return this.cash_registerRepository
+<span class="ln">   58 | </span>      .createQueryBuilder(&#39;cash_register&#39;)
+<span class="ln">   59 | </span>      .where(&#39;admission_date = :admission&#39;, { admission })
+<span class="ln">   60 | </span>      .andWhere(&#39;cash_register.user_id = :idUser&#39;, { idUser })
+<span class="ln">   61 | </span>      .getMany();
+<span class="ln">   62 | </span>  }
+<span class="ln">   63 | </span>}
+<span class="ln">   64 | </span>
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\client\client.service.ts</h2>
+<div class="meta">Lineas: 63 | Bytes: 1772 | SHA256: 3A3DFE7C0BE43F914F31C6E5EC815BC4AC61F78DDF7094FFA5FCA6AB9E22B79F</div>
+</div><pre>
+<span class="ln">    1 | </span>import { HttpException, HttpStatus, Injectable } from &#39;@nestjs/common&#39;;
+<span class="ln">    2 | </span>import { InjectRepository } from &#39;@nestjs/typeorm&#39;;
+<span class="ln">    3 | </span>import { Client } from &#39;./client.entity&#39;;
+<span class="ln">    4 | </span>import { Repository } from &#39;typeorm&#39;;
+<span class="ln">    5 | </span>import { CreateClientDto } from &#39;./dto/create-client.dto&#39;;
+<span class="ln">    6 | </span>import { UpdateClientDto } from &#39;./dto/update-client.dto&#39;;
+<span class="ln">    7 | </span>
+<span class="ln">    8 | </span>@Injectable()
+<span class="ln">    9 | </span>export class ClientService {
+<span class="ln">   10 | </span>  constructor(
+<span class="ln">   11 | </span>    @InjectRepository(Client) private clientRepository: Repository&lt;Client&gt;,
+<span class="ln">   12 | </span>  ) {}
+<span class="ln">   13 | </span>
+<span class="ln">   14 | </span>  async getClients(): Promise&lt;Client[]&gt; {
+<span class="ln">   15 | </span>    return this.clientRepository.find({
+<span class="ln">   16 | </span>      where: {
+<span class="ln">   17 | </span>        hide_client: false,
+<span class="ln">   18 | </span>      },
+<span class="ln">   19 | </span>      order: {
+<span class="ln">   20 | </span>        business_name: &#39;ASC&#39;,
+<span class="ln">   21 | </span>      },
+<span class="ln">   22 | </span>    });
+<span class="ln">   23 | </span>  }
+<span class="ln">   24 | </span>
+<span class="ln">   25 | </span>  async getClientsAll(): Promise&lt;Client[]&gt; {
+<span class="ln">   26 | </span>    return this.clientRepository
+<span class="ln">   27 | </span>      .createQueryBuilder(&#39;client&#39;)
+<span class="ln">   28 | </span>      .where(&#39;client.id != :id&#39;, { id: 1 })
+<span class="ln">   29 | </span>      .orderBy(&#39;client.business_name&#39;, &#39;ASC&#39;)
+<span class="ln">   30 | </span>      .getMany();
+<span class="ln">   31 | </span>  }
+<span class="ln">   32 | </span>
+<span class="ln">   33 | </span>  async createClient(client: CreateClientDto) {
+<span class="ln">   34 | </span>    const newExam = this.clientRepository.create(client);
+<span class="ln">   35 | </span>    return this.clientRepository.save(newExam);
+<span class="ln">   36 | </span>  }
+<span class="ln">   37 | </span>
+<span class="ln">   38 | </span>  async getClient(id: number) {
+<span class="ln">   39 | </span>    const clientFound = this.clientRepository.findOne({
+<span class="ln">   40 | </span>      where: {
+<span class="ln">   41 | </span>        id,
+<span class="ln">   42 | </span>      },
+<span class="ln">   43 | </span>    });
+<span class="ln">   44 | </span>    if (!clientFound) {
+<span class="ln">   45 | </span>      return new HttpException(&#39;cliente no encontrado&#39;, HttpStatus.NOT_FOUND);
+<span class="ln">   46 | </span>    }
+<span class="ln">   47 | </span>    return clientFound;
+<span class="ln">   48 | </span>  }
+<span class="ln">   49 | </span>
+<span class="ln">   50 | </span>  async updateClient(id: number, client: UpdateClientDto) {
+<span class="ln">   51 | </span>    const clientFound = await this.clientRepository.findOne({
+<span class="ln">   52 | </span>      where: {
+<span class="ln">   53 | </span>        id,
+<span class="ln">   54 | </span>      },
+<span class="ln">   55 | </span>    });
+<span class="ln">   56 | </span>    if (!clientFound) {
+<span class="ln">   57 | </span>      return new HttpException(&#39;exam no encontrado&#39;, HttpStatus.NOT_FOUND);
+<span class="ln">   58 | </span>    }
+<span class="ln">   59 | </span>    const updateExam = Object.assign(clientFound, client);
+<span class="ln">   60 | </span>    return this.clientRepository.save(updateExam);
+<span class="ln">   61 | </span>  }
+<span class="ln">   62 | </span>}
+<span class="ln">   63 | </span>
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\customer_accounts_receivable\customer_accounts_receivable.service.ts</h2>
+<div class="meta">Lineas: 73 | Bytes: 3067 | SHA256: A13AF3B2AE85C4EA783FAF935E6C457FC068481F4398AA651F046BCDAA33BA2B</div>
+</div><pre>
+<span class="ln">    1 | </span>import { HttpException, HttpStatus, Injectable } from &#39;@nestjs/common&#39;;
+<span class="ln">    2 | </span>import { InjectRepository } from &#39;@nestjs/typeorm&#39;;
+<span class="ln">    3 | </span>import { Customeraccountsreceivable } from &#39;./customer_accounts_receivable.entity&#39;;
+<span class="ln">    4 | </span>import { Repository } from &#39;typeorm&#39;;
+<span class="ln">    5 | </span>import { CreateCustomerAccountsReceivableDto } from &#39;./dto/create-customer_accounts_receivable.dto&#39;;
+<span class="ln">    6 | </span>import { UpdateCustomerAccountsReceivableDto } from &#39;./dto/update-customer_accounts_receivable.dto&#39;;
+<span class="ln">    7 | </span>
+<span class="ln">    8 | </span>@Injectable()
+<span class="ln">    9 | </span>export class CustomerAccountsReceivableService {
+<span class="ln">   10 | </span>  constructor(
+<span class="ln">   11 | </span>    @InjectRepository(Customeraccountsreceivable) private customer_accounts_receivableRepository: Repository&lt;Customeraccountsreceivable&gt;
+<span class="ln">   12 | </span>  ) {}
+<span class="ln">   13 | </span>
+<span class="ln">   14 | </span>  async getAccountsReceivable(id: number) {
+<span class="ln">   15 | </span>    const accountsReceivable = this.customer_accounts_receivableRepository.findOne({
+<span class="ln">   16 | </span>        where: {
+<span class="ln">   17 | </span>          id
+<span class="ln">   18 | </span>        }
+<span class="ln">   19 | </span>    })
+<span class="ln">   20 | </span>    if (!accountsReceivable) {
+<span class="ln">   21 | </span>        return new HttpException(&#39;cuenta por cobrar no encontradas&#39;, HttpStatus.NOT_FOUND)
+<span class="ln">   22 | </span>    }
+<span class="ln">   23 | </span>    return accountsReceivable
+<span class="ln">   24 | </span>  }
+<span class="ln">   25 | </span>
+<span class="ln">   26 | </span>  async getAccountsReceivableWithClient(id: number) {
+<span class="ln">   27 | </span>    const accountsReceivableFound = this.customer_accounts_receivableRepository.find({
+<span class="ln">   28 | </span>      where: {
+<span class="ln">   29 | </span>        client_id: id,
+<span class="ln">   30 | </span>      },
+<span class="ln">   31 | </span>    });
+<span class="ln">   32 | </span>    if (!accountsReceivableFound) {
+<span class="ln">   33 | </span>      return new HttpException(&#39;cuenta por cobrar no encontradas&#39;, HttpStatus.NOT_FOUND);
+<span class="ln">   34 | </span>    }
+<span class="ln">   35 | </span>    return accountsReceivableFound;
+<span class="ln">   36 | </span>  }
+<span class="ln">   37 | </span>
+<span class="ln">   38 | </span>  async getAccountsReceivableWithClientDate(id: number, fecha: Date) {
+<span class="ln">   39 | </span>    return this.customer_accounts_receivableRepository
+<span class="ln">   40 | </span>      .createQueryBuilder(&#39;Customeraccountsreceivable&#39;)
+<span class="ln">   41 | </span>      .where(&#39;client_id = :id&#39;, { id: id })
+<span class="ln">   42 | </span>      .andWhere(&#39;DATE(fecha) = DATE(:fecha)&#39;, { fecha: fecha })
+<span class="ln">   43 | </span>      .orderBy(&#39;id&#39;, &#39;DESC&#39;)
+<span class="ln">   44 | </span>      .getMany();
+<span class="ln">   45 | </span>  }
+<span class="ln">   46 | </span>
+<span class="ln">   47 | </span>  async getAccountsReceivableWithClientBetweenDate(clientId: number, firstDate: Date,lastDate: Date ) {
+<span class="ln">   48 | </span>    return this.customer_accounts_receivableRepository
+<span class="ln">   49 | </span>      .createQueryBuilder(&#39;Customeraccountsreceivable&#39;)
+<span class="ln">   50 | </span>      .where(&#39;client_id = :clientId&#39;, { clientId: clientId })
+<span class="ln">   51 | </span>      .andWhere(&#39;DATE(createdAt) BETWEEN :firstDate AND :lastDate&#39;, { firstDate, lastDate })
+<span class="ln">   52 | </span>      .orderBy(&#39;id&#39;, &#39;DESC&#39;)
+<span class="ln">   53 | </span>      .getMany();
+<span class="ln">   54 | </span>  }
+<span class="ln">   55 | </span>
+<span class="ln">   56 | </span>  async createAccountsReceivable(accountsReceivable: CreateCustomerAccountsReceivableDto) {
+<span class="ln">   57 | </span>    const newAccountsReceivable = this.customer_accounts_receivableRepository.create(accountsReceivable);
+<span class="ln">   58 | </span>    return this.customer_accounts_receivableRepository.save(newAccountsReceivable);
+<span class="ln">   59 | </span>  }
+<span class="ln">   60 | </span>
+<span class="ln">   61 | </span>  async updateAccountsReceivable(id: number, accountsReceivable: UpdateCustomerAccountsReceivableDto) {
+<span class="ln">   62 | </span>    const accountsReceivableFound = await this.customer_accounts_receivableRepository.findOne({
+<span class="ln">   63 | </span>      where: {
+<span class="ln">   64 | </span>        id,
+<span class="ln">   65 | </span>      },
+<span class="ln">   66 | </span>    });
+<span class="ln">   67 | </span>    if (!accountsReceivableFound) {
+<span class="ln">   68 | </span>      return new HttpException(&#39;cuenta por cobrar no encontrada&#39;, HttpStatus.NOT_FOUND);
+<span class="ln">   69 | </span>    }
+<span class="ln">   70 | </span>    const updateAccountsReceivable = Object.assign(accountsReceivableFound, accountsReceivable);
+<span class="ln">   71 | </span>    return this.customer_accounts_receivableRepository.save(updateAccountsReceivable);
+<span class="ln">   72 | </span>  }
+<span class="ln">   73 | </span>}
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\dollar_value\dollarvalue.service.ts</h2>
+<div class="meta">Lineas: 44 | Bytes: 1377 | SHA256: 6C1B848794416786DBA197E82416FAE2860030845636A2367C3398D379079491</div>
+</div><pre>
+<span class="ln">    1 | </span>import { HttpException, HttpStatus, Injectable } from &#39;@nestjs/common&#39;;
+<span class="ln">    2 | </span>import { InjectRepository } from &#39;@nestjs/typeorm&#39;;
+<span class="ln">    3 | </span>import { Dollarvalue } from &#39;./dollarvalue.entity&#39;;
+<span class="ln">    4 | </span>import { Repository } from &#39;typeorm&#39;;
+<span class="ln">    5 | </span>import { UpdateDollarvalueDto } from &#39;./dto/update-dollarvalue.dto&#39;;
+<span class="ln">    6 | </span>import { CreateDollarvalueDto } from &#39;./dto/create-dollarvalue.dto&#39;;
+<span class="ln">    7 | </span>
+<span class="ln">    8 | </span>@Injectable()
+<span class="ln">    9 | </span>export class DollarvalueService {
+<span class="ln">   10 | </span>  constructor(
+<span class="ln">   11 | </span>    @InjectRepository(Dollarvalue)
+<span class="ln">   12 | </span>    private dollarvalueRepository: Repository&lt;Dollarvalue&gt;,
+<span class="ln">   13 | </span>  ) {}
+<span class="ln">   14 | </span>
+<span class="ln">   15 | </span>  async createDollarvalue(dollarvalue: CreateDollarvalueDto): Promise&lt;any&gt; {
+<span class="ln">   16 | </span>    return this.dollarvalueRepository.save(dollarvalue);
+<span class="ln">   17 | </span>  }
+<span class="ln">   18 | </span>
+<span class="ln">   19 | </span>  async getDollarvalue() {
+<span class="ln">   20 | </span>    const query = this.dollarvalueRepository
+<span class="ln">   21 | </span>      .createQueryBuilder(&#39;entity&#39;)
+<span class="ln">   22 | </span>      .orderBy(&#39;entity.id&#39;, &#39;DESC&#39;)
+<span class="ln">   23 | </span>      .limit(1);
+<span class="ln">   24 | </span>
+<span class="ln">   25 | </span>    return query.getMany();
+<span class="ln">   26 | </span>  }
+<span class="ln">   27 | </span>
+<span class="ln">   28 | </span>  async updateDollarvalue(id: number, dollarvalue: UpdateDollarvalueDto) {
+<span class="ln">   29 | </span>    const dollarvalueFound = await this.dollarvalueRepository.findOne({
+<span class="ln">   30 | </span>      where: {
+<span class="ln">   31 | </span>        id,
+<span class="ln">   32 | </span>      },
+<span class="ln">   33 | </span>    });
+<span class="ln">   34 | </span>    if (!dollarvalueFound) {
+<span class="ln">   35 | </span>      return new HttpException(
+<span class="ln">   36 | </span>        &#39;Dollar cambio no encontrado&#39;,
+<span class="ln">   37 | </span>        HttpStatus.NOT_FOUND,
+<span class="ln">   38 | </span>      );
+<span class="ln">   39 | </span>    }
+<span class="ln">   40 | </span>    const updateDollarvalue = Object.assign(dollarvalueFound, dollarvalue);
+<span class="ln">   41 | </span>    return this.dollarvalueRepository.save(updateDollarvalue);
+<span class="ln">   42 | </span>  }
+<span class="ln">   43 | </span>}
+<span class="ln">   44 | </span>
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\exam_group\examgroup.service.ts</h2>
+<div class="meta">Lineas: 110 | Bytes: 3046 | SHA256: F6D1B5A09803A342DA677FAC5D80460D4F3B6ECE440BE454614F7608F0BC9B04</div>
+</div><pre>
+<span class="ln">    1 | </span>import { HttpException, HttpStatus, Injectable } from &#39;@nestjs/common&#39;;
+<span class="ln">    2 | </span>import { InjectRepository } from &#39;@nestjs/typeorm&#39;;
+<span class="ln">    3 | </span>import { Examgroup } from &#39;./examgroup.entity&#39;;
+<span class="ln">    4 | </span>import { Repository } from &#39;typeorm&#39;;
+<span class="ln">    5 | </span>import { UpdateExamgroupDto } from &#39;./dto/update-examgroup.dto&#39;;
+<span class="ln">    6 | </span>import { CreateExamgroupDto } from &#39;./dto/create-examgroup.dto&#39;;
+<span class="ln">    7 | </span>
+<span class="ln">    8 | </span>@Injectable()
+<span class="ln">    9 | </span>export class ExamGroupService {
+<span class="ln">   10 | </span>  constructor(
+<span class="ln">   11 | </span>    @InjectRepository(Examgroup)
+<span class="ln">   12 | </span>    private examgroupRepository: Repository&lt;Examgroup&gt;,
+<span class="ln">   13 | </span>  ) {}
+<span class="ln">   14 | </span>
+<span class="ln">   15 | </span>  async createExamgroup(examsgroup: CreateExamgroupDto) {
+<span class="ln">   16 | </span>    const maxPosition = await this.examgroupRepository
+<span class="ln">   17 | </span>    .createQueryBuilder(&#39;exam_group&#39;)
+<span class="ln">   18 | </span>    .select(&#39;MAX(position)&#39;, &#39;max&#39;)
+<span class="ln">   19 | </span>    .getRawOne();
+<span class="ln">   20 | </span>
+<span class="ln">   21 | </span>    const nextPosition = (maxPosition.max || 0) + 1;
+<span class="ln">   22 | </span>    const newExamgroup = this.examgroupRepository.create({
+<span class="ln">   23 | </span>      ...examsgroup,
+<span class="ln">   24 | </span>      position: nextPosition,
+<span class="ln">   25 | </span>    });
+<span class="ln">   26 | </span>
+<span class="ln">   27 | </span>    return this.examgroupRepository.save(newExamgroup);
+<span class="ln">   28 | </span>  }
+<span class="ln">   29 | </span>
+<span class="ln">   30 | </span>  async getExamgroup(id: number) {
+<span class="ln">   31 | </span>    const examFound = this.examgroupRepository.findOne({
+<span class="ln">   32 | </span>      where: {
+<span class="ln">   33 | </span>        id,
+<span class="ln">   34 | </span>      },
+<span class="ln">   35 | </span>    });
+<span class="ln">   36 | </span>    if (!examFound) {
+<span class="ln">   37 | </span>      return new HttpException(
+<span class="ln">   38 | </span>        &#39;Grupo de examen no encontrado&#39;,
+<span class="ln">   39 | </span>        HttpStatus.NOT_FOUND,
+<span class="ln">   40 | </span>      );
+<span class="ln">   41 | </span>    }
+<span class="ln">   42 | </span>    return examFound;
+<span class="ln">   43 | </span>  }
+<span class="ln">   44 | </span>
+<span class="ln">   45 | </span>  async getExamgroups() {
+<span class="ln">   46 | </span>    return this.examgroupRepository.find({
+<span class="ln">   47 | </span>      where: {
+<span class="ln">   48 | </span>        annulled: false,
+<span class="ln">   49 | </span>      },
+<span class="ln">   50 | </span>      order: {
+<span class="ln">   51 | </span>        position: &#39;ASC&#39;,
+<span class="ln">   52 | </span>      },
+<span class="ln">   53 | </span>    });
+<span class="ln">   54 | </span>  }
+<span class="ln">   55 | </span>
+<span class="ln">   56 | </span>  async getMaxPosition(): Promise&lt;number&gt; {
+<span class="ln">   57 | </span>    const result = await this.examgroupRepository
+<span class="ln">   58 | </span>      .createQueryBuilder(&#39;exam_group&#39;)
+<span class="ln">   59 | </span>      .select(&#39;MAX(exam_group.position)&#39;, &#39;max&#39;)
+<span class="ln">   60 | </span>      .getRawOne();
+<span class="ln">   61 | </span>
+<span class="ln">   62 | </span>    return result.max || 0; 
+<span class="ln">   63 | </span>  }
+<span class="ln">   64 | </span>
+<span class="ln">   65 | </span>  async getExamgroupsList() {
+<span class="ln">   66 | </span>    return this.examgroupRepository
+<span class="ln">   67 | </span>      .createQueryBuilder(&#39;examgroup&#39;)
+<span class="ln">   68 | </span>      .leftJoinAndSelect(&#39;examgroup.examlists&#39;, &#39;examlists&#39;)
+<span class="ln">   69 | </span>      .orderBy(&#39;examgroup.position&#39;, &#39;ASC&#39;)
+<span class="ln">   70 | </span>      .addOrderBy(&#39;examlists.position&#39;, &#39;ASC&#39;)
+<span class="ln">   71 | </span>      .getMany();
+<span class="ln">   72 | </span>  }
+<span class="ln">   73 | </span>
+<span class="ln">   74 | </span>  async getExamgroupsViewList() {
+<span class="ln">   75 | </span>    return this.examgroupRepository
+<span class="ln">   76 | </span>      .createQueryBuilder(&#39;examgroup&#39;)
+<span class="ln">   77 | </span>      .leftJoinAndSelect(&#39;examgroup.examlists&#39;, &#39;examlists&#39;)
+<span class="ln">   78 | </span>      .where(&#39;examgroup.annulled=false&#39;)
+<span class="ln">   79 | </span>      .andWhere(&#39;examlists.annulled=false&#39;)
+<span class="ln">   80 | </span>      .orderBy(&#39;examgroup.position&#39;, &#39;ASC&#39;)
+<span class="ln">   81 | </span>      .addOrderBy(&#39;examlists.description&#39;, &#39;ASC&#39;)
+<span class="ln">   82 | </span>      .getMany();
+<span class="ln">   83 | </span>  }
+<span class="ln">   84 | </span>
+<span class="ln">   85 | </span>  async getExamgroupstodos(id: number) {
+<span class="ln">   86 | </span>    const valor = id;
+<span class="ln">   87 | </span>    return this.examgroupRepository.find({
+<span class="ln">   88 | </span>      order: {
+<span class="ln">   89 | </span>        position: &#39;ASC&#39;,
+<span class="ln">   90 | </span>      },
+<span class="ln">   91 | </span>    });
+<span class="ln">   92 | </span>  }
+<span class="ln">   93 | </span>
+<span class="ln">   94 | </span>  async updateExamgroup(id: number, examgroupLists: UpdateExamgroupDto) {
+<span class="ln">   95 | </span>    const examListFound = await this.examgroupRepository.findOne({
+<span class="ln">   96 | </span>      where: {
+<span class="ln">   97 | </span>        id,
+<span class="ln">   98 | </span>      },
+<span class="ln">   99 | </span>    });
+<span class="ln">  100 | </span>    if (!examListFound) {
+<span class="ln">  101 | </span>      return new HttpException(
+<span class="ln">  102 | </span>        &#39;Grupo de examen no encontrado&#39;,
+<span class="ln">  103 | </span>        HttpStatus.NOT_FOUND,
+<span class="ln">  104 | </span>      );
+<span class="ln">  105 | </span>    }
+<span class="ln">  106 | </span>    const updateExam = Object.assign(examListFound, examgroupLists);
+<span class="ln">  107 | </span>    return this.examgroupRepository.save(updateExam);
+<span class="ln">  108 | </span>  }
+<span class="ln">  109 | </span>}
+<span class="ln">  110 | </span>
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\exam_lists\examlists.service.ts</h2>
+<div class="meta">Lineas: 104 | Bytes: 2941 | SHA256: 422578D5F8134FD0FDBCADB501167F26EA13C840FAF182FCD086A7D9636B352B</div>
+</div><pre>
+<span class="ln">    1 | </span>import { HttpException, HttpStatus, Injectable } from &#39;@nestjs/common&#39;;
+<span class="ln">    2 | </span>import { InjectRepository } from &#39;@nestjs/typeorm&#39;;
+<span class="ln">    3 | </span>import { Examlists } from &#39;./examlists.entity&#39;;
+<span class="ln">    4 | </span>import { Like, Repository } from &#39;typeorm&#39;;
+<span class="ln">    5 | </span>import { CreateExam_listDto } from &#39;./dto/create-exam_lists.dto&#39;;
+<span class="ln">    6 | </span>import { UpdateExam_listDto } from &#39;./dto/update-exam_lists.dto&#39;;
+<span class="ln">    7 | </span>
+<span class="ln">    8 | </span>@Injectable()
+<span class="ln">    9 | </span>export class ExamListsService {
+<span class="ln">   10 | </span>  constructor(
+<span class="ln">   11 | </span>    @InjectRepository(Examlists)
+<span class="ln">   12 | </span>    private examListRepository: Repository&lt;Examlists&gt;,
+<span class="ln">   13 | </span>  ) {}
+<span class="ln">   14 | </span>
+<span class="ln">   15 | </span>  async getExamLists() {
+<span class="ln">   16 | </span>    return this.examListRepository.find();
+<span class="ln">   17 | </span>  }
+<span class="ln">   18 | </span>
+<span class="ln">   19 | </span>  async createExamList(examLists: CreateExam_listDto) {
+<span class="ln">   20 | </span>    const { group_id } = examLists;
+<span class="ln">   21 | </span>    const maxPosition = await this.getMaxPosition(group_id);
+<span class="ln">   22 | </span>    const nextPosition = maxPosition + 1;
+<span class="ln">   23 | </span>    const newExam = this.examListRepository.create({
+<span class="ln">   24 | </span>      ...examLists,
+<span class="ln">   25 | </span>      position: nextPosition,
+<span class="ln">   26 | </span>    });
+<span class="ln">   27 | </span>    return this.examListRepository.save(newExam);
+<span class="ln">   28 | </span>  }
+<span class="ln">   29 | </span>  
+<span class="ln">   30 | </span>  async getMaxPosition(groupId: number): Promise&lt;number&gt; {
+<span class="ln">   31 | </span>    const result = await this.examListRepository
+<span class="ln">   32 | </span>      .createQueryBuilder(&#39;exam_lists&#39;)
+<span class="ln">   33 | </span>      .select(&#39;MAX(exam_lists.position)&#39;, &#39;max&#39;)
+<span class="ln">   34 | </span>      .where(&#39;exam_lists.group_id = :groupId&#39;, { groupId })
+<span class="ln">   35 | </span>      .getRawOne();
+<span class="ln">   36 | </span>
+<span class="ln">   37 | </span>    return result.max || 0; 
+<span class="ln">   38 | </span>  }
+<span class="ln">   39 | </span>
+<span class="ln">   40 | </span>  async getExamList(id: number) {
+<span class="ln">   41 | </span>    const examListFound = this.examListRepository.findOne({
+<span class="ln">   42 | </span>      where: {
+<span class="ln">   43 | </span>        id,
+<span class="ln">   44 | </span>      },
+<span class="ln">   45 | </span>    });
+<span class="ln">   46 | </span>    if (!examListFound) {
+<span class="ln">   47 | </span>      return new HttpException(&#39;examen no encontrado&#39;, HttpStatus.NOT_FOUND);
+<span class="ln">   48 | </span>    }
+<span class="ln">   49 | </span>    return examListFound;
+<span class="ln">   50 | </span>  }
+<span class="ln">   51 | </span>
+<span class="ln">   52 | </span>  async getExamByGroup(id: number) {
+<span class="ln">   53 | </span>    const examListFound = this.examListRepository.find({
+<span class="ln">   54 | </span>      where: {
+<span class="ln">   55 | </span>        group_id: id,
+<span class="ln">   56 | </span>      },
+<span class="ln">   57 | </span>      order: {
+<span class="ln">   58 | </span>        description: &#39;ASC&#39;,
+<span class="ln">   59 | </span>      },
+<span class="ln">   60 | </span>    });
+<span class="ln">   61 | </span>    if (!examListFound) {
+<span class="ln">   62 | </span>      return new HttpException(&#39;examen no encontrado&#39;, HttpStatus.NOT_FOUND);
+<span class="ln">   63 | </span>    }
+<span class="ln">   64 | </span>    return examListFound;
+<span class="ln">   65 | </span>  }
+<span class="ln">   66 | </span>
+<span class="ln">   67 | </span>  async getExamByGroupAnulled(id: number) {
+<span class="ln">   68 | </span>    const examListFound = this.examListRepository.find({
+<span class="ln">   69 | </span>      where: {
+<span class="ln">   70 | </span>        group_id: id,
+<span class="ln">   71 | </span>        annulled: false,
+<span class="ln">   72 | </span>      },
+<span class="ln">   73 | </span>      order: {
+<span class="ln">   74 | </span>        description: &#39;ASC&#39;,
+<span class="ln">   75 | </span>      },
+<span class="ln">   76 | </span>    });
+<span class="ln">   77 | </span>    if (!examListFound) {
+<span class="ln">   78 | </span>      return new HttpException(&#39;examen no encontrado&#39;, HttpStatus.NOT_FOUND);
+<span class="ln">   79 | </span>    }
+<span class="ln">   80 | </span>    return examListFound;
+<span class="ln">   81 | </span>  }
+<span class="ln">   82 | </span>
+<span class="ln">   83 | </span>  async getExamListByDescription(description: string) {
+<span class="ln">   84 | </span>    return this.examListRepository.find({
+<span class="ln">   85 | </span>      where: {
+<span class="ln">   86 | </span>        description: Like(`%${description}%`),
+<span class="ln">   87 | </span>      },
+<span class="ln">   88 | </span>    });
+<span class="ln">   89 | </span>  }
+<span class="ln">   90 | </span>
+<span class="ln">   91 | </span>  async updateExamList(id: number, examLists: UpdateExam_listDto) {
+<span class="ln">   92 | </span>    const examListFound = await this.examListRepository.findOne({
+<span class="ln">   93 | </span>      where: {
+<span class="ln">   94 | </span>        id,
+<span class="ln">   95 | </span>      },
+<span class="ln">   96 | </span>    });
+<span class="ln">   97 | </span>    if (!examListFound) {
+<span class="ln">   98 | </span>      return new HttpException(&#39;exam no encontrado&#39;, HttpStatus.NOT_FOUND);
+<span class="ln">   99 | </span>    }
+<span class="ln">  100 | </span>    const updateExam = Object.assign(examListFound, examLists);
+<span class="ln">  101 | </span>    return this.examListRepository.save(updateExam);
+<span class="ln">  102 | </span>  }
+<span class="ln">  103 | </span>}
+<span class="ln">  104 | </span>
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\exams\exams.service.ts</h2>
+<div class="meta">Lineas: 97 | Bytes: 3315 | SHA256: 719D1BD7B8F2EFF17CF18A3842C968F22F7110542E07AB5C4EBE7D2BE0BF6F38</div>
+</div><pre>
+<span class="ln">    1 | </span>import { HttpException, HttpStatus, Injectable } from &#39;@nestjs/common&#39;;
+<span class="ln">    2 | </span>import { InjectRepository } from &#39;@nestjs/typeorm&#39;;
+<span class="ln">    3 | </span>import { Exam } from &#39;./exams.entity&#39;;
+<span class="ln">    4 | </span>import { Repository } from &#39;typeorm&#39;;
+<span class="ln">    5 | </span>import { UpdateExamsDto } from &#39;./dto/update-exams.dto&#39;;
+<span class="ln">    6 | </span>import { CreateExamsDto } from &#39;./dto/create-exams.dto&#39;;
+<span class="ln">    7 | </span>import { PatientsService } from &#39;src/patients/patients.service&#39;;
+<span class="ln">    8 | </span>
+<span class="ln">    9 | </span>@Injectable()
+<span class="ln">   10 | </span>export class ExamsService {
+<span class="ln">   11 | </span>  constructor(
+<span class="ln">   12 | </span>    @InjectRepository(Exam) private examRepository: Repository&lt;Exam&gt;,
+<span class="ln">   13 | </span>    private patientsService: PatientsService,
+<span class="ln">   14 | </span>  ) {}
+<span class="ln">   15 | </span>
+<span class="ln">   16 | </span>  async createExam(exams: CreateExamsDto) {
+<span class="ln">   17 | </span>    const patientFound = await this.patientsService.getPatient(
+<span class="ln">   18 | </span>      exams.patientsId,
+<span class="ln">   19 | </span>    );
+<span class="ln">   20 | </span>
+<span class="ln">   21 | </span>    if (!patientFound)
+<span class="ln">   22 | </span>      return new HttpException(&#39;paciente no registrado&#39;, HttpStatus.NOT_FOUND);
+<span class="ln">   23 | </span>
+<span class="ln">   24 | </span>    const newExam = this.examRepository.create(exams);
+<span class="ln">   25 | </span>    return this.examRepository.save(newExam);
+<span class="ln">   26 | </span>  }
+<span class="ln">   27 | </span>
+<span class="ln">   28 | </span>  async getExam(id: number) {
+<span class="ln">   29 | </span>    const examFound = this.examRepository.findOne({
+<span class="ln">   30 | </span>      where: {
+<span class="ln">   31 | </span>        id,
+<span class="ln">   32 | </span>      },
+<span class="ln">   33 | </span>    });
+<span class="ln">   34 | </span>    if (!examFound) {
+<span class="ln">   35 | </span>      return new HttpException(&#39;examen no encontrado&#39;, HttpStatus.NOT_FOUND);
+<span class="ln">   36 | </span>    }
+<span class="ln">   37 | </span>    return examFound;
+<span class="ln">   38 | </span>  }
+<span class="ln">   39 | </span>
+<span class="ln">   40 | </span>  async updateExam(id: number, exam: UpdateExamsDto) {
+<span class="ln">   41 | </span>    const examFound = await this.examRepository.findOne({
+<span class="ln">   42 | </span>      where: {
+<span class="ln">   43 | </span>        id,
+<span class="ln">   44 | </span>      },
+<span class="ln">   45 | </span>    });
+<span class="ln">   46 | </span>    if (!examFound) {
+<span class="ln">   47 | </span>      return new HttpException(&#39;exam no encontrado&#39;, HttpStatus.NOT_FOUND);
+<span class="ln">   48 | </span>    }
+<span class="ln">   49 | </span>    const updateExam = Object.assign(examFound, exam);
+<span class="ln">   50 | </span>    return this.examRepository.save(updateExam);
+<span class="ln">   51 | </span>  }
+<span class="ln">   52 | </span>  
+<span class="ln">   53 | </span>  async getPatientsWithClient(clientIds: number[]): Promise&lt;any&gt; {
+<span class="ln">   54 | </span>    return this.examRepository
+<span class="ln">   55 | </span>      .createQueryBuilder(&#39;exam&#39;)
+<span class="ln">   56 | </span>      .select(&#39;exam.description&#39;, &#39;description&#39;)
+<span class="ln">   57 | </span>      .addSelect(&#39;exam.examlistsId&#39;, &#39;exam_id&#39;)
+<span class="ln">   58 | </span>      .addSelect(&#39;exam.tax_amount&#39;, &#39;tax_amount&#39;)
+<span class="ln">   59 | </span>      .addSelect(&#39;SUM(exam.amount)&#39;, &#39;amount&#39;)
+<span class="ln">   60 | </span>      .addSelect(&#39;SUM(exam.tax_total)&#39;, &#39;tax_total&#39;)
+<span class="ln">   61 | </span>      .addSelect(&#39;SUM(exam.total)&#39;, &#39;total&#39;)
+<span class="ln">   62 | </span>      .where(&#39;exam.patientsId IN (:...clientIds)&#39;, { clientIds: clientIds })
+<span class="ln">   63 | </span>      .groupBy(&#39;exam.description&#39;)
+<span class="ln">   64 | </span>      .addGroupBy(&#39;exam.tax_amount&#39;)
+<span class="ln">   65 | </span>      .addGroupBy(&#39;exam.examlistsId&#39;)
+<span class="ln">   66 | </span>      .getRawMany();
+<span class="ln">   67 | </span>  }
+<span class="ln">   68 | </span>
+<span class="ln">   69 | </span>  async getTotalExamWithGroup(examIds: number[], firstDate: Date,lastDate: Date) {
+<span class="ln">   70 | </span>    const totales = await this.examRepository
+<span class="ln">   71 | </span>      .createQueryBuilder(&#39;exam&#39;)
+<span class="ln">   72 | </span>      .select([
+<span class="ln">   73 | </span>        &quot;COALESCE(COUNT(id), 0) AS total&quot;,
+<span class="ln">   74 | </span>        &quot;COALESCE(COUNT(CASE WHEN exam.result IS NOT NULL THEN 1 END), 0) AS total_recorded&quot;
+<span class="ln">   75 | </span>      ])
+<span class="ln">   76 | </span>      .where(&#39;DATE(exam.date) BETWEEN :firstDate AND :lastDate&#39;, { firstDate, lastDate })
+<span class="ln">   77 | </span>      .andWhere(&#39;exam.examlistsId IN (:...examIds)&#39;, { examIds: examIds })
+<span class="ln">   78 | </span>      .getRawOne();
+<span class="ln">   79 | </span>    return totales
+<span class="ln">   80 | </span>  }
+<span class="ln">   81 | </span>
+<span class="ln">   82 | </span>  async getPatientsWithClientTax(clientIds: number[], tax: number): Promise&lt;any&gt; {
+<span class="ln">   83 | </span>    console.log(&#39;clientIds tax: &#39;, clientIds);
+<span class="ln">   84 | </span>    return this.examRepository
+<span class="ln">   85 | </span>      .createQueryBuilder(&#39;exam&#39;)
+<span class="ln">   86 | </span>      .select(
+<span class="ln">   87 | </span>        &#39;SUM(exam.tax_total)&#39;,
+<span class="ln">   88 | </span>        &#39;tax_total&#39;
+<span class="ln">   89 | </span>      )
+<span class="ln">   90 | </span>      .addSelect(&#39;SUM(exam.total)&#39;, &#39;total&#39;)
+<span class="ln">   91 | </span>      .where(&#39;exam.patientsId IN (:...clientIds)&#39;, { clientIds: clientIds })
+<span class="ln">   92 | </span>      .andWhere(&#39;exam.tax_amount= :tax&#39;, {tax: tax})
+<span class="ln">   93 | </span>      .groupBy(&#39;exam.description&#39;)
+<span class="ln">   94 | </span>      .getRawMany();
+<span class="ln">   95 | </span>  }
+<span class="ln">   96 | </span>}
+<span class="ln">   97 | </span>
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\group_ht\group_ht.service.ts</h2>
+<div class="meta">Lineas: 90 | Bytes: 2575 | SHA256: C0F6954CA7396BBACC622DE8FFFC93D7343A3262BC6C361B4A1654FBD2B85122</div>
+</div><pre>
+<span class="ln">    1 | </span>import { HttpException, HttpStatus, Injectable } from &#39;@nestjs/common&#39;;
+<span class="ln">    2 | </span>import { InjectRepository } from &#39;@nestjs/typeorm&#39;;
+<span class="ln">    3 | </span>import { Groupht } from &#39;./group_ht.entity&#39;;
+<span class="ln">    4 | </span>import { Repository, Like } from &#39;typeorm&#39;;
+<span class="ln">    5 | </span>import { CreateGroup_htDto } from &#39;./dto/create-group_ht.dto&#39;;
+<span class="ln">    6 | </span>import { UpdateGroup_htDto } from &#39;./dto/update-group_ht.dto&#39;;
+<span class="ln">    7 | </span>
+<span class="ln">    8 | </span>@Injectable()
+<span class="ln">    9 | </span>export class GroupHtService {
+<span class="ln">   10 | </span>  constructor(
+<span class="ln">   11 | </span>    @InjectRepository(Groupht) private group_htRepository: Repository&lt;Groupht&gt;,
+<span class="ln">   12 | </span>  ) {}
+<span class="ln">   13 | </span>
+<span class="ln">   14 | </span>  async getGroupHtList() {
+<span class="ln">   15 | </span>    return this.group_htRepository.find();
+<span class="ln">   16 | </span>  }
+<span class="ln">   17 | </span>
+<span class="ln">   18 | </span>  async getGroupHtListActive() {
+<span class="ln">   19 | </span>    return this.group_htRepository.find({
+<span class="ln">   20 | </span>      where: {
+<span class="ln">   21 | </span>        annulled: false,
+<span class="ln">   22 | </span>      },
+<span class="ln">   23 | </span>      relations: [&#39;grouphtitems&#39;],
+<span class="ln">   24 | </span>    });
+<span class="ln">   25 | </span>  }
+<span class="ln">   26 | </span>
+<span class="ln">   27 | </span>  async countWithLike(description: string) {
+<span class="ln">   28 | </span>    return this.group_htRepository.count({
+<span class="ln">   29 | </span>      where: {
+<span class="ln">   30 | </span>        description: Like(`%${description}%`),
+<span class="ln">   31 | </span>      },
+<span class="ln">   32 | </span>    });
+<span class="ln">   33 | </span>  }
+<span class="ln">   34 | </span>
+<span class="ln">   35 | </span>  async getGroupHt(id: number) {
+<span class="ln">   36 | </span>    const groupHtFound = this.group_htRepository.findOne({
+<span class="ln">   37 | </span>      where: {
+<span class="ln">   38 | </span>        id,
+<span class="ln">   39 | </span>      },
+<span class="ln">   40 | </span>      relations: [&#39;grouphtitems&#39;],
+<span class="ln">   41 | </span>    });
+<span class="ln">   42 | </span>    if (!groupHtFound) {
+<span class="ln">   43 | </span>      return new HttpException(&#39;grupo HT no encontrado&#39;, HttpStatus.NOT_FOUND);
+<span class="ln">   44 | </span>    }
+<span class="ln">   45 | </span>    return groupHtFound;
+<span class="ln">   46 | </span>  }
+<span class="ln">   47 | </span>
+<span class="ln">   48 | </span>  async createGroupHt(groupHt: CreateGroup_htDto) {
+<span class="ln">   49 | </span>    const newGroupHt = this.group_htRepository.create(groupHt);
+<span class="ln">   50 | </span>    return this.group_htRepository.save(newGroupHt);
+<span class="ln">   51 | </span>  }
+<span class="ln">   52 | </span>
+<span class="ln">   53 | </span>  async updateGroupHt(id: number, groupHt: UpdateGroup_htDto) {
+<span class="ln">   54 | </span>    const groupHtFound = await this.group_htRepository.findOne({
+<span class="ln">   55 | </span>      where: {
+<span class="ln">   56 | </span>        id,
+<span class="ln">   57 | </span>      },
+<span class="ln">   58 | </span>    });
+<span class="ln">   59 | </span>    if (!groupHtFound) {
+<span class="ln">   60 | </span>      return new HttpException(&#39;grupo ht no encontrado&#39;, HttpStatus.NOT_FOUND);
+<span class="ln">   61 | </span>    }
+<span class="ln">   62 | </span>    const updateGroupHt = Object.assign(groupHtFound, groupHt);
+<span class="ln">   63 | </span>    return this.group_htRepository.save(updateGroupHt);
+<span class="ln">   64 | </span>  }
+<span class="ln">   65 | </span>
+<span class="ln">   66 | </span>  async deleteGroupHt(id: number) {
+<span class="ln">   67 | </span>    const groupHtFound = await this.group_htRepository.findOne({
+<span class="ln">   68 | </span>      where: {
+<span class="ln">   69 | </span>        id,
+<span class="ln">   70 | </span>      },
+<span class="ln">   71 | </span>      relations: [&#39;grouphtitems&#39;],
+<span class="ln">   72 | </span>    });
+<span class="ln">   73 | </span>    if (!groupHtFound) {
+<span class="ln">   74 | </span>      return new HttpException(&#39;grupo ht no encontrado&#39;, HttpStatus.NOT_FOUND);
+<span class="ln">   75 | </span>    }
+<span class="ln">   76 | </span>    await this.group_htRepository.remove(groupHtFound);
+<span class="ln">   77 | </span>    return true;
+<span class="ln">   78 | </span>  }
+<span class="ln">   79 | </span>
+<span class="ln">   80 | </span>  async getGroupList() {
+<span class="ln">   81 | </span>    return this.group_htRepository
+<span class="ln">   82 | </span>      .createQueryBuilder(&#39;groupht&#39;)
+<span class="ln">   83 | </span>      .leftJoinAndSelect(&#39;groupht.grouphtitems&#39;, &#39;grouphtitems&#39;)
+<span class="ln">   84 | </span>      .where(&#39;groupht.annulled = false&#39;)
+<span class="ln">   85 | </span>      .orderBy(&#39;groupht.description&#39;, &#39;ASC&#39;)
+<span class="ln">   86 | </span>      .addOrderBy(&#39;grouphtitems.id&#39;, &#39;ASC&#39;)
+<span class="ln">   87 | </span>      .getMany();
+<span class="ln">   88 | </span>  }
+<span class="ln">   89 | </span>}
+<span class="ln">   90 | </span>
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\group_ht_items\group_h_itemst.service.ts</h2>
+<div class="meta">Lineas: 52 | Bytes: 1905 | SHA256: 071FDEA2CDD3735DE9C6BA9947155B8D7FE37E87C0A0745FD81B8205DBB741F3</div>
+</div><pre>
+<span class="ln">    1 | </span>import { HttpException, HttpStatus, Injectable } from &#39;@nestjs/common&#39;;
+<span class="ln">    2 | </span>import { InjectRepository } from &#39;@nestjs/typeorm&#39;;
+<span class="ln">    3 | </span>import { Grouphtitems } from &#39;./group_ht_items.entity&#39;;
+<span class="ln">    4 | </span>import { Repository } from &#39;typeorm&#39;;
+<span class="ln">    5 | </span>import { CreateGroup_ht_itemsDto } from &#39;./dto/create-group_ht_items.dto&#39;;
+<span class="ln">    6 | </span>import { UpdateGroup_ht_itemsDto } from &#39;./dto/update-group_ht_items.dto&#39;;
+<span class="ln">    7 | </span>
+<span class="ln">    8 | </span>@Injectable()
+<span class="ln">    9 | </span>export class GroupHtItemsService {
+<span class="ln">   10 | </span>    constructor(
+<span class="ln">   11 | </span>        @InjectRepository(Grouphtitems) private group_ht_itemsRepository: Repository&lt;Grouphtitems&gt;
+<span class="ln">   12 | </span>    ) {}
+<span class="ln">   13 | </span>    
+<span class="ln">   14 | </span>    async getGroupItemsHt(id: number) {
+<span class="ln">   15 | </span>        const groupHtFound = this.group_ht_itemsRepository.findOne({
+<span class="ln">   16 | </span>            where: {
+<span class="ln">   17 | </span>                id
+<span class="ln">   18 | </span>            }
+<span class="ln">   19 | </span>        })
+<span class="ln">   20 | </span>        if (!groupHtFound) {
+<span class="ln">   21 | </span>            return new HttpException(&#39;grupo HT no encontrado&#39;, HttpStatus.NOT_FOUND)
+<span class="ln">   22 | </span>        }
+<span class="ln">   23 | </span>        return groupHtFound
+<span class="ln">   24 | </span>    }
+<span class="ln">   25 | </span>    
+<span class="ln">   26 | </span>    async createGroupItemsHt(groupHt: CreateGroup_ht_itemsDto) {
+<span class="ln">   27 | </span>        const newGroupHt = this.group_ht_itemsRepository.create(groupHt)
+<span class="ln">   28 | </span>        return this.group_ht_itemsRepository.save(newGroupHt)
+<span class="ln">   29 | </span>    }
+<span class="ln">   30 | </span>    
+<span class="ln">   31 | </span>    async updateGroupItemsHt(id: number, groupHt: UpdateGroup_ht_itemsDto) {
+<span class="ln">   32 | </span>        const groupHtFound = await this.group_ht_itemsRepository.findOne({
+<span class="ln">   33 | </span>            where: {
+<span class="ln">   34 | </span>                id
+<span class="ln">   35 | </span>            }
+<span class="ln">   36 | </span>        })
+<span class="ln">   37 | </span>        if (!groupHtFound) {
+<span class="ln">   38 | </span>            return new HttpException(&#39;grupo ht no encontrado&#39;, HttpStatus.NOT_FOUND)
+<span class="ln">   39 | </span>        }
+<span class="ln">   40 | </span>        const updateGroupHt = Object.assign(groupHtFound, groupHt)
+<span class="ln">   41 | </span>        return this.group_ht_itemsRepository.save(updateGroupHt)
+<span class="ln">   42 | </span>    }
+<span class="ln">   43 | </span>    
+<span class="ln">   44 | </span>    async deleteGroupItems(id: number) {
+<span class="ln">   45 | </span>        const result = await this.group_ht_itemsRepository.delete({ id })
+<span class="ln">   46 | </span>        if (result.affected === 0) {
+<span class="ln">   47 | </span>            return new HttpException(&#39;Grupo no encontrado&#39;, HttpStatus.NOT_FOUND)
+<span class="ln">   48 | </span>        }
+<span class="ln">   49 | </span>
+<span class="ln">   50 | </span>        return result
+<span class="ln">   51 | </span>    }
+<span class="ln">   52 | </span>}
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\invoice\invoice.service.ts</h2>
+<div class="meta">Lineas: 88 | Bytes: 2736 | SHA256: 867056DA9BF5F5AD300050F51C0552A7978887BF3971431FF656425044C451D4</div>
+</div><pre>
+<span class="ln">    1 | </span>import { HttpException, HttpStatus, Injectable } from &#39;@nestjs/common&#39;;
+<span class="ln">    2 | </span>import { InjectRepository } from &#39;@nestjs/typeorm&#39;;
+<span class="ln">    3 | </span>import { Invoice } from &#39;./invoice.entity&#39;;
+<span class="ln">    4 | </span>import { Repository } from &#39;typeorm&#39;;
+<span class="ln">    5 | </span>import { CreateInvoiceDto } from &#39;./dto/create-invoice.dto&#39;;
+<span class="ln">    6 | </span>import { UpdateInvoiceDto } from &#39;./dto/update-invoice.dto&#39;;
+<span class="ln">    7 | </span>
+<span class="ln">    8 | </span>@Injectable()
+<span class="ln">    9 | </span>export class InvoiceService {
+<span class="ln">   10 | </span>  constructor(
+<span class="ln">   11 | </span>    @InjectRepository(Invoice) private invoiceRepository: Repository&lt;Invoice&gt;,
+<span class="ln">   12 | </span>  ) {}
+<span class="ln">   13 | </span>
+<span class="ln">   14 | </span>  async createInvoice(invoice: CreateInvoiceDto): Promise&lt;any&gt; {
+<span class="ln">   15 | </span>    return this.invoiceRepository.save(invoice);
+<span class="ln">   16 | </span>  }
+<span class="ln">   17 | </span>
+<span class="ln">   18 | </span>  async updateInvoice(id: number, invoice: UpdateInvoiceDto) {
+<span class="ln">   19 | </span>    const invoiceFound = await this.invoiceRepository.findOne({
+<span class="ln">   20 | </span>      where: {
+<span class="ln">   21 | </span>        id,
+<span class="ln">   22 | </span>      },
+<span class="ln">   23 | </span>    });
+<span class="ln">   24 | </span>    if (!invoiceFound) {
+<span class="ln">   25 | </span>      return new HttpException(&#39;factura no encontrado&#39;, HttpStatus.NOT_FOUND);
+<span class="ln">   26 | </span>    }
+<span class="ln">   27 | </span>    const updateInvoice = Object.assign(invoiceFound, invoice);
+<span class="ln">   28 | </span>    return this.invoiceRepository.save(updateInvoice);
+<span class="ln">   29 | </span>  }
+<span class="ln">   30 | </span>
+<span class="ln">   31 | </span>  async getInvoice(id: number) {
+<span class="ln">   32 | </span>    const invoiceFound = this.invoiceRepository.findOne({
+<span class="ln">   33 | </span>      where: {
+<span class="ln">   34 | </span>        id,
+<span class="ln">   35 | </span>      },
+<span class="ln">   36 | </span>      relations: [&#39;invoiceitems&#39;],
+<span class="ln">   37 | </span>    });
+<span class="ln">   38 | </span>    if (!invoiceFound) {
+<span class="ln">   39 | </span>      return new HttpException(&#39;factura no encontrado&#39;, HttpStatus.NOT_FOUND);
+<span class="ln">   40 | </span>    }
+<span class="ln">   41 | </span>    return invoiceFound;
+<span class="ln">   42 | </span>  }
+<span class="ln">   43 | </span>
+<span class="ln">   44 | </span>  async getInvoiceNo(no_invoice: number) {
+<span class="ln">   45 | </span>    const invoiceFound = this.invoiceRepository.findOne({
+<span class="ln">   46 | </span>      where: {
+<span class="ln">   47 | </span>        no_invoice,
+<span class="ln">   48 | </span>      },
+<span class="ln">   49 | </span>      relations: [&#39;invoiceitems&#39;],
+<span class="ln">   50 | </span>    });
+<span class="ln">   51 | </span>    if (!invoiceFound) {
+<span class="ln">   52 | </span>      return new HttpException(&#39;factura no encontrado&#39;, HttpStatus.NOT_FOUND);
+<span class="ln">   53 | </span>    }
+<span class="ln">   54 | </span>    return invoiceFound;
+<span class="ln">   55 | </span>  }
+<span class="ln">   56 | </span>
+<span class="ln">   57 | </span>  async getInvoiceByNumber(number: number[]) {
+<span class="ln">   58 | </span>    const type = &#39;Factura&#39;;
+<span class="ln">   59 | </span>    return this.invoiceRepository
+<span class="ln">   60 | </span>      .createQueryBuilder(&#39;invoice&#39;)
+<span class="ln">   61 | </span>      .leftJoinAndSelect(&#39;invoice.invoiceitems&#39;, &#39;items&#39;)
+<span class="ln">   62 | </span>      .where(&#39;no_invoice IN (:...number)&#39;, { number })
+<span class="ln">   63 | </span>      .andWhere(&#39;document_type= :type&#39;, { type })
+<span class="ln">   64 | </span>      .orderBy(&#39;invoice.id&#39;, &#39;ASC&#39;)
+<span class="ln">   65 | </span>      .getMany();
+<span class="ln">   66 | </span>  }
+<span class="ln">   67 | </span>
+<span class="ln">   68 | </span>  async getNCByNumber(number: number[]) {
+<span class="ln">   69 | </span>    const type = &#39;NC&#39;;
+<span class="ln">   70 | </span>    return this.invoiceRepository
+<span class="ln">   71 | </span>      .createQueryBuilder(&#39;invoice&#39;)
+<span class="ln">   72 | </span>      .leftJoinAndSelect(&#39;invoice.invoiceitems&#39;, &#39;items&#39;)
+<span class="ln">   73 | </span>      .where(&#39;no_invoice IN (:...number)&#39;, { number })
+<span class="ln">   74 | </span>      .andWhere(&#39;document_type= :type&#39;, { type })
+<span class="ln">   75 | </span>      .orderBy(&#39;invoice.id&#39;, &#39;ASC&#39;)
+<span class="ln">   76 | </span>      .getMany();
+<span class="ln">   77 | </span>  }
+<span class="ln">   78 | </span>
+<span class="ln">   79 | </span>  async getInvoicesDate(admission: Date) {
+<span class="ln">   80 | </span>    return this.invoiceRepository
+<span class="ln">   81 | </span>      .createQueryBuilder(&#39;invoice&#39;)
+<span class="ln">   82 | </span>      .leftJoinAndSelect(&#39;invoice.invoiceitems&#39;, &#39;items&#39;)
+<span class="ln">   83 | </span>      .where(&#39;DATE(date)= :admission&#39;, { admission })
+<span class="ln">   84 | </span>      .orderBy(&#39;invoice.id&#39;, &#39;ASC&#39;)
+<span class="ln">   85 | </span>      .getMany();
+<span class="ln">   86 | </span>  }
+<span class="ln">   87 | </span>}
+<span class="ln">   88 | </span>
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\invoice_items\invoiceitems.service.ts</h2>
+<div class="meta">Lineas: 30 | Bytes: 1211 | SHA256: C375BE48F9E05B98BDB939B51377102CB33EF77A899131BB08C08435695C3C8F</div>
+</div><pre>
+<span class="ln">    1 | </span>import { HttpException, HttpStatus, Injectable } from &#39;@nestjs/common&#39;;
+<span class="ln">    2 | </span>import { InjectRepository } from &#39;@nestjs/typeorm&#39;;
+<span class="ln">    3 | </span>import { Invoiceitems } from &#39;./invoiceitems.entity&#39;;
+<span class="ln">    4 | </span>import { Repository } from &#39;typeorm&#39;;
+<span class="ln">    5 | </span>import { CreateInvoiceitemsDto } from &#39;./dto/create-invoiceitems.dto&#39;;
+<span class="ln">    6 | </span>import { UpdateInvoiceitemsDto } from &#39;./dto/update-invoiceitems.dto&#39;;
+<span class="ln">    7 | </span>
+<span class="ln">    8 | </span>@Injectable()
+<span class="ln">    9 | </span>export class InvoiceitemsService {
+<span class="ln">   10 | </span>    constructor(
+<span class="ln">   11 | </span>        @InjectRepository(Invoiceitems) private invoiceitemsRepository: Repository&lt;Invoiceitems&gt;
+<span class="ln">   12 | </span>    ) {}
+<span class="ln">   13 | </span>
+<span class="ln">   14 | </span>    async createInvoiceitems(invoiceitems: CreateInvoiceitemsDto): Promise&lt;any&gt; {
+<span class="ln">   15 | </span>        return this.invoiceitemsRepository.save(invoiceitems) 
+<span class="ln">   16 | </span>    }
+<span class="ln">   17 | </span>
+<span class="ln">   18 | </span>    async updateInvoiceitems(id: number, invoiceitems: UpdateInvoiceitemsDto) {
+<span class="ln">   19 | </span>        const invoiceitemsFound = await this.invoiceitemsRepository.findOne({
+<span class="ln">   20 | </span>            where: {
+<span class="ln">   21 | </span>                id
+<span class="ln">   22 | </span>            }
+<span class="ln">   23 | </span>        })
+<span class="ln">   24 | </span>        if (!invoiceitemsFound) {
+<span class="ln">   25 | </span>            return new HttpException(&#39;factura no encontrado&#39;, HttpStatus.NOT_FOUND)
+<span class="ln">   26 | </span>        }
+<span class="ln">   27 | </span>        const updateInvoice = Object.assign(invoiceitemsFound, invoiceitems)
+<span class="ln">   28 | </span>        return this.invoiceitemsRepository.save(updateInvoice)
+<span class="ln">   29 | </span>    }
+<span class="ln">   30 | </span>}
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\laboratory\laboratory.service.ts</h2>
+<div class="meta">Lineas: 53 | Bytes: 1446 | SHA256: CA4A2005E079B98547EAD5BDF69A3C228B6F3949528B65EA8DE3E5D3AED8BABA</div>
+</div><pre>
+<span class="ln">    1 | </span>import { HttpException, HttpStatus, Injectable } from &#39;@nestjs/common&#39;;
+<span class="ln">    2 | </span>import { InjectRepository } from &#39;@nestjs/typeorm&#39;;
+<span class="ln">    3 | </span>import { Laboratory } from &#39;./laboratory.entity&#39;;
+<span class="ln">    4 | </span>import { Repository } from &#39;typeorm&#39;;
+<span class="ln">    5 | </span>import { UpdateLaboratoryDto } from &#39;./dto/update-laboratorio.dto&#39;;
+<span class="ln">    6 | </span>
+<span class="ln">    7 | </span>@Injectable()
+<span class="ln">    8 | </span>export class LaboratoryService {
+<span class="ln">    9 | </span>  constructor(
+<span class="ln">   10 | </span>    @InjectRepository(Laboratory)
+<span class="ln">   11 | </span>    private laboratoryRepository: Repository&lt;Laboratory&gt;,
+<span class="ln">   12 | </span>  ) {}
+<span class="ln">   13 | </span>
+<span class="ln">   14 | </span>  async getLaboratory(id: number) {
+<span class="ln">   15 | </span>    const laboratoryFound = this.laboratoryRepository.findOne({
+<span class="ln">   16 | </span>      where: {
+<span class="ln">   17 | </span>        id,
+<span class="ln">   18 | </span>      },
+<span class="ln">   19 | </span>    });
+<span class="ln">   20 | </span>    if (!laboratoryFound) {
+<span class="ln">   21 | </span>      return new HttpException(
+<span class="ln">   22 | </span>        &#39;Laboratorio no encontrado&#39;,
+<span class="ln">   23 | </span>        HttpStatus.NOT_FOUND,
+<span class="ln">   24 | </span>      );
+<span class="ln">   25 | </span>    }
+<span class="ln">   26 | </span>    return laboratoryFound;
+<span class="ln">   27 | </span>  }
+<span class="ln">   28 | </span>
+<span class="ln">   29 | </span>  async getLaboratorySetting() {
+<span class="ln">   30 | </span>    const query = this.laboratoryRepository
+<span class="ln">   31 | </span>      .createQueryBuilder(&#39;entity&#39;)
+<span class="ln">   32 | </span>      .limit(1);
+<span class="ln">   33 | </span>
+<span class="ln">   34 | </span>    return query.getMany();
+<span class="ln">   35 | </span>  }
+<span class="ln">   36 | </span>
+<span class="ln">   37 | </span>  async updateLaboratory(id: number, laboratory: UpdateLaboratoryDto) {
+<span class="ln">   38 | </span>    const laboratoryFound = await this.laboratoryRepository.findOne({
+<span class="ln">   39 | </span>      where: {
+<span class="ln">   40 | </span>        id,
+<span class="ln">   41 | </span>      },
+<span class="ln">   42 | </span>    });
+<span class="ln">   43 | </span>    if (!laboratoryFound) {
+<span class="ln">   44 | </span>      return new HttpException(
+<span class="ln">   45 | </span>        &#39;Laboeatorio no encontrado&#39;,
+<span class="ln">   46 | </span>        HttpStatus.NOT_FOUND,
+<span class="ln">   47 | </span>      );
+<span class="ln">   48 | </span>    }
+<span class="ln">   49 | </span>    const updateLaboratory = Object.assign(laboratoryFound, laboratory);
+<span class="ln">   50 | </span>    return this.laboratoryRepository.save(updateLaboratory);
+<span class="ln">   51 | </span>  }
+<span class="ln">   52 | </span>}
+<span class="ln">   53 | </span>
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\license\license.service.ts</h2>
+<div class="meta">Lineas: 25 | Bytes: 794 | SHA256: F88E226CA3F62D412F2E4A3DD859DFDAEBDB9BDFDB90ADA880A7A70C633FCA4B</div>
+</div><pre>
+<span class="ln">    1 | </span>import { Injectable } from &#39;@nestjs/common&#39;;
+<span class="ln">    2 | </span>import * as bcrypt from &#39;bcrypt&#39;;
+<span class="ln">    3 | </span>
+<span class="ln">    4 | </span>@Injectable()
+<span class="ln">    5 | </span>export class LicenseService {
+<span class="ln">    6 | </span>  
+<span class="ln">    7 | </span>  async generateLicenseKey(rif: string, businessName: string): Promise&lt;string&gt; {
+<span class="ln">    8 | </span>    const data = `${rif.replace(/-/g, &#39;&#39;)}-${businessName.replace(/\s+/g, &#39;&#39;)}`;
+<span class="ln">    9 | </span>    
+<span class="ln">   10 | </span>    // Genera un salt
+<span class="ln">   11 | </span>    const saltRounds = 10;
+<span class="ln">   12 | </span>    const salt = await bcrypt.genSalt(saltRounds);
+<span class="ln">   13 | </span>
+<span class="ln">   14 | </span>    // Hashea los datos con bcrypt
+<span class="ln">   15 | </span>    const hash = await bcrypt.hash(data, salt);
+<span class="ln">   16 | </span>
+<span class="ln">   17 | </span>    return hash;
+<span class="ln">   18 | </span>  }
+<span class="ln">   19 | </span>
+<span class="ln">   20 | </span>  // M&#233;todo para validar una clave de licencia (si deseas hacerlo)
+<span class="ln">   21 | </span>  async validateLicenseKey(rif: string, businessName: string, licenseKey: string): Promise&lt;boolean&gt; {
+<span class="ln">   22 | </span>    const data = `${rif}-${businessName}`;
+<span class="ln">   23 | </span>    return await bcrypt.compare(data, licenseKey);
+<span class="ln">   24 | </span>  }
+<span class="ln">   25 | </span>}
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\list_germs\list_germs.service.ts</h2>
+<div class="meta">Lineas: 59 | Bytes: 1637 | SHA256: 94402FE8B42EE9D02DA250E65D1864A0432AE6F03047C931A9DC5BE5716C2D5F</div>
+</div><pre>
+<span class="ln">    1 | </span>import { HttpException, HttpStatus, Injectable } from &#39;@nestjs/common&#39;;
+<span class="ln">    2 | </span>import { InjectRepository } from &#39;@nestjs/typeorm&#39;;
+<span class="ln">    3 | </span>import { listGerms } from &#39;./list_germs.entity&#39;;
+<span class="ln">    4 | </span>import { Repository } from &#39;typeorm&#39;;
+<span class="ln">    5 | </span>import { CreateList_germsDto } from &#39;./dto/create-list_germs.dto&#39;;
+<span class="ln">    6 | </span>import { UpdateList_germsDto } from &#39;./dto/update-list_germs.dto&#39;;
+<span class="ln">    7 | </span>
+<span class="ln">    8 | </span>@Injectable()
+<span class="ln">    9 | </span>export class ListGermsService {
+<span class="ln">   10 | </span>  constructor(
+<span class="ln">   11 | </span>    @InjectRepository(listGerms)
+<span class="ln">   12 | </span>    private listGermsRepository: Repository&lt;listGerms&gt;,
+<span class="ln">   13 | </span>  ) {}
+<span class="ln">   14 | </span>
+<span class="ln">   15 | </span>  async geListGerms() {
+<span class="ln">   16 | </span>    return this.listGermsRepository.find();
+<span class="ln">   17 | </span>  }
+<span class="ln">   18 | </span>
+<span class="ln">   19 | </span>  async getListGermsOrder() {
+<span class="ln">   20 | </span>    const listGermsFound = this.listGermsRepository.find({
+<span class="ln">   21 | </span>      order: {
+<span class="ln">   22 | </span>        germen: &#39;ASC&#39;,
+<span class="ln">   23 | </span>      },
+<span class="ln">   24 | </span>    });
+<span class="ln">   25 | </span>    return listGermsFound;
+<span class="ln">   26 | </span>  }
+<span class="ln">   27 | </span>
+<span class="ln">   28 | </span>  async getGerm(id: number) {
+<span class="ln">   29 | </span>    const germFound = this.listGermsRepository.findOne({
+<span class="ln">   30 | </span>      where: {
+<span class="ln">   31 | </span>        id,
+<span class="ln">   32 | </span>      },
+<span class="ln">   33 | </span>    });
+<span class="ln">   34 | </span>    if (!germFound) {
+<span class="ln">   35 | </span>      return new HttpException(&#39;Germen no encontrado&#39;, HttpStatus.NOT_FOUND);
+<span class="ln">   36 | </span>    }
+<span class="ln">   37 | </span>    return germFound;
+<span class="ln">   38 | </span>  }
+<span class="ln">   39 | </span>
+<span class="ln">   40 | </span>  async createGerm(listGerm: CreateList_germsDto) {
+<span class="ln">   41 | </span>    const newExam = this.listGermsRepository.create(listGerm);
+<span class="ln">   42 | </span>    return this.listGermsRepository.save(newExam);
+<span class="ln">   43 | </span>  }
+<span class="ln">   44 | </span>  
+<span class="ln">   45 | </span>
+<span class="ln">   46 | </span>  async updateGerm(id: number, germ: UpdateList_germsDto) {
+<span class="ln">   47 | </span>    const germFound = await this.listGermsRepository.findOne({
+<span class="ln">   48 | </span>      where: {
+<span class="ln">   49 | </span>        id,
+<span class="ln">   50 | </span>      },
+<span class="ln">   51 | </span>    });
+<span class="ln">   52 | </span>    if (!germFound) {
+<span class="ln">   53 | </span>      return new HttpException(&#39;Germen no encontrado&#39;, HttpStatus.NOT_FOUND);
+<span class="ln">   54 | </span>    }
+<span class="ln">   55 | </span>    const updateGerm = Object.assign(germFound, germ);
+<span class="ln">   56 | </span>    return this.listGermsRepository.save(updateGerm);
+<span class="ln">   57 | </span>  }
+<span class="ln">   58 | </span>}
+<span class="ln">   59 | </span>
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\parasiticforms\parasiticforms.service.ts</h2>
+<div class="meta">Lineas: 62 | Bytes: 2272 | SHA256: 9C2A024A6C51336865BDB0020E60DB00B6B962573325B479B743A3E38C12974B</div>
+</div><pre>
+<span class="ln">    1 | </span>import { HttpException, HttpStatus, Injectable } from &#39;@nestjs/common&#39;;
+<span class="ln">    2 | </span>import { InjectRepository } from &#39;@nestjs/typeorm&#39;;
+<span class="ln">    3 | </span>import { Parasiticforms } from &#39;./parasiticforms.entity&#39;;
+<span class="ln">    4 | </span>import { Repository } from &#39;typeorm&#39;;
+<span class="ln">    5 | </span>import { CreateParasiticformsDto } from &#39;./dto/create-parasiticforms.dto&#39;;
+<span class="ln">    6 | </span>import { UpdateparasiticformsDto } from &#39;./dto/update-parasiticforms.dto&#39;;
+<span class="ln">    7 | </span>
+<span class="ln">    8 | </span>@Injectable()
+<span class="ln">    9 | </span>export class ParasiticformsService {
+<span class="ln">   10 | </span>    constructor(
+<span class="ln">   11 | </span>        @InjectRepository(Parasiticforms) private parasiticformsRepository: Repository&lt;Parasiticforms&gt;
+<span class="ln">   12 | </span>    ) {}
+<span class="ln">   13 | </span>
+<span class="ln">   14 | </span>    async getParasiticformsLists() {
+<span class="ln">   15 | </span>        return this.parasiticformsRepository.find()
+<span class="ln">   16 | </span>    }
+<span class="ln">   17 | </span>
+<span class="ln">   18 | </span>    async getParasiticformsListsOrder() {
+<span class="ln">   19 | </span>        const parasiticformsFound = this.parasiticformsRepository.find({
+<span class="ln">   20 | </span>            where: {
+<span class="ln">   21 | </span>                annulled: false
+<span class="ln">   22 | </span>            },
+<span class="ln">   23 | </span>            order: {
+<span class="ln">   24 | </span>                description: &#39;ASC&#39;
+<span class="ln">   25 | </span>            }
+<span class="ln">   26 | </span>        })
+<span class="ln">   27 | </span>        if (!parasiticformsFound) {
+<span class="ln">   28 | </span>            return new HttpException(&#39;parasito no encontrado&#39;, HttpStatus.NOT_FOUND)
+<span class="ln">   29 | </span>        }
+<span class="ln">   30 | </span>        return parasiticformsFound
+<span class="ln">   31 | </span>    }
+<span class="ln">   32 | </span>    
+<span class="ln">   33 | </span>    async getParasiticforms(id: number) {
+<span class="ln">   34 | </span>        const parasiticformsFound = this.parasiticformsRepository.findOne({
+<span class="ln">   35 | </span>            where: {
+<span class="ln">   36 | </span>                id
+<span class="ln">   37 | </span>            }
+<span class="ln">   38 | </span>        })
+<span class="ln">   39 | </span>        if (!parasiticformsFound) {
+<span class="ln">   40 | </span>            return new HttpException(&#39;parasito no encontrado&#39;, HttpStatus.NOT_FOUND)
+<span class="ln">   41 | </span>        }
+<span class="ln">   42 | </span>        return parasiticformsFound
+<span class="ln">   43 | </span>    }
+<span class="ln">   44 | </span>    
+<span class="ln">   45 | </span>    async createParasiticforms(parasiticforms: CreateParasiticformsDto) {
+<span class="ln">   46 | </span>        const newParasiticforms = this.parasiticformsRepository.create(parasiticforms)
+<span class="ln">   47 | </span>        return this.parasiticformsRepository.save(newParasiticforms)
+<span class="ln">   48 | </span>    }
+<span class="ln">   49 | </span>    
+<span class="ln">   50 | </span>    async updateParasiticforms(id: number, parasitic: UpdateparasiticformsDto) {
+<span class="ln">   51 | </span>        const parasiticformsFound = await this.parasiticformsRepository.findOne({
+<span class="ln">   52 | </span>            where: {
+<span class="ln">   53 | </span>                id
+<span class="ln">   54 | </span>            }
+<span class="ln">   55 | </span>        })
+<span class="ln">   56 | </span>        if (!parasiticformsFound) {
+<span class="ln">   57 | </span>            return new HttpException(&#39;parasito no encontrado&#39;, HttpStatus.NOT_FOUND)
+<span class="ln">   58 | </span>        }
+<span class="ln">   59 | </span>        const updateParasiticforms = Object.assign(parasiticformsFound, parasitic)
+<span class="ln">   60 | </span>        return this.parasiticformsRepository.save(updateParasiticforms)
+<span class="ln">   61 | </span>    }
+<span class="ln">   62 | </span>}
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\patients\patients.service.ts</h2>
+<div class="meta">Lineas: 425 | Bytes: 14114 | SHA256: FD9C8AD81444A8FAECF9555096BE1CCA280C6F4738FDF04D54FF6037414BFE46</div>
+</div><pre>
+<span class="ln">    1 | </span>import { HttpException, HttpStatus, Injectable } from &#39;@nestjs/common&#39;;
+<span class="ln">    2 | </span>import { InjectRepository } from &#39;@nestjs/typeorm&#39;;
+<span class="ln">    3 | </span>import { Patient } from &#39;./patients.entity&#39;;
+<span class="ln">    4 | </span>import { Repository } from &#39;typeorm&#39;;
+<span class="ln">    5 | </span>import { UpdatePatientsDto } from &#39;./dto/update-patients.dto&#39;;
+<span class="ln">    6 | </span>import { CreatePatientsDto } from &#39;./dto/create-patients.dto&#39;;
+<span class="ln">    7 | </span>import * as nodemailer from &#39;nodemailer&#39;;
+<span class="ln">    8 | </span>import { LaboratoryService } from &#39;src/laboratory/laboratory.service&#39;;
+<span class="ln">    9 | </span>import * as puppeteer from &#39;puppeteer&#39;;
+<span class="ln">   10 | </span>
+<span class="ln">   11 | </span>@Injectable()
+<span class="ln">   12 | </span>export class PatientsService {
+<span class="ln">   13 | </span>  constructor(
+<span class="ln">   14 | </span>    @InjectRepository(Patient) private patientRepository: Repository&lt;Patient&gt;,
+<span class="ln">   15 | </span>    private laboratoryService: LaboratoryService,
+<span class="ln">   16 | </span>  ) {}
+<span class="ln">   17 | </span>
+<span class="ln">   18 | </span>  async createPatient(patients: CreatePatientsDto): Promise&lt;any&gt; {
+<span class="ln">   19 | </span>    return this.patientRepository.save(patients);
+<span class="ln">   20 | </span>  }
+<span class="ln">   21 | </span>
+<span class="ln">   22 | </span>  async getPatientLists() {
+<span class="ln">   23 | </span>    return this.patientRepository.find();
+<span class="ln">   24 | </span>  }
+<span class="ln">   25 | </span>
+<span class="ln">   26 | </span>  async getPatient(id: number) {
+<span class="ln">   27 | </span>    const patientFound = await this.patientRepository.findOne({
+<span class="ln">   28 | </span>      where: {
+<span class="ln">   29 | </span>        id,
+<span class="ln">   30 | </span>      },
+<span class="ln">   31 | </span>      relations: [&#39;exams&#39;],
+<span class="ln">   32 | </span>    });
+<span class="ln">   33 | </span>    if (!patientFound) {
+<span class="ln">   34 | </span>      return new HttpException(&#39;paciente no encontrado&#39;, HttpStatus.NOT_FOUND);
+<span class="ln">   35 | </span>    }
+<span class="ln">   36 | </span>    return patientFound;
+<span class="ln">   37 | </span>  }
+<span class="ln">   38 | </span>
+<span class="ln">   39 | </span>  async getPatientsDate(admission: Date) {
+<span class="ln">   40 | </span>    return this.patientRepository.find({
+<span class="ln">   41 | </span>      where: {
+<span class="ln">   42 | </span>        admission_date: admission,
+<span class="ln">   43 | </span>      },
+<span class="ln">   44 | </span>      relations: [&#39;exams&#39;],
+<span class="ln">   45 | </span>    });
+<span class="ln">   46 | </span>  }
+<span class="ln">   47 | </span>
+<span class="ln">   48 | </span>  async getPatientsDateOrder(admission: Date) {
+<span class="ln">   49 | </span>    return this.patientRepository
+<span class="ln">   50 | </span>      .createQueryBuilder(&#39;patient&#39;)
+<span class="ln">   51 | </span>      .leftJoinAndSelect(&#39;patient.exams&#39;, &#39;exam&#39;) // Selecciona autom&#225;ticamente todos los campos de &#39;exam&#39;
+<span class="ln">   52 | </span>      .leftJoinAndSelect(&#39;exam.examGroup&#39;, &#39;exam_group&#39;) // Selecciona todos los campos de &#39;examGroup&#39;
+<span class="ln">   53 | </span>      .where(&#39;patient.admission_date = :admission&#39;, { admission })
+<span class="ln">   54 | </span>      .orderBy(&#39;patient.id&#39;, &#39;ASC&#39;)
+<span class="ln">   55 | </span>      .addOrderBy(&#39;exam_group.position&#39;, &#39;ASC&#39;) // Ordenar por exam_group.position
+<span class="ln">   56 | </span>      .addOrderBy(&#39;exam.position&#39;, &#39;ASC&#39;)    // Luego ordenar por exam.position
+<span class="ln">   57 | </span>      .getMany();
+<span class="ln">   58 | </span>  }
+<span class="ln">   59 | </span>
+<span class="ln">   60 | </span>  async getPatientOrder(id: number) {
+<span class="ln">   61 | </span>    return this.patientRepository
+<span class="ln">   62 | </span>      .createQueryBuilder(&#39;patient&#39;)
+<span class="ln">   63 | </span>      .leftJoinAndSelect(&#39;patient.exams&#39;, &#39;exam&#39;)
+<span class="ln">   64 | </span>      .leftJoinAndSelect(&#39;exam.examGroup&#39;, &#39;exam_group&#39;) 
+<span class="ln">   65 | </span>      .where(&#39;patient.id = :id&#39;, { id })
+<span class="ln">   66 | </span>      .orderBy(&#39;exam_group.position&#39;, &#39;ASC&#39;) 
+<span class="ln">   67 | </span>      .addOrderBy(&#39;exam.position&#39;, &#39;ASC&#39;)
+<span class="ln">   68 | </span>      .getOne();
+<span class="ln">   69 | </span>  }
+<span class="ln">   70 | </span>
+<span class="ln">   71 | </span>  async getPatientIdValidatedResult(id: number) {
+<span class="ln">   72 | </span>    return this.patientRepository
+<span class="ln">   73 | </span>      .createQueryBuilder(&#39;patient&#39;)
+<span class="ln">   74 | </span>      .leftJoinAndSelect(&#39;patient.exams&#39;, &#39;exam&#39;)
+<span class="ln">   75 | </span>      .leftJoinAndSelect(&#39;exam.examGroup&#39;, &#39;exam_group&#39;) 
+<span class="ln">   76 | </span>      .where(&#39;patient.id = :id&#39;, { id })
+<span class="ln">   77 | </span>      .andWhere(&#39;exam.approved_id &gt; 0&#39;)
+<span class="ln">   78 | </span>      .orderBy(&#39;exam.approved_id&#39;, &#39;ASC&#39;)
+<span class="ln">   79 | </span>      .addOrderBy(&#39;exam_group.position&#39;, &#39;ASC&#39;) 
+<span class="ln">   80 | </span>      .addOrderBy(&#39;exam.position&#39;, &#39;ASC&#39;)
+<span class="ln">   81 | </span>      .getOne();
+<span class="ln">   82 | </span>  }
+<span class="ln">   83 | </span>
+<span class="ln">   84 | </span>  async getPatientsWithInvoice(admission: Date) {
+<span class="ln">   85 | </span>    return this.patientRepository
+<span class="ln">   86 | </span>      .createQueryBuilder(&#39;patient&#39;)
+<span class="ln">   87 | </span>      .where(&#39;admission_date= :admission&#39;, { admission })
+<span class="ln">   88 | </span>      .andWhere(&#39;LENGTH(TRIM(patient.invoice)) != 0&#39;)
+<span class="ln">   89 | </span>      .orderBy(&#39;patient.id&#39;, &#39;ASC&#39;)
+<span class="ln">   90 | </span>      .getMany();
+<span class="ln">   91 | </span>  }
+<span class="ln">   92 | </span>
+<span class="ln">   93 | </span>  async getPatientsSpecial(
+<span class="ln">   94 | </span>    firstDate: string,
+<span class="ln">   95 | </span>    lastDate: string,
+<span class="ln">   96 | </span>    examIds: number[]
+<span class="ln">   97 | </span>  ) {
+<span class="ln">   98 | </span>    return this.patientRepository
+<span class="ln">   99 | </span>      .createQueryBuilder(&#39;patient&#39;)
+<span class="ln">  100 | </span>      .leftJoinAndSelect(&#39;patient.exams&#39;, &#39;exam&#39;)
+<span class="ln">  101 | </span>      .where(&#39;patient.admission_date &gt;= :firstDate&#39;, { firstDate })
+<span class="ln">  102 | </span>      .andWhere(&#39;patient.admission_date &lt; DATE_ADD(:lastDate, INTERVAL 1 DAY)&#39;, { lastDate })
+<span class="ln">  103 | </span>      .andWhere(&#39;exam.examlistsId IN (:...examIds)&#39;, { examIds })
+<span class="ln">  104 | </span>      .getMany();
+<span class="ln">  105 | </span>  }
+<span class="ln">  106 | </span>
+<span class="ln">  107 | </span>  async getPatientsWithQueries(
+<span class="ln">  108 | </span>    firstDate: string,
+<span class="ln">  109 | </span>    lastDate: string,
+<span class="ln">  110 | </span>    namePatient: string,
+<span class="ln">  111 | </span>    userSelection: number,
+<span class="ln">  112 | </span>    clientSelection: number,
+<span class="ln">  113 | </span>    clientSelectionStatus: number,
+<span class="ln">  114 | </span>    ciPatient: string,
+<span class="ln">  115 | </span>    invoice: boolean,
+<span class="ln">  116 | </span>  ) {
+<span class="ln">  117 | </span>    let query = this.patientRepository
+<span class="ln">  118 | </span>      .createQueryBuilder(&#39;patient&#39;)
+<span class="ln">  119 | </span>      .where(&#39;patient.admission_date BETWEEN :firstDate AND :lastDate&#39;, { firstDate, lastDate })
+<span class="ln">  120 | </span>      .orderBy(&#39;patient.id&#39;, &#39;ASC&#39;)
+<span class="ln">  121 | </span>    if (namePatient) {
+<span class="ln">  122 | </span>      query = query.andWhere(&#39;patient.name LIKE :namePatient&#39;, { namePatient: `%${namePatient}%` });
+<span class="ln">  123 | </span>    }
+<span class="ln">  124 | </span>    if (ciPatient) {
+<span class="ln">  125 | </span>      query = query.andWhere(&#39;patient.document_number LIKE :ciPatient&#39;, { ciPatient: `%${ciPatient}%` });
+<span class="ln">  126 | </span>    }
+<span class="ln">  127 | </span>    if (userSelection !== 0) {
+<span class="ln">  128 | </span>      query = query.andWhere(&#39;patient.user_id= :userSelection&#39;, { userSelection});
+<span class="ln">  129 | </span>    }
+<span class="ln">  130 | </span>    if (clientSelection &gt; 1) {
+<span class="ln">  131 | </span>      query = query.andWhere(&#39;patient.client_id= :clientSelection&#39;, { clientSelection});
+<span class="ln">  132 | </span>    }
+<span class="ln">  133 | </span>    if (clientSelectionStatus !== -1) {
+<span class="ln">  134 | </span>      if (clientSelectionStatus !== 0) {
+<span class="ln">  135 | </span>        query = query.andWhere(&#39;patient.total_canceled &gt; 0&#39;);
+<span class="ln">  136 | </span>      } else {
+<span class="ln">  137 | </span>        query = query.andWhere(&#39;patient.total_canceled = 0&#39;);
+<span class="ln">  138 | </span>      }
+<span class="ln">  139 | </span>    }    
+<span class="ln">  140 | </span>    if (invoice) {
+<span class="ln">  141 | </span>      query = query.andWhere(&#39;patient.invoice IS NULL&#39;);
+<span class="ln">  142 | </span>    }
+<span class="ln">  143 | </span>    const patients = await query.getMany();
+<span class="ln">  144 | </span>    return patients;
+<span class="ln">  145 | </span>  }
+<span class="ln">  146 | </span>
+<span class="ln">  147 | </span>  async getPatientsWithQueriesTotal(
+<span class="ln">  148 | </span>    firstDate: string,
+<span class="ln">  149 | </span>    lastDate: string,
+<span class="ln">  150 | </span>    namePatient: string,
+<span class="ln">  151 | </span>    userSelection: number,
+<span class="ln">  152 | </span>    clientSelection: number,
+<span class="ln">  153 | </span>    clientSelectionStatus: number,
+<span class="ln">  154 | </span>    ciPatient: string,
+<span class="ln">  155 | </span>    invoice: boolean,
+<span class="ln">  156 | </span>  ) {
+<span class="ln">  157 | </span>    let query = this.patientRepository
+<span class="ln">  158 | </span>      .createQueryBuilder(&#39;patient&#39;)
+<span class="ln">  159 | </span>      .select(&#39;COALESCE(SUM(patient.total), 0)&#39;, &#39;total&#39;)
+<span class="ln">  160 | </span>      .addSelect(&#39;COALESCE(SUM(patient.total_dollars), 0)&#39;, &#39;totalDollares&#39;)
+<span class="ln">  161 | </span>      .where(&#39;patient.admission_date BETWEEN :firstDate AND :lastDate&#39;, { firstDate, lastDate })
+<span class="ln">  162 | </span>      .orderBy(&#39;patient.id&#39;, &#39;ASC&#39;)
+<span class="ln">  163 | </span>    if (namePatient) {
+<span class="ln">  164 | </span>      query = query.andWhere(&#39;patient.name LIKE :namePatient&#39;, { namePatient: `%${namePatient}%` });
+<span class="ln">  165 | </span>    }
+<span class="ln">  166 | </span>    if (ciPatient) {
+<span class="ln">  167 | </span>      query = query.andWhere(&#39;patient.document_number LIKE :ciPatient&#39;, { ciPatient: `%${ciPatient}%` });
+<span class="ln">  168 | </span>    }
+<span class="ln">  169 | </span>    if (userSelection !== 0) {
+<span class="ln">  170 | </span>      query = query.andWhere(&#39;patient.user_id= :userSelection&#39;, { userSelection});
+<span class="ln">  171 | </span>    }
+<span class="ln">  172 | </span>    if (clientSelection &gt; 1) {
+<span class="ln">  173 | </span>      query = query.andWhere(&#39;patient.client_id= :clientSelection&#39;, { clientSelection});
+<span class="ln">  174 | </span>    }
+<span class="ln">  175 | </span>    if (clientSelectionStatus !== -1) {
+<span class="ln">  176 | </span>      if (clientSelectionStatus !== 0) {
+<span class="ln">  177 | </span>        query = query.andWhere(&#39;patient.total_canceled &gt; 0&#39;);
+<span class="ln">  178 | </span>      } else {
+<span class="ln">  179 | </span>        query = query.andWhere(&#39;patient.total_canceled = 0&#39;);
+<span class="ln">  180 | </span>      }
+<span class="ln">  181 | </span>    }
+<span class="ln">  182 | </span>    if (invoice) {
+<span class="ln">  183 | </span>      query = query.andWhere(&#39;patient.invoice IS NULL&#39;);
+<span class="ln">  184 | </span>    }
+<span class="ln">  185 | </span>    const patients = await query.getRawOne();
+<span class="ln">  186 | </span>    return patients;
+<span class="ln">  187 | </span>  }
+<span class="ln">  188 | </span>
+<span class="ln">  189 | </span>  async getPatientsDateResult(admission: Date) {
+<span class="ln">  190 | </span>    return this.patientRepository
+<span class="ln">  191 | </span>      .createQueryBuilder(&#39;patient&#39;)
+<span class="ln">  192 | </span>      .leftJoinAndSelect(&#39;patient.exams&#39;, &#39;exams&#39;)
+<span class="ln">  193 | </span>      .where(&#39;admission_date= :admission&#39;, { admission })
+<span class="ln">  194 | </span>      .andWhere(&#39;exams.processed_id &gt; 0&#39;)
+<span class="ln">  195 | </span>      .orderBy(&#39;patient.id&#39;, &#39;ASC&#39;)
+<span class="ln">  196 | </span>      .addOrderBy(&#39;exams.position&#39;, &#39;ASC&#39;)
+<span class="ln">  197 | </span>      .getMany();
+<span class="ln">  198 | </span>  }
+<span class="ln">  199 | </span>
+<span class="ln">  200 | </span>  async getPatientsIdResult(id: number) {
+<span class="ln">  201 | </span>    return this.patientRepository
+<span class="ln">  202 | </span>      .createQueryBuilder(&#39;patient&#39;)
+<span class="ln">  203 | </span>      .leftJoinAndSelect(&#39;patient.exams&#39;, &#39;exams&#39;)
+<span class="ln">  204 | </span>      .where(&#39;patient.id= :id&#39;, { id })
+<span class="ln">  205 | </span>      .andWhere(&#39;exams.processed_id &gt; 0&#39;)
+<span class="ln">  206 | </span>      .orderBy(&#39;exams.approved_id&#39;, &#39;ASC&#39;)
+<span class="ln">  207 | </span>      .addOrderBy(&#39;exams.position&#39;, &#39;ASC&#39;)
+<span class="ln">  208 | </span>      .getMany();
+<span class="ln">  209 | </span>  }
+<span class="ln">  210 | </span>
+<span class="ln">  211 | </span>  async getPatientsDateGroupResult(admission: Date) {
+<span class="ln">  212 | </span>    return this.patientRepository
+<span class="ln">  213 | </span>      .createQueryBuilder(&#39;patient&#39;)
+<span class="ln">  214 | </span>      .leftJoinAndSelect(&#39;patient.exams&#39;, &#39;exams&#39;)
+<span class="ln">  215 | </span>      .where(&#39;admission_date= :admission&#39;, { admission })
+<span class="ln">  216 | </span>      .andWhere(&#39;patient.canceled &gt; 0&#39;)
+<span class="ln">  217 | </span>      .andWhere(&#39;exams.processed_id &gt; 0&#39;)
+<span class="ln">  218 | </span>      .orderBy(&#39;patient.id&#39;, &#39;ASC&#39;)
+<span class="ln">  219 | </span>      .addOrderBy(&#39;exams.position&#39;, &#39;ASC&#39;)
+<span class="ln">  220 | </span>      .getMany();
+<span class="ln">  221 | </span>  }
+<span class="ln">  222 | </span>
+<span class="ln">  223 | </span>  async getPatientResultsDatesApproved(admission: Date) {
+<span class="ln">  224 | </span>    return this.patientRepository
+<span class="ln">  225 | </span>      .createQueryBuilder(&#39;patient&#39;)
+<span class="ln">  226 | </span>      .leftJoinAndSelect(&#39;patient.exams&#39;, &#39;exams&#39;)
+<span class="ln">  227 | </span>      .where(&#39;admission_date= :admission&#39;, { admission })
+<span class="ln">  228 | </span>      .andWhere(&#39;exams.approved_id &gt; 0&#39;)
+<span class="ln">  229 | </span>      .andWhere(&#39;patient.email_sent = 1&#39;)
+<span class="ln">  230 | </span>      .orderBy(&#39;patient.id&#39;, &#39;ASC&#39;)
+<span class="ln">  231 | </span>      .addOrderBy(&#39;exams.position&#39;, &#39;ASC&#39;)
+<span class="ln">  232 | </span>      .getMany();
+<span class="ln">  233 | </span>  }
+<span class="ln">  234 | </span>
+<span class="ln">  235 | </span>  async getPatientsDateWorksheetResult(admission: Date) {
+<span class="ln">  236 | </span>    return this.patientRepository
+<span class="ln">  237 | </span>      .createQueryBuilder(&#39;patient&#39;)
+<span class="ln">  238 | </span>      .leftJoinAndSelect(&#39;patient.exams&#39;, &#39;exams&#39;)
+<span class="ln">  239 | </span>      .where(&#39;admission_date= :admission&#39;, { admission })
+<span class="ln">  240 | </span>      .orderBy(&#39;patient.id&#39;, &#39;ASC&#39;)
+<span class="ln">  241 | </span>      .addOrderBy(&#39;exams.position&#39;, &#39;ASC&#39;)
+<span class="ln">  242 | </span>      .getMany();
+<span class="ln">  243 | </span>  }
+<span class="ln">  244 | </span>
+<span class="ln">  245 | </span>  async getPatientsTotalByDate(admission: Date) {
+<span class="ln">  246 | </span>    return this.patientRepository.count({
+<span class="ln">  247 | </span>      where: {
+<span class="ln">  248 | </span>        admission_date: admission,
+<span class="ln">  249 | </span>      },
+<span class="ln">  250 | </span>    });
+<span class="ln">  251 | </span>  }
+<span class="ln">  252 | </span>
+<span class="ln">  253 | </span>  async getPatientsCI(ci: string) {
+<span class="ln">  254 | </span>    const patientFound = this.patientRepository.findOne({
+<span class="ln">  255 | </span>      where: {
+<span class="ln">  256 | </span>        document_number: ci,
+<span class="ln">  257 | </span>      },
+<span class="ln">  258 | </span>      order: {
+<span class="ln">  259 | </span>        id: &#39;DESC&#39;,
+<span class="ln">  260 | </span>      },
+<span class="ln">  261 | </span>    });
+<span class="ln">  262 | </span>    if (!patientFound) {
+<span class="ln">  263 | </span>      return new HttpException(&#39;paciente no encontrado&#39;, HttpStatus.NOT_FOUND);
+<span class="ln">  264 | </span>    }
+<span class="ln">  265 | </span>    return patientFound;
+<span class="ln">  266 | </span>  }
+<span class="ln">  267 | </span>
+<span class="ln">  268 | </span>  async updatePatient(id: number, patient: UpdatePatientsDto) {
+<span class="ln">  269 | </span>    const patientFound = await this.patientRepository.findOne({
+<span class="ln">  270 | </span>      where: {
+<span class="ln">  271 | </span>        id,
+<span class="ln">  272 | </span>      },
+<span class="ln">  273 | </span>    });
+<span class="ln">  274 | </span>    if (!patientFound) {
+<span class="ln">  275 | </span>      return new HttpException(&#39;paciente no encontrado&#39;, HttpStatus.NOT_FOUND);
+<span class="ln">  276 | </span>    }
+<span class="ln">  277 | </span>    const updatePatient = Object.assign(patientFound, patient);
+<span class="ln">  278 | </span>    return this.patientRepository.save(updatePatient);
+<span class="ln">  279 | </span>  }
+<span class="ln">  280 | </span>
+<span class="ln">  281 | </span>  async getTotalPatientsMonth(firstDate: Date,lastDate: Date) {
+<span class="ln">  282 | </span>    const result = await this.patientRepository
+<span class="ln">  283 | </span>    .createQueryBuilder(&#39;Patient&#39;)
+<span class="ln">  284 | </span>    .select(&#39;COUNT(id)&#39;, &#39;total&#39;)
+<span class="ln">  285 | </span>    .where(&#39;admission_date BETWEEN :firstDate AND :lastDate&#39;, { firstDate, lastDate })
+<span class="ln">  286 | </span>    .andWhere(&#39;canceled = 0&#39;)
+<span class="ln">  287 | </span>    .getRawOne();
+<span class="ln">  288 | </span>
+<span class="ln">  289 | </span>    return result &amp;&amp; result.total ? parseInt(result.total, 10) : 0;
+<span class="ln">  290 | </span>  }
+<span class="ln">  291 | </span>
+<span class="ln">  292 | </span>  async enviarCorreo(
+<span class="ln">  293 | </span>    destinatario: string,
+<span class="ln">  294 | </span>    asunto: string,
+<span class="ln">  295 | </span>    contenido: string,
+<span class="ln">  296 | </span>    adjuntoFile: string,
+<span class="ln">  297 | </span>    adjuntoPath: string,
+<span class="ln">  298 | </span>  ) {
+<span class="ln">  299 | </span>    const laboratoryFound = await this.laboratoryService.getLaboratory(1);
+<span class="ln">  300 | </span>    const row = JSON.parse(JSON.stringify(laboratoryFound));
+<span class="ln">  301 | </span>    let transporterData = null;
+<span class="ln">  302 | </span>    console.log(&#39;row.sendEmail: &#39;, row.sendEmail);
+<span class="ln">  303 | </span>    if (row.sendEmail.isGmail) {
+<span class="ln">  304 | </span>      transporterData = {
+<span class="ln">  305 | </span>        service: &#39;Gmail&#39;,
+<span class="ln">  306 | </span>        auth: {
+<span class="ln">  307 | </span>          user: row.sendEmail.user,
+<span class="ln">  308 | </span>          pass: row.sendEmail.pass,
+<span class="ln">  309 | </span>        },
+<span class="ln">  310 | </span>      };
+<span class="ln">  311 | </span>    } else {
+<span class="ln">  312 | </span>      transporterData = {
+<span class="ln">  313 | </span>        host: row.sendEmail.host,
+<span class="ln">  314 | </span>        port: row.sendEmail.port,
+<span class="ln">  315 | </span>        secure: row.sendEmail.secure,
+<span class="ln">  316 | </span>        auth: {
+<span class="ln">  317 | </span>          user: row.sendEmail.user,
+<span class="ln">  318 | </span>          pass: row.sendEmail.pass,
+<span class="ln">  319 | </span>        },
+<span class="ln">  320 | </span>      };
+<span class="ln">  321 | </span>    }
+<span class="ln">  322 | </span>    const transporter = nodemailer.createTransport(transporterData);
+<span class="ln">  323 | </span>    await transporter.sendMail({
+<span class="ln">  324 | </span>      from: row.sendEmail.from,
+<span class="ln">  325 | </span>      to: destinatario,
+<span class="ln">  326 | </span>      subject: asunto,
+<span class="ln">  327 | </span>      html: contenido,
+<span class="ln">  328 | </span>      attachments: [
+<span class="ln">  329 | </span>        {
+<span class="ln">  330 | </span>          filename: adjuntoFile,
+<span class="ln">  331 | </span>          path: adjuntoPath,
+<span class="ln">  332 | </span>        },
+<span class="ln">  333 | </span>      ],
+<span class="ln">  334 | </span>    });
+<span class="ln">  335 | </span>  }
+<span class="ln">  336 | </span>
+<span class="ln">  337 | </span>  async generatePdfFromHtml(html: string, outputPath: string): Promise&lt;void&gt; {
+<span class="ln">  338 | </span>    const browser = await puppeteer.launch({
+<span class="ln">  339 | </span>      headless: &#39;new&#39;,
+<span class="ln">  340 | </span>    });
+<span class="ln">  341 | </span>    const page = await browser.newPage();
+<span class="ln">  342 | </span>    await page.setContent(html);
+<span class="ln">  343 | </span>
+<span class="ln">  344 | </span>    await page.pdf({ path: outputPath, format: &#39;letter&#39; });
+<span class="ln">  345 | </span>
+<span class="ln">  346 | </span>    await browser.close();
+<span class="ln">  347 | </span>  }
+<span class="ln">  348 | </span>
+<span class="ln">  349 | </span>  async generatePdfFromHtmlOut(html: string): Promise&lt;Buffer&gt; {
+<span class="ln">  350 | </span>    const browser = await puppeteer.launch({
+<span class="ln">  351 | </span>      headless: &#39;new&#39;,
+<span class="ln">  352 | </span>    });
+<span class="ln">  353 | </span>    const page = await browser.newPage();
+<span class="ln">  354 | </span>    await page.setContent(html);
+<span class="ln">  355 | </span>
+<span class="ln">  356 | </span>    const pdfBuffer = await page.pdf({ format: &#39;letter&#39; });
+<span class="ln">  357 | </span>  
+<span class="ln">  358 | </span>    await browser.close();
+<span class="ln">  359 | </span>    return pdfBuffer;
+<span class="ln">  360 | </span>  }
+<span class="ln">  361 | </span>
+<span class="ln">  362 | </span>  async printReceipt(id: number): Promise&lt;void&gt; {
+<span class="ln">  363 | </span>    const patientFound = await this.getPatient(id);
+<span class="ln">  364 | </span>    const laboratoryFound = await this.laboratoryService.getLaboratory(1);
+<span class="ln">  365 | </span>    const laboratory = JSON.parse(JSON.stringify(laboratoryFound));
+<span class="ln">  366 | </span>    if (patientFound &amp;&amp; laboratory.printer_interface.legth !== 0) {
+<span class="ln">  367 | </span>      const row = JSON.parse(JSON.stringify(patientFound));
+<span class="ln">  368 | </span>      const rowE = row.exams;
+<span class="ln">  369 | </span>      const ThermalPrinter = require(&#39;node-thermal-printer&#39;).printer;
+<span class="ln">  370 | </span>      const PrinterTypes = require(&#39;node-thermal-printer&#39;).types;
+<span class="ln">  371 | </span>
+<span class="ln">  372 | </span>      const printer = new ThermalPrinter({
+<span class="ln">  373 | </span>        type: laboratory.printer_type,
+<span class="ln">  374 | </span>        interface: laboratory.printer_interface,
+<span class="ln">  375 | </span>      });
+<span class="ln">  376 | </span>
+<span class="ln">  377 | </span>      printer.alignCenter();
+<span class="ln">  378 | </span>      printer.println(&#39;COMPROBANTE PACIENTE&#39;);
+<span class="ln">  379 | </span>      printer.alignLeft();
+<span class="ln">  380 | </span>      printer.println(`FECHA: ${row.admission_date}`);
+<span class="ln">  381 | </span>      printer.println(&#39;NOMBRE:&#39;);
+<span class="ln">  382 | </span>      printer.println(`(${row.patient_position}) ${row.name}`);
+<span class="ln">  383 | </span>      printer.println(
+<span class="ln">  384 | </span>        `Edad y sexo: ${row.age} ${row.month_year} ${
+<span class="ln">  385 | </span>          row.sex ? &#39;masculino&#39; : &#39;femanino&#39;
+<span class="ln">  386 | </span>        }`,
+<span class="ln">  387 | </span>      );
+<span class="ln">  388 | </span>      printer.println(`Tel&#233;fono: ${row.phone}`);
+<span class="ln">  389 | </span>      printer.newLine();
+<span class="ln">  390 | </span>      printer.println(&#39;OBSERVACION:&#39;);
+<span class="ln">  391 | </span>      printer.println(row.observation);
+<span class="ln">  392 | </span>      printer.newLine();
+<span class="ln">  393 | </span>      printer.alignCenter();
+<span class="ln">  394 | </span>      printer.println(&#39;EXAMENES SOLICITADOS&#39;);
+<span class="ln">  395 | </span>      printer.drawLine();
+<span class="ln">  396 | </span>      rowE.forEach((item) =&gt; {
+<span class="ln">  397 | </span>        printer.tableCustom([
+<span class="ln">  398 | </span>          { text: item.description, align: &#39;LEFT&#39;, cols: 30 },
+<span class="ln">  399 | </span>          { text: item.price, align: &#39;RIGHT&#39;, cols: 18 },
+<span class="ln">  400 | </span>        ]);
+<span class="ln">  401 | </span>      });
+<span class="ln">  402 | </span>      printer.drawLine();
+<span class="ln">  403 | </span>      printer.tableCustom([
+<span class="ln">  404 | </span>        { text: &#39;TOTAL:&#39;, align: &#39;LEFT&#39;, cols: 30, bold: true },
+<span class="ln">  405 | </span>        { text: row.total, align: &#39;RIGHT&#39;, cols: 18, bold: true },
+<span class="ln">  406 | </span>      ]);
+<span class="ln">  407 | </span>      if (row.total_dollars !== 0) {
+<span class="ln">  408 | </span>        printer.tableCustom([
+<span class="ln">  409 | </span>          { text: &#39;TOTAL en $:&#39;, align: &#39;LEFT&#39;, cols: 30, bold: true },
+<span class="ln">  410 | </span>          { text: row.total_dollars, align: &#39;RIGHT&#39;, cols: 18, bold: true },
+<span class="ln">  411 | </span>        ]);
+<span class="ln">  412 | </span>      }
+<span class="ln">  413 | </span>
+<span class="ln">  414 | </span>      printer.cut();
+<span class="ln">  415 | </span>      printer.execute(function (error) {
+<span class="ln">  416 | </span>        if (error) {
+<span class="ln">  417 | </span>          console.error(&#39;Error al imprimir:&#39;, error);
+<span class="ln">  418 | </span>        } else {
+<span class="ln">  419 | </span>          console.log(&#39;Recibo impreso correctamente.&#39;);
+<span class="ln">  420 | </span>        }
+<span class="ln">  421 | </span>      });
+<span class="ln">  422 | </span>    }
+<span class="ln">  423 | </span>  }
+<span class="ln">  424 | </span>}
+<span class="ln">  425 | </span>
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\routines\routines.service.ts</h2>
+<div class="meta">Lineas: 69 | Bytes: 1956 | SHA256: AF5D0636316063FECDEB61E8A7DCE3516CBE55953A7BE4F04CD325E6950CC9C9</div>
+</div><pre>
+<span class="ln">    1 | </span>import { HttpException, HttpStatus, Injectable } from &#39;@nestjs/common&#39;;
+<span class="ln">    2 | </span>import { InjectRepository } from &#39;@nestjs/typeorm&#39;;
+<span class="ln">    3 | </span>import { Routines } from &#39;./routines.entity&#39;;
+<span class="ln">    4 | </span>import { Repository, Like } from &#39;typeorm&#39;;
+<span class="ln">    5 | </span>import { CreateRoutinesDto } from &#39;./dto/create-routines.dto&#39;;
+<span class="ln">    6 | </span>import { UpdateRoutinesDto } from &#39;./dto/update-routines.dto&#39;;
+<span class="ln">    7 | </span>
+<span class="ln">    8 | </span>@Injectable()
+<span class="ln">    9 | </span>export class RoutinesService {
+<span class="ln">   10 | </span>  constructor(
+<span class="ln">   11 | </span>    @InjectRepository(Routines)
+<span class="ln">   12 | </span>    private routinesRepository: Repository&lt;Routines&gt;,
+<span class="ln">   13 | </span>  ) {}
+<span class="ln">   14 | </span>
+<span class="ln">   15 | </span>  async getRoutines(id: number) {
+<span class="ln">   16 | </span>    const routinesFound = this.routinesRepository.findOne({
+<span class="ln">   17 | </span>      where: {
+<span class="ln">   18 | </span>        id,
+<span class="ln">   19 | </span>      },
+<span class="ln">   20 | </span>    });
+<span class="ln">   21 | </span>    if (!routinesFound) {
+<span class="ln">   22 | </span>      return new HttpException(&#39;Rutina no encontrada&#39;, HttpStatus.NOT_FOUND);
+<span class="ln">   23 | </span>    }
+<span class="ln">   24 | </span>    return routinesFound;
+<span class="ln">   25 | </span>  }
+<span class="ln">   26 | </span>
+<span class="ln">   27 | </span>  async getRoutinesList() {
+<span class="ln">   28 | </span>    return this.routinesRepository.find();
+<span class="ln">   29 | </span>  }
+<span class="ln">   30 | </span>
+<span class="ln">   31 | </span>  async createRoutines(routines: CreateRoutinesDto): Promise&lt;any&gt; {
+<span class="ln">   32 | </span>    return this.routinesRepository.save(routines);
+<span class="ln">   33 | </span>  }
+<span class="ln">   34 | </span>
+<span class="ln">   35 | </span>  async updateRoutines(id: number, routine: UpdateRoutinesDto) {
+<span class="ln">   36 | </span>    const routineFound = await this.routinesRepository.findOne({
+<span class="ln">   37 | </span>      where: {
+<span class="ln">   38 | </span>        id,
+<span class="ln">   39 | </span>      },
+<span class="ln">   40 | </span>    });
+<span class="ln">   41 | </span>    if (!routineFound) {
+<span class="ln">   42 | </span>      return new HttpException(&#39;rutina no encontrado&#39;, HttpStatus.NOT_FOUND);
+<span class="ln">   43 | </span>    }
+<span class="ln">   44 | </span>    const updateRoutine = Object.assign(routineFound, routine);
+<span class="ln">   45 | </span>    return this.routinesRepository.save(updateRoutine);
+<span class="ln">   46 | </span>  }
+<span class="ln">   47 | </span>
+<span class="ln">   48 | </span>  async deleteRoutines(id: number) {
+<span class="ln">   49 | </span>    const routineFound = await this.routinesRepository.findOne({
+<span class="ln">   50 | </span>      where: {
+<span class="ln">   51 | </span>        id,
+<span class="ln">   52 | </span>      },
+<span class="ln">   53 | </span>    });
+<span class="ln">   54 | </span>    if (!routineFound) {
+<span class="ln">   55 | </span>      return new HttpException(&#39;Rutina no encontrado&#39;, HttpStatus.NOT_FOUND);
+<span class="ln">   56 | </span>    }
+<span class="ln">   57 | </span>    await this.routinesRepository.remove(routineFound);
+<span class="ln">   58 | </span>    return true;
+<span class="ln">   59 | </span>  }
+<span class="ln">   60 | </span>
+<span class="ln">   61 | </span>  async countWithLike(description: string) {
+<span class="ln">   62 | </span>    return this.routinesRepository.count({
+<span class="ln">   63 | </span>      where: {
+<span class="ln">   64 | </span>        description: Like(`%${description}%`),
+<span class="ln">   65 | </span>      },
+<span class="ln">   66 | </span>    });
+<span class="ln">   67 | </span>  }
+<span class="ln">   68 | </span>}
+<span class="ln">   69 | </span>
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\sample_type\sampletype.service.ts</h2>
+<div class="meta">Lineas: 50 | Bytes: 1710 | SHA256: FEB70F61F35F6E6526E3BAAA70629DCA0308971CC015C20BC78E2574425034A8</div>
+</div><pre>
+<span class="ln">    1 | </span>import { HttpException, HttpStatus, Injectable } from &#39;@nestjs/common&#39;;
+<span class="ln">    2 | </span>import { InjectRepository } from &#39;@nestjs/typeorm&#39;;
+<span class="ln">    3 | </span>import { SampleType } from &#39;./sampletype.entity&#39;
+<span class="ln">    4 | </span>import { Repository } from &#39;typeorm&#39;;
+<span class="ln">    5 | </span>import { CreateSampletypeDto } from &#39;./dto/create-sampletype.dto&#39;;
+<span class="ln">    6 | </span>import { UpdateSampletypeDto } from &#39;./dto/update-sampletype.dto&#39;;
+<span class="ln">    7 | </span>
+<span class="ln">    8 | </span>@Injectable()
+<span class="ln">    9 | </span>export class SampleTypeService {
+<span class="ln">   10 | </span>    constructor(
+<span class="ln">   11 | </span>        @InjectRepository(SampleType) private sampletypeRepository: Repository&lt;SampleType&gt;
+<span class="ln">   12 | </span>    ) {}
+<span class="ln">   13 | </span>
+<span class="ln">   14 | </span>    async createSampletype(sampletype: CreateSampletypeDto): Promise&lt;any&gt; {
+<span class="ln">   15 | </span>        return this.sampletypeRepository.save(sampletype) 
+<span class="ln">   16 | </span>    }
+<span class="ln">   17 | </span>
+<span class="ln">   18 | </span>    async getSampletypes() {
+<span class="ln">   19 | </span>        const query = this.sampletypeRepository
+<span class="ln">   20 | </span>      .createQueryBuilder(&#39;entity&#39;)
+<span class="ln">   21 | </span>      .orderBy(&#39;description&#39;, &#39;ASC&#39;);
+<span class="ln">   22 | </span>        
+<span class="ln">   23 | </span>      return query.getMany();
+<span class="ln">   24 | </span>    }
+<span class="ln">   25 | </span>
+<span class="ln">   26 | </span>    async getSampletype(id: number) {
+<span class="ln">   27 | </span>        const sampletypeFound = this.sampletypeRepository.findOne({
+<span class="ln">   28 | </span>            where: {
+<span class="ln">   29 | </span>                id
+<span class="ln">   30 | </span>            }
+<span class="ln">   31 | </span>        })
+<span class="ln">   32 | </span>        if (!sampletypeFound) {
+<span class="ln">   33 | </span>            return new HttpException(&#39;lista no encontrado&#39;, HttpStatus.NOT_FOUND)
+<span class="ln">   34 | </span>        }
+<span class="ln">   35 | </span>        return sampletypeFound
+<span class="ln">   36 | </span>    }
+<span class="ln">   37 | </span>
+<span class="ln">   38 | </span>    async updateSampletype(id: number, sampletype: UpdateSampletypeDto) {
+<span class="ln">   39 | </span>        const sampletypeFound = await this.sampletypeRepository.findOne({
+<span class="ln">   40 | </span>            where: {
+<span class="ln">   41 | </span>                id
+<span class="ln">   42 | </span>            }
+<span class="ln">   43 | </span>        })
+<span class="ln">   44 | </span>        if (!sampletypeFound) {
+<span class="ln">   45 | </span>            return new HttpException(&#39;No encontrado&#39;, HttpStatus.NOT_FOUND)
+<span class="ln">   46 | </span>        }
+<span class="ln">   47 | </span>        const updatesampletype = Object.assign(sampletypeFound, sampletype)
+<span class="ln">   48 | </span>        return this.sampletypeRepository.save(updatesampletype)
+<span class="ln">   49 | </span>    }
+<span class="ln">   50 | </span>}
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\special_test_items\special_test_items.service.ts</h2>
+<div class="meta">Lineas: 56 | Bytes: 1887 | SHA256: 6B021F212022C2F8B9AAB6D133C817B62B0E8EA27E120598BF5F9FD552F0D4D7</div>
+</div><pre>
+<span class="ln">    1 | </span>import { HttpException, HttpStatus, Injectable } from &#39;@nestjs/common&#39;;
+<span class="ln">    2 | </span>import { InjectRepository } from &#39;@nestjs/typeorm&#39;;
+<span class="ln">    3 | </span>import { special_test_items } from &#39;./special_test_items.entity&#39;;
+<span class="ln">    4 | </span>import { Repository } from &#39;typeorm&#39;;
+<span class="ln">    5 | </span>import { CreateSpecialTestItemsDto } from &#39;./dto/create-special_test_itms.dto&#39;;
+<span class="ln">    6 | </span>import { updateSpecialTestItemsDto } from &#39;./dto/update-special_test_itms.dto&#39;;
+<span class="ln">    7 | </span>
+<span class="ln">    8 | </span>@Injectable()
+<span class="ln">    9 | </span>export class SpecialTestItemsService {
+<span class="ln">   10 | </span>  constructor(
+<span class="ln">   11 | </span>    @InjectRepository(special_test_items)
+<span class="ln">   12 | </span>    private specialTestItemsRepository: Repository&lt;special_test_items&gt;,
+<span class="ln">   13 | </span>  ) {}
+<span class="ln">   14 | </span>  
+<span class="ln">   15 | </span>  async createSpecialTestItems(test: CreateSpecialTestItemsDto): Promise&lt;any&gt; {
+<span class="ln">   16 | </span>    return this.specialTestItemsRepository.save(test);
+<span class="ln">   17 | </span>  }
+<span class="ln">   18 | </span>  
+<span class="ln">   19 | </span>  async getSpecialTestItemsList() {
+<span class="ln">   20 | </span>    return this.specialTestItemsRepository.find();
+<span class="ln">   21 | </span>  }
+<span class="ln">   22 | </span>
+<span class="ln">   23 | </span>  async getSpecialTestItems(id: number) {
+<span class="ln">   24 | </span>    const itemsFound = await this.specialTestItemsRepository.findOne({
+<span class="ln">   25 | </span>      where: {
+<span class="ln">   26 | </span>        id,
+<span class="ln">   27 | </span>      },
+<span class="ln">   28 | </span>    });
+<span class="ln">   29 | </span>    if (!itemsFound) {
+<span class="ln">   30 | </span>      return new HttpException(&#39;Item de laboratorio no encontrado&#39;, HttpStatus.NOT_FOUND);
+<span class="ln">   31 | </span>    }
+<span class="ln">   32 | </span>    return itemsFound;
+<span class="ln">   33 | </span>  }
+<span class="ln">   34 | </span>
+<span class="ln">   35 | </span>  async updateSpecialTestItems(id: number, laboratory: updateSpecialTestItemsDto) {
+<span class="ln">   36 | </span>    const itemsFound = await this.specialTestItemsRepository.findOne({
+<span class="ln">   37 | </span>      where: {
+<span class="ln">   38 | </span>        id,
+<span class="ln">   39 | </span>      },
+<span class="ln">   40 | </span>    });
+<span class="ln">   41 | </span>    if (!itemsFound) {
+<span class="ln">   42 | </span>      return new HttpException(&#39;Item de laboratorio no encontrado&#39;, HttpStatus.NOT_FOUND);
+<span class="ln">   43 | </span>    }
+<span class="ln">   44 | </span>    const updateLaboratorio = Object.assign(itemsFound, laboratory);
+<span class="ln">   45 | </span>    return this.specialTestItemsRepository.save(updateLaboratorio);
+<span class="ln">   46 | </span>  }  
+<span class="ln">   47 | </span>
+<span class="ln">   48 | </span>  async deleteTestItems(id: number) {
+<span class="ln">   49 | </span>    const result = await this.specialTestItemsRepository.delete({ id })
+<span class="ln">   50 | </span>    if (result.affected === 0) {
+<span class="ln">   51 | </span>        return new HttpException(&#39;Grupo no encontrado&#39;, HttpStatus.NOT_FOUND)
+<span class="ln">   52 | </span>    }
+<span class="ln">   53 | </span>
+<span class="ln">   54 | </span>    return result
+<span class="ln">   55 | </span>}
+<span class="ln">   56 | </span>}
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\special_test_lab\special_test_lab.service.ts</h2>
+<div class="meta">Lineas: 50 | Bytes: 1731 | SHA256: CAAC195AE8004BF0F6D4AD4BB98CCAA24341E3A80E5FF5E985076D26FD6F7CCF</div>
+</div><pre>
+<span class="ln">    1 | </span>import { HttpException, HttpStatus, Injectable } from &#39;@nestjs/common&#39;;
+<span class="ln">    2 | </span>import { InjectRepository } from &#39;@nestjs/typeorm&#39;;
+<span class="ln">    3 | </span>import { special_test_lab } from &#39;./special_test_lab.entity&#39;;
+<span class="ln">    4 | </span>import { Repository } from &#39;typeorm&#39;;
+<span class="ln">    5 | </span>import { CreateSpecialTestLabDto } from &#39;./dto/create-special_test_lab.dto&#39;;
+<span class="ln">    6 | </span>import { UpdateSpecialTestLabDto } from &#39;./dto/update-special_test_lab.dto&#39;;
+<span class="ln">    7 | </span>
+<span class="ln">    8 | </span>@Injectable()
+<span class="ln">    9 | </span>export class SpecialTestLabService {
+<span class="ln">   10 | </span>  constructor(
+<span class="ln">   11 | </span>    @InjectRepository(special_test_lab)
+<span class="ln">   12 | </span>    private specialTestLabRepository: Repository&lt;special_test_lab&gt;,
+<span class="ln">   13 | </span>  ) {}
+<span class="ln">   14 | </span>
+<span class="ln">   15 | </span>  async createSpecialTestLab(laboratory: CreateSpecialTestLabDto): Promise&lt;any&gt; {
+<span class="ln">   16 | </span>    return this.specialTestLabRepository.save(laboratory);
+<span class="ln">   17 | </span>  }
+<span class="ln">   18 | </span>  
+<span class="ln">   19 | </span>  async getSpecialTestLabList() {
+<span class="ln">   20 | </span>    return this.specialTestLabRepository.find({
+<span class="ln">   21 | </span>      relations: [&#39;specialTestItems&#39;], // Carga la relaci&#243;n OneToMany
+<span class="ln">   22 | </span>    });
+<span class="ln">   23 | </span>  }
+<span class="ln">   24 | </span>
+<span class="ln">   25 | </span>  async getSpecialTestLab(id: number) {
+<span class="ln">   26 | </span>    const laboratoryFound = await this.specialTestLabRepository.findOne({
+<span class="ln">   27 | </span>      where: {
+<span class="ln">   28 | </span>        id,
+<span class="ln">   29 | </span>      },
+<span class="ln">   30 | </span>      relations: [&#39;specialTestItems&#39;],
+<span class="ln">   31 | </span>    });
+<span class="ln">   32 | </span>    if (!laboratoryFound) {
+<span class="ln">   33 | </span>      return new HttpException(&#39;Laboratorio no encontrado&#39;, HttpStatus.NOT_FOUND);
+<span class="ln">   34 | </span>    }
+<span class="ln">   35 | </span>    return laboratoryFound;
+<span class="ln">   36 | </span>  }
+<span class="ln">   37 | </span>
+<span class="ln">   38 | </span>  async updateSpecialTestLab(id: number, laboratory: UpdateSpecialTestLabDto) {
+<span class="ln">   39 | </span>    const laboratoryFound = await this.specialTestLabRepository.findOne({
+<span class="ln">   40 | </span>      where: {
+<span class="ln">   41 | </span>        id,
+<span class="ln">   42 | </span>      },
+<span class="ln">   43 | </span>    });
+<span class="ln">   44 | </span>    if (!laboratoryFound) {
+<span class="ln">   45 | </span>      return new HttpException(&#39;Laboratorio no encontrado&#39;, HttpStatus.NOT_FOUND);
+<span class="ln">   46 | </span>    }
+<span class="ln">   47 | </span>    const updateLaboratorio = Object.assign(laboratoryFound, laboratory);
+<span class="ln">   48 | </span>    return this.specialTestLabRepository.save(updateLaboratorio);
+<span class="ln">   49 | </span>  }
+<span class="ln">   50 | </span>}
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\tax\tax.service.ts</h2>
+<div class="meta">Lineas: 59 | Bytes: 1635 | SHA256: AE4CF919B6885C8A1E23B596C939F65F996EF725575356C80AEE074B3517093D</div>
+</div><pre>
+<span class="ln">    1 | </span>import { HttpException, HttpStatus, Injectable } from &#39;@nestjs/common&#39;;
+<span class="ln">    2 | </span>import { InjectRepository } from &#39;@nestjs/typeorm&#39;;
+<span class="ln">    3 | </span>import { Tax } from &#39;./tax.entity&#39;;
+<span class="ln">    4 | </span>import { Repository } from &#39;typeorm&#39;;
+<span class="ln">    5 | </span>import { CreateTaxDto } from &#39;./dto/create-tax.dto&#39;;
+<span class="ln">    6 | </span>import { UpdateTaxDto } from &#39;./dto/update-tax.dto&#39;;
+<span class="ln">    7 | </span>
+<span class="ln">    8 | </span>@Injectable()
+<span class="ln">    9 | </span>export class TaxService {
+<span class="ln">   10 | </span>  constructor(@InjectRepository(Tax) private taxRepository: Repository&lt;Tax&gt;) {}
+<span class="ln">   11 | </span>
+<span class="ln">   12 | </span>  async getTaxs() {
+<span class="ln">   13 | </span>    return this.taxRepository.find();
+<span class="ln">   14 | </span>  }
+<span class="ln">   15 | </span>
+<span class="ln">   16 | </span>  async createTax(tax: CreateTaxDto) {
+<span class="ln">   17 | </span>    const newTax = this.taxRepository.create(tax);
+<span class="ln">   18 | </span>    return this.taxRepository.save(newTax);
+<span class="ln">   19 | </span>  }
+<span class="ln">   20 | </span>
+<span class="ln">   21 | </span>  async getTax(id: number) {
+<span class="ln">   22 | </span>    const taxFound = this.taxRepository.findOne({
+<span class="ln">   23 | </span>      where: {
+<span class="ln">   24 | </span>        id,
+<span class="ln">   25 | </span>      },
+<span class="ln">   26 | </span>    });
+<span class="ln">   27 | </span>    if (!taxFound) {
+<span class="ln">   28 | </span>      return new HttpException(&#39;Impuesto no encontrado&#39;, HttpStatus.NOT_FOUND);
+<span class="ln">   29 | </span>    }
+<span class="ln">   30 | </span>    return taxFound;
+<span class="ln">   31 | </span>  }
+<span class="ln">   32 | </span>
+<span class="ln">   33 | </span>  async deleteTax(id: number) {
+<span class="ln">   34 | </span>    const routineFound = await this.taxRepository.findOne({
+<span class="ln">   35 | </span>      where: {
+<span class="ln">   36 | </span>        id,
+<span class="ln">   37 | </span>      },
+<span class="ln">   38 | </span>    });
+<span class="ln">   39 | </span>    if (!routineFound) {
+<span class="ln">   40 | </span>      return new HttpException(&#39;Impuesto no encontrado&#39;, HttpStatus.NOT_FOUND);
+<span class="ln">   41 | </span>    }
+<span class="ln">   42 | </span>    await this.taxRepository.remove(routineFound);
+<span class="ln">   43 | </span>    return true;
+<span class="ln">   44 | </span>  }
+<span class="ln">   45 | </span>
+<span class="ln">   46 | </span>  async updateTax(id: number, tazLists: UpdateTaxDto) {
+<span class="ln">   47 | </span>    const taxFound = await this.taxRepository.findOne({
+<span class="ln">   48 | </span>      where: {
+<span class="ln">   49 | </span>        id,
+<span class="ln">   50 | </span>      },
+<span class="ln">   51 | </span>    });
+<span class="ln">   52 | </span>    if (!taxFound) {
+<span class="ln">   53 | </span>      return new HttpException(&#39;Impuesto no encontrado&#39;, HttpStatus.NOT_FOUND);
+<span class="ln">   54 | </span>    }
+<span class="ln">   55 | </span>    const updateTax = Object.assign(taxFound, tazLists);
+<span class="ln">   56 | </span>    return this.taxRepository.save(updateTax);
+<span class="ln">   57 | </span>  }
+<span class="ln">   58 | </span>}
+<span class="ln">   59 | </span>
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\type_payment\typepayment.service.ts</h2>
+<div class="meta">Lineas: 51 | Bytes: 1555 | SHA256: 620819C179253059F71BFAC6C375AE5D3E2A811F686E23DECB5363D3196ECA5F</div>
+</div><pre>
+<span class="ln">    1 | </span>import { HttpException, HttpStatus, Injectable } from &#39;@nestjs/common&#39;;
+<span class="ln">    2 | </span>import { InjectRepository } from &#39;@nestjs/typeorm&#39;;
+<span class="ln">    3 | </span>import { TypePayment } from &#39;./typepayment.entity&#39;;
+<span class="ln">    4 | </span>import { Repository } from &#39;typeorm&#39;;
+<span class="ln">    5 | </span>import { CreateTypepaymantDto } from &#39;./dto/create-typepayment.dto&#39;;
+<span class="ln">    6 | </span>import { UpdateTypepaymantDto } from &#39;./dto/update-typepayment.dto&#39;;
+<span class="ln">    7 | </span>
+<span class="ln">    8 | </span>@Injectable()
+<span class="ln">    9 | </span>export class TypePaymentService {
+<span class="ln">   10 | </span>  constructor(
+<span class="ln">   11 | </span>    @InjectRepository(TypePayment)
+<span class="ln">   12 | </span>    private typePaymentRepository: Repository&lt;TypePayment&gt;,
+<span class="ln">   13 | </span>  ) {}
+<span class="ln">   14 | </span>
+<span class="ln">   15 | </span>  async createTypepayment(typepayment: CreateTypepaymantDto): Promise&lt;any&gt; {
+<span class="ln">   16 | </span>    return this.typePaymentRepository.save(typepayment);
+<span class="ln">   17 | </span>  }
+<span class="ln">   18 | </span>
+<span class="ln">   19 | </span>  async getTypepayments() {
+<span class="ln">   20 | </span>    return this.typePaymentRepository.find();
+<span class="ln">   21 | </span>  }
+<span class="ln">   22 | </span>
+<span class="ln">   23 | </span>  async getTypepayment(id: number) {
+<span class="ln">   24 | </span>    const typePaymentFound = this.typePaymentRepository.findOne({
+<span class="ln">   25 | </span>      where: {
+<span class="ln">   26 | </span>        id,
+<span class="ln">   27 | </span>      },
+<span class="ln">   28 | </span>    });
+<span class="ln">   29 | </span>    if (!typePaymentFound) {
+<span class="ln">   30 | </span>      return new HttpException(
+<span class="ln">   31 | </span>        &#39;forma de pago no encontrado&#39;,
+<span class="ln">   32 | </span>        HttpStatus.NOT_FOUND,
+<span class="ln">   33 | </span>      );
+<span class="ln">   34 | </span>    }
+<span class="ln">   35 | </span>    return typePaymentFound;
+<span class="ln">   36 | </span>  }
+<span class="ln">   37 | </span>
+<span class="ln">   38 | </span>  async updateTypepayment(id: number, typePayment: UpdateTypepaymantDto) {
+<span class="ln">   39 | </span>    const typepaymentFound = await this.typePaymentRepository.findOne({
+<span class="ln">   40 | </span>      where: {
+<span class="ln">   41 | </span>        id,
+<span class="ln">   42 | </span>      },
+<span class="ln">   43 | </span>    });
+<span class="ln">   44 | </span>    if (!typepaymentFound) {
+<span class="ln">   45 | </span>      return new HttpException(&#39;No encontrado&#39;, HttpStatus.NOT_FOUND);
+<span class="ln">   46 | </span>    }
+<span class="ln">   47 | </span>    const updatetypepayment = Object.assign(typepaymentFound, typePayment);
+<span class="ln">   48 | </span>    return this.typePaymentRepository.save(updatetypepayment);
+<span class="ln">   49 | </span>  }
+<span class="ln">   50 | </span>}
+<span class="ln">   51 | </span>
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\users\users.service.ts</h2>
+<div class="meta">Lineas: 204 | Bytes: 5729 | SHA256: A6E478D0F4221079E2A6F4CD3ECD258F233850EB5F725671CD1C3E907E9A63C2</div>
+</div><pre>
+<span class="ln">    1 | </span>import { Injectable, HttpException, HttpStatus } from &#39;@nestjs/common&#39;;
+<span class="ln">    2 | </span>import { InjectRepository } from &#39;@nestjs/typeorm&#39;;
+<span class="ln">    3 | </span>import { User } from &#39;./users.entity&#39;;
+<span class="ln">    4 | </span>import { Repository, Not } from &#39;typeorm&#39;;
+<span class="ln">    5 | </span>import { CreateUsersDto } from &#39;./dto/create-user.dto&#39;;
+<span class="ln">    6 | </span>import { UpdateUserDto } from &#39;./dto/update-user.dto&#39;;
+<span class="ln">    7 | </span>import { LoginUserDto } from &#39;./dto/login-user.dto&#39;;
+<span class="ln">    8 | </span>import { JwtService } from &#39;@nestjs/jwt&#39;;
+<span class="ln">    9 | </span>import { LaboratoryService } from &#39;src/laboratory/laboratory.service&#39;;
+<span class="ln">   10 | </span>import { LicenseService } from &#39;src/license/license.service&#39;;
+<span class="ln">   11 | </span>const bcrypt = require(&#39;bcrypt&#39;);
+<span class="ln">   12 | </span>
+<span class="ln">   13 | </span>@Injectable()
+<span class="ln">   14 | </span>export class UsersService {
+<span class="ln">   15 | </span>  constructor(
+<span class="ln">   16 | </span>    @InjectRepository(User) private usersRepository: Repository&lt;User&gt;,
+<span class="ln">   17 | </span>    private jwtUserService: JwtService,
+<span class="ln">   18 | </span>    private readonly laboratoryService: LaboratoryService,
+<span class="ln">   19 | </span>    private readonly LicenseService: LicenseService,
+<span class="ln">   20 | </span>  ) {}
+<span class="ln">   21 | </span>
+<span class="ln">   22 | </span>  async createUser(users: CreateUsersDto): Promise&lt;any&gt; {
+<span class="ln">   23 | </span>    const userFond = await this.usersRepository.findOne({
+<span class="ln">   24 | </span>      where: {
+<span class="ln">   25 | </span>        user_name: users.user_name,
+<span class="ln">   26 | </span>      },
+<span class="ln">   27 | </span>    });
+<span class="ln">   28 | </span>
+<span class="ln">   29 | </span>    if (userFond) {
+<span class="ln">   30 | </span>      return new HttpException(
+<span class="ln">   31 | </span>        &#39;Ya existe un usuario con ese nombre de usuario&#39;,
+<span class="ln">   32 | </span>        HttpStatus.CONFLICT,
+<span class="ln">   33 | </span>      );
+<span class="ln">   34 | </span>    }
+<span class="ln">   35 | </span>
+<span class="ln">   36 | </span>    if (users.password !== undefined) {
+<span class="ln">   37 | </span>      const password = users.password;
+<span class="ln">   38 | </span>      const passwordHash = await bcrypt.hash(password, 8);
+<span class="ln">   39 | </span>      users.password = passwordHash;
+<span class="ln">   40 | </span>    }
+<span class="ln">   41 | </span>    return this.usersRepository.save(users);
+<span class="ln">   42 | </span>  }
+<span class="ln">   43 | </span>
+<span class="ln">   44 | </span>  getUsers() {
+<span class="ln">   45 | </span>    return this.usersRepository.find();
+<span class="ln">   46 | </span>  }
+<span class="ln">   47 | </span>
+<span class="ln">   48 | </span>  getUsersOrder() {
+<span class="ln">   49 | </span>    return this.usersRepository.find({
+<span class="ln">   50 | </span>      order: {
+<span class="ln">   51 | </span>        name: &#39;ASC&#39;,
+<span class="ln">   52 | </span>      },
+<span class="ln">   53 | </span>    });
+<span class="ln">   54 | </span>  }
+<span class="ln">   55 | </span>
+<span class="ln">   56 | </span>  getSignatureUsers() {
+<span class="ln">   57 | </span>    return this.usersRepository
+<span class="ln">   58 | </span>      .createQueryBuilder(&#39;entidad&#39;)
+<span class="ln">   59 | </span>      .where(&#39;entidad.college_number != :valorVacio&#39;, { valorVacio: &#39;&#39; })
+<span class="ln">   60 | </span>      .getMany();
+<span class="ln">   61 | </span>  }
+<span class="ln">   62 | </span>
+<span class="ln">   63 | </span>  async getUser(id: number) {
+<span class="ln">   64 | </span>    const userFound = await this.usersRepository.findOne({
+<span class="ln">   65 | </span>      where: {
+<span class="ln">   66 | </span>        id,
+<span class="ln">   67 | </span>      },
+<span class="ln">   68 | </span>    });
+<span class="ln">   69 | </span>
+<span class="ln">   70 | </span>    if (!userFound) {
+<span class="ln">   71 | </span>      return new HttpException(&#39;Usuario no encontrado&#39;, HttpStatus.NOT_FOUND);
+<span class="ln">   72 | </span>    }
+<span class="ln">   73 | </span>
+<span class="ln">   74 | </span>    return userFound;
+<span class="ln">   75 | </span>  }
+<span class="ln">   76 | </span>
+<span class="ln">   77 | </span>  async verifyEmail(email: string) {
+<span class="ln">   78 | </span>    const userFound = await this.usersRepository.findOne({
+<span class="ln">   79 | </span>      where: {
+<span class="ln">   80 | </span>        email,
+<span class="ln">   81 | </span>      },
+<span class="ln">   82 | </span>    });
+<span class="ln">   83 | </span>    return userFound;
+<span class="ln">   84 | </span>  }
+<span class="ln">   85 | </span>
+<span class="ln">   86 | </span>  async verifyEmailId(id: number, email: string) {
+<span class="ln">   87 | </span>    const userFound = await this.usersRepository.findOne({
+<span class="ln">   88 | </span>      where: {
+<span class="ln">   89 | </span>        id: Not(id),
+<span class="ln">   90 | </span>        email,
+<span class="ln">   91 | </span>      },
+<span class="ln">   92 | </span>    });
+<span class="ln">   93 | </span>    return userFound;
+<span class="ln">   94 | </span>  }
+<span class="ln">   95 | </span>
+<span class="ln">   96 | </span>  async verifySignature(id: number, passwordSignature: string) {
+<span class="ln">   97 | </span>    const userFound = await this.usersRepository.findOne({
+<span class="ln">   98 | </span>      where: {
+<span class="ln">   99 | </span>        id,
+<span class="ln">  100 | </span>      },
+<span class="ln">  101 | </span>    });
+<span class="ln">  102 | </span>    if (!userFound) {
+<span class="ln">  103 | </span>      return new HttpException(&#39;USER_NOT_FOUND&#39;, HttpStatus.NOT_FOUND);
+<span class="ln">  104 | </span>    }
+<span class="ln">  105 | </span>    const compare = await bcrypt.compareSync(
+<span class="ln">  106 | </span>      passwordSignature,
+<span class="ln">  107 | </span>      userFound.passwordSignature,
+<span class="ln">  108 | </span>    );
+<span class="ln">  109 | </span>    if (!compare) {
+<span class="ln">  110 | </span>      return new HttpException(&#39;PASSWORD_INVALID&#39;, HttpStatus.NOT_FOUND);
+<span class="ln">  111 | </span>    }
+<span class="ln">  112 | </span>
+<span class="ln">  113 | </span>    const payload = {
+<span class="ln">  114 | </span>      id: id,
+<span class="ln">  115 | </span>      name: userFound.name,
+<span class="ln">  116 | </span>      college_number: userFound.college_number,
+<span class="ln">  117 | </span>    };
+<span class="ln">  118 | </span>
+<span class="ln">  119 | </span>    const dataUser = {
+<span class="ln">  120 | </span>      user: payload,
+<span class="ln">  121 | </span>    };
+<span class="ln">  122 | </span>    return dataUser;
+<span class="ln">  123 | </span>  }
+<span class="ln">  124 | </span>
+<span class="ln">  125 | </span>  async getUserSession(userLogin: LoginUserDto) {
+<span class="ln">  126 | </span>    const { user_name, password } = userLogin;
+<span class="ln">  127 | </span>    const laboratoryFound = await this.laboratoryService.getLaboratory(1);
+<span class="ln">  128 | </span>    const row = JSON.parse(JSON.stringify(laboratoryFound));
+<span class="ln">  129 | </span>    const license = await this.LicenseService.validateLicenseKey(
+<span class="ln">  130 | </span>      row.rif.replace(/-/g, &#39;&#39;), row.business_name.replace(/\s+/g, &#39;&#39;), row.license
+<span class="ln">  131 | </span>    )
+<span class="ln">  132 | </span>    if (!license) {
+<span class="ln">  133 | </span>      return new HttpException(&#39;INVALID_LICENSE_KEY&#39;, HttpStatus.FORBIDDEN);
+<span class="ln">  134 | </span>    }
+<span class="ln">  135 | </span>    const userFound = await this.usersRepository.findOne({
+<span class="ln">  136 | </span>      where: {
+<span class="ln">  137 | </span>        user_name,
+<span class="ln">  138 | </span>      },
+<span class="ln">  139 | </span>    });
+<span class="ln">  140 | </span>
+<span class="ln">  141 | </span>    if (!userFound) {
+<span class="ln">  142 | </span>      return new HttpException(&#39;USER_NOT_FOUND&#39;, HttpStatus.NOT_FOUND);
+<span class="ln">  143 | </span>    }
+<span class="ln">  144 | </span>    const compare = await bcrypt.compareSync(password, userFound.password);
+<span class="ln">  145 | </span>    if (!compare) {
+<span class="ln">  146 | </span>      return new HttpException(&#39;PASSWORD_INVALID&#39;, HttpStatus.NOT_FOUND);
+<span class="ln">  147 | </span>    }
+<span class="ln">  148 | </span>
+<span class="ln">  149 | </span>    const payload = { id: userFound.id, name: userFound.name };
+<span class="ln">  150 | </span>    const token = await this.jwtUserService.sign(payload);
+<span class="ln">  151 | </span>
+<span class="ln">  152 | </span>    const dataUser = {
+<span class="ln">  153 | </span>      user: userFound,
+<span class="ln">  154 | </span>      token,
+<span class="ln">  155 | </span>    };
+<span class="ln">  156 | </span>    return dataUser;
+<span class="ln">  157 | </span>  }
+<span class="ln">  158 | </span>
+<span class="ln">  159 | </span>  async deleteUser(id: number) {
+<span class="ln">  160 | </span>    const result = await this.usersRepository.delete({ id });
+<span class="ln">  161 | </span>    if (result.affected === 0) {
+<span class="ln">  162 | </span>      return new HttpException(&#39;Usuario no encontrado&#39;, HttpStatus.NOT_FOUND);
+<span class="ln">  163 | </span>    }
+<span class="ln">  164 | </span>
+<span class="ln">  165 | </span>    return result;
+<span class="ln">  166 | </span>  }
+<span class="ln">  167 | </span>
+<span class="ln">  168 | </span>  async updateUser(id: number, user: UpdateUserDto) {
+<span class="ln">  169 | </span>    const userFound = await this.usersRepository.findOne({
+<span class="ln">  170 | </span>      where: {
+<span class="ln">  171 | </span>        id,
+<span class="ln">  172 | </span>      },
+<span class="ln">  173 | </span>    });
+<span class="ln">  174 | </span>    if (!userFound) {
+<span class="ln">  175 | </span>      return new HttpException(&#39;Usuario no encontrado&#39;, HttpStatus.NOT_FOUND);
+<span class="ln">  176 | </span>    }
+<span class="ln">  177 | </span>    const userFondN = await this.usersRepository.findOne({
+<span class="ln">  178 | </span>      where: {
+<span class="ln">  179 | </span>        id: Not(id),
+<span class="ln">  180 | </span>        user_name: user.user_name,
+<span class="ln">  181 | </span>      },
+<span class="ln">  182 | </span>    });
+<span class="ln">  183 | </span>
+<span class="ln">  184 | </span>    if (userFondN) {
+<span class="ln">  185 | </span>      return new HttpException(
+<span class="ln">  186 | </span>        &#39;Ya existe un usuario con ese nombre de usuario&#39;,
+<span class="ln">  187 | </span>        HttpStatus.CONFLICT,
+<span class="ln">  188 | </span>      );
+<span class="ln">  189 | </span>    }
+<span class="ln">  190 | </span>    if (user.password !== undefined) {
+<span class="ln">  191 | </span>      const password = user.password;
+<span class="ln">  192 | </span>      const passwordHash = await bcrypt.hash(password, 8);
+<span class="ln">  193 | </span>      user.password = passwordHash;
+<span class="ln">  194 | </span>    }
+<span class="ln">  195 | </span>    if (user.passwordSignature !== undefined) {
+<span class="ln">  196 | </span>      const passwordS = user.passwordSignature;
+<span class="ln">  197 | </span>      const passwordHash = await bcrypt.hash(passwordS, 8);
+<span class="ln">  198 | </span>      user.passwordSignature = passwordHash;
+<span class="ln">  199 | </span>    }
+<span class="ln">  200 | </span>    const updateUser = Object.assign(userFound, user);
+<span class="ln">  201 | </span>    return this.usersRepository.save(updateUser);
+<span class="ln">  202 | </span>  }
+<span class="ln">  203 | </span>}
+<span class="ln">  204 | </span>
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\way_pay\waypay.service.ts</h2>
+<div class="meta">Lineas: 76 | Bytes: 2618 | SHA256: B6BA309F3326B5E826FB4D3541B034F49992EA6EED59D45E83D974144696B894</div>
+</div><pre>
+<span class="ln">    1 | </span>import { HttpException, HttpStatus, Injectable } from &#39;@nestjs/common&#39;;
+<span class="ln">    2 | </span>import { InjectRepository } from &#39;@nestjs/typeorm&#39;;
+<span class="ln">    3 | </span>import { Waypay } from &#39;./waypay.entity&#39;;
+<span class="ln">    4 | </span>import { Repository } from &#39;typeorm&#39;;
+<span class="ln">    5 | </span>import { CreateWaypayDto } from &#39;./dto/create-waypay.dto&#39;;
+<span class="ln">    6 | </span>import { UpdateWaypayDto } from &#39;./dto/update-waypay.dto&#39;;
+<span class="ln">    7 | </span>
+<span class="ln">    8 | </span>@Injectable()
+<span class="ln">    9 | </span>export class WaypayService {
+<span class="ln">   10 | </span>  constructor(
+<span class="ln">   11 | </span>    @InjectRepository(Waypay) private waypayRepository: Repository&lt;Waypay&gt;,
+<span class="ln">   12 | </span>  ) {}
+<span class="ln">   13 | </span>
+<span class="ln">   14 | </span>  async getWaypayDate(admission: Date) {
+<span class="ln">   15 | </span>    return this.waypayRepository.find({
+<span class="ln">   16 | </span>      where: {
+<span class="ln">   17 | </span>        date: admission,
+<span class="ln">   18 | </span>      },
+<span class="ln">   19 | </span>      relations: [&#39;waypayitems&#39;],
+<span class="ln">   20 | </span>    });
+<span class="ln">   21 | </span>  }
+<span class="ln">   22 | </span>
+<span class="ln">   23 | </span>  async getWaypayPatientId(id: number) {
+<span class="ln">   24 | </span>    const waypayFound = this.waypayRepository.findOne({
+<span class="ln">   25 | </span>      where: {
+<span class="ln">   26 | </span>        id_patients: id,
+<span class="ln">   27 | </span>      },
+<span class="ln">   28 | </span>      relations: [&#39;waypayitems&#39;],
+<span class="ln">   29 | </span>    });
+<span class="ln">   30 | </span>    if (!waypayFound) {
+<span class="ln">   31 | </span>      return new HttpException(
+<span class="ln">   32 | </span>        &#39;forma de pago no encontrado&#39;,
+<span class="ln">   33 | </span>        HttpStatus.NOT_FOUND,
+<span class="ln">   34 | </span>      );
+<span class="ln">   35 | </span>    }
+<span class="ln">   36 | </span>    return waypayFound;
+<span class="ln">   37 | </span>  }
+<span class="ln">   38 | </span>
+<span class="ln">   39 | </span>  async createWaypay(waypay: CreateWaypayDto): Promise&lt;any&gt; {
+<span class="ln">   40 | </span>    return this.waypayRepository.save(waypay);
+<span class="ln">   41 | </span>  }
+<span class="ln">   42 | </span>
+<span class="ln">   43 | </span>  async updateWaypay(id: number, waypay: UpdateWaypayDto) {
+<span class="ln">   44 | </span>    const waypayFound = await this.waypayRepository.findOne({
+<span class="ln">   45 | </span>      where: {
+<span class="ln">   46 | </span>        id,
+<span class="ln">   47 | </span>      },
+<span class="ln">   48 | </span>    });
+<span class="ln">   49 | </span>    if (!waypayFound) {
+<span class="ln">   50 | </span>      return new HttpException(
+<span class="ln">   51 | </span>        &#39;forma de pago no encontrado&#39;,
+<span class="ln">   52 | </span>        HttpStatus.NOT_FOUND,
+<span class="ln">   53 | </span>      );
+<span class="ln">   54 | </span>    }
+<span class="ln">   55 | </span>    const updateWaypay = Object.assign(waypayFound, waypay);
+<span class="ln">   56 | </span>    return this.waypayRepository.save(updateWaypay);
+<span class="ln">   57 | </span>  }
+<span class="ln">   58 | </span>
+<span class="ln">   59 | </span>  async getInvoiceTotales(admission: Date, idUser: number, idTypePay: number) {
+<span class="ln">   60 | </span>    const totales = await this.waypayRepository
+<span class="ln">   61 | </span>      .createQueryBuilder(&#39;way_pay&#39;)
+<span class="ln">   62 | </span>      .select([
+<span class="ln">   63 | </span>        &quot;COALESCE(SUM(CASE WHEN way_pay.annulment = false THEN way_pay_items.amount ELSE 0 END), 0) AS total_not_annulled&quot;,
+<span class="ln">   64 | </span>        &quot;COALESCE(SUM(CASE WHEN way_pay.annulment = true THEN way_pay_items.amount ELSE 0 END), 0) AS total_annulled&quot;,
+<span class="ln">   65 | </span>        &quot;COALESCE(SUM(CASE WHEN way_pay.annulment = false THEN way_pay_items.amountDollar ELSE 0 END), 0) AS total_dollars_not_annulled&quot;,
+<span class="ln">   66 | </span>        &quot;COALESCE(SUM(CASE WHEN way_pay.annulment = true THEN way_pay_items.amountDollar ELSE 0 END), 0) AS total_dollars_annulled&quot;,
+<span class="ln">   67 | </span>      ])
+<span class="ln">   68 | </span>      .innerJoin(&#39;way_pay.waypayitems&#39;, &#39;way_pay_items&#39;)
+<span class="ln">   69 | </span>      .where(&#39;DATE(way_pay.date) = :admission&#39;, { admission })
+<span class="ln">   70 | </span>      .andWhere(&#39;way_pay.id_users = :idUser&#39;, { idUser })
+<span class="ln">   71 | </span>      .andWhere(&#39;way_pay_items.id_type_payment = :idTypePay&#39;, { idTypePay })
+<span class="ln">   72 | </span>      .getRawOne();
+<span class="ln">   73 | </span>    return totales;
+<span class="ln">   74 | </span>  }
+<span class="ln">   75 | </span>}
+<span class="ln">   76 | </span>
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\way_pay_items\waypayitems.service.ts</h2>
+<div class="meta">Lineas: 30 | Bytes: 1201 | SHA256: 195B2FA223894AA072B3888293715EFF5BF4C38500ED585DE12E78B002C385F6</div>
+</div><pre>
+<span class="ln">    1 | </span>import { HttpException, HttpStatus, Injectable } from &#39;@nestjs/common&#39;;
+<span class="ln">    2 | </span>import { InjectRepository } from &#39;@nestjs/typeorm&#39;;
+<span class="ln">    3 | </span>import { Waypayitems } from &#39;./waypayitems.entity&#39;;
+<span class="ln">    4 | </span>import { Repository } from &#39;typeorm&#39;;
+<span class="ln">    5 | </span>import { CreateWaypayitemsDto } from &#39;./dto/create-waypayitems.dto&#39;;
+<span class="ln">    6 | </span>import { UpdateWaypayitemsDto } from &#39;./dto/update-waypayitems.dto&#39;;
+<span class="ln">    7 | </span>
+<span class="ln">    8 | </span>@Injectable()
+<span class="ln">    9 | </span>export class WaypayitemsService {
+<span class="ln">   10 | </span>    constructor(
+<span class="ln">   11 | </span>        @InjectRepository(Waypayitems) private waypayitemsRepository: Repository&lt;Waypayitems&gt;
+<span class="ln">   12 | </span>    ) {}
+<span class="ln">   13 | </span>
+<span class="ln">   14 | </span>    async createWaypayitems(waypayitems: CreateWaypayitemsDto): Promise&lt;any&gt; {
+<span class="ln">   15 | </span>        return this.waypayitemsRepository.save(waypayitems) 
+<span class="ln">   16 | </span>    }
+<span class="ln">   17 | </span>
+<span class="ln">   18 | </span>    async updateWaypayitems(id: number, waypayitems: UpdateWaypayitemsDto) {
+<span class="ln">   19 | </span>        const waypayitemsFound = await this.waypayitemsRepository.findOne({
+<span class="ln">   20 | </span>            where: {
+<span class="ln">   21 | </span>                id
+<span class="ln">   22 | </span>            }
+<span class="ln">   23 | </span>        })
+<span class="ln">   24 | </span>        if (!waypayitemsFound) {
+<span class="ln">   25 | </span>            return new HttpException(&#39;forma de pago no encontrado&#39;, HttpStatus.NOT_FOUND)
+<span class="ln">   26 | </span>        }
+<span class="ln">   27 | </span>        const updateWaypayitems = Object.assign(waypayitemsFound, waypayitems)
+<span class="ln">   28 | </span>        return this.waypayitemsRepository.save(updateWaypayitems)
+<span class="ln">   29 | </span>    }
+<span class="ln">   30 | </span>}
+
+</pre></section>
+
+</main><footer>Fin de parte</footer></body></html>

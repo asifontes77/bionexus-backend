@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Auditoria Backend TORO - 04-entidades-typeorm</title>
+<style>
+body{margin:0;background:#f8fafc;color:#172033;font-family:Segoe UI,Arial,sans-serif;line-height:1.5}
+header{background:#111827;color:#fff;border-bottom:5px solid #e0234e;padding:32px 22px}
+header div,main{max-width:1350px;margin:auto}main{padding:26px 16px}
+.notice,.file{background:#fff;border:1px solid #cbd5e1;border-radius:9px;margin-bottom:22px;box-shadow:0 3px 10px rgba(15,23,42,.06)}
+.notice{padding:18px}.file-header{background:#eef2ff;border-bottom:1px solid #cbd5e1;padding:13px 17px}
+.file-header h2{font-size:1.1rem;margin:0 0 6px;overflow-wrap:anywhere}.meta{color:#475569;font-size:.88rem}
+pre{margin:0;padding:17px;white-space:pre-wrap;overflow-wrap:anywhere;tab-size:4;font-family:Consolas,Courier New,monospace;font-size:.84rem;line-height:1.46}
+.ln{display:inline-block;color:#64748b;min-width:5.7em;user-select:none}.redacted{color:#b91c1c;font-weight:700}
+footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
+<header><div>
+<h1>Auditoria Backend TORO - 04-entidades-typeorm</h1>
+<p>Parte: 1</p>
+<p>Raiz auditada: C:\Users\Alexis\Documents\Sistema TORO\Aplicacion\Toro Backend</p>
+<p>Generado: 04-08-2026 08:55 a. m.</p>
+</div></header><main>
+<section class="notice"><strong>Extraccion estatica de solo lectura.</strong>
+<p>Los posibles secretos fueron reemplazados por [REDACTED]. Los numeros de linea corresponden al archivo original.</p></section>
+<section class="file">
+<div class="file-header">
+<h2>src\antibiotic\antibiotic.entity.ts</h2>
+<div class="meta">Lineas: 17 | Bytes: 367 | SHA256: 6CFBFB6156CD02514F6F814AECC39AE329F5758806CBF67574706F38B27925E1</div>
+</div><pre>
+<span class="ln">    1 | </span>import { Entity, Column, PrimaryGeneratedColumn } from &#39;typeorm&#39;;
+<span class="ln">    2 | </span>
+<span class="ln">    3 | </span>@Entity({ name: &#39;antibiotic&#39; })
+<span class="ln">    4 | </span>export class Antibiotic {
+<span class="ln">    5 | </span>  @PrimaryGeneratedColumn()
+<span class="ln">    6 | </span>  id: number;
+<span class="ln">    7 | </span>
+<span class="ln">    8 | </span>  @Column(&#39;varchar&#39;, { length: 50 })
+<span class="ln">    9 | </span>  description: string;
+<span class="ln">   10 | </span>
+<span class="ln">   11 | </span>  @Column(&#39;varchar&#39;, { length: 10 })
+<span class="ln">   12 | </span>  siglas: string;
+<span class="ln">   13 | </span>
+<span class="ln">   14 | </span>  @Column(&#39;tinyint&#39;, { default: () =&gt; 0 })
+<span class="ln">   15 | </span>  annulled: boolean;
+<span class="ln">   16 | </span>}
+<span class="ln">   17 | </span>
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\cash_register\cash_register.entity.ts</h2>
+<div class="meta">Lineas: 26 | Bytes: 618 | SHA256: C1D38DE8E2D24AA151458ACBB97F3B646077C33DD7CB66634A89ED1C13CA3170</div>
+</div><pre>
+<span class="ln">    1 | </span>import { Entity, Column, PrimaryGeneratedColumn } from &#39;typeorm&#39;;
+<span class="ln">    2 | </span>
+<span class="ln">    3 | </span>@Entity({ name: &#39;cash_register&#39; })
+<span class="ln">    4 | </span>export class cash_register {
+<span class="ln">    5 | </span>  @PrimaryGeneratedColumn()
+<span class="ln">    6 | </span>  id: number;
+<span class="ln">    7 | </span>
+<span class="ln">    8 | </span>  @Column(&#39;int&#39;, { default: () =&gt; 0 })
+<span class="ln">    9 | </span>  user_id: number;
+<span class="ln">   10 | </span>
+<span class="ln">   11 | </span>  @Column({ type: &#39;date&#39; })
+<span class="ln">   12 | </span>  admission_date: Date;
+<span class="ln">   13 | </span>
+<span class="ln">   14 | </span>  @Column({ type: &#39;json&#39;, nullable: true })
+<span class="ln">   15 | </span>  deposits: string;
+<span class="ln">   16 | </span>
+<span class="ln">   17 | </span>  @Column({ type: &#39;json&#39;, nullable: true })
+<span class="ln">   18 | </span>  totals: string;
+<span class="ln">   19 | </span>  
+<span class="ln">   20 | </span>  @Column({ type: &#39;datetime&#39;, default: () =&gt; &#39;CURRENT_TIMESTAMP&#39; })
+<span class="ln">   21 | </span>  createdAt: Date;
+<span class="ln">   22 | </span>
+<span class="ln">   23 | </span>  @Column({ type: &#39;datetime&#39;, default: () =&gt; &#39;CURRENT_TIMESTAMP&#39; })
+<span class="ln">   24 | </span>  updatedAt: Date;
+<span class="ln">   25 | </span>}
+<span class="ln">   26 | </span>
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\client\client.entity.ts</h2>
+<div class="meta">Lineas: 40 | Bytes: 1040 | SHA256: D45C3B3CD9B841F19955C305B7668B7B4F51B621EB6166B1DAB367CFB7594BD3</div>
+</div><pre>
+<span class="ln">    1 | </span>import {Entity, Column, PrimaryGeneratedColumn, ManyToOne, NumericType, OneToMany} from &#39;typeorm&#39;;
+<span class="ln">    2 | </span>
+<span class="ln">    3 | </span>@Entity({name: &#39;client&#39;})
+<span class="ln">    4 | </span>export class Client {
+<span class="ln">    5 | </span>    @PrimaryGeneratedColumn()
+<span class="ln">    6 | </span>    id: number
+<span class="ln">    7 | </span>
+<span class="ln">    8 | </span>    @Column(&#39;varchar&#39;, {length: 100, nullable: true})
+<span class="ln">    9 | </span>    business_name: string
+<span class="ln">   10 | </span>
+<span class="ln">   11 | </span>    @Column(&#39;varchar&#39;, {length: 200, nullable: true})
+<span class="ln">   12 | </span>    address: string
+<span class="ln">   13 | </span>
+<span class="ln">   14 | </span>    @Column(&#39;varchar&#39;, {length: 20, nullable: true})
+<span class="ln">   15 | </span>    phone: string
+<span class="ln">   16 | </span>
+<span class="ln">   17 | </span>    @Column(&#39;varchar&#39;, {length: 60, nullable: true})
+<span class="ln">   18 | </span>    person_charge: string
+<span class="ln">   19 | </span>
+<span class="ln">   20 | </span>    @Column({type: &#39;decimal&#39;, precision: 18, scale: 2, default: () =&gt; 0})
+<span class="ln">   21 | </span>    discount: number
+<span class="ln">   22 | </span>
+<span class="ln">   23 | </span>    @Column(&#39;varchar&#39;, {length: 20, nullable: true})
+<span class="ln">   24 | </span>    rif: string
+<span class="ln">   25 | </span>
+<span class="ln">   26 | </span>    @Column(&#39;tinyint&#39;, {default: () =&gt; 0})
+<span class="ln">   27 | </span>    Print_invoice: boolean
+<span class="ln">   28 | </span>
+<span class="ln">   29 | </span>    @Column(&#39;tinyint&#39;, {default: () =&gt; 0})
+<span class="ln">   30 | </span>    hide_client: boolean
+<span class="ln">   31 | </span>
+<span class="ln">   32 | </span>    @Column({type:&#39;smallint&#39;, default: 1})
+<span class="ln">   33 | </span>    tariff: number
+<span class="ln">   34 | </span>
+<span class="ln">   35 | </span>    @Column(&#39;tinyint&#39;, {default: 1})
+<span class="ln">   36 | </span>    credit: boolean
+<span class="ln">   37 | </span>
+<span class="ln">   38 | </span>    @Column(&#39;tinyint&#39;, {default: () =&gt; 0})
+<span class="ln">   39 | </span>    charge_dollars: boolean
+<span class="ln">   40 | </span>}
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\customer_accounts_receivable\customer_accounts_receivable.entity.ts</h2>
+<div class="meta">Lineas: 34 | Bytes: 1015 | SHA256: 5CF21BD3CB1F126B21DA2B22265B4194D4BE6023BE6254E04B6A51435B63931E</div>
+</div><pre>
+<span class="ln">    1 | </span>import {Entity, Column, PrimaryGeneratedColumn, ManyToOne, NumericType, OneToMany} from &#39;typeorm&#39;;
+<span class="ln">    2 | </span>
+<span class="ln">    3 | </span>@Entity({name: &#39;customer_accounts_receivable&#39;})
+<span class="ln">    4 | </span>export class Customeraccountsreceivable {
+<span class="ln">    5 | </span>  @PrimaryGeneratedColumn()
+<span class="ln">    6 | </span>  id: number
+<span class="ln">    7 | </span>
+<span class="ln">    8 | </span>  @Column(&#39;int&#39;, { default: () =&gt; 0 })
+<span class="ln">    9 | </span>  client_id: number;
+<span class="ln">   10 | </span>  
+<span class="ln">   11 | </span>  @Column(&#39;varchar&#39;, { length: 250, nullable: true })
+<span class="ln">   12 | </span>  invoice: string;
+<span class="ln">   13 | </span>  
+<span class="ln">   14 | </span>  @Column({ type: &#39;decimal&#39;, precision: 18, scale: 2, default: () =&gt; 0 })
+<span class="ln">   15 | </span>  total: number;
+<span class="ln">   16 | </span>
+<span class="ln">   17 | </span>  @Column({ type: &#39;decimal&#39;, precision: 18, scale: 2, default: () =&gt; 0 })
+<span class="ln">   18 | </span>  total_dollars: number;
+<span class="ln">   19 | </span>  
+<span class="ln">   20 | </span>  @Column({ type: &#39;decimal&#39;, precision: 18, scale: 2, default: () =&gt; 0 })
+<span class="ln">   21 | </span>  total_canceled: number;
+<span class="ln">   22 | </span>
+<span class="ln">   23 | </span>  @Column(&#39;int&#39;, { default: () =&gt; 0 })
+<span class="ln">   24 | </span>  user_id_canceled: number;
+<span class="ln">   25 | </span>
+<span class="ln">   26 | </span>  @Column({ type: &#39;datetime&#39;, nullable: true })
+<span class="ln">   27 | </span>  date_canceled: Date;
+<span class="ln">   28 | </span>
+<span class="ln">   29 | </span>  @Column({ type: &#39;datetime&#39;, default: () =&gt; &#39;CURRENT_TIMESTAMP&#39; })
+<span class="ln">   30 | </span>  createdAt: Date;
+<span class="ln">   31 | </span>
+<span class="ln">   32 | </span>  @Column({ type: &#39;datetime&#39;, default: () =&gt; &#39;CURRENT_TIMESTAMP&#39; })
+<span class="ln">   33 | </span>  updatedAt: Date;
+<span class="ln">   34 | </span>}
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\dollar_value\dollarvalue.entity.ts</h2>
+<div class="meta">Lineas: 13 | Bytes: 370 | SHA256: 25BA9BF1FE16625FDB015C1778D783979ADE98E6F2DF37938ADC0A428E3F653F</div>
+</div><pre>
+<span class="ln">    1 | </span>import {Entity, Column, PrimaryGeneratedColumn, OneToMany} from &#39;typeorm&#39;;
+<span class="ln">    2 | </span>
+<span class="ln">    3 | </span>@Entity({name: &#39;dollar_value&#39;})
+<span class="ln">    4 | </span>export class Dollarvalue {
+<span class="ln">    5 | </span>    @PrimaryGeneratedColumn()
+<span class="ln">    6 | </span>    id: number
+<span class="ln">    7 | </span>
+<span class="ln">    8 | </span>    @Column({type: &#39;datetime&#39;, default: () =&gt; &#39;CURRENT_TIMESTAMP&#39;})
+<span class="ln">    9 | </span>    date: Date
+<span class="ln">   10 | </span>
+<span class="ln">   11 | </span>    @Column({type: &#39;decimal&#39;, precision: 18, scale: 2, default: () =&gt; 0})
+<span class="ln">   12 | </span>    value: number
+<span class="ln">   13 | </span>}
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\exam_group\examgroup.entity.ts</h2>
+<div class="meta">Lineas: 33 | Bytes: 920 | SHA256: 7B82E263DED4A3D9A75E6ACCB1D5C43F9D2D47C828E0D48C9E098238D5A46B72</div>
+</div><pre>
+<span class="ln">    1 | </span>import { Examlists } from &#39;src/exam_lists/examlists.entity&#39;;
+<span class="ln">    2 | </span>import {Entity, Column, PrimaryGeneratedColumn, ManyToOne, OneToMany, JoinColumn, OneToOne} from &#39;typeorm&#39;;
+<span class="ln">    3 | </span>import { Exam } from &#39;src/exams/exams.entity&#39;;
+<span class="ln">    4 | </span>
+<span class="ln">    5 | </span>@Entity({name: &#39;exam_group&#39;})
+<span class="ln">    6 | </span>export class Examgroup {
+<span class="ln">    7 | </span>    @PrimaryGeneratedColumn()
+<span class="ln">    8 | </span>    id: number
+<span class="ln">    9 | </span>
+<span class="ln">   10 | </span>    @Column(&#39;varchar&#39;, {length: 150})
+<span class="ln">   11 | </span>    description: string
+<span class="ln">   12 | </span>
+<span class="ln">   13 | </span>    @Column(&#39;tinyint&#39;, {default: 1})
+<span class="ln">   14 | </span>    annulled: boolean
+<span class="ln">   15 | </span>
+<span class="ln">   16 | </span>    @Column(&#39;int&#39;)
+<span class="ln">   17 | </span>    position: number
+<span class="ln">   18 | </span>
+<span class="ln">   19 | </span>    @Column(&#39;tinyint&#39;, {default: 1})
+<span class="ln">   20 | </span>    its_exam: boolean
+<span class="ln">   21 | </span>  
+<span class="ln">   22 | </span>    @Column({type: &#39;datetime&#39;, default: () =&gt; &#39;CURRENT_TIMESTAMP&#39;})
+<span class="ln">   23 | </span>    createdAt: Date
+<span class="ln">   24 | </span>
+<span class="ln">   25 | </span>    @Column({type: &#39;datetime&#39;, default: () =&gt; &#39;CURRENT_TIMESTAMP&#39;})
+<span class="ln">   26 | </span>    updatedAt: Date
+<span class="ln">   27 | </span>
+<span class="ln">   28 | </span>    @OneToMany(() =&gt; Examlists, (examlists) =&gt; examlists.examgroup)
+<span class="ln">   29 | </span>    examlists: Examlists[]
+<span class="ln">   30 | </span>
+<span class="ln">   31 | </span>    @OneToMany(() =&gt; Exam, (exam) =&gt; exam.examGroup)
+<span class="ln">   32 | </span>    exam: Exam;
+<span class="ln">   33 | </span>}
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\exam_lists\examlists.entity.ts</h2>
+<div class="meta">Lineas: 76 | Bytes: 1894 | SHA256: 626F69CFA9CD612B5BB1EF833C0CC7390A6C102C1EC4B09D847878D6C7412AA1</div>
+</div><pre>
+<span class="ln">    1 | </span>import { Examgroup } from &#39;src/exam_group/examgroup.entity&#39;;
+<span class="ln">    2 | </span>import {
+<span class="ln">    3 | </span>  Entity,
+<span class="ln">    4 | </span>  Column,
+<span class="ln">    5 | </span>  PrimaryGeneratedColumn,
+<span class="ln">    6 | </span>  ManyToOne,
+<span class="ln">    7 | </span>  JoinColumn,
+<span class="ln">    8 | </span>} from &#39;typeorm&#39;;
+<span class="ln">    9 | </span>
+<span class="ln">   10 | </span>@Entity({ name: &#39;exam_lists&#39; })
+<span class="ln">   11 | </span>export class Examlists {
+<span class="ln">   12 | </span>  @PrimaryGeneratedColumn()
+<span class="ln">   13 | </span>  id: number;
+<span class="ln">   14 | </span>
+<span class="ln">   15 | </span>  @Column(&#39;int&#39;, { default: () =&gt; 0 })
+<span class="ln">   16 | </span>  group_id: number;
+<span class="ln">   17 | </span>
+<span class="ln">   18 | </span>  @Column(&#39;int&#39;, { default: () =&gt; 0 })
+<span class="ln">   19 | </span>  position: number;
+<span class="ln">   20 | </span>
+<span class="ln">   21 | </span>  @Column(&#39;varchar&#39;, { length: 60 })
+<span class="ln">   22 | </span>  description: string;
+<span class="ln">   23 | </span>
+<span class="ln">   24 | </span>  @Column({ type: &#39;smallint&#39;, default: 1 })
+<span class="ln">   25 | </span>  size: number;
+<span class="ln">   26 | </span>
+<span class="ln">   27 | </span>  @Column(&#39;tinyint&#39;, { default: () =&gt; 0 })
+<span class="ln">   28 | </span>  annulled: boolean;
+<span class="ln">   29 | </span>
+<span class="ln">   30 | </span>  @Column(&#39;varchar&#39;, { length: 10 })
+<span class="ln">   31 | </span>  abbreviation: string;
+<span class="ln">   32 | </span>
+<span class="ln">   33 | </span>  @Column(&#39;tinyint&#39;, { default: () =&gt; 0 })
+<span class="ln">   34 | </span>  special_test: boolean;
+<span class="ln">   35 | </span>
+<span class="ln">   36 | </span>  @Column({ type: &#39;longtext&#39;, nullable: true })
+<span class="ln">   37 | </span>  work_sheet: string;
+<span class="ln">   38 | </span>
+<span class="ln">   39 | </span>  @Column(&#39;int&#39;, { default: () =&gt; 0 })
+<span class="ln">   40 | </span>  tax_id: number;
+<span class="ln">   41 | </span>
+<span class="ln">   42 | </span>  @Column({ type: &#39;longtext&#39;, nullable: true })
+<span class="ln">   43 | </span>  format: string;
+<span class="ln">   44 | </span>
+<span class="ln">   45 | </span>  @Column({ type: &#39;json&#39;, nullable: true })
+<span class="ln">   46 | </span>  format_vue: string;
+<span class="ln">   47 | </span>
+<span class="ln">   48 | </span>  @Column({ type: &#39;decimal&#39;, precision: 18, scale: 2, default: () =&gt; 0 })
+<span class="ln">   49 | </span>  cost1: number;
+<span class="ln">   50 | </span>
+<span class="ln">   51 | </span>  @Column({ type: &#39;decimal&#39;, precision: 18, scale: 2, default: () =&gt; 0 })
+<span class="ln">   52 | </span>  cost2: number;
+<span class="ln">   53 | </span>
+<span class="ln">   54 | </span>  @Column({ type: &#39;decimal&#39;, precision: 18, scale: 2, default: () =&gt; 0 })
+<span class="ln">   55 | </span>  cost3: number;
+<span class="ln">   56 | </span>
+<span class="ln">   57 | </span>  @Column({ type: &#39;decimal&#39;, precision: 18, scale: 2, default: () =&gt; 0 })
+<span class="ln">   58 | </span>  cost4: number;
+<span class="ln">   59 | </span>
+<span class="ln">   60 | </span>  @Column({ type: &#39;decimal&#39;, precision: 18, scale: 2, default: () =&gt; 0 })
+<span class="ln">   61 | </span>  cost5: number;
+<span class="ln">   62 | </span>
+<span class="ln">   63 | </span>  @Column({ type: &#39;decimal&#39;, precision: 18, scale: 2, default: () =&gt; 0 })
+<span class="ln">   64 | </span>  cost6: number;
+<span class="ln">   65 | </span>
+<span class="ln">   66 | </span>  @Column({ type: &#39;datetime&#39;, default: () =&gt; &#39;CURRENT_TIMESTAMP&#39; })
+<span class="ln">   67 | </span>  createdAt: Date;
+<span class="ln">   68 | </span>
+<span class="ln">   69 | </span>  @Column({ type: &#39;datetime&#39;, default: () =&gt; &#39;CURRENT_TIMESTAMP&#39; })
+<span class="ln">   70 | </span>  updatedAt: Date;
+<span class="ln">   71 | </span>
+<span class="ln">   72 | </span>  @ManyToOne(() =&gt; Examgroup, (examgroup) =&gt; examgroup.examlists)
+<span class="ln">   73 | </span>  @JoinColumn({ name: &#39;group_id&#39; })
+<span class="ln">   74 | </span>  examgroup: Examgroup;
+<span class="ln">   75 | </span>}
+<span class="ln">   76 | </span>
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\exams\exams.entity.ts</h2>
+<div class="meta">Lineas: 80 | Bytes: 2125 | SHA256: 0304229DC31117F8084C8D1DC46D714E458E1B5C1A5BE9EF40DFBC631FCC08BF</div>
+</div><pre>
+<span class="ln">    1 | </span>import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, OneToOne, JoinColumn } from &#39;typeorm&#39;;
+<span class="ln">    2 | </span>import { Patient } from &#39;src/patients/patients.entity&#39;;
+<span class="ln">    3 | </span>import { Examgroup } from &#39;src/exam_group/examgroup.entity&#39;;
+<span class="ln">    4 | </span>
+<span class="ln">    5 | </span>@Entity({ name: &#39;exams&#39; })
+<span class="ln">    6 | </span>export class Exam {
+<span class="ln">    7 | </span>  @PrimaryGeneratedColumn()
+<span class="ln">    8 | </span>  id: number;
+<span class="ln">    9 | </span>
+<span class="ln">   10 | </span>  @Column(&#39;int&#39;, { default: () =&gt; 0 })
+<span class="ln">   11 | </span>  patientsId: number;
+<span class="ln">   12 | </span>
+<span class="ln">   13 | </span>  @Column(&#39;int&#39;, { default: () =&gt; 0 })
+<span class="ln">   14 | </span>  examlistsId: number;
+<span class="ln">   15 | </span>
+<span class="ln">   16 | </span>  @Column(&#39;varchar&#39;, { length: 60 })
+<span class="ln">   17 | </span>  description: string;
+<span class="ln">   18 | </span>
+<span class="ln">   19 | </span>  @Column({ type: &#39;datetime&#39;, default: () =&gt; &#39;CURRENT_TIMESTAMP&#39; })
+<span class="ln">   20 | </span>  date: Date;
+<span class="ln">   21 | </span>
+<span class="ln">   22 | </span>  @Column(&#39;int&#39;, { default: () =&gt; 0 })
+<span class="ln">   23 | </span>  group_id: number;
+<span class="ln">   24 | </span>
+<span class="ln">   25 | </span>  @Column(&#39;int&#39;)
+<span class="ln">   26 | </span>  position: number;
+<span class="ln">   27 | </span>
+<span class="ln">   28 | </span>  @Column({ type: &#39;decimal&#39;, precision: 18, scale: 2, default: () =&gt; 0 })
+<span class="ln">   29 | </span>  amount: number;
+<span class="ln">   30 | </span>
+<span class="ln">   31 | </span>  @Column({ type: &#39;decimal&#39;, precision: 18, scale: 2, default: () =&gt; 0 })
+<span class="ln">   32 | </span>  price: number;
+<span class="ln">   33 | </span>
+<span class="ln">   34 | </span>  @Column({ type: &#39;decimal&#39;, precision: 18, scale: 2, default: () =&gt; 0 })
+<span class="ln">   35 | </span>  total: number;
+<span class="ln">   36 | </span>
+<span class="ln">   37 | </span>  @Column(&#39;int&#39;, { default: () =&gt; 0 })
+<span class="ln">   38 | </span>  status: boolean;
+<span class="ln">   39 | </span>
+<span class="ln">   40 | </span>  @Column({ type: &#39;text&#39;, nullable: true })
+<span class="ln">   41 | </span>  result: string;
+<span class="ln">   42 | </span>
+<span class="ln">   43 | </span>  @Column(&#39;int&#39;, { default: () =&gt; 0 })
+<span class="ln">   44 | </span>  size: number;
+<span class="ln">   45 | </span>
+<span class="ln">   46 | </span>  @Column(&#39;int&#39;, { default: () =&gt; 0 })
+<span class="ln">   47 | </span>  processed_id: number;
+<span class="ln">   48 | </span>
+<span class="ln">   49 | </span>  @Column(&#39;int&#39;, { default: () =&gt; 0 })
+<span class="ln">   50 | </span>  approved_id: number;
+<span class="ln">   51 | </span>
+<span class="ln">   52 | </span>  @Column(&#39;varchar&#39;, { length: 20, default: &#39;Exo&#39; })
+<span class="ln">   53 | </span>  tax_description: string;
+<span class="ln">   54 | </span>
+<span class="ln">   55 | </span>  @Column({ type: &#39;decimal&#39;, precision: 18, scale: 2, default: () =&gt; 0 })
+<span class="ln">   56 | </span>  tax_amount: number;
+<span class="ln">   57 | </span>
+<span class="ln">   58 | </span>  @Column({ type: &#39;decimal&#39;, precision: 18, scale: 2, default: () =&gt; 0 })
+<span class="ln">   59 | </span>  tax_total: number;
+<span class="ln">   60 | </span>
+<span class="ln">   61 | </span>  @Column(&#39;int&#39;, { default: () =&gt; 0 })
+<span class="ln">   62 | </span>  canceled_id: number;
+<span class="ln">   63 | </span>
+<span class="ln">   64 | </span>  @Column({ type: &#39;smallint&#39;, default: () =&gt; 0 })
+<span class="ln">   65 | </span>  email_status: number;
+<span class="ln">   66 | </span>
+<span class="ln">   67 | </span>  @Column({ type: &#39;datetime&#39;, default: () =&gt; &#39;CURRENT_TIMESTAMP&#39; })
+<span class="ln">   68 | </span>  createdAt: Date;
+<span class="ln">   69 | </span>
+<span class="ln">   70 | </span>  @Column({ type: &#39;datetime&#39;, default: () =&gt; &#39;CURRENT_TIMESTAMP&#39; })
+<span class="ln">   71 | </span>  updatedAt: Date;
+<span class="ln">   72 | </span>
+<span class="ln">   73 | </span>  @ManyToOne(() =&gt; Patient, (patient) =&gt; patient.exams)
+<span class="ln">   74 | </span>  patients: Patient;
+<span class="ln">   75 | </span>
+<span class="ln">   76 | </span>  @ManyToOne(() =&gt; Examgroup, (examGroup) =&gt; examGroup.exam)
+<span class="ln">   77 | </span>  @JoinColumn({ name: &#39;group_id&#39; }) 
+<span class="ln">   78 | </span>  examGroup: Examgroup;
+<span class="ln">   79 | </span>}
+<span class="ln">   80 | </span>
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\group_ht\group_ht.entity.ts</h2>
+<div class="meta">Lineas: 21 | Bytes: 558 | SHA256: 3ABBB9490CDF77769A65995F642E0296673FD645669C5D17E7895D31BBB91C58</div>
+</div><pre>
+<span class="ln">    1 | </span>import { Grouphtitems } from &#39;src/group_ht_items/group_ht_items.entity&#39;;
+<span class="ln">    2 | </span>import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from &#39;typeorm&#39;;
+<span class="ln">    3 | </span>
+<span class="ln">    4 | </span>@Entity({ name: &#39;group_ht&#39; })
+<span class="ln">    5 | </span>export class Groupht {
+<span class="ln">    6 | </span>  @PrimaryGeneratedColumn()
+<span class="ln">    7 | </span>  id: number;
+<span class="ln">    8 | </span>
+<span class="ln">    9 | </span>  @Column(&#39;varchar&#39;, { length: 50 })
+<span class="ln">   10 | </span>  description: string;
+<span class="ln">   11 | </span>
+<span class="ln">   12 | </span>  @Column(&#39;varchar&#39;, { length: 200 })
+<span class="ln">   13 | </span>  details: string;
+<span class="ln">   14 | </span>
+<span class="ln">   15 | </span>  @Column(&#39;tinyint&#39;, { default: () =&gt; 0 })
+<span class="ln">   16 | </span>  annulled: boolean;
+<span class="ln">   17 | </span>
+<span class="ln">   18 | </span>  @OneToMany(() =&gt; Grouphtitems, (grouphtitems) =&gt; grouphtitems.groupht)
+<span class="ln">   19 | </span>  grouphtitems: Grouphtitems[];
+<span class="ln">   20 | </span>}
+<span class="ln">   21 | </span>
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\group_ht_items\group_ht_items.entity.ts</h2>
+<div class="meta">Lineas: 21 | Bytes: 585 | SHA256: BA15ECC1B98889D01870D34EAD37E2092937EFA876BC7D8FC95950314A5250D1</div>
+</div><pre>
+<span class="ln">    1 | </span>import { Groupht } from &#39;src/group_ht/group_ht.entity&#39;;
+<span class="ln">    2 | </span>import {Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn} from &#39;typeorm&#39;;
+<span class="ln">    3 | </span>
+<span class="ln">    4 | </span>@Entity({name: &#39;group_ht_items&#39;})
+<span class="ln">    5 | </span>export class Grouphtitems {
+<span class="ln">    6 | </span>    @PrimaryGeneratedColumn()
+<span class="ln">    7 | </span>    id: number
+<span class="ln">    8 | </span>
+<span class="ln">    9 | </span>    @Column(&#39;int&#39;, {default: () =&gt; 0})
+<span class="ln">   10 | </span>    groupHtId: number
+<span class="ln">   11 | </span>
+<span class="ln">   12 | </span>    @Column(&#39;int&#39;, {default: () =&gt; 0})
+<span class="ln">   13 | </span>    examId: number
+<span class="ln">   14 | </span>    
+<span class="ln">   15 | </span>    @Column(&#39;varchar&#39;, {length: 60})
+<span class="ln">   16 | </span>    description: string
+<span class="ln">   17 | </span>
+<span class="ln">   18 | </span>    @ManyToOne(() =&gt; Groupht, (groupht) =&gt; groupht.grouphtitems)
+<span class="ln">   19 | </span>    @JoinColumn({ name: &#39;groupHtId&#39; })
+<span class="ln">   20 | </span>    groupht: Groupht
+<span class="ln">   21 | </span>}
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\invoice\invoice.entity.ts</h2>
+<div class="meta">Lineas: 69 | Bytes: 1860 | SHA256: 429E919CC1616DD8EAD5FEBD1C602680B029247950254A1CE27C18E708EFBA4B</div>
+</div><pre>
+<span class="ln">    1 | </span>import { Invoiceitems } from &#39;src/invoice_items/invoiceitems.entity&#39;;
+<span class="ln">    2 | </span>import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from &#39;typeorm&#39;;
+<span class="ln">    3 | </span>
+<span class="ln">    4 | </span>@Entity({ name: &#39;invoice&#39; })
+<span class="ln">    5 | </span>export class Invoice {
+<span class="ln">    6 | </span>  @PrimaryGeneratedColumn()
+<span class="ln">    7 | </span>  id: number;
+<span class="ln">    8 | </span>
+<span class="ln">    9 | </span>  @Column(&#39;int&#39;, { default: () =&gt; 0 })
+<span class="ln">   10 | </span>  no_invoice: number;
+<span class="ln">   11 | </span>
+<span class="ln">   12 | </span>  @Column({ type: &#39;datetime&#39;, default: () =&gt; &#39;CURRENT_TIMESTAMP&#39; })
+<span class="ln">   13 | </span>  date: Date;
+<span class="ln">   14 | </span>
+<span class="ln">   15 | </span>  @Column(&#39;varchar&#39;, { length: 30, default: &#39;Factura&#39; })
+<span class="ln">   16 | </span>  document_type: string;
+<span class="ln">   17 | </span>
+<span class="ln">   18 | </span>  @Column(&#39;int&#39;, { default: () =&gt; 0 })
+<span class="ln">   19 | </span>  id_patients: number;
+<span class="ln">   20 | </span>
+<span class="ln">   21 | </span>  @Column(&#39;int&#39;, { default: () =&gt; 0 })
+<span class="ln">   22 | </span>  id_client: number;
+<span class="ln">   23 | </span>
+<span class="ln">   24 | </span>  @Column(&#39;varchar&#39;, { length: 100 })
+<span class="ln">   25 | </span>  business_name: string;
+<span class="ln">   26 | </span>
+<span class="ln">   27 | </span>  @Column(&#39;varchar&#39;, { length: 20 })
+<span class="ln">   28 | </span>  rif: string;
+<span class="ln">   29 | </span>
+<span class="ln">   30 | </span>  @Column(&#39;varchar&#39;, { length: 250 })
+<span class="ln">   31 | </span>  address: string;
+<span class="ln">   32 | </span>
+<span class="ln">   33 | </span>  @Column(&#39;int&#39;, { default: () =&gt; 0 })
+<span class="ln">   34 | </span>  id_users: number;
+<span class="ln">   35 | </span>
+<span class="ln">   36 | </span>  @Column({ type: &#39;decimal&#39;, precision: 18, scale: 2, default: () =&gt; 0 })
+<span class="ln">   37 | </span>  subtotal: number;
+<span class="ln">   38 | </span>
+<span class="ln">   39 | </span>  @Column({ type: &#39;decimal&#39;, precision: 18, scale: 2, default: () =&gt; 0 })
+<span class="ln">   40 | </span>  discount: number;
+<span class="ln">   41 | </span>
+<span class="ln">   42 | </span>  @Column({ type: &#39;decimal&#39;, precision: 18, scale: 2, default: () =&gt; 0 })
+<span class="ln">   43 | </span>  discount_total: number;
+<span class="ln">   44 | </span>
+<span class="ln">   45 | </span>  @Column({ type: &#39;decimal&#39;, precision: 18, scale: 2, default: () =&gt; 0 })
+<span class="ln">   46 | </span>  iva: number;
+<span class="ln">   47 | </span>
+<span class="ln">   48 | </span>  @Column({ type: &#39;decimal&#39;, precision: 18, scale: 2, default: () =&gt; 0 })
+<span class="ln">   49 | </span>  iva_total: number;
+<span class="ln">   50 | </span>
+<span class="ln">   51 | </span>  @Column({ type: &#39;decimal&#39;, precision: 18, scale: 2, default: () =&gt; 0 })
+<span class="ln">   52 | </span>  tax_base: number;
+<span class="ln">   53 | </span>
+<span class="ln">   54 | </span>  @Column(&#39;tinyint&#39;, { default: () =&gt; 0 })
+<span class="ln">   55 | </span>  deleted: boolean;
+<span class="ln">   56 | </span>
+<span class="ln">   57 | </span>  @Column(&#39;tinyint&#39;, { default: 1 })
+<span class="ln">   58 | </span>  paying: boolean;
+<span class="ln">   59 | </span>
+<span class="ln">   60 | </span>  @Column({ type: &#39;decimal&#39;, precision: 18, scale: 2, default: () =&gt; 0 })
+<span class="ln">   61 | </span>  total: number;
+<span class="ln">   62 | </span>
+<span class="ln">   63 | </span>  @Column({ type: &#39;json&#39;, nullable: true })
+<span class="ln">   64 | </span>  foot_payments: string;
+<span class="ln">   65 | </span>
+<span class="ln">   66 | </span>  @OneToMany(() =&gt; Invoiceitems, (invoiceitems) =&gt; invoiceitems.invoice)
+<span class="ln">   67 | </span>  invoiceitems: Invoiceitems[];
+<span class="ln">   68 | </span>}
+<span class="ln">   69 | </span>
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\invoice_items\invoiceitems.entity.ts</h2>
+<div class="meta">Lineas: 29 | Bytes: 848 | SHA256: DF2BDCF8615C41DAB06583F3CB98FD9B592ECD0CC8A74A6D83207A9882C9DE7E</div>
+</div><pre>
+<span class="ln">    1 | </span>import {Entity, Column, PrimaryGeneratedColumn, ManyToOne, OneToMany, JoinColumn} from &#39;typeorm&#39;;
+<span class="ln">    2 | </span>import { Invoice } from &#39;src/invoice/invoice.entity&#39;;
+<span class="ln">    3 | </span>@Entity({name: &#39;invoice_items&#39;})
+<span class="ln">    4 | </span>export class Invoiceitems {
+<span class="ln">    5 | </span>    @PrimaryGeneratedColumn()
+<span class="ln">    6 | </span>    id: number
+<span class="ln">    7 | </span>
+<span class="ln">    8 | </span>    @Column(&#39;int&#39;, {default: () =&gt; 0})
+<span class="ln">    9 | </span>    id_invoice: number
+<span class="ln">   10 | </span>
+<span class="ln">   11 | </span>    @Column(&#39;int&#39;, {default: () =&gt; 0})
+<span class="ln">   12 | </span>    quantity: number
+<span class="ln">   13 | </span>
+<span class="ln">   14 | </span>    @Column(&#39;varchar&#39;, {length: 60})
+<span class="ln">   15 | </span>    description: string
+<span class="ln">   16 | </span>
+<span class="ln">   17 | </span>    @Column({type: &#39;decimal&#39;, precision: 18, scale: 2, default: () =&gt; 0})
+<span class="ln">   18 | </span>    amount: number
+<span class="ln">   19 | </span>
+<span class="ln">   20 | </span>    @Column(&#39;int&#39;, {default: () =&gt; 0})
+<span class="ln">   21 | </span>    id_exams: number
+<span class="ln">   22 | </span>
+<span class="ln">   23 | </span>    @Column({type: &#39;decimal&#39;, precision: 18, scale: 2, default: () =&gt; 0})
+<span class="ln">   24 | </span>    total: number
+<span class="ln">   25 | </span>
+<span class="ln">   26 | </span>    @ManyToOne(() =&gt; Invoice, (invoice) =&gt; invoice.invoiceitems)
+<span class="ln">   27 | </span>    @JoinColumn({ name: &#39;id_invoice&#39; })
+<span class="ln">   28 | </span>    invoice: Invoice
+<span class="ln">   29 | </span>}
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\laboratory\laboratory.entity.ts</h2>
+<div class="meta">Lineas: 107 | Bytes: 2356 | SHA256: 7C271C38DD07AC74D7D2835CC79917A2A043C2151E471048452059616CB00615</div>
+</div><pre>
+<span class="ln">    1 | </span>import { Entity, Column, PrimaryGeneratedColumn } from &#39;typeorm&#39;;
+<span class="ln">    2 | </span>
+<span class="ln">    3 | </span>@Entity({ name: &#39;laboratory&#39; })
+<span class="ln">    4 | </span>export class Laboratory {
+<span class="ln">    5 | </span>  @PrimaryGeneratedColumn()
+<span class="ln">    6 | </span>  id: number;
+<span class="ln">    7 | </span>
+<span class="ln">    8 | </span>  @Column({ type: &#39;char&#39;, length: 20 })
+<span class="ln">    9 | </span>  rif: string;
+<span class="ln">   10 | </span>
+<span class="ln">   11 | </span>  @Column({ type: &#39;char&#39;, length: 20 })
+<span class="ln">   12 | </span>  phone_1: string;
+<span class="ln">   13 | </span>
+<span class="ln">   14 | </span>  @Column({ type: &#39;char&#39;, length: 20 })
+<span class="ln">   15 | </span>  phone_2: string;
+<span class="ln">   16 | </span>
+<span class="ln">   17 | </span>  @Column(&#39;varchar&#39;, { length: 100 })
+<span class="ln">   18 | </span>  email: string;
+<span class="ln">   19 | </span>
+<span class="ln">   20 | </span>  @Column(&#39;varchar&#39;, { length: 100 })
+<span class="ln">   21 | </span>  logo: string;
+<span class="ln">   22 | </span>
+<span class="ln">   23 | </span>  @Column(&#39;tinyint&#39;, { default: () =&gt; 0, nullable: true })
+<span class="ln">   24 | </span>  print_invoice: boolean;
+<span class="ln">   25 | </span>
+<span class="ln">   26 | </span>  @Column(&#39;tinyint&#39;, { default: () =&gt; 0, nullable: true })
+<span class="ln">   27 | </span>  print_sample_take: boolean;
+<span class="ln">   28 | </span>
+<span class="ln">   29 | </span>  @Column(&#39;varchar&#39;, { length: 100 })
+<span class="ln">   30 | </span>  url: string;
+<span class="ln">   31 | </span>
+<span class="ln">   32 | </span>  @Column(&#39;int&#39;, { default: () =&gt; 0 })
+<span class="ln">   33 | </span>  invoice_number: number;
+<span class="ln">   34 | </span>
+<span class="ln">   35 | </span>  @Column(&#39;int&#39;, { default: () =&gt; 0 })
+<span class="ln">   36 | </span>  voucher_number: number;
+<span class="ln">   37 | </span>
+<span class="ln">   38 | </span>  @Column(&#39;int&#39;, { default: () =&gt; 0 })
+<span class="ln">   39 | </span>  creditnote_number: number;
+<span class="ln">   40 | </span>
+<span class="ln">   41 | </span>  @Column({ type: &#39;char&#39;, length: 20 })
+<span class="ln">   42 | </span>  mask_phone: string;
+<span class="ln">   43 | </span>
+<span class="ln">   44 | </span>  @Column({ type: &#39;longtext&#39; })
+<span class="ln">   45 | </span>  voucher_format: string;
+<span class="ln">   46 | </span>
+<span class="ln">   47 | </span>  @Column(&#39;int&#39;)
+<span class="ln">   48 | </span>  rows_description_invoices: number;
+<span class="ln">   49 | </span>
+<span class="ln">   50 | </span>  @Column(&#39;varchar&#39;, { length: 50 })
+<span class="ln">   51 | </span>  name: string;
+<span class="ln">   52 | </span>
+<span class="ln">   53 | </span>  @Column(&#39;varchar&#39;, { length: 100 })
+<span class="ln">   54 | </span>  business_name: string;
+<span class="ln">   55 | </span>
+<span class="ln">   56 | </span>  @Column(&#39;varchar&#39;, { length: 200 })
+<span class="ln">   57 | </span>  address: string;
+<span class="ln">   58 | </span>
+<span class="ln">   59 | </span>  @Column(&#39;int&#39;, { default: 170 })
+<span class="ln">   60 | </span>  max_height_logo: number;
+<span class="ln">   61 | </span>
+<span class="ln">   62 | </span>  @Column(&#39;int&#39;, { default: 170 })
+<span class="ln">   63 | </span>  max_width_logo: number;
+<span class="ln">   64 | </span>
+<span class="ln">   65 | </span>  @Column(&#39;longtext&#39;, { nullable: true })
+<span class="ln">   66 | </span>  settingQR: string;
+<span class="ln">   67 | </span>
+<span class="ln">   68 | </span>  @Column({ type: &#39;json&#39;, nullable: true })
+<span class="ln">   69 | </span>  sendEmail: string;
+<span class="ln">   70 | </span>
+<span class="ln">   71 | </span>  @Column({ type: &#39;longtext&#39; })
+<span class="ln">   72 | </span>  head_html: string;
+<span class="ln">   73 | </span>
+<span class="ln">   74 | </span>  @Column({ type: &#39;longtext&#39; })
+<span class="ln">   75 | </span>  body_html: string;
+<span class="ln">   76 | </span>
+<span class="ln">   77 | </span>  @Column({ type: &#39;longtext&#39; })
+<span class="ln">   78 | </span>  page_html: string;
+<span class="ln">   79 | </span>
+<span class="ln">   80 | </span>  @Column(&#39;int&#39;, { default: 38 })
+<span class="ln">   81 | </span>  maximum_rows_report: number;
+<span class="ln">   82 | </span>
+<span class="ln">   83 | </span>  @Column({ type: &#39;longtext&#39; })
+<span class="ln">   84 | </span>  workshee_format: string;
+<span class="ln">   85 | </span>
+<span class="ln">   86 | </span>  @Column(&#39;varchar&#39;, { length: 100 })
+<span class="ln">   87 | </span>  printer_type: string;
+<span class="ln">   88 | </span>
+<span class="ln">   89 | </span>  @Column(&#39;varchar&#39;, { length: 100 })
+<span class="ln">   90 | </span>  printer_interface: string;
+<span class="ln">   91 | </span>
+<span class="ln">   92 | </span>  @Column(&#39;varchar&#39;, { length: 100 })
+<span class="ln">   93 | </span>  license: string;
+<span class="ln">   94 | </span>
+<span class="ln">   95 | </span>  @Column({ type: &#39;longtext&#39; })
+<span class="ln">   96 | </span>  receipt_format: string;
+<span class="ln">   97 | </span>
+<span class="ln">   98 | </span>  @Column(&#39;int&#39;, { default: 10 })
+<span class="ln">   99 | </span>  rows_description_receipt: number;
+<span class="ln">  100 | </span>
+<span class="ln">  101 | </span>  @Column(&#39;int&#39;, { default: 0 })
+<span class="ln">  102 | </span>  receipt_number: number;
+<span class="ln">  103 | </span>  
+<span class="ln">  104 | </span>  @Column(&#39;tinyint&#39;, { default: () =&gt; 0, nullable: true })
+<span class="ln">  105 | </span>  print_receipt: boolean;
+<span class="ln">  106 | </span>}
+<span class="ln">  107 | </span>
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\list_germs\list_germs.entity.ts</h2>
+<div class="meta">Lineas: 19 | Bytes: 332 | SHA256: C80624FDF35DF4A5EA4B121B54DA80D4F37E784AE59671F7502C5EFE9714A43F</div>
+</div><pre>
+<span class="ln">    1 | </span>import {
+<span class="ln">    2 | </span>  Entity,
+<span class="ln">    3 | </span>  Column,
+<span class="ln">    4 | </span>  PrimaryGeneratedColumn,
+<span class="ln">    5 | </span>} from &#39;typeorm&#39;;
+<span class="ln">    6 | </span>
+<span class="ln">    7 | </span>@Entity({ name: &#39;list_germs&#39;})
+<span class="ln">    8 | </span>export class listGerms {
+<span class="ln">    9 | </span>  @PrimaryGeneratedColumn()
+<span class="ln">   10 | </span>  id: number;
+<span class="ln">   11 | </span>
+<span class="ln">   12 | </span>  @Column(&#39;varchar&#39;, { length: 50, nullable: true })
+<span class="ln">   13 | </span>  germen: string;
+<span class="ln">   14 | </span>
+<span class="ln">   15 | </span>  
+<span class="ln">   16 | </span>  @Column(&#39;tinyint&#39;, { default: () =&gt; 0 })
+<span class="ln">   17 | </span>  annulled: boolean;
+<span class="ln">   18 | </span>}
+<span class="ln">   19 | </span>
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\parasiticforms\parasiticforms.entity.ts</h2>
+<div class="meta">Lineas: 13 | Bytes: 366 | SHA256: EFE1702D41DB94FC7621C139B09A8810D18383DFC83807D7F7219CF927C60F40</div>
+</div><pre>
+<span class="ln">    1 | </span>import {Entity, Column, PrimaryGeneratedColumn, ManyToOne, NumericType, OneToMany, JoinColumn} from &#39;typeorm&#39;;
+<span class="ln">    2 | </span>
+<span class="ln">    3 | </span>@Entity({name: &#39;parasiticforms&#39;})
+<span class="ln">    4 | </span>export class Parasiticforms {    
+<span class="ln">    5 | </span>    @PrimaryGeneratedColumn()
+<span class="ln">    6 | </span>    id: number
+<span class="ln">    7 | </span>
+<span class="ln">    8 | </span>    @Column(&#39;varchar&#39;, {length: 50})
+<span class="ln">    9 | </span>    description: string
+<span class="ln">   10 | </span>
+<span class="ln">   11 | </span>    @Column(&#39;tinyint&#39;, {default: () =&gt; 0})
+<span class="ln">   12 | </span>    annulled: boolean
+<span class="ln">   13 | </span>}
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\patients\patients.entity.ts</h2>
+<div class="meta">Lineas: 168 | Bytes: 4449 | SHA256: 4625796129E3B75E732A1941D3B697F959F5D2E2CA177FDC7F716FB72F4D6E27</div>
+</div><pre>
+<span class="ln">    1 | </span>import { Exam } from &#39;src/exams/exams.entity&#39;;
+<span class="ln">    2 | </span>import { Entity, Column, PrimaryGeneratedColumn, OneToMany, OneToOne, JoinColumn, ManyToOne } from &#39;typeorm&#39;;
+<span class="ln">    3 | </span>
+<span class="ln">    4 | </span>@Entity({ name: &#39;patients&#39; })
+<span class="ln">    5 | </span>export class Patient {
+<span class="ln">    6 | </span>  @PrimaryGeneratedColumn()
+<span class="ln">    7 | </span>  id: number;
+<span class="ln">    8 | </span>
+<span class="ln">    9 | </span>  @Column(&#39;int&#39;, { default: () =&gt; 0 })
+<span class="ln">   10 | </span>  patient_position: number;
+<span class="ln">   11 | </span>
+<span class="ln">   12 | </span>  @Column({ type: &#39;date&#39; })
+<span class="ln">   13 | </span>  admission_date: Date;
+<span class="ln">   14 | </span>
+<span class="ln">   15 | </span>  @Column({ type: &#39;time&#39; })
+<span class="ln">   16 | </span>  admission_time: Date;
+<span class="ln">   17 | </span>
+<span class="ln">   18 | </span>  @Column(&#39;varchar&#39;, { length: 100 })
+<span class="ln">   19 | </span>  name: string;
+<span class="ln">   20 | </span>
+<span class="ln">   21 | </span>  @Column(&#39;varchar&#39;, { length: 10 })
+<span class="ln">   22 | </span>  document_number: string;
+<span class="ln">   23 | </span>
+<span class="ln">   24 | </span>  @Column({ type: &#39;char&#39;, length: 1 })
+<span class="ln">   25 | </span>  verification_code: string;
+<span class="ln">   26 | </span>
+<span class="ln">   27 | </span>  @Column({ type: &#39;smallint&#39; })
+<span class="ln">   28 | </span>  age: number;
+<span class="ln">   29 | </span>
+<span class="ln">   30 | </span>  @Column(&#39;varchar&#39;, { length: 5, default: &#39;a&#241;os&#39; })
+<span class="ln">   31 | </span>  month_year: string;
+<span class="ln">   32 | </span>
+<span class="ln">   33 | </span>  @Column(&#39;tinyint&#39;, { default: () =&gt; 0, nullable: true })
+<span class="ln">   34 | </span>  sex: boolean;
+<span class="ln">   35 | </span>
+<span class="ln">   36 | </span>  @Column({ type: &#39;datetime&#39;, default: () =&gt; &#39;CURRENT_TIMESTAMP&#39; })
+<span class="ln">   37 | </span>  birth_date: Date;
+<span class="ln">   38 | </span>
+<span class="ln">   39 | </span>  @Column(&#39;varchar&#39;, { length: 20, nullable: true })
+<span class="ln">   40 | </span>  phone: string;
+<span class="ln">   41 | </span>
+<span class="ln">   42 | </span>  @Column(&#39;varchar&#39;, { length: 60 })
+<span class="ln">   43 | </span>  suggested: string;
+<span class="ln">   44 | </span>
+<span class="ln">   45 | </span>  @Column(&#39;tinyint&#39;, { default: () =&gt; 0, nullable: true })
+<span class="ln">   46 | </span>  urgent: boolean;
+<span class="ln">   47 | </span>
+<span class="ln">   48 | </span>  @Column(&#39;int&#39;, { default: () =&gt; 0 })
+<span class="ln">   49 | </span>  client_id: number;
+<span class="ln">   50 | </span>
+<span class="ln">   51 | </span>  @Column(&#39;tinyint&#39;, { default: () =&gt; 0 })
+<span class="ln">   52 | </span>  process: boolean;
+<span class="ln">   53 | </span>
+<span class="ln">   54 | </span>  @Column(&#39;varchar&#39;, { length: 100, nullable: true })
+<span class="ln">   55 | </span>  observation: string;
+<span class="ln">   56 | </span>
+<span class="ln">   57 | </span>  @Column(&#39;tinyint&#39;, { default: () =&gt; 0 })
+<span class="ln">   58 | </span>  approved: boolean;
+<span class="ln">   59 | </span>
+<span class="ln">   60 | </span>  @Column(&#39;tinyint&#39;, { default: () =&gt; 0, nullable: true })
+<span class="ln">   61 | </span>  canceled: boolean;
+<span class="ln">   62 | </span>
+<span class="ln">   63 | </span>  @Column({ type: &#39;datetime&#39;, nullable: true })
+<span class="ln">   64 | </span>  cancellation_date: Date;
+<span class="ln">   65 | </span>
+<span class="ln">   66 | </span>  @Column(&#39;int&#39;, { default: () =&gt; 0 })
+<span class="ln">   67 | </span>  cashier_id: number;
+<span class="ln">   68 | </span>
+<span class="ln">   69 | </span>  @Column({ type: &#39;json&#39;, nullable: true })
+<span class="ln">   70 | </span>  foot_payments: string;
+<span class="ln">   71 | </span>
+<span class="ln">   72 | </span>  @Column({ type: &#39;decimal&#39;, precision: 18, scale: 2, default: () =&gt; 0 })
+<span class="ln">   73 | </span>  total: number;
+<span class="ln">   74 | </span>
+<span class="ln">   75 | </span>  @Column({ type: &#39;decimal&#39;, precision: 18, scale: 2, default: () =&gt; 0 })
+<span class="ln">   76 | </span>  total_dollars: number;
+<span class="ln">   77 | </span>
+<span class="ln">   78 | </span>  @Column({ type: &#39;decimal&#39;, precision: 18, scale: 2, default: () =&gt; 0 })
+<span class="ln">   79 | </span>  way_pay_dollars: number;
+<span class="ln">   80 | </span>
+<span class="ln">   81 | </span>  @Column({ type: &#39;decimal&#39;, precision: 18, scale: 2, default: () =&gt; 0 })
+<span class="ln">   82 | </span>  total_canceled: number;
+<span class="ln">   83 | </span>
+<span class="ln">   84 | </span>  @Column({ type: &#39;decimal&#39;, precision: 18, scale: 2, default: () =&gt; 0 })
+<span class="ln">   85 | </span>  subtotal: number;
+<span class="ln">   86 | </span>
+<span class="ln">   87 | </span>  @Column({ type: &#39;decimal&#39;, precision: 18, scale: 2, default: () =&gt; 0 })
+<span class="ln">   88 | </span>  iva: number;
+<span class="ln">   89 | </span>
+<span class="ln">   90 | </span>  @Column({ type: &#39;decimal&#39;, precision: 18, scale: 2, default: () =&gt; 0 })
+<span class="ln">   91 | </span>  tax_base: number;
+<span class="ln">   92 | </span>
+<span class="ln">   93 | </span>  @Column({ type: &#39;decimal&#39;, precision: 18, scale: 2, default: () =&gt; 0 })
+<span class="ln">   94 | </span>  iva_total: number;
+<span class="ln">   95 | </span>
+<span class="ln">   96 | </span>  @Column({ type: &#39;decimal&#39;, precision: 18, scale: 2, default: () =&gt; 0 })
+<span class="ln">   97 | </span>  discount: number;
+<span class="ln">   98 | </span>
+<span class="ln">   99 | </span>  @Column({ type: &#39;decimal&#39;, precision: 18, scale: 2, default: () =&gt; 0 })
+<span class="ln">  100 | </span>  discount_total: number;
+<span class="ln">  101 | </span>
+<span class="ln">  102 | </span>  @Column({ type: &#39;decimal&#39;, precision: 18, scale: 2, default: () =&gt; 0 })
+<span class="ln">  103 | </span>  dollar_price: number;
+<span class="ln">  104 | </span>
+<span class="ln">  105 | </span>  @Column({ type: &#39;datetime&#39;, nullable: true })
+<span class="ln">  106 | </span>  dollar_price_date: Date;
+<span class="ln">  107 | </span>
+<span class="ln">  108 | </span>  @Column(&#39;varchar&#39;, { length: 100, nullable: true })
+<span class="ln">  109 | </span>  business_name: string;
+<span class="ln">  110 | </span>
+<span class="ln">  111 | </span>  @Column(&#39;varchar&#39;, { length: 20, nullable: true })
+<span class="ln">  112 | </span>  rif: string;
+<span class="ln">  113 | </span>
+<span class="ln">  114 | </span>  @Column(&#39;varchar&#39;, { length: 250, nullable: true })
+<span class="ln">  115 | </span>  address: string;
+<span class="ln">  116 | </span>
+<span class="ln">  117 | </span>  @Column(&#39;varchar&#39;, { length: 100, nullable: true })
+<span class="ln">  118 | </span>  invoice: string;
+<span class="ln">  119 | </span>
+<span class="ln">  120 | </span>  @Column(&#39;varchar&#39;, { length: 100, nullable: true, default: &#39;&#39; })
+<span class="ln">  121 | </span>  creditnote: string;
+<span class="ln">  122 | </span>
+<span class="ln">  123 | </span>  @Column({ type: &#39;datetime&#39;, nullable: true })
+<span class="ln">  124 | </span>  invoice_date: Date;
+<span class="ln">  125 | </span>
+<span class="ln">  126 | </span>  @Column({ type: &#39;datetime&#39;, nullable: true })
+<span class="ln">  127 | </span>  deliver_date: Date;
+<span class="ln">  128 | </span>
+<span class="ln">  129 | </span>  @Column(&#39;int&#39;, { default: () =&gt; 0 })
+<span class="ln">  130 | </span>  delivery_id: number;
+<span class="ln">  131 | </span>
+<span class="ln">  132 | </span>  @Column(&#39;varchar&#39;, { length: 100, nullable: true })
+<span class="ln">  133 | </span>  receive: string;
+<span class="ln">  134 | </span>
+<span class="ln">  135 | </span>  @Column(&#39;varchar&#39;, { length: 50, nullable: true })
+<span class="ln">  136 | </span>  sample_type: string;
+<span class="ln">  137 | </span>
+<span class="ln">  138 | </span>  @Column(&#39;varchar&#39;, { length: 50, nullable: true })
+<span class="ln">  139 | </span>  sample: string;
+<span class="ln">  140 | </span>
+<span class="ln">  141 | </span>  @Column(&#39;varchar&#39;, { length: 100, nullable: true })
+<span class="ln">  142 | </span>  email: string;
+<span class="ln">  143 | </span>
+<span class="ln">  144 | </span>  @Column(&#39;tinyint&#39;, { default: () =&gt; 0 })
+<span class="ln">  145 | </span>  email_sent: boolean;
+<span class="ln">  146 | </span>
+<span class="ln">  147 | </span>  @Column(&#39;tinyint&#39;, { default: () =&gt; 0 })
+<span class="ln">  148 | </span>  email_status: boolean;
+<span class="ln">  149 | </span>
+<span class="ln">  150 | </span>  @Column(&#39;int&#39;, { default: () =&gt; 0 })
+<span class="ln">  151 | </span>  user_id: number;
+<span class="ln">  152 | </span>
+<span class="ln">  153 | </span>  @Column(&#39;int&#39;, { default: () =&gt; 0 })
+<span class="ln">  154 | </span>  user_id_canceled: number;
+<span class="ln">  155 | </span>
+<span class="ln">  156 | </span>  @Column({ type: &#39;datetime&#39;, default: () =&gt; &#39;CURRENT_TIMESTAMP&#39; })
+<span class="ln">  157 | </span>  createdAt: Date;
+<span class="ln">  158 | </span>
+<span class="ln">  159 | </span>  @Column({ type: &#39;datetime&#39;, default: () =&gt; &#39;CURRENT_TIMESTAMP&#39; })
+<span class="ln">  160 | </span>  updatedAt: Date;
+<span class="ln">  161 | </span>
+<span class="ln">  162 | </span>  @Column({ type: &#39;longtext&#39;, nullable: true })
+<span class="ln">  163 | </span>  result_html: string;
+<span class="ln">  164 | </span>
+<span class="ln">  165 | </span>  @OneToMany(() =&gt; Exam, (exam) =&gt; exam.patients)
+<span class="ln">  166 | </span>  exams: Exam[];
+<span class="ln">  167 | </span>}
+<span class="ln">  168 | </span>
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\routines\routines.entity.ts</h2>
+<div class="meta">Lineas: 16 | Bytes: 381 | SHA256: 1DC43C82ECE13B4A19B2D5F022CD44B221FA8158DA827BEC419B83A520CAD249</div>
+</div><pre>
+<span class="ln">    1 | </span>import { Entity, Column, PrimaryGeneratedColumn } from &#39;typeorm&#39;;
+<span class="ln">    2 | </span>
+<span class="ln">    3 | </span>@Entity({ name: &#39;routines&#39; })
+<span class="ln">    4 | </span>export class Routines {
+<span class="ln">    5 | </span>  @PrimaryGeneratedColumn()
+<span class="ln">    6 | </span>  id: number;
+<span class="ln">    7 | </span>
+<span class="ln">    8 | </span>  @Column({ type: &#39;varchar&#39;, length: 50 })
+<span class="ln">    9 | </span>  description: string;
+<span class="ln">   10 | </span>  
+<span class="ln">   11 | </span>  @Column({ type: &#39;json&#39;, nullable: true })
+<span class="ln">   12 | </span>  registered_exams: string;
+<span class="ln">   13 | </span>  
+<span class="ln">   14 | </span>  @Column(&#39;varchar&#39;, { length: 200 })
+<span class="ln">   15 | </span>  details: string;
+<span class="ln">   16 | </span>}
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\sample_type\sampletype.entity.ts</h2>
+<div class="meta">Lineas: 10 | Bytes: 266 | SHA256: F926CC5E0EB40D95977C02A887E2B08B72325B8B3D456D43AC85559160517E02</div>
+</div><pre>
+<span class="ln">    1 | </span>import {Entity, Column, PrimaryGeneratedColumn, OneToMany} from &#39;typeorm&#39;;
+<span class="ln">    2 | </span>
+<span class="ln">    3 | </span>@Entity({name: &#39;sample_type&#39;})
+<span class="ln">    4 | </span>export class SampleType {
+<span class="ln">    5 | </span>    @PrimaryGeneratedColumn()
+<span class="ln">    6 | </span>    id: number
+<span class="ln">    7 | </span>
+<span class="ln">    8 | </span>    @Column(&#39;varchar&#39;, {length: 50, nullable: true})
+<span class="ln">    9 | </span>    description: string
+<span class="ln">   10 | </span>}
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\special_test_items\special_test_items.entity.ts</h2>
+<div class="meta">Lineas: 19 | Bytes: 641 | SHA256: 7DC2C10FB35CFD5C85614EE1822D9417989BED4C953771A71F231C8825FA5878</div>
+</div><pre>
+<span class="ln">    1 | </span>import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from &#39;typeorm&#39;;
+<span class="ln">    2 | </span>import { special_test_lab } from &#39;src/special_test_lab/special_test_lab.entity&#39;;
+<span class="ln">    3 | </span>@Entity({ name: &#39;special_test_items&#39; })
+<span class="ln">    4 | </span>export class special_test_items {
+<span class="ln">    5 | </span>  @PrimaryGeneratedColumn()
+<span class="ln">    6 | </span>  id: number;
+<span class="ln">    7 | </span>
+<span class="ln">    8 | </span>  @Column(&#39;int&#39;, {default: () =&gt; 0})
+<span class="ln">    9 | </span>  specialTestLabId: number;
+<span class="ln">   10 | </span>  
+<span class="ln">   11 | </span>  @Column(&#39;int&#39;, {default: () =&gt; 0})
+<span class="ln">   12 | </span>  exam_list_Id: number;
+<span class="ln">   13 | </span>  
+<span class="ln">   14 | </span>  @Column({ type: &#39;char&#39;, length: 60 })
+<span class="ln">   15 | </span>  description: string;
+<span class="ln">   16 | </span>
+<span class="ln">   17 | </span>  @ManyToOne(() =&gt; special_test_lab, (specialTestLab) =&gt; specialTestLab.specialTestItems, { onDelete: &#39;CASCADE&#39; })
+<span class="ln">   18 | </span>  specialTestLab: special_test_lab;
+<span class="ln">   19 | </span>}
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\special_test_lab\special_test_lab.entity.ts</h2>
+<div class="meta">Lineas: 29 | Bytes: 867 | SHA256: E1307EC7C1C5A18E4A6BCA4740E4573815A4E95383B12DD06C2D6C508B7F002E</div>
+</div><pre>
+<span class="ln">    1 | </span>import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from &#39;typeorm&#39;;
+<span class="ln">    2 | </span>import { special_test_items } from &#39;src/special_test_items/special_test_items.entity&#39;;
+<span class="ln">    3 | </span>@Entity({ name: &#39;special_test_lab&#39; })
+<span class="ln">    4 | </span>export class special_test_lab {
+<span class="ln">    5 | </span>  @PrimaryGeneratedColumn()
+<span class="ln">    6 | </span>  id: number;
+<span class="ln">    7 | </span>
+<span class="ln">    8 | </span>  @Column({ type: &#39;char&#39;, length: 40 })
+<span class="ln">    9 | </span>  description: string;
+<span class="ln">   10 | </span>
+<span class="ln">   11 | </span>  @Column(&#39;varchar&#39;, { length: 200 })
+<span class="ln">   12 | </span>  address: string;
+<span class="ln">   13 | </span>  
+<span class="ln">   14 | </span>  @Column({ type: &#39;char&#39;, length: 20 })
+<span class="ln">   15 | </span>  phone_1: string;
+<span class="ln">   16 | </span>
+<span class="ln">   17 | </span>  @Column({ type: &#39;char&#39;, length: 20 })
+<span class="ln">   18 | </span>  phone_2: string;
+<span class="ln">   19 | </span>  
+<span class="ln">   20 | </span>  @Column(&#39;varchar&#39;, { length: 100 })
+<span class="ln">   21 | </span>  email: string;
+<span class="ln">   22 | </span>
+<span class="ln">   23 | </span>  @Column(&#39;tinyint&#39;, { default: () =&gt; 0, nullable: true })
+<span class="ln">   24 | </span>  annulled: boolean;
+<span class="ln">   25 | </span>
+<span class="ln">   26 | </span>  // Relaci&#243;n OneToMany
+<span class="ln">   27 | </span>  @OneToMany(() =&gt; special_test_items, (specialTestItem) =&gt; specialTestItem.specialTestLab, { cascade: true })
+<span class="ln">   28 | </span>  specialTestItems: special_test_items[];
+<span class="ln">   29 | </span>}
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\tax\tax.entity.ts</h2>
+<div class="meta">Lineas: 23 | Bytes: 575 | SHA256: D17AA9D2EEA38BEE397B4F098F8846B6588BAC6698903ACD0F371E4795082D2B</div>
+</div><pre>
+<span class="ln">    1 | </span>import { Entity, Column, PrimaryGeneratedColumn } from &#39;typeorm&#39;;
+<span class="ln">    2 | </span>
+<span class="ln">    3 | </span>@Entity({ name: &#39;tax&#39; })
+<span class="ln">    4 | </span>export class Tax {
+<span class="ln">    5 | </span>  @PrimaryGeneratedColumn()
+<span class="ln">    6 | </span>  id: number;
+<span class="ln">    7 | </span>
+<span class="ln">    8 | </span>  @Column(&#39;varchar&#39;, { length: 20 })
+<span class="ln">    9 | </span>  description: string;
+<span class="ln">   10 | </span>
+<span class="ln">   11 | </span>  @Column({ type: &#39;decimal&#39;, precision: 18, scale: 2, default: 0 })
+<span class="ln">   12 | </span>  value: number;
+<span class="ln">   13 | </span>
+<span class="ln">   14 | </span>  @Column(&#39;tinyint&#39;, { default: () =&gt; 0, nullable: true })
+<span class="ln">   15 | </span>  only_dollars: boolean;
+<span class="ln">   16 | </span>
+<span class="ln">   17 | </span>  @Column(&#39;tinyint&#39;, { default: () =&gt; 0, nullable: true })
+<span class="ln">   18 | </span>  always_subtotal: boolean;
+<span class="ln">   19 | </span>
+<span class="ln">   20 | </span>  @Column(&#39;tinyint&#39;, { default: () =&gt; 0, nullable: false })
+<span class="ln">   21 | </span>  hide: boolean;
+<span class="ln">   22 | </span>}
+<span class="ln">   23 | </span>
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\type_payment\typepayment.entity.ts</h2>
+<div class="meta">Lineas: 22 | Bytes: 606 | SHA256: 7E30681BACC22A2D60643B04E91675E7FC0B9B19FFDEA05C9DBF659323E42144</div>
+</div><pre>
+<span class="ln">    1 | </span>import {Entity, Column, PrimaryGeneratedColumn, OneToMany} from &#39;typeorm&#39;;
+<span class="ln">    2 | </span>
+<span class="ln">    3 | </span>@Entity({name: &#39;type_payment&#39;})
+<span class="ln">    4 | </span>export class TypePayment {
+<span class="ln">    5 | </span>    @PrimaryGeneratedColumn()
+<span class="ln">    6 | </span>    id: number
+<span class="ln">    7 | </span>
+<span class="ln">    8 | </span>    @Column(&#39;varchar&#39;, {length: 50, nullable: true})
+<span class="ln">    9 | </span>    description: string
+<span class="ln">   10 | </span>    
+<span class="ln">   11 | </span>    @Column(&#39;varchar&#39;, {length: 50, nullable: true})
+<span class="ln">   12 | </span>    description_1: string
+<span class="ln">   13 | </span>    
+<span class="ln">   14 | </span>    @Column(&#39;varchar&#39;, {length: 50, nullable: true})
+<span class="ln">   15 | </span>    description_2: string
+<span class="ln">   16 | </span>
+<span class="ln">   17 | </span>    @Column(&#39;tinyint&#39;, { default: () =&gt; 0 })
+<span class="ln">   18 | </span>    annulled: boolean;
+<span class="ln">   19 | </span>
+<span class="ln">   20 | </span>    @Column(&#39;tinyint&#39;, { default: () =&gt; 0, nullable: true })
+<span class="ln">   21 | </span>    only_dollars: boolean;
+<span class="ln">   22 | </span>}
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\users\users.entity.ts</h2>
+<div class="meta">Lineas: 61 | Bytes: 1635 | SHA256: E4FAEEC9E73D1017949513CBC0BF3F5DAD8594E3EA2C4479A5EF1B95CEC21631</div>
+</div><pre>
+<span class="ln">    1 | </span>import { Entity, Column, PrimaryGeneratedColumn, OneToMany, ManyToOne } from &#39;typeorm&#39;;
+<span class="ln">    2 | </span>@Entity({ name: &#39;users&#39; })
+<span class="ln">    3 | </span>export class User {
+<span class="ln">    4 | </span>  @PrimaryGeneratedColumn()
+<span class="ln">    5 | </span>  id: number;
+<span class="ln">    6 | </span>
+<span class="ln">    7 | </span>  @Column(&#39;varchar&#39;, { length: 500, nullable: true })
+<span class="ln">    8 | </span>  password: string;
+<span class="ln">    9 | </span>
+<span class="ln">   10 | </span>  @Column(&#39;varchar&#39;, { length: 100 })
+<span class="ln">   11 | </span>  name: string;
+<span class="ln">   12 | </span>
+<span class="ln">   13 | </span>  @Column(&#39;varchar&#39;, { length: 100, unique: true })
+<span class="ln">   14 | </span>  user_name: string;
+<span class="ln">   15 | </span>  @Column(&#39;varchar&#39;, { length: 50, nullable: true })
+<span class="ln">   16 | </span>  college_number: string;
+<span class="ln">   17 | </span>
+<span class="ln">   18 | </span>  @Column(&#39;varchar&#39;, { length: 20 })
+<span class="ln">   19 | </span>  telephone: string;
+<span class="ln">   20 | </span>
+<span class="ln">   21 | </span>  @Column(&#39;varchar&#39;, { length: 50, nullable: true })
+<span class="ln">   22 | </span>  key_signing: string;
+<span class="ln">   23 | </span>
+<span class="ln">   24 | </span>  @Column(&#39;varchar&#39;, { length: 100, nullable: true })
+<span class="ln">   25 | </span>  url_photo: string;
+<span class="ln">   26 | </span>
+<span class="ln">   27 | </span>  @Column(&#39;varchar&#39;, { length: 100, nullable: true })
+<span class="ln">   28 | </span>  url_signature: string;
+<span class="ln">   29 | </span>
+<span class="ln">   30 | </span>  @Column(&#39;varchar&#39;, { length: 100, nullable: true })
+<span class="ln">   31 | </span>  direction: string;
+<span class="ln">   32 | </span>
+<span class="ln">   33 | </span>  @Column(&#39;varchar&#39;, { length: 50, nullable: true })
+<span class="ln">   34 | </span>  position: string;
+<span class="ln">   35 | </span>
+<span class="ln">   36 | </span>  @Column(&#39;varchar&#39;, { length: 100, nullable: true, unique: true })
+<span class="ln">   37 | </span>  email: string;
+<span class="ln">   38 | </span>
+<span class="ln">   39 | </span>  @Column(&#39;int&#39;, { default: () =&gt; 0, nullable: true })
+<span class="ln">   40 | </span>  key_recover: number;
+<span class="ln">   41 | </span>
+<span class="ln">   42 | </span>  @Column(&#39;tinyint&#39;, { default: () =&gt; 0, nullable: true })
+<span class="ln">   43 | </span>  request_password: boolean;
+<span class="ln">   44 | </span>
+<span class="ln">   45 | </span>  @Column({ type: &#39;datetime&#39;, default: () =&gt; &#39;CURRENT_TIMESTAMP&#39; })
+<span class="ln">   46 | </span>  createdAt: Date;
+<span class="ln">   47 | </span>
+<span class="ln">   48 | </span>  @Column({ type: &#39;datetime&#39;, default: () =&gt; &#39;CURRENT_TIMESTAMP&#39; })
+<span class="ln">   49 | </span>  updatedAt: Date;
+<span class="ln">   50 | </span>
+<span class="ln">   51 | </span>  @Column(&#39;varchar&#39;, { length: 100, default: &#39;user&#39; })
+<span class="ln">   52 | </span>  roles: string;
+<span class="ln">   53 | </span>
+<span class="ln">   54 | </span>  @Column(&#39;varchar&#39;, { length: 500, nullable: true })
+<span class="ln">   55 | </span>  passwordSignature: string;
+<span class="ln">   56 | </span>
+<span class="ln">   57 | </span>  @Column(&#39;tinyint&#39;, { default: () =&gt; 0, nullable: false })
+<span class="ln">   58 | </span>  hide_user: boolean;
+<span class="ln">   59 | </span>
+<span class="ln">   60 | </span>}
+<span class="ln">   61 | </span>
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\way_pay\waypay.entity.ts</h2>
+<div class="meta">Lineas: 30 | Bytes: 730 | SHA256: F2FA754F60A36980EA8A83F7EC226AE8562993CF5A654C2DD3D3572686CEE8B7</div>
+</div><pre>
+<span class="ln">    1 | </span>import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from &#39;typeorm&#39;;
+<span class="ln">    2 | </span>import { Waypayitems } from &#39;src/way_pay_items/waypayitems.entity&#39;;
+<span class="ln">    3 | </span>
+<span class="ln">    4 | </span>@Entity({ name: &#39;way_pay&#39; })
+<span class="ln">    5 | </span>export class Waypay {
+<span class="ln">    6 | </span>  @PrimaryGeneratedColumn()
+<span class="ln">    7 | </span>  id: number;
+<span class="ln">    8 | </span>
+<span class="ln">    9 | </span>  @Column(&#39;int&#39;)
+<span class="ln">   10 | </span>  id_users: number;
+<span class="ln">   11 | </span>
+<span class="ln">   12 | </span>  @Column(&#39;int&#39;)
+<span class="ln">   13 | </span>  id_patients: number;
+<span class="ln">   14 | </span>
+<span class="ln">   15 | </span>  @Column(&#39;int&#39;)
+<span class="ln">   16 | </span>  id_client: number;
+<span class="ln">   17 | </span>
+<span class="ln">   18 | </span>  @Column({ type: &#39;datetime&#39;, default: () =&gt; &#39;CURRENT_TIMESTAMP&#39; })
+<span class="ln">   19 | </span>  date: Date;
+<span class="ln">   20 | </span>
+<span class="ln">   21 | </span>  @Column({ type: &#39;datetime&#39;, default: () =&gt; &#39;CURRENT_TIMESTAMP&#39; })
+<span class="ln">   22 | </span>  date_patients: Date;
+<span class="ln">   23 | </span>
+<span class="ln">   24 | </span>  @Column(&#39;tinyint&#39;, { default: () =&gt; 0 })
+<span class="ln">   25 | </span>  annulment: boolean;
+<span class="ln">   26 | </span>
+<span class="ln">   27 | </span>  @OneToMany(() =&gt; Waypayitems, (waypayitems) =&gt; waypayitems.waypays)
+<span class="ln">   28 | </span>  waypayitems: Waypayitems[];
+<span class="ln">   29 | </span>}
+<span class="ln">   30 | </span>
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\way_pay_items\waypayitems.entity.ts</h2>
+<div class="meta">Lineas: 45 | Bytes: 1064 | SHA256: 260925719722142EFF6427F47D3145B8D16CC64161DBDEE116BAA32652ECE1CB</div>
+</div><pre>
+<span class="ln">    1 | </span>import {
+<span class="ln">    2 | </span>  Entity,
+<span class="ln">    3 | </span>  Column,
+<span class="ln">    4 | </span>  PrimaryGeneratedColumn,
+<span class="ln">    5 | </span>  ManyToOne,
+<span class="ln">    6 | </span>  JoinColumn,
+<span class="ln">    7 | </span>} from &#39;typeorm&#39;;
+<span class="ln">    8 | </span>import { Waypay } from &#39;src/way_pay/waypay.entity&#39;;
+<span class="ln">    9 | </span>@Entity({ name: &#39;way_pay_items&#39; })
+<span class="ln">   10 | </span>export class Waypayitems {
+<span class="ln">   11 | </span>  @PrimaryGeneratedColumn()
+<span class="ln">   12 | </span>  id: number;
+<span class="ln">   13 | </span>
+<span class="ln">   14 | </span>  @Column(&#39;int&#39;)
+<span class="ln">   15 | </span>  id_way_pay: number;
+<span class="ln">   16 | </span>
+<span class="ln">   17 | </span>  @Column(&#39;int&#39;, { default: () =&gt; 0 })
+<span class="ln">   18 | </span>  id_type_payment: number;
+<span class="ln">   19 | </span>
+<span class="ln">   20 | </span>  @Column(&#39;varchar&#39;, { length: 50 })
+<span class="ln">   21 | </span>  description_1: string;
+<span class="ln">   22 | </span>
+<span class="ln">   23 | </span>  @Column(&#39;varchar&#39;, { length: 50 })
+<span class="ln">   24 | </span>  description_2: string;
+<span class="ln">   25 | </span>
+<span class="ln">   26 | </span>  @Column({ type: &#39;decimal&#39;, precision: 18, scale: 2, default: () =&gt; 0 })
+<span class="ln">   27 | </span>  amount: number;
+<span class="ln">   28 | </span>
+<span class="ln">   29 | </span>  @Column({ type: &#39;decimal&#39;, precision: 18, scale: 2, default: () =&gt; 0 })
+<span class="ln">   30 | </span>  amountDollar: number;
+<span class="ln">   31 | </span>  
+<span class="ln">   32 | </span>  @Column(&#39;tinyint&#39;, { default: () =&gt; 0 })
+<span class="ln">   33 | </span>  dollar: boolean;
+<span class="ln">   34 | </span>
+<span class="ln">   35 | </span>  @Column(&#39;varchar&#39;, { length: 20, nullable: true })
+<span class="ln">   36 | </span>  dollar_value: string;
+<span class="ln">   37 | </span>
+<span class="ln">   38 | </span>  @Column(&#39;varchar&#39;, { length: 20, nullable: true })
+<span class="ln">   39 | </span>  dollar_date: string;
+<span class="ln">   40 | </span>
+<span class="ln">   41 | </span>  @ManyToOne(() =&gt; Waypay, (waypay) =&gt; waypay.waypayitems)
+<span class="ln">   42 | </span>  @JoinColumn({ name: &#39;id_way_pay&#39; })
+<span class="ln">   43 | </span>  waypays: Waypay;
+<span class="ln">   44 | </span>}
+<span class="ln">   45 | </span>
+
+</pre></section>
+
+</main><footer>Fin de parte</footer></body></html>

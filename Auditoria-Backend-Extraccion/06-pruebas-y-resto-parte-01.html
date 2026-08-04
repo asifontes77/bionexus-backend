@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Auditoria Backend TORO - 06-pruebas-y-resto</title>
+<style>
+body{margin:0;background:#f8fafc;color:#172033;font-family:Segoe UI,Arial,sans-serif;line-height:1.5}
+header{background:#111827;color:#fff;border-bottom:5px solid #e0234e;padding:32px 22px}
+header div,main{max-width:1350px;margin:auto}main{padding:26px 16px}
+.notice,.file{background:#fff;border:1px solid #cbd5e1;border-radius:9px;margin-bottom:22px;box-shadow:0 3px 10px rgba(15,23,42,.06)}
+.notice{padding:18px}.file-header{background:#eef2ff;border-bottom:1px solid #cbd5e1;padding:13px 17px}
+.file-header h2{font-size:1.1rem;margin:0 0 6px;overflow-wrap:anywhere}.meta{color:#475569;font-size:.88rem}
+pre{margin:0;padding:17px;white-space:pre-wrap;overflow-wrap:anywhere;tab-size:4;font-family:Consolas,Courier New,monospace;font-size:.84rem;line-height:1.46}
+.ln{display:inline-block;color:#64748b;min-width:5.7em;user-select:none}.redacted{color:#b91c1c;font-weight:700}
+footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
+<header><div>
+<h1>Auditoria Backend TORO - 06-pruebas-y-resto</h1>
+<p>Parte: 1</p>
+<p>Raiz auditada: C:\Users\Alexis\Documents\Sistema TORO\Aplicacion\Toro Backend</p>
+<p>Generado: 04-08-2026 08:55 a. m.</p>
+</div></header><main>
+<section class="notice"><strong>Extraccion estatica de solo lectura.</strong>
+<p>Los posibles secretos fueron reemplazados por [REDACTED]. Los numeros de linea corresponden al archivo original.</p></section>
+<section class="file">
+<div class="file-header">
+<h2>.eslintrc.js</h2>
+<div class="meta">Lineas: 32 | Bytes: 786 | SHA256: 708A782336656C79DFE87AEC41BBECC1E78B2396DD254B96588555D02AF47052</div>
+</div><pre>
+<span class="ln">    1 | </span>module.exports = {
+<span class="ln">    2 | </span>  parser: &#39;@typescript-eslint/parser&#39;,
+<span class="ln">    3 | </span>  parserOptions: {
+<span class="ln">    4 | </span>    project: &#39;tsconfig.json&#39;,
+<span class="ln">    5 | </span>    tsconfigRootDir: __dirname,
+<span class="ln">    6 | </span>    sourceType: &#39;module&#39;,
+<span class="ln">    7 | </span>  },
+<span class="ln">    8 | </span>  plugins: [&#39;@typescript-eslint/eslint-plugin&#39;],
+<span class="ln">    9 | </span>  extends: [
+<span class="ln">   10 | </span>    &#39;plugin:@typescript-eslint/recommended&#39;,
+<span class="ln">   11 | </span>    &#39;plugin:prettier/recommended&#39;,
+<span class="ln">   12 | </span>  ],
+<span class="ln">   13 | </span>  root: true,
+<span class="ln">   14 | </span>  env: {
+<span class="ln">   15 | </span>    node: true,
+<span class="ln">   16 | </span>    jest: true,
+<span class="ln">   17 | </span>  },
+<span class="ln">   18 | </span>  ignorePatterns: [&#39;.eslintrc.js&#39;],
+<span class="ln">   19 | </span>  rules: {
+<span class="ln">   20 | </span>    &#39;@typescript-eslint/interface-name-prefix&#39;: &#39;off&#39;,
+<span class="ln">   21 | </span>    &#39;@typescript-eslint/explicit-function-return-type&#39;: &#39;off&#39;,
+<span class="ln">   22 | </span>    &#39;@typescript-eslint/explicit-module-boundary-types&#39;: &#39;off&#39;,
+<span class="ln">   23 | </span>    &#39;@typescript-eslint/no-explicit-any&#39;: &#39;off&#39;,
+<span class="ln">   24 | </span>    &#39;prettier/prettier&#39;: [
+<span class="ln">   25 | </span>      &#39;error&#39;,
+<span class="ln">   26 | </span>      {
+<span class="ln">   27 | </span>        &#39;endOfLine&#39;: &#39;auto&#39;
+<span class="ln">   28 | </span>      }
+<span class="ln">   29 | </span>    ]
+<span class="ln">   30 | </span>  },
+<span class="ln">   31 | </span>};
+<span class="ln">   32 | </span>
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>.gitignore</h2>
+<div class="meta">Lineas: 42 | Bytes: 479 | SHA256: EC05378A7DF19FBB771A943F21596D7485CB8E5A84BF24D68B11F67A68053934</div>
+</div><pre>
+<span class="ln">    1 | </span># compiled output
+<span class="ln">    2 | </span>/dist
+<span class="ln">    3 | </span>/node_modules
+<span class="ln">    4 | </span>
+<span class="ln">    5 | </span># Logs
+<span class="ln">    6 | </span>logs
+<span class="ln">    7 | </span>*.log
+<span class="ln">    8 | </span>npm-debug.log*
+<span class="ln">    9 | </span>pnpm-debug.log*
+<span class="ln">   10 | </span>yarn-debug.log*
+<span class="ln">   11 | </span>yarn-error.log*
+<span class="ln">   12 | </span>lerna-debug.log*
+<span class="ln">   13 | </span>
+<span class="ln">   14 | </span># OS
+<span class="ln">   15 | </span>.DS_Store
+<span class="ln">   16 | </span>
+<span class="ln">   17 | </span># Tests
+<span class="ln">   18 | </span>/coverage
+<span class="ln">   19 | </span>/.nyc_output
+<span class="ln">   20 | </span>
+<span class="ln">   21 | </span># IDEs and editors
+<span class="ln">   22 | </span>/.idea
+<span class="ln">   23 | </span>.project
+<span class="ln">   24 | </span>.classpath
+<span class="ln">   25 | </span>.c9/
+<span class="ln">   26 | </span>*.launch
+<span class="ln">   27 | </span>.settings/
+<span class="ln">   28 | </span>*.sublime-workspace
+<span class="ln">   29 | </span>
+<span class="ln">   30 | </span># IDE - VSCode
+<span class="ln">   31 | </span>.vscode/*
+<span class="ln">   32 | </span>!.vscode/settings.json
+<span class="ln">   33 | </span>!.vscode/tasks.json
+<span class="ln">   34 | </span>!.vscode/launch.json
+<span class="ln">   35 | </span>!.vscode/extensions.json
+<span class="ln">   36 | </span>
+<span class="ln">   37 | </span># files
+<span class="ln">   38 | </span>.env
+<span class="ln">   39 | </span>src/main.ts
+<span class="ln">   40 | </span>local.key
+<span class="ln">   41 | </span>local.crt
+<span class="ln">   42 | </span>
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>docs\audit\backend\00-resumen-ejecutivo.md</h2>
+<div class="meta">Lineas: 23 | Bytes: 1739 | SHA256: 0F83C5CA0FF99C1F276B604F78A1984E6F14B49AAF24386A48A8789C04FB2559</div>
+</div><pre>
+<span class="ln">    1 | </span># Resumen Ejecutivo
+<span class="ln">    2 | </span>
+<span class="ln">    3 | </span>**Auditor&#237;a Backend Toro - Estado Inicial**
+<span class="ln">    4 | </span>
+<span class="ln">    5 | </span>## Alcance
+<span class="ln">    6 | </span>Auditor&#237;a t&#233;cnica exhaustiva del backend de Sistema TORO. El an&#225;lisis cubre arquitectura, modelos de datos, seguridad, integridad transaccional y calidad general del c&#243;digo NestJS/TypeORM.
+<span class="ln">    7 | </span>
+<span class="ln">    8 | </span>## Limitaciones
+<span class="ln">    9 | </span>- No se tiene acceso a la base de datos de producci&#243;n o un dump de la misma, por lo que las suposiciones sobre el esquema l&#243;gico vs el f&#237;sico (TypeORM `synchronize: true`) son inferencias derivadas del c&#243;digo.
+<span class="ln">   10 | </span>- No se revisan dependencias front-end.
+<span class="ln">   11 | </span>- El an&#225;lisis es est&#225;tico (an&#225;lisis de c&#243;digo fuente); las aserciones din&#225;micas o dependientes del entorno no pueden ser completamente verificadas.
+<span class="ln">   12 | </span>
+<span class="ln">   13 | </span>## Riesgos y Hallazgos Iniciales
+<span class="ln">   14 | </span>Se requiere completar el an&#225;lisis, pero a partir del inventario tecnol&#243;gico y los hallazgos preliminares se listan los siguientes riesgos gen&#233;ricos que ser&#225;n validados:
+<span class="ln">   15 | </span>
+<span class="ln">   16 | </span>- **TypeORM `synchronize`:** Alto riesgo de p&#233;rdida de datos si se utiliza en producci&#243;n. Hay dependencias y c&#243;digo que deben verificarse.
+<span class="ln">   17 | </span>- **Transacciones Incompletas:** Es vital asegurar que la facturaci&#243;n y los datos cl&#237;nicos est&#233;n acotados dentro de `Transaction`s o `QueryRunner`s.
+<span class="ln">   18 | </span>- **Archivos Est&#225;ticos (PDF/Impresi&#243;n):** Posibles vulnerabilidades de inyecci&#243;n HTML si los datos generados por Puppeteer o para Nodemailer no se limpian adecuadamente.
+<span class="ln">   19 | </span>- **WebSockets No Autenticados:** Los flujos WebSocket a menudo ignoran la autenticaci&#243;n y no aplican Guards de manera efectiva.
+<span class="ln">   20 | </span>- **Tipado (`any`):** Existen al menos 76 usos de tipo `any` que debilitan las garant&#237;as del sistema TypeScript y la validaci&#243;n en tiempo de ejecuci&#243;n.
+<span class="ln">   21 | </span>
+<span class="ln">   22 | </span>## Recomendaci&#243;n Final
+<span class="ln">   23 | </span>*(Pendiente tras an&#225;lisis completo)*
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>docs\audit\backend\01-inventario-tecnico.md</h2>
+<div class="meta">Lineas: 30 | Bytes: 1358 | SHA256: E832079859B1E1CEB151A99D16093DA6DE5A3F51E8755AC4CCA8E3FFD5670AF3</div>
+</div><pre>
+<span class="ln">    1 | </span># 1. Inventario T&#233;cnico Exacto
+<span class="ln">    2 | </span>
+<span class="ln">    3 | </span>## Archivos por Extensi&#243;n Globales
+<span class="ln">    4 | </span>- **Total de archivos TS:** 5908 (En su mayor&#237;a corresponden a `node_modules` y directorios subyacentes)
+<span class="ln">    5 | </span>- **Total de archivos JS:** 13970
+<span class="ln">    6 | </span>- **Total de JSON:** 1613
+<span class="ln">    7 | </span>- **Total archivos HTML:** 18
+<span class="ln">    8 | </span>
+<span class="ln">    9 | </span>## Inventario Espec&#237;ficos del Dominio (`src/` y `test/`)
+<span class="ln">   10 | </span>- **Total Archivos TS Relevantes:** 164
+<span class="ln">   11 | </span>
+<span class="ln">   12 | </span>### Artefactos NestJS (Basado en Patrones)
+<span class="ln">   13 | </span>- **M&#243;dulos (`@Module`):** 28
+<span class="ln">   14 | </span>- **Controladores (`@Controller`):** 26 (Archivos `*.controller.ts` son 27)
+<span class="ln">   15 | </span>- **Servicios (`@Injectable`):** 28
+<span class="ln">   16 | </span>- **Entidades (`@Entity(`):** 25
+<span class="ln">   17 | </span>- **Carpetas/Espacios de nombres de DTOs:** 25
+<span class="ln">   18 | </span>- **Gateways (`@WebSocketGateway`):** 1
+<span class="ln">   19 | </span>
+<span class="ln">   20 | </span>*(Se nota una diferencia de uno o dos artefactos entre el recuento de nombres de archivo y el recuento de decoradores, lo cual es normal si algunas clases exportadas act&#250;an como base o no est&#225;n decoradas expl&#237;citamente).*
+<span class="ln">   21 | </span>
+<span class="ln">   22 | </span>## Patrones de C&#243;digo
+<span class="ln">   23 | </span>- **TypeORM `createQueryBuilder`:** 34 usos.
+<span class="ln">   24 | </span>- **Uso de `.any` (Tipado TypeScript):** 76 usos.
+<span class="ln">   25 | </span>- **Llamadas a `console.log`:** 8
+<span class="ln">   26 | </span>- **Librer&#237;a de PDF (`puppeteer`):** 3 usos
+<span class="ln">   27 | </span>- **Librer&#237;a de Impresi&#243;n (`node-thermal-printer`):** 2 usos
+<span class="ln">   28 | </span>- **Librer&#237;a de Correo (`nodemailer`):** 2 usos
+<span class="ln">   29 | </span>
+<span class="ln">   30 | </span>*(Otras m&#233;tricas como `Guard`, `Strategy` y `process.env` se verificar&#225;n en detalle durante el an&#225;lisis por m&#243;dulo).*
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>docs\audit\backend\02-arquitectura-y-modulos.md</h2>
+<div class="meta">Lineas: 2 | Bytes: 77 | SHA256: 2E453C10AEE2671352E91A605064AF24813CB0300485465DDD9FB5DA9D9C44AC</div>
+</div><pre>
+<span class="ln">    1 | </span># 3. Arquitectura y M&#243;dulos
+<span class="ln">    2 | </span>(Documento en preparaci&#243;n durante la Pasada 3)
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>docs\audit\backend\03-catalogo-api.md</h2>
+<div class="meta">Lineas: 2 | Bytes: 70 | SHA256: 9DEDFB6FBA95D9050AD960592B35AF7C8E6DDC8C69FF4E1DE416521A4414070F</div>
+</div><pre>
+<span class="ln">    1 | </span># 4. Cat&#225;logo de API
+<span class="ln">    2 | </span>(Documento en preparaci&#243;n durante la Pasada 4)
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>docs\audit\backend\04-modelo-datos.md</h2>
+<div class="meta">Lineas: 2 | Bytes: 69 | SHA256: 0A2E6E5FB85DD0C6485111613861A57C2476A7CC71228AD3BD1D070D6D37CF08</div>
+</div><pre>
+<span class="ln">    1 | </span># 5. Modelo de Datos
+<span class="ln">    2 | </span>(Documento en preparaci&#243;n durante la Pasada 5)
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>docs\audit\backend\05-integridad-transaccional.md</h2>
+<div class="meta">Lineas: 2 | Bytes: 78 | SHA256: FD6B0FFF24CECDC0D871C31623D5ACC65846BB7D3F2CA4B0F6230138B4C518DE</div>
+</div><pre>
+<span class="ln">    1 | </span># 6. Integridad Transaccional
+<span class="ln">    2 | </span>(Documento en preparaci&#243;n durante la Pasada 6)
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>docs\audit\backend\06-autenticacion-autorizacion-seguridad.md</h2>
+<div class="meta">Lineas: 2 | Bytes: 95 | SHA256: 2AE89D287925308B6C3267270944DD8B9CDB29E2A37D0922563705B85AA9058C</div>
+</div><pre>
+<span class="ln">    1 | </span># 7. Autenticaci&#243;n, Autorizaci&#243;n y Seguridad
+<span class="ln">    2 | </span>(Documento en preparaci&#243;n durante la Pasada 7)
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>docs\audit\backend\07-validacion-contratos.md</h2>
+<div class="meta">Lineas: 2 | Bytes: 77 | SHA256: CEB89749AECF11320E11CCAA13B0B2EFDD781479841F5A816368A4A0537BDD4A</div>
+</div><pre>
+<span class="ln">    1 | </span># 8. Validaci&#243;n y Contratos
+<span class="ln">    2 | </span>(Documento en preparaci&#243;n durante la Pasada 8)
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>docs\audit\backend\08-configuracion-secretos.md</h2>
+<div class="meta">Lineas: 2 | Bytes: 79 | SHA256: 9A75392679B95DF96EB7F360AA73F5E4B54A46626338107A8736803585B57CD3</div>
+</div><pre>
+<span class="ln">    1 | </span># 9. Configuraci&#243;n y Secretos
+<span class="ln">    2 | </span>(Documento en preparaci&#243;n durante la Pasada 9)
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>docs\audit\backend\09-typeorm-migraciones.md</h2>
+<div class="meta">Lineas: 2 | Bytes: 77 | SHA256: 65882747CC1BA7A094451235A24AED99C69A60C1801C95E20C2B7EA675EC11EF</div>
+</div><pre>
+<span class="ln">    1 | </span># 10. TypeORM y Migraciones
+<span class="ln">    2 | </span>(Documento en preparaci&#243;n durante la Pasada 10)
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>docs\audit\backend\10-rendimiento-escalabilidad.md</h2>
+<div class="meta">Lineas: 2 | Bytes: 83 | SHA256: BB683CA4446D5F51DB12735A468565D120F9FB4D8617FF4786837B8568ACA963</div>
+</div><pre>
+<span class="ln">    1 | </span># 11. Rendimiento y Escalabilidad
+<span class="ln">    2 | </span>(Documento en preparaci&#243;n durante la Pasada 11)
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>docs\audit\backend\12-pruebas-testabilidad.md</h2>
+<div class="meta">Lineas: 2 | Bytes: 78 | SHA256: 217717D03D737436B3C35823D8B19133355B76B1D87AA5238E43F171EB9376C0</div>
+</div><pre>
+<span class="ln">    1 | </span># 13. Pruebas y Testabilidad
+<span class="ln">    2 | </span>(Documento en preparaci&#243;n durante la Pasada 13)
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>docs\audit\backend\13-analisis-actualizacion.md</h2>
+<div class="meta">Lineas: 2 | Bytes: 83 | SHA256: EAEA366853B9D601421067E772B02751CBBBC0C301F3379D3579AE69AF9C4335</div>
+</div><pre>
+<span class="ln">    1 | </span># 14. An&#225;lisis de Actualizaci&#243;n
+<span class="ln">    2 | </span>(Documento en preparaci&#243;n durante la Pasada 14)
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>docs\audit\backend\14-plan-por-fases.md</h2>
+<div class="meta">Lineas: 2 | Bytes: 70 | SHA256: 4639FDF4A9C6FD116508184BEB4D3FC6D6784AFFE7AD795F7E17393E7ED1E2D2</div>
+</div><pre>
+<span class="ln">    1 | </span># 15. Plan por Fases
+<span class="ln">    2 | </span>(Documento en preparaci&#243;n durante la Pasada 15)
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>docs\audit\backend\15-registro-evidencias.md</h2>
+<div class="meta">Lineas: 3 | Bytes: 87 | SHA256: 57D90919C4E8447947824A1E8D80866276BA29AFECD5B4E281C1A6BC6664121B</div>
+</div><pre>
+<span class="ln">    1 | </span># Registro de Evidencias
+<span class="ln">    2 | </span>
+<span class="ln">    3 | </span>(Documento en preparaci&#243;n a lo largo de todas las pasadas)
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>docs\audit\backend\16-preguntas-pendientes.md</h2>
+<div class="meta">Lineas: 3 | Bytes: 85 | SHA256: 3F1F489D6744399E652F79068D1479B5EEBE43BE60F7B7CE8F540D38A57EF54B</div>
+</div><pre>
+<span class="ln">    1 | </span># Preguntas Pendientes
+<span class="ln">    2 | </span>
+<span class="ln">    3 | </span>(Documento en preparaci&#243;n a lo largo de todas las pasadas)
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>README.md</h2>
+<div class="meta">Lineas: 74 | Bytes: 3413 | SHA256: 781A9B47FB8C9A489C47CABA2123E500B62A3604EB492D016CE6D7B69C5A65FF</div>
+</div><pre>
+<span class="ln">    1 | </span>&lt;p align=&quot;center&quot;&gt;
+<span class="ln">    2 | </span>  &lt;a href=&quot;http://nestjs.com/&quot; target=&quot;blank&quot;&gt;&lt;img src=&quot;https://nestjs.com/img/logo-small.svg&quot; width=&quot;200&quot; alt=&quot;Nest Logo&quot; /&gt;&lt;/a&gt;
+<span class="ln">    3 | </span>&lt;/p&gt;
+<span class="ln">    4 | </span>
+<span class="ln">    5 | </span>[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
+<span class="ln">    6 | </span>[circleci-url]: https://circleci.com/gh/nestjs/nest
+<span class="ln">    7 | </span>
+<span class="ln">    8 | </span>  &lt;p align=&quot;center&quot;&gt;A progressive &lt;a href=&quot;http://nodejs.org&quot; target=&quot;_blank&quot;&gt;Node.js&lt;/a&gt; framework for building efficient and scalable server-side applications.&lt;/p&gt;
+<span class="ln">    9 | </span>    &lt;p align=&quot;center&quot;&gt;
+<span class="ln">   10 | </span>&lt;a href=&quot;https://www.npmjs.com/~nestjscore&quot; target=&quot;_blank&quot;&gt;&lt;img src=&quot;https://img.shields.io/npm/v/@nestjs/core.svg&quot; alt=&quot;NPM Version&quot; /&gt;&lt;/a&gt;
+<span class="ln">   11 | </span>&lt;a href=&quot;https://www.npmjs.com/~nestjscore&quot; target=&quot;_blank&quot;&gt;&lt;img src=&quot;https://img.shields.io/npm/l/@nestjs/core.svg&quot; alt=&quot;Package License&quot; /&gt;&lt;/a&gt;
+<span class="ln">   12 | </span>&lt;a href=&quot;https://www.npmjs.com/~nestjscore&quot; target=&quot;_blank&quot;&gt;&lt;img src=&quot;https://img.shields.io/npm/dm/@nestjs/common.svg&quot; alt=&quot;NPM Downloads&quot; /&gt;&lt;/a&gt;
+<span class="ln">   13 | </span>&lt;a href=&quot;https://circleci.com/gh/nestjs/nest&quot; target=&quot;_blank&quot;&gt;&lt;img src=&quot;https://img.shields.io/circleci/build/github/nestjs/nest/master&quot; alt=&quot;CircleCI&quot; /&gt;&lt;/a&gt;
+<span class="ln">   14 | </span>&lt;a href=&quot;https://coveralls.io/github/nestjs/nest?branch=master&quot; target=&quot;_blank&quot;&gt;&lt;img src=&quot;https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9&quot; alt=&quot;Coverage&quot; /&gt;&lt;/a&gt;
+<span class="ln">   15 | </span>&lt;a href=&quot;https://discord.gg/G7Qnnhy&quot; target=&quot;_blank&quot;&gt;&lt;img src=&quot;https://img.shields.io/badge/discord-online-brightgreen.svg&quot; alt=&quot;Discord&quot;/&gt;&lt;/a&gt;
+<span class="ln">   16 | </span>&lt;a href=&quot;https://opencollective.com/nest#backer&quot; target=&quot;_blank&quot;&gt;&lt;img src=&quot;https://opencollective.com/nest/backers/badge.svg&quot; alt=&quot;Backers on Open Collective&quot; /&gt;&lt;/a&gt;
+<span class="ln">   17 | </span>&lt;a href=&quot;https://opencollective.com/nest#sponsor&quot; target=&quot;_blank&quot;&gt;&lt;img src=&quot;https://opencollective.com/nest/sponsors/badge.svg&quot; alt=&quot;Sponsors on Open Collective&quot; /&gt;&lt;/a&gt;
+<span class="ln">   18 | </span>  &lt;a href=&quot;https://paypal.me/kamilmysliwiec&quot; target=&quot;_blank&quot;&gt;&lt;img src=&quot;https://img.shields.io/badge/Donate-PayPal-ff3f59.svg&quot;/&gt;&lt;/a&gt;
+<span class="ln">   19 | </span>    &lt;a href=&quot;https://opencollective.com/nest#sponsor&quot;  target=&quot;_blank&quot;&gt;&lt;img src=&quot;https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg&quot; alt=&quot;Support us&quot;&gt;&lt;/a&gt;
+<span class="ln">   20 | </span>  &lt;a href=&quot;https://twitter.com/nestframework&quot; target=&quot;_blank&quot;&gt;&lt;img src=&quot;https://img.shields.io/twitter/follow/nestframework.svg?style=social&amp;label=Follow&quot;&gt;&lt;/a&gt;
+<span class="ln">   21 | </span>&lt;/p&gt;
+<span class="ln">   22 | </span>  &lt;!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
+<span class="ln">   23 | </span>  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)--&gt;
+<span class="ln">   24 | </span>
+<span class="ln">   25 | </span>## Description
+<span class="ln">   26 | </span>
+<span class="ln">   27 | </span>[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+<span class="ln">   28 | </span>
+<span class="ln">   29 | </span>## Installation
+<span class="ln">   30 | </span>
+<span class="ln">   31 | </span>```bash
+<span class="ln">   32 | </span>$ npm install
+<span class="ln">   33 | </span>```
+<span class="ln">   34 | </span>
+<span class="ln">   35 | </span>## Running the app
+<span class="ln">   36 | </span>
+<span class="ln">   37 | </span>```bash
+<span class="ln">   38 | </span># development
+<span class="ln">   39 | </span>$ npm run start
+<span class="ln">   40 | </span>
+<span class="ln">   41 | </span># watch mode
+<span class="ln">   42 | </span>$ npm run start:dev
+<span class="ln">   43 | </span>
+<span class="ln">   44 | </span># production mode
+<span class="ln">   45 | </span>$ npm run start:prod
+<span class="ln">   46 | </span>```
+<span class="ln">   47 | </span>
+<span class="ln">   48 | </span>## Test
+<span class="ln">   49 | </span>
+<span class="ln">   50 | </span>```bash
+<span class="ln">   51 | </span># unit tests
+<span class="ln">   52 | </span>$ npm run test
+<span class="ln">   53 | </span>
+<span class="ln">   54 | </span># e2e tests
+<span class="ln">   55 | </span>$ npm run test:e2e
+<span class="ln">   56 | </span>
+<span class="ln">   57 | </span># test coverage
+<span class="ln">   58 | </span>$ npm run test:cov
+<span class="ln">   59 | </span>```
+<span class="ln">   60 | </span>
+<span class="ln">   61 | </span>## Support
+<span class="ln">   62 | </span>
+<span class="ln">   63 | </span>Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you&#39;d like to join them, please [read more here](https://docs.nestjs.com/support).
+<span class="ln">   64 | </span>
+<span class="ln">   65 | </span>## Stay in touch
+<span class="ln">   66 | </span>
+<span class="ln">   67 | </span>- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
+<span class="ln">   68 | </span>- Website - [https://nestjs.com](https://nestjs.com/)
+<span class="ln">   69 | </span>- Twitter - [@nestframework](https://twitter.com/nestframework)
+<span class="ln">   70 | </span>
+<span class="ln">   71 | </span>## License
+<span class="ln">   72 | </span>
+<span class="ln">   73 | </span>Nest is [MIT licensed](LICENSE).
+<span class="ln">   74 | </span>
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\app.controller.spec.ts</h2>
+<div class="meta">Lineas: 23 | Bytes: 639 | SHA256: 43750C632FC7F5997DDD690D4C3989443AB29EBD8866EE1FEC6F3885834F8054</div>
+</div><pre>
+<span class="ln">    1 | </span>import { Test, TestingModule } from &#39;@nestjs/testing&#39;;
+<span class="ln">    2 | </span>import { AppController } from &#39;./app.controller&#39;;
+<span class="ln">    3 | </span>import { AppService } from &#39;./app.service&#39;;
+<span class="ln">    4 | </span>
+<span class="ln">    5 | </span>describe(&#39;AppController&#39;, () =&gt; {
+<span class="ln">    6 | </span>  let appController: AppController;
+<span class="ln">    7 | </span>
+<span class="ln">    8 | </span>  beforeEach(async () =&gt; {
+<span class="ln">    9 | </span>    const app: TestingModule = await Test.createTestingModule({
+<span class="ln">   10 | </span>      controllers: [AppController],
+<span class="ln">   11 | </span>      providers: [AppService],
+<span class="ln">   12 | </span>    }).compile();
+<span class="ln">   13 | </span>
+<span class="ln">   14 | </span>    appController = app.get&lt;AppController&gt;(AppController);
+<span class="ln">   15 | </span>  });
+<span class="ln">   16 | </span>
+<span class="ln">   17 | </span>  describe(&#39;root&#39;, () =&gt; {
+<span class="ln">   18 | </span>    it(&#39;should return &quot;Hello World!&quot;&#39;, () =&gt; {
+<span class="ln">   19 | </span>      expect(appController.getHello()).toBe(&#39;Hello World!&#39;);
+<span class="ln">   20 | </span>    });
+<span class="ln">   21 | </span>  });
+<span class="ln">   22 | </span>});
+<span class="ln">   23 | </span>
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>src\users\jwt.constants.ts</h2>
+<div class="meta">Lineas: 3 | Bytes: 66 | SHA256: 6E72942D68DE3A1D5F288A00BBA43DD093CADE114408D50B21C8D2BFE8AF3FB2</div>
+</div><pre>
+<span class="ln">    1 | </span>export const jwtConstants = {
+<span class="ln">    2 | </span>    secret: &quot;<span class="redacted">[REDACTED]</span>&quot;
+<span class="ln">    3 | </span>}
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>test\app.e2e-spec.ts</h2>
+<div class="meta">Lineas: 25 | Bytes: 654 | SHA256: 5B0A1515E0E8742BE82B50BDB4F35060B02BF323ABAAD22F32D3DF482AE670B5</div>
+</div><pre>
+<span class="ln">    1 | </span>import { Test, TestingModule } from &#39;@nestjs/testing&#39;;
+<span class="ln">    2 | </span>import { INestApplication } from &#39;@nestjs/common&#39;;
+<span class="ln">    3 | </span>import * as request from &#39;supertest&#39;;
+<span class="ln">    4 | </span>import { AppModule } from &#39;./../src/app.module&#39;;
+<span class="ln">    5 | </span>
+<span class="ln">    6 | </span>describe(&#39;AppController (e2e)&#39;, () =&gt; {
+<span class="ln">    7 | </span>  let app: INestApplication;
+<span class="ln">    8 | </span>
+<span class="ln">    9 | </span>  beforeEach(async () =&gt; {
+<span class="ln">   10 | </span>    const moduleFixture: TestingModule = await Test.createTestingModule({
+<span class="ln">   11 | </span>      imports: [AppModule],
+<span class="ln">   12 | </span>    }).compile();
+<span class="ln">   13 | </span>
+<span class="ln">   14 | </span>    app = moduleFixture.createNestApplication();
+<span class="ln">   15 | </span>    await app.init();
+<span class="ln">   16 | </span>  });
+<span class="ln">   17 | </span>
+<span class="ln">   18 | </span>  it(&#39;/ (GET)&#39;, () =&gt; {
+<span class="ln">   19 | </span>    return request(app.getHttpServer())
+<span class="ln">   20 | </span>      .get(&#39;/&#39;)
+<span class="ln">   21 | </span>      .expect(200)
+<span class="ln">   22 | </span>      .expect(&#39;Hello World!&#39;);
+<span class="ln">   23 | </span>  });
+<span class="ln">   24 | </span>});
+<span class="ln">   25 | </span>
+
+</pre></section>
+<section class="file">
+<div class="file-header">
+<h2>test\jest-e2e.json</h2>
+<div class="meta">Lineas: 10 | Bytes: 192 | SHA256: E5964A7412493AFD594979B94374DD8E5FD87E96D23A514163BDB72198FDA0BA</div>
+</div><pre>
+<span class="ln">    1 | </span>{
+<span class="ln">    2 | </span>  &quot;moduleFileExtensions&quot;: [&quot;js&quot;, &quot;json&quot;, &quot;ts&quot;],
+<span class="ln">    3 | </span>  &quot;rootDir&quot;: &quot;.&quot;,
+<span class="ln">    4 | </span>  &quot;testEnvironment&quot;: &quot;node&quot;,
+<span class="ln">    5 | </span>  &quot;testRegex&quot;: &quot;.e2e-spec.ts$&quot;,
+<span class="ln">    6 | </span>  &quot;transform&quot;: {
+<span class="ln">    7 | </span>    &quot;^.+\\.(t|j)s$&quot;: &quot;ts-jest&quot;
+<span class="ln">    8 | </span>  }
+<span class="ln">    9 | </span>}
+<span class="ln">   10 | </span>
+
+</pre></section>
+
+</main><footer>Fin de parte</footer></body></html>
