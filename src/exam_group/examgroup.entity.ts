@@ -1,5 +1,5 @@
 import { Examlists } from 'src/exam_lists/examlists.entity';
-import {Entity, Column, PrimaryGeneratedColumn, ManyToOne, OneToMany, JoinColumn, OneToOne} from 'typeorm';
+import {Entity, Column, PrimaryGeneratedColumn, OneToMany} from 'typeorm';
 import { Exam } from 'src/exams/exams.entity';
 
 @Entity({name: 'exam_group'})

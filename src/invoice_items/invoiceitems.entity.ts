@@ -1,4 +1,4 @@
-import {Entity, Column, PrimaryGeneratedColumn, ManyToOne, OneToMany, JoinColumn} from 'typeorm';
+import {Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn} from 'typeorm';
 import { Invoice } from 'src/invoice/invoice.entity';
 @Entity({name: 'invoice_items'})
 export class Invoiceitems {
