@@ -82,8 +82,7 @@ export class ExamGroupService {
       .getMany();
   }
 
-  async getExamgroupstodos(id: number) {
-    const valor = id;
+  async getExamgroupstodos() {
     return this.examgroupRepository.find({
       order: {
         position: 'ASC',

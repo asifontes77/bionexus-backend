@@ -18,6 +18,12 @@ export class ExamGroupController {
   constructor(private examGroupService: ExamGroupService) {}
 
   @UseGuards(JwtUserGuard)
+  @Get('/all')
+  getExamgroupstodos() {
+    return this.examGroupService.getExamgroupstodos();
+  }
+
+  @UseGuards(JwtUserGuard)
   @Get(':id')
   getExamgroup(@Param('id', ParseIntPipe) id: number) {
     return this.examGroupService.getExamgroup(id);
@@ -27,12 +33,6 @@ export class ExamGroupController {
   @Get()
   getExamgroups() {
     return this.examGroupService.getExamgroups();
-  }
-
-  @UseGuards(JwtUserGuard)
-  @Get('/all/:id')
-  getExamgroupstodos(@Param('id', ParseIntPipe) id: number) {
-    return this.examGroupService.getExamgroupstodos(id);
   }
 
   @UseGuards(JwtUserGuard)
