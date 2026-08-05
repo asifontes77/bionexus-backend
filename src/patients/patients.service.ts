@@ -7,6 +7,7 @@ import { CreatePatientsDto } from './dto/create-patients.dto';
 import * as nodemailer from 'nodemailer';
 import { LaboratoryService } from 'src/laboratory/laboratory.service';
 import * as puppeteer from 'puppeteer';
+import { ThermalPrinter } from 'node-thermal-printer';
 
 @Injectable()
 export class PatientsService {
@@ -373,8 +374,6 @@ export class PatientsService {
     if (patientFound && laboratory.printer_interface.legth !== 0) {
       const row = JSON.parse(JSON.stringify(patientFound));
       const rowE = row.exams;
-      const ThermalPrinter = require('node-thermal-printer').printer;
-      const PrinterTypes = require('node-thermal-printer').types;
 
       const printer = new ThermalPrinter({
         type: laboratory.printer_type,
@@ -419,13 +418,12 @@ export class PatientsService {
       }
 
       printer.cut();
-      printer.execute(function (error) {
-        if (error) {
-          console.error('Error al imprimir:', error);
-        } else {
-          console.log('Recibo impreso correctamente.');
-        }
-      });
+      try {
+        await printer.execute();
+        console.log('Recibo impreso correctamente.');
+      } catch (error) {
+        console.error('Error al imprimir:', error);
+      }
     }
   }
 }

@@ -8,7 +8,7 @@ import { LoginUserDto } from './dto/login-user.dto';
 import { JwtService } from '@nestjs/jwt';
 import { LaboratoryService } from 'src/laboratory/laboratory.service';
 import { LicenseService } from 'src/license/license.service';
-const bcrypt = require('bcrypt');
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
