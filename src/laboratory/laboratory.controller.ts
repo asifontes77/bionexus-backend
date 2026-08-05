@@ -15,7 +15,6 @@ import { UpdateLaboratoryDto } from './dto/update-laboratorio.dto';
 import { JwtUserGuard } from '../users/jwt-user.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-import { Request } from 'express';
 
 @Controller('laboratory')
 export class LaboratoryController {

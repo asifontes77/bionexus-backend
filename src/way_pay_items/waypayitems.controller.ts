@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Param, ParseIntPipe, Delete, Patch, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, Param, ParseIntPipe, Patch, UseGuards } from '@nestjs/common';
 import { WaypayitemsService } from './waypayitems.service';
 import { CreateWaypayitemsDto } from './dto/create-waypayitems.dto';
 import { UpdateWaypayitemsDto } from './dto/update-waypayitems.dto';

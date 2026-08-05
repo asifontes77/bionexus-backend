@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Param, ParseIntPipe, Delete, Patch, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Param, ParseIntPipe, Patch, UseGuards } from '@nestjs/common';
 import { ParasiticformsService } from './parasiticforms.service';
 import { CreateParasiticformsDto } from './dto/create-parasiticforms.dto';
 import { UpdateparasiticformsDto } from './dto/update-parasiticforms.dto';

@@ -1,15 +1,12 @@
 import {
   Body,
   Controller,
-  Get,
   Post,
   Param,
   ParseIntPipe,
-  Delete,
   Patch,
   UseGuards,
 } from '@nestjs/common';
-import { Invoiceitems } from './invoiceitems.entity';
 import { InvoiceitemsService } from './invoiceitems.service';
 import { CreateInvoiceitemsDto } from './dto/create-invoiceitems.dto';
 import { UpdateInvoiceitemsDto } from './dto/update-invoiceitems.dto';
