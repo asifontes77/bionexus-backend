@@ -11,6 +11,6 @@ export class Antibiotic {
   @Column('varchar', { length: 10 })
   siglas: string;
 
-  @Column('tinyint', { default: () => 0 })
+  @Column('tinyint', { default: () => '0' })
   annulled: boolean;
 }

@@ -36,10 +36,10 @@ export class User {
   @Column('varchar', { length: 100, nullable: true, unique: true })
   email: string;
 
-  @Column('int', { default: () => 0, nullable: true })
+  @Column('int', { default: () => '0', nullable: true })
   key_recover: number;
 
-  @Column('tinyint', { default: () => 0, nullable: true })
+  @Column('tinyint', { default: () => '0', nullable: true })
   request_password: boolean;
 
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
@@ -54,7 +54,7 @@ export class User {
   @Column('varchar', { length: 500, nullable: true })
   passwordSignature: string;
 
-  @Column('tinyint', { default: () => 0, nullable: false })
+  @Column('tinyint', { default: () => '0', nullable: false })
   hide_user: boolean;
 
 }

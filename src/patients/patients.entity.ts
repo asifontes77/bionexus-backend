@@ -6,7 +6,7 @@ export class Patient {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column('int', { default: () => 0 })
+  @Column('int', { default: () => '0' })
   patient_position: number;
 
   @Column({ type: 'date' })
@@ -30,7 +30,7 @@ export class Patient {
   @Column('varchar', { length: 5, default: 'años' })
   month_year: string;
 
-  @Column('tinyint', { default: () => 0, nullable: true })
+  @Column('tinyint', { default: () => '0', nullable: true })
   sex: boolean;
 
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
@@ -42,64 +42,64 @@ export class Patient {
   @Column('varchar', { length: 60 })
   suggested: string;
 
-  @Column('tinyint', { default: () => 0, nullable: true })
+  @Column('tinyint', { default: () => '0', nullable: true })
   urgent: boolean;
 
-  @Column('int', { default: () => 0 })
+  @Column('int', { default: () => '0' })
   client_id: number;
 
-  @Column('tinyint', { default: () => 0 })
+  @Column('tinyint', { default: () => '0' })
   process: boolean;
 
   @Column('varchar', { length: 100, nullable: true })
   observation: string;
 
-  @Column('tinyint', { default: () => 0 })
+  @Column('tinyint', { default: () => '0' })
   approved: boolean;
 
-  @Column('tinyint', { default: () => 0, nullable: true })
+  @Column('tinyint', { default: () => '0', nullable: true })
   canceled: boolean;
 
   @Column({ type: 'datetime', nullable: true })
   cancellation_date: Date;
 
-  @Column('int', { default: () => 0 })
+  @Column('int', { default: () => '0' })
   cashier_id: number;
 
   @Column({ type: 'json', nullable: true })
   foot_payments: string;
 
-  @Column({ type: 'decimal', precision: 18, scale: 2, default: () => 0 })
+  @Column({ type: 'decimal', precision: 18, scale: 2, default: () => '0.00' })
   total: number;
 
-  @Column({ type: 'decimal', precision: 18, scale: 2, default: () => 0 })
+  @Column({ type: 'decimal', precision: 18, scale: 2, default: () => '0.00' })
   total_dollars: number;
 
-  @Column({ type: 'decimal', precision: 18, scale: 2, default: () => 0 })
+  @Column({ type: 'decimal', precision: 18, scale: 2, default: () => '0.00' })
   way_pay_dollars: number;
 
-  @Column({ type: 'decimal', precision: 18, scale: 2, default: () => 0 })
+  @Column({ type: 'decimal', precision: 18, scale: 2, default: () => '0.00' })
   total_canceled: number;
 
-  @Column({ type: 'decimal', precision: 18, scale: 2, default: () => 0 })
+  @Column({ type: 'decimal', precision: 18, scale: 2, default: () => '0.00' })
   subtotal: number;
 
-  @Column({ type: 'decimal', precision: 18, scale: 2, default: () => 0 })
+  @Column({ type: 'decimal', precision: 18, scale: 2, default: () => '0.00' })
   iva: number;
 
-  @Column({ type: 'decimal', precision: 18, scale: 2, default: () => 0 })
+  @Column({ type: 'decimal', precision: 18, scale: 2, default: () => '0.00' })
   tax_base: number;
 
-  @Column({ type: 'decimal', precision: 18, scale: 2, default: () => 0 })
+  @Column({ type: 'decimal', precision: 18, scale: 2, default: () => '0.00' })
   iva_total: number;
 
-  @Column({ type: 'decimal', precision: 18, scale: 2, default: () => 0 })
+  @Column({ type: 'decimal', precision: 18, scale: 2, default: () => '0.00' })
   discount: number;
 
-  @Column({ type: 'decimal', precision: 18, scale: 2, default: () => 0 })
+  @Column({ type: 'decimal', precision: 18, scale: 2, default: () => '0.00' })
   discount_total: number;
 
-  @Column({ type: 'decimal', precision: 18, scale: 2, default: () => 0 })
+  @Column({ type: 'decimal', precision: 18, scale: 2, default: () => '0.00' })
   dollar_price: number;
 
   @Column({ type: 'datetime', nullable: true })
@@ -126,7 +126,7 @@ export class Patient {
   @Column({ type: 'datetime', nullable: true })
   deliver_date: Date;
 
-  @Column('int', { default: () => 0 })
+  @Column('int', { default: () => '0' })
   delivery_id: number;
 
   @Column('varchar', { length: 100, nullable: true })
@@ -141,16 +141,16 @@ export class Patient {
   @Column('varchar', { length: 100, nullable: true })
   email: string;
 
-  @Column('tinyint', { default: () => 0 })
+  @Column('tinyint', { default: () => '0' })
   email_sent: boolean;
 
-  @Column('tinyint', { default: () => 0 })
+  @Column('tinyint', { default: () => '0' })
   email_status: boolean;
 
-  @Column('int', { default: () => 0 })
+  @Column('int', { default: () => '0' })
   user_id: number;
 
-  @Column('int', { default: () => 0 })
+  @Column('int', { default: () => '0' })
   user_id_canceled: number;
 
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })

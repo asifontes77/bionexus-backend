@@ -20,22 +20,22 @@ export class Laboratory {
   @Column('varchar', { length: 100 })
   logo: string;
 
-  @Column('tinyint', { default: () => 0, nullable: true })
+  @Column('tinyint', { default: () => '0', nullable: true })
   print_invoice: boolean;
 
-  @Column('tinyint', { default: () => 0, nullable: true })
+  @Column('tinyint', { default: () => '0', nullable: true })
   print_sample_take: boolean;
 
   @Column('varchar', { length: 100 })
   url: string;
 
-  @Column('int', { default: () => 0 })
+  @Column('int', { default: () => '0' })
   invoice_number: number;
 
-  @Column('int', { default: () => 0 })
+  @Column('int', { default: () => '0' })
   voucher_number: number;
 
-  @Column('int', { default: () => 0 })
+  @Column('int', { default: () => '0' })
   creditnote_number: number;
 
   @Column({ type: 'char', length: 20 })
@@ -101,6 +101,6 @@ export class Laboratory {
   @Column('int', { default: 0 })
   receipt_number: number;
   
-  @Column('tinyint', { default: () => 0, nullable: true })
+  @Column('tinyint', { default: () => '0', nullable: true })
   print_receipt: boolean;
 }

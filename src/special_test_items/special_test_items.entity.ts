@@ -5,10 +5,10 @@ export class special_test_items {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column('int', {default: () => 0})
+  @Column('int', {default: () => '0'})
   specialTestLabId: number;
   
-  @Column('int', {default: () => 0})
+  @Column('int', {default: () => '0'})
   exam_list_Id: number;
   
   @Column({ type: 'char', length: 60 })

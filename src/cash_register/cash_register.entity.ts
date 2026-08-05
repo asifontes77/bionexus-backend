@@ -5,7 +5,7 @@ export class cash_register {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column('int', { default: () => 0 })
+  @Column('int', { default: () => '0' })
   user_id: number;
 
   @Column({ type: 'date' })

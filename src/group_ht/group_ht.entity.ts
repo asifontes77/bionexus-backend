@@ -12,7 +12,7 @@ export class Groupht {
   @Column('varchar', { length: 200 })
   details: string;
 
-  @Column('tinyint', { default: () => 0 })
+  @Column('tinyint', { default: () => '0' })
   annulled: boolean;
 
   @OneToMany(() => Grouphtitems, (grouphtitems) => grouphtitems.groupht)

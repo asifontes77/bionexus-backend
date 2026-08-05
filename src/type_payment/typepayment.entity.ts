@@ -14,9 +14,9 @@ export class TypePayment {
     @Column('varchar', {length: 50, nullable: true})
     description_2: string
 
-    @Column('tinyint', { default: () => 0 })
+    @Column('tinyint', { default: () => '0' })
     annulled: boolean;
 
-    @Column('tinyint', { default: () => 0, nullable: true })
+    @Column('tinyint', { default: () => '0', nullable: true })
     only_dollars: boolean;
 }

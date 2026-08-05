@@ -6,10 +6,10 @@ export class Grouphtitems {
     @PrimaryGeneratedColumn()
     id: number
 
-    @Column('int', {default: () => 0})
+    @Column('int', {default: () => '0'})
     groupHtId: number
 
-    @Column('int', {default: () => 0})
+    @Column('int', {default: () => '0'})
     examId: number
     
     @Column('varchar', {length: 60})

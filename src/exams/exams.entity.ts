@@ -7,10 +7,10 @@ export class Exam {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column('int', { default: () => 0 })
+  @Column('int', { default: () => '0' })
   patientsId: number;
 
-  @Column('int', { default: () => 0 })
+  @Column('int', { default: () => '0' })
   examlistsId: number;
 
   @Column('varchar', { length: 60 })
@@ -19,49 +19,49 @@ export class Exam {
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   date: Date;
 
-  @Column('int', { default: () => 0 })
+  @Column('int', { default: () => '0' })
   group_id: number;
 
   @Column('int')
   position: number;
 
-  @Column({ type: 'decimal', precision: 18, scale: 2, default: () => 0 })
+  @Column({ type: 'decimal', precision: 18, scale: 2, default: () => '0.00' })
   amount: number;
 
-  @Column({ type: 'decimal', precision: 18, scale: 2, default: () => 0 })
+  @Column({ type: 'decimal', precision: 18, scale: 2, default: () => '0.00' })
   price: number;
 
-  @Column({ type: 'decimal', precision: 18, scale: 2, default: () => 0 })
+  @Column({ type: 'decimal', precision: 18, scale: 2, default: () => '0.00' })
   total: number;
 
-  @Column('int', { default: () => 0 })
+  @Column('int', { default: () => '0' })
   status: boolean;
 
   @Column({ type: 'text', nullable: true })
   result: string;
 
-  @Column('int', { default: () => 0 })
+  @Column('int', { default: () => '0' })
   size: number;
 
-  @Column('int', { default: () => 0 })
+  @Column('int', { default: () => '0' })
   processed_id: number;
 
-  @Column('int', { default: () => 0 })
+  @Column('int', { default: () => '0' })
   approved_id: number;
 
   @Column('varchar', { length: 20, default: 'Exo' })
   tax_description: string;
 
-  @Column({ type: 'decimal', precision: 18, scale: 2, default: () => 0 })
+  @Column({ type: 'decimal', precision: 18, scale: 2, default: () => '0.00' })
   tax_amount: number;
 
-  @Column({ type: 'decimal', precision: 18, scale: 2, default: () => 0 })
+  @Column({ type: 'decimal', precision: 18, scale: 2, default: () => '0.00' })
   tax_total: number;
 
-  @Column('int', { default: () => 0 })
+  @Column('int', { default: () => '0' })
   canceled_id: number;
 
-  @Column({ type: 'smallint', default: () => 0 })
+  @Column({ type: 'smallint', default: () => '0' })
   email_status: number;
 
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })

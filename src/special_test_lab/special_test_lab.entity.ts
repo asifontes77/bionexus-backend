@@ -20,7 +20,7 @@ export class special_test_lab {
   @Column('varchar', { length: 100 })
   email: string;
 
-  @Column('tinyint', { default: () => 0, nullable: true })
+  @Column('tinyint', { default: () => '0', nullable: true })
   annulled: boolean;
 
   // Relación OneToMany

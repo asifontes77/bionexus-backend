@@ -14,7 +14,7 @@ export class Waypayitems {
   @Column('int')
   id_way_pay: number;
 
-  @Column('int', { default: () => 0 })
+  @Column('int', { default: () => '0' })
   id_type_payment: number;
 
   @Column('varchar', { length: 50 })
@@ -23,13 +23,13 @@ export class Waypayitems {
   @Column('varchar', { length: 50 })
   description_2: string;
 
-  @Column({ type: 'decimal', precision: 18, scale: 2, default: () => 0 })
+  @Column({ type: 'decimal', precision: 18, scale: 2, default: () => '0.00' })
   amount: number;
 
-  @Column({ type: 'decimal', precision: 18, scale: 2, default: () => 0 })
+  @Column({ type: 'decimal', precision: 18, scale: 2, default: () => '0.00' })
   amountDollar: number;
   
-  @Column('tinyint', { default: () => 0 })
+  @Column('tinyint', { default: () => '0' })
   dollar: boolean;
 
   @Column('varchar', { length: 20, nullable: true })

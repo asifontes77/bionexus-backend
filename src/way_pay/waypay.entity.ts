@@ -21,7 +21,7 @@ export class Waypay {
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   date_patients: Date;
 
-  @Column('tinyint', { default: () => 0 })
+  @Column('tinyint', { default: () => '0' })
   annulment: boolean;
 
   @OneToMany(() => Waypayitems, (waypayitems) => waypayitems.waypays)

@@ -8,6 +8,6 @@ export class Dollarvalue {
     @Column({type: 'datetime', default: () => 'CURRENT_TIMESTAMP'})
     date: Date
 
-    @Column({type: 'decimal', precision: 18, scale: 2, default: () => 0})
+    @Column({type: 'decimal', precision: 18, scale: 2, default: () => '0.00'})
     value: number
 }

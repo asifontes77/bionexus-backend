@@ -17,16 +17,16 @@ export class Client {
     @Column('varchar', {length: 60, nullable: true})
     person_charge: string
 
-    @Column({type: 'decimal', precision: 18, scale: 2, default: () => 0})
+    @Column({type: 'decimal', precision: 18, scale: 2, default: () => '0.00'})
     discount: number
 
     @Column('varchar', {length: 20, nullable: true})
     rif: string
 
-    @Column('tinyint', {default: () => 0})
+    @Column('tinyint', {default: () => '0'})
     Print_invoice: boolean
 
-    @Column('tinyint', {default: () => 0})
+    @Column('tinyint', {default: () => '0'})
     hide_client: boolean
 
     @Column({type:'smallint', default: 1})
@@ -35,6 +35,6 @@ export class Client {
     @Column('tinyint', {default: 1})
     credit: boolean
 
-    @Column('tinyint', {default: () => 0})
+    @Column('tinyint', {default: () => '0'})
     charge_dollars: boolean
 }

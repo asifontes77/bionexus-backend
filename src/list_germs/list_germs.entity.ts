@@ -13,6 +13,6 @@ export class listGerms {
   germen: string;
 
   
-  @Column('tinyint', { default: () => 0 })
+  @Column('tinyint', { default: () => '0' })
   annulled: boolean;
 }

@@ -11,12 +11,12 @@ export class Tax {
   @Column({ type: 'decimal', precision: 18, scale: 2, default: 0 })
   value: number;
 
-  @Column('tinyint', { default: () => 0, nullable: true })
+  @Column('tinyint', { default: () => '0', nullable: true })
   only_dollars: boolean;
 
-  @Column('tinyint', { default: () => 0, nullable: true })
+  @Column('tinyint', { default: () => '0', nullable: true })
   always_subtotal: boolean;
 
-  @Column('tinyint', { default: () => 0, nullable: false })
+  @Column('tinyint', { default: () => '0', nullable: false })
   hide: boolean;
 }
