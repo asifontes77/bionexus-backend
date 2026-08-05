@@ -21,9 +21,24 @@ describe('AppController (e2e)', () => {
     await app.close();
   });
 
-  it('debe responder 404 para una ruta no registrada', async () => {
+  it('debe servir un archivo público mediante una ruta anidada', async () => {
+    const response = await request(app.getHttpServer())
+      .get('/api/public/toro.svg')
+      .expect(200);
+
+    expect(response.headers['content-type']).toContain('image/svg+xml');
+    expect(Buffer.from(response.body).toString('utf8')).toContain('<svg');
+  });
+
+  it('debe responder 404 para la raíz del prefijo API', async () => {
     await request(app.getHttpServer())
       .get('/api')
+      .expect(404);
+  });
+
+  it('no debe servir contenido estático para una ruta API no registrada', async () => {
+    await request(app.getHttpServer())
+      .get('/api/ruta-no-registrada')
       .expect(404);
   });
 });
