@@ -336,27 +336,34 @@ export class PatientsService {
 
   async generatePdfFromHtml(html: string, outputPath: string): Promise<void> {
     const browser = await puppeteer.launch({
-      headless: 'new',
+      headless: true,
     });
-    const page = await browser.newPage();
-    await page.setContent(html);
 
-    await page.pdf({ path: outputPath, format: 'letter' });
+    try {
+      const page = await browser.newPage();
+      await page.setContent(html);
 
-    await browser.close();
+      await page.pdf({ path: outputPath, format: 'letter' });
+    } finally {
+      await browser.close();
+    }
   }
 
   async generatePdfFromHtmlOut(html: string): Promise<Buffer> {
     const browser = await puppeteer.launch({
-      headless: 'new',
+      headless: true,
     });
-    const page = await browser.newPage();
-    await page.setContent(html);
 
-    const pdfBuffer = await page.pdf({ format: 'letter' });
-  
-    await browser.close();
-    return pdfBuffer;
+    try {
+      const page = await browser.newPage();
+      await page.setContent(html);
+
+      const pdfBuffer = await page.pdf({ format: 'letter' });
+
+      return Buffer.from(pdfBuffer);
+    } finally {
+      await browser.close();
+    }
   }
 
   async printReceipt(id: number): Promise<void> {
