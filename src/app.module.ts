@@ -33,6 +33,7 @@ import { RoutinesModule } from './routines/routines.module';
 import { GroupHtItemsModule } from './group_ht_items/group_ht_items.module';
 import { join } from 'path';
 import { NestFactory } from '@nestjs/core';
+import { resolveDatabaseOptions } from './database/database.config';
 
 @Module({
   imports: [
@@ -42,16 +43,16 @@ import { NestFactory } from '@nestjs/core';
     SecurityModule,
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        type: 'mysql',
-        host: configService.get<string>('DB_HOST'),
-        port: Number(configService.get<string>('DB_PORT')),
-        username: configService.get<string>('DB_USER'),
-        password: configService.get<string>('DB_PASSWORD'),
-        database: configService.get<string>('DB_DATABASE'),
-        entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: true,
-      }),
+      useFactory: (configService: ConfigService) => resolveDatabaseOptions(
+        {
+          DB_HOST: configService.get<string>('DB_HOST'),
+          DB_PORT: configService.get<string>('DB_PORT'),
+          DB_USER: configService.get<string>('DB_USER'),
+          DB_PASSWORD: configService.get<string>('DB_PASSWORD'),
+          DB_DATABASE: configService.get<string>('DB_DATABASE'),
+        },
+        __dirname
+      ),
     }),
     ExamsModule,
     ExamGroupModule,
