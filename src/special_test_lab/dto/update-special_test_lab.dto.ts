@@ -4,5 +4,5 @@ export class UpdateSpecialTestLabDto {
   phone_1?: string;
   phone_2?: string;
   email?: string;
-  annulled?: boolean; 
+  annulled?: boolean;
 }

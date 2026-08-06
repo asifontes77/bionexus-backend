@@ -6,13 +6,7 @@ export class LicenseController {
   constructor(private readonly licenseService: LicenseService) {}
 
   @Post()
-  getLicenseKey(@Body() body: {
-    rif: string;
-    businessName: string;
-  })  {
-    return this.licenseService.generateLicenseKey(
-      body.rif,
-      body.businessName
-    );
+  getLicenseKey(@Body() body: { rif: string; businessName: string }) {
+    return this.licenseService.generateLicenseKey(body.rif, body.businessName);
   }
 }

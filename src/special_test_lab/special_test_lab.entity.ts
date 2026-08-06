@@ -10,13 +10,13 @@ export class special_test_lab {
 
   @Column('varchar', { length: 200 })
   address: string;
-  
+
   @Column({ type: 'char', length: 20 })
   phone_1: string;
 
   @Column({ type: 'char', length: 20 })
   phone_2: string;
-  
+
   @Column('varchar', { length: 100 })
   email: string;
 
@@ -24,6 +24,10 @@ export class special_test_lab {
   annulled: boolean;
 
   // Relación OneToMany
-  @OneToMany(() => special_test_items, (specialTestItem) => specialTestItem.specialTestLab, { cascade: true })
+  @OneToMany(
+    () => special_test_items,
+    (specialTestItem) => specialTestItem.specialTestLab,
+    { cascade: true },
+  )
   specialTestItems: special_test_items[];
 }

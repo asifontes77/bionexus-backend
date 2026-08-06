@@ -17,7 +17,7 @@ import { updateSpecialTestItemsDto } from './dto/update-special_test_itms.dto';
 @Controller('specialtestItems')
 export class SpecialtestItemsController {
   constructor(private specialtestItemsService: SpecialTestItemsService) {}
-  
+
   @Post()
   createSpecialTestItems(@Body() test: CreateSpecialTestItemsDto) {
     return this.specialtestItemsService.createSpecialTestItems(test);
@@ -28,13 +28,13 @@ export class SpecialtestItemsController {
   getSpecialTestItemsList() {
     return this.specialtestItemsService.getSpecialTestItemsList();
   }
-  
+
   @UseGuards(JwtUserGuard)
   @Get(':id')
   getSpecialTestItems(@Param('id', ParseIntPipe) id: number) {
     return this.specialtestItemsService.getSpecialTestItems(id);
   }
-  
+
   @UseGuards(JwtUserGuard)
   @Patch(':id')
   updateSpecialTestItems(
@@ -43,9 +43,9 @@ export class SpecialtestItemsController {
   ) {
     return this.specialtestItemsService.updateSpecialTestItems(id, laboratory);
   }
-  
+
   @Delete(':id')
   deleteTestItems(@Param('id', ParseIntPipe) id: number) {
-      return this.specialtestItemsService.deleteTestItems(id)
+    return this.specialtestItemsService.deleteTestItems(id);
   }
 }

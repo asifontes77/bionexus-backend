@@ -16,7 +16,7 @@ import { UpdateSpecialTestLabDto } from './dto/update-special_test_lab.dto';
 @Controller('specialtestlab')
 export class SpecialtestlabController {
   constructor(private specialtestlabService: SpecialTestLabService) {}
-  
+
   @Post()
   createSpecialTestLab(@Body() newLaboratory: CreateSpecialTestLabDto) {
     return this.specialtestlabService.createSpecialTestLab(newLaboratory);
@@ -27,13 +27,13 @@ export class SpecialtestlabController {
   getSpecialTestLabList() {
     return this.specialtestlabService.getSpecialTestLabList();
   }
-  
+
   @UseGuards(JwtUserGuard)
   @Get(':id')
   getSpecialTestLab(@Param('id', ParseIntPipe) id: number) {
     return this.specialtestlabService.getSpecialTestLab(id);
   }
-  
+
   @UseGuards(JwtUserGuard)
   @Patch(':id')
   updateSpecialTestLab(

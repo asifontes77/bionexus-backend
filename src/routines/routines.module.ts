@@ -6,10 +6,7 @@ import { Routines } from './routines.entity';
 import { UsersModule } from 'src/users/users.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Routines]),
-    UsersModule
-  ],
+  imports: [TypeOrmModule.forFeature([Routines]), UsersModule],
   controllers: [RoutinesController],
   providers: [RoutinesService],
 })

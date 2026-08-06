@@ -6,11 +6,8 @@ import { special_test_lab } from './special_test_lab.entity';
 import { UsersModule } from 'src/users/users.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([special_test_lab]), 
-    UsersModule
-  ],
+  imports: [TypeOrmModule.forFeature([special_test_lab]), UsersModule],
   controllers: [SpecialtestlabController],
-  providers: [SpecialTestLabService]
+  providers: [SpecialTestLabService],
 })
 export class SpecialTestLabModule {}

@@ -11,11 +11,11 @@ export class SpecialTestItemsService {
     @InjectRepository(special_test_items)
     private specialTestItemsRepository: Repository<special_test_items>,
   ) {}
-  
+
   async createSpecialTestItems(test: CreateSpecialTestItemsDto): Promise<any> {
     return this.specialTestItemsRepository.save(test);
   }
-  
+
   async getSpecialTestItemsList() {
     return this.specialTestItemsRepository.find();
   }
@@ -27,30 +27,39 @@ export class SpecialTestItemsService {
       },
     });
     if (!itemsFound) {
-      return new HttpException('Item de laboratorio no encontrado', HttpStatus.NOT_FOUND);
+      return new HttpException(
+        'Item de laboratorio no encontrado',
+        HttpStatus.NOT_FOUND,
+      );
     }
     return itemsFound;
   }
 
-  async updateSpecialTestItems(id: number, laboratory: updateSpecialTestItemsDto) {
+  async updateSpecialTestItems(
+    id: number,
+    laboratory: updateSpecialTestItemsDto,
+  ) {
     const itemsFound = await this.specialTestItemsRepository.findOne({
       where: {
         id,
       },
     });
     if (!itemsFound) {
-      return new HttpException('Item de laboratorio no encontrado', HttpStatus.NOT_FOUND);
+      return new HttpException(
+        'Item de laboratorio no encontrado',
+        HttpStatus.NOT_FOUND,
+      );
     }
     const updateLaboratorio = Object.assign(itemsFound, laboratory);
     return this.specialTestItemsRepository.save(updateLaboratorio);
-  }  
+  }
 
   async deleteTestItems(id: number) {
-    const result = await this.specialTestItemsRepository.delete({ id })
+    const result = await this.specialTestItemsRepository.delete({ id });
     if (result.affected === 0) {
-        return new HttpException('Grupo no encontrado', HttpStatus.NOT_FOUND)
+      return new HttpException('Grupo no encontrado', HttpStatus.NOT_FOUND);
     }
 
-    return result
-}
+    return result;
+  }
 }

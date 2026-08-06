@@ -6,11 +6,8 @@ import { Antibiotic } from './antibiotic.entity';
 import { UsersModule } from 'src/users/users.module';
 
 @Module({
-    imports: [
-      TypeOrmModule.forFeature([Antibiotic]), 
-      UsersModule
-    ],
-    controllers: [AntibioticController],
-    providers: [AntibioticService]
-  })
-  export class AntibioticModule {}
+  imports: [TypeOrmModule.forFeature([Antibiotic]), UsersModule],
+  controllers: [AntibioticController],
+  providers: [AntibioticService],
+})
+export class AntibioticModule {}

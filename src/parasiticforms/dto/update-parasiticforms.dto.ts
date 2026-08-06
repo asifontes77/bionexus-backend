@@ -1,4 +1,4 @@
 export class UpdateparasiticformsDto {
-    description?: string
-    annulled?: boolean
+  description?: string;
+  annulled?: boolean;
 }

@@ -6,10 +6,7 @@ import { cash_register } from './cash_register.entity';
 import { UsersModule } from 'src/users/users.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([cash_register]),
-    UsersModule,
-  ],
+  imports: [TypeOrmModule.forFeature([cash_register]), UsersModule],
   controllers: [Cash_registerController],
   providers: [Cash_registerService],
 })

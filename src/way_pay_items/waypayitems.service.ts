@@ -7,24 +7,28 @@ import { UpdateWaypayitemsDto } from './dto/update-waypayitems.dto';
 
 @Injectable()
 export class WaypayitemsService {
-    constructor(
-        @InjectRepository(Waypayitems) private waypayitemsRepository: Repository<Waypayitems>
-    ) {}
+  constructor(
+    @InjectRepository(Waypayitems)
+    private waypayitemsRepository: Repository<Waypayitems>,
+  ) {}
 
-    async createWaypayitems(waypayitems: CreateWaypayitemsDto): Promise<any> {
-        return this.waypayitemsRepository.save(waypayitems) 
-    }
+  async createWaypayitems(waypayitems: CreateWaypayitemsDto): Promise<any> {
+    return this.waypayitemsRepository.save(waypayitems);
+  }
 
-    async updateWaypayitems(id: number, waypayitems: UpdateWaypayitemsDto) {
-        const waypayitemsFound = await this.waypayitemsRepository.findOne({
-            where: {
-                id
-            }
-        })
-        if (!waypayitemsFound) {
-            return new HttpException('forma de pago no encontrado', HttpStatus.NOT_FOUND)
-        }
-        const updateWaypayitems = Object.assign(waypayitemsFound, waypayitems)
-        return this.waypayitemsRepository.save(updateWaypayitems)
+  async updateWaypayitems(id: number, waypayitems: UpdateWaypayitemsDto) {
+    const waypayitemsFound = await this.waypayitemsRepository.findOne({
+      where: {
+        id,
+      },
+    });
+    if (!waypayitemsFound) {
+      return new HttpException(
+        'forma de pago no encontrado',
+        HttpStatus.NOT_FOUND,
+      );
     }
+    const updateWaypayitems = Object.assign(waypayitemsFound, waypayitems);
+    return this.waypayitemsRepository.save(updateWaypayitems);
+  }
 }

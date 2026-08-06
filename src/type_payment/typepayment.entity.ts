@@ -1,22 +1,22 @@
-import {Entity, Column, PrimaryGeneratedColumn} from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity({name: 'type_payment'})
+@Entity({ name: 'type_payment' })
 export class TypePayment {
-    @PrimaryGeneratedColumn()
-    id: number
+  @PrimaryGeneratedColumn()
+  id: number;
 
-    @Column('varchar', {length: 50, nullable: true})
-    description: string
-    
-    @Column('varchar', {length: 50, nullable: true})
-    description_1: string
-    
-    @Column('varchar', {length: 50, nullable: true})
-    description_2: string
+  @Column('varchar', { length: 50, nullable: true })
+  description: string;
 
-    @Column('tinyint', { default: () => '0' })
-    annulled: boolean;
+  @Column('varchar', { length: 50, nullable: true })
+  description_1: string;
 
-    @Column('tinyint', { default: () => '0', nullable: true })
-    only_dollars: boolean;
+  @Column('varchar', { length: 50, nullable: true })
+  description_2: string;
+
+  @Column('tinyint', { default: () => '0' })
+  annulled: boolean;
+
+  @Column('tinyint', { default: () => '0', nullable: true })
+  only_dollars: boolean;
 }

@@ -7,12 +7,8 @@ import { LaboratoryModule } from 'src/laboratory/laboratory.module';
 import { LicenseModule } from 'src/license/license.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([User]),
-    LaboratoryModule,
-    LicenseModule,
-  ],
+  imports: [TypeOrmModule.forFeature([User]), LaboratoryModule, LicenseModule],
   controllers: [UsersController],
-  providers: [UsersService]
+  providers: [UsersService],
 })
 export class UsersModule {}

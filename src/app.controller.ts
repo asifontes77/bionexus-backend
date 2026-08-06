@@ -12,7 +12,9 @@ export class AppController {
     @Param('filePath') filePath: string | string[],
     @Res() response: Response,
   ) {
-    const relativePath = Array.isArray(filePath) ? filePath.join('/') : filePath;
+    const relativePath = Array.isArray(filePath)
+      ? filePath.join('/')
+      : filePath;
     const file = join(__dirname, '..', 'public', relativePath);
     response.sendFile(file);
   }

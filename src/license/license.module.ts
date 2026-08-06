@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { LicenseController } from './license.controller';
 import { LicenseService } from './license.service';
-import { MulterModule } from '@nestjs/platform-express'
+import { MulterModule } from '@nestjs/platform-express';
 
 @Module({
   imports: [
@@ -11,6 +11,6 @@ import { MulterModule } from '@nestjs/platform-express'
   ],
   controllers: [LicenseController],
   providers: [LicenseService],
-  exports: [LicenseService]
+  exports: [LicenseService],
 })
 export class LicenseModule {}

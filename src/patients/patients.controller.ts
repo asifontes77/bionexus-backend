@@ -58,10 +58,11 @@ export class PatientsController {
     return this.patienService.getPatientsWithInvoice(body.date);
   }
 
-  
   @UseGuards(JwtUserGuard)
   @Post('/speciallist')
-  async getPatientsSpecial(@Body() body: { firstDate: string; lastDate: string; examIds: number[] }) {
+  async getPatientsSpecial(
+    @Body() body: { firstDate: string; lastDate: string; examIds: number[] },
+  ) {
     const { firstDate, lastDate, examIds } = body;
 
     return this.patienService.getPatientsSpecial(firstDate, lastDate, examIds);
@@ -69,16 +70,19 @@ export class PatientsController {
 
   @UseGuards(JwtUserGuard)
   @Post('/querieslist')
-  getPatientsWithQueries(@Body() body: {
-    firstDate: string;
-    lastDate: string;
-    namePatient: string;
-    userSelection: number;
-    clientSelection: number;
-    clientSelectionStatus: number;
-    ciPatient: string;
-    invoice: boolean;
-  }) {
+  getPatientsWithQueries(
+    @Body()
+    body: {
+      firstDate: string;
+      lastDate: string;
+      namePatient: string;
+      userSelection: number;
+      clientSelection: number;
+      clientSelectionStatus: number;
+      ciPatient: string;
+      invoice: boolean;
+    },
+  ) {
     return this.patienService.getPatientsWithQueries(
       body.firstDate,
       body.lastDate,
@@ -90,19 +94,22 @@ export class PatientsController {
       body.invoice,
     );
   }
-    
+
   @UseGuards(JwtUserGuard)
   @Post('/queriestotal')
-  getPatientsWithQueriesTotal(@Body() body: {
-    firstDate: string;
-    lastDate: string;
-    namePatient: string;
-    userSelection: number;
-    clientSelection: number;
-    clientSelectionStatus: number;
-    ciPatient: string;
-    invoice: boolean;
-  }) {
+  getPatientsWithQueriesTotal(
+    @Body()
+    body: {
+      firstDate: string;
+      lastDate: string;
+      namePatient: string;
+      userSelection: number;
+      clientSelection: number;
+      clientSelectionStatus: number;
+      ciPatient: string;
+      invoice: boolean;
+    },
+  ) {
     return this.patienService.getPatientsWithQueriesTotal(
       body.firstDate,
       body.lastDate,
@@ -117,10 +124,7 @@ export class PatientsController {
 
   @UseGuards(JwtUserGuard)
   @Post('/totalmonth')
-  getTotalPatientsMonth(@Body() body: {
-    firstDate: Date,
-    lastDate: Date,
-  }) {
+  getTotalPatientsMonth(@Body() body: { firstDate: Date; lastDate: Date }) {
     return this.patienService.getTotalPatientsMonth(
       body.firstDate,
       body.lastDate,
@@ -226,12 +230,14 @@ export class PatientsController {
   @Get('/pdf/:id')
   async generatePdfFromHtmlOut(
     @Param('id', ParseIntPipe) id: number,
-    @Res() res: Response
+    @Res() res: Response,
   ) {
     const rowTmp = await this.patienService.getPatient(id);
     const row = JSON.parse(JSON.stringify(rowTmp));
 
-    const pdfBuffer = await this.patienService.generatePdfFromHtmlOut(row.result_html);
+    const pdfBuffer = await this.patienService.generatePdfFromHtmlOut(
+      row.result_html,
+    );
 
     res.set({
       'Content-Type': 'application/pdf',

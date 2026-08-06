@@ -10,18 +10,27 @@ export interface DatabaseEnvironment {
 }
 
 function resolveSrcDirectory(baseDirectory: string): string {
-  return baseDirectory.split(/\\|\//).pop() === 'database' ? resolve(baseDirectory, '..') : baseDirectory;
+  return baseDirectory.split(/\\|\//).pop() === 'database'
+    ? resolve(baseDirectory, '..')
+    : baseDirectory;
 }
 
 export function resolveDatabaseOptions(
   environment: DatabaseEnvironment,
-  baseDirectory: string
+  baseDirectory: string,
 ): TypeOrmModuleOptions {
   const missing: string[] = [];
 
-  const getVar = (name: keyof DatabaseEnvironment, sensitive: boolean = false): string => {
+  const getVar = (
+    name: keyof DatabaseEnvironment,
+    sensitive: boolean = false,
+  ): string => {
     const value = environment[name];
-    if (value === undefined || value === null || (typeof value === 'string' && value.trim() === '')) {
+    if (
+      value === undefined ||
+      value === null ||
+      (typeof value === 'string' && value.trim() === '')
+    ) {
       missing.push(name);
       return '';
     }
@@ -35,7 +44,9 @@ export function resolveDatabaseOptions(
   const database = getVar('DB_DATABASE');
 
   if (missing.length > 0) {
-    throw new Error(`Missing required database variables: ${missing.join(', ')}`);
+    throw new Error(
+      `Missing required database variables: ${missing.join(', ')}`,
+    );
   }
 
   const port = Number(portStr);
@@ -53,7 +64,9 @@ export function resolveDatabaseOptions(
     password,
     database,
     entities: [join(srcDir, '**', '*.entity.{ts,js}').replace(/\\/g, '/')],
-    migrations: [join(srcDir, 'database', 'migrations', '*.{ts,js}').replace(/\\/g, '/')],
+    migrations: [
+      join(srcDir, 'database', 'migrations', '*.{ts,js}').replace(/\\/g, '/'),
+    ],
     synchronize: false,
     migrationsRun: false,
   };

@@ -1,3 +1,3 @@
 export class UpdateSampletypeDto {
-    description?: string
+  description?: string;
 }

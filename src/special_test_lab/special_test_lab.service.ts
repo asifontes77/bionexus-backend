@@ -12,10 +12,12 @@ export class SpecialTestLabService {
     private specialTestLabRepository: Repository<special_test_lab>,
   ) {}
 
-  async createSpecialTestLab(laboratory: CreateSpecialTestLabDto): Promise<any> {
+  async createSpecialTestLab(
+    laboratory: CreateSpecialTestLabDto,
+  ): Promise<any> {
     return this.specialTestLabRepository.save(laboratory);
   }
-  
+
   async getSpecialTestLabList() {
     return this.specialTestLabRepository.find({
       relations: ['specialTestItems'], // Carga la relación OneToMany
@@ -30,7 +32,10 @@ export class SpecialTestLabService {
       relations: ['specialTestItems'],
     });
     if (!laboratoryFound) {
-      return new HttpException('Laboratorio no encontrado', HttpStatus.NOT_FOUND);
+      return new HttpException(
+        'Laboratorio no encontrado',
+        HttpStatus.NOT_FOUND,
+      );
     }
     return laboratoryFound;
   }
@@ -42,7 +47,10 @@ export class SpecialTestLabService {
       },
     });
     if (!laboratoryFound) {
-      return new HttpException('Laboratorio no encontrado', HttpStatus.NOT_FOUND);
+      return new HttpException(
+        'Laboratorio no encontrado',
+        HttpStatus.NOT_FOUND,
+      );
     }
     const updateLaboratorio = Object.assign(laboratoryFound, laboratory);
     return this.specialTestLabRepository.save(updateLaboratorio);

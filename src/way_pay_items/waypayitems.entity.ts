@@ -28,7 +28,7 @@ export class Waypayitems {
 
   @Column({ type: 'decimal', precision: 18, scale: 2, default: () => '0.00' })
   amountDollar: number;
-  
+
   @Column('tinyint', { default: () => '0' })
   dollar: boolean;
 

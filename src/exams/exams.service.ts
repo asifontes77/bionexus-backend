@@ -49,7 +49,7 @@ export class ExamsService {
     const updateExam = Object.assign(examFound, exam);
     return this.examRepository.save(updateExam);
   }
-  
+
   async getPatientsWithClient(clientIds: number[]): Promise<any> {
     return this.examRepository
       .createQueryBuilder('exam')
@@ -66,30 +66,37 @@ export class ExamsService {
       .getRawMany();
   }
 
-  async getTotalExamWithGroup(examIds: number[], firstDate: Date,lastDate: Date) {
+  async getTotalExamWithGroup(
+    examIds: number[],
+    firstDate: Date,
+    lastDate: Date,
+  ) {
     const totales = await this.examRepository
       .createQueryBuilder('exam')
       .select([
-        "COALESCE(COUNT(id), 0) AS total",
-        "COALESCE(COUNT(CASE WHEN exam.result IS NOT NULL THEN 1 END), 0) AS total_recorded"
+        'COALESCE(COUNT(id), 0) AS total',
+        'COALESCE(COUNT(CASE WHEN exam.result IS NOT NULL THEN 1 END), 0) AS total_recorded',
       ])
-      .where('DATE(exam.date) BETWEEN :firstDate AND :lastDate', { firstDate, lastDate })
+      .where('DATE(exam.date) BETWEEN :firstDate AND :lastDate', {
+        firstDate,
+        lastDate,
+      })
       .andWhere('exam.examlistsId IN (:...examIds)', { examIds: examIds })
       .getRawOne();
-    return totales
+    return totales;
   }
 
-  async getPatientsWithClientTax(clientIds: number[], tax: number): Promise<any> {
+  async getPatientsWithClientTax(
+    clientIds: number[],
+    tax: number,
+  ): Promise<any> {
     console.log('clientIds tax: ', clientIds);
     return this.examRepository
       .createQueryBuilder('exam')
-      .select(
-        'SUM(exam.tax_total)',
-        'tax_total'
-      )
+      .select('SUM(exam.tax_total)', 'tax_total')
       .addSelect('SUM(exam.total)', 'total')
       .where('exam.patientsId IN (:...clientIds)', { clientIds: clientIds })
-      .andWhere('exam.tax_amount= :tax', {tax: tax})
+      .andWhere('exam.tax_amount= :tax', { tax: tax })
       .groupBy('exam.description')
       .getRawMany();
   }

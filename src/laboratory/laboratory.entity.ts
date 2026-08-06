@@ -100,7 +100,7 @@ export class Laboratory {
 
   @Column('int', { default: 0 })
   receipt_number: number;
-  
+
   @Column('tinyint', { default: () => '0', nullable: true })
   print_receipt: boolean;
 }

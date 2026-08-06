@@ -54,7 +54,7 @@ export class PatientsService {
       .where('patient.admission_date = :admission', { admission })
       .orderBy('patient.id', 'ASC')
       .addOrderBy('exam_group.position', 'ASC') // Ordenar por exam_group.position
-      .addOrderBy('exam.position', 'ASC')    // Luego ordenar por exam.position
+      .addOrderBy('exam.position', 'ASC') // Luego ordenar por exam.position
       .getMany();
   }
 
@@ -62,9 +62,9 @@ export class PatientsService {
     return this.patientRepository
       .createQueryBuilder('patient')
       .leftJoinAndSelect('patient.exams', 'exam')
-      .leftJoinAndSelect('exam.examGroup', 'exam_group') 
+      .leftJoinAndSelect('exam.examGroup', 'exam_group')
       .where('patient.id = :id', { id })
-      .orderBy('exam_group.position', 'ASC') 
+      .orderBy('exam_group.position', 'ASC')
       .addOrderBy('exam.position', 'ASC')
       .getOne();
   }
@@ -73,11 +73,11 @@ export class PatientsService {
     return this.patientRepository
       .createQueryBuilder('patient')
       .leftJoinAndSelect('patient.exams', 'exam')
-      .leftJoinAndSelect('exam.examGroup', 'exam_group') 
+      .leftJoinAndSelect('exam.examGroup', 'exam_group')
       .where('patient.id = :id', { id })
       .andWhere('exam.approved_id > 0')
       .orderBy('exam.approved_id', 'ASC')
-      .addOrderBy('exam_group.position', 'ASC') 
+      .addOrderBy('exam_group.position', 'ASC')
       .addOrderBy('exam.position', 'ASC')
       .getOne();
   }
@@ -94,13 +94,16 @@ export class PatientsService {
   async getPatientsSpecial(
     firstDate: string,
     lastDate: string,
-    examIds: number[]
+    examIds: number[],
   ) {
     return this.patientRepository
       .createQueryBuilder('patient')
       .leftJoinAndSelect('patient.exams', 'exam')
       .where('patient.admission_date >= :firstDate', { firstDate })
-      .andWhere('patient.admission_date < DATE_ADD(:lastDate, INTERVAL 1 DAY)', { lastDate })
+      .andWhere(
+        'patient.admission_date < DATE_ADD(:lastDate, INTERVAL 1 DAY)',
+        { lastDate },
+      )
       .andWhere('exam.examlistsId IN (:...examIds)', { examIds })
       .getMany();
   }
@@ -117,19 +120,30 @@ export class PatientsService {
   ) {
     let query = this.patientRepository
       .createQueryBuilder('patient')
-      .where('patient.admission_date BETWEEN :firstDate AND :lastDate', { firstDate, lastDate })
-      .orderBy('patient.id', 'ASC')
+      .where('patient.admission_date BETWEEN :firstDate AND :lastDate', {
+        firstDate,
+        lastDate,
+      })
+      .orderBy('patient.id', 'ASC');
     if (namePatient) {
-      query = query.andWhere('patient.name LIKE :namePatient', { namePatient: `%${namePatient}%` });
+      query = query.andWhere('patient.name LIKE :namePatient', {
+        namePatient: `%${namePatient}%`,
+      });
     }
     if (ciPatient) {
-      query = query.andWhere('patient.document_number LIKE :ciPatient', { ciPatient: `%${ciPatient}%` });
+      query = query.andWhere('patient.document_number LIKE :ciPatient', {
+        ciPatient: `%${ciPatient}%`,
+      });
     }
     if (userSelection !== 0) {
-      query = query.andWhere('patient.user_id= :userSelection', { userSelection});
+      query = query.andWhere('patient.user_id= :userSelection', {
+        userSelection,
+      });
     }
     if (clientSelection > 1) {
-      query = query.andWhere('patient.client_id= :clientSelection', { clientSelection});
+      query = query.andWhere('patient.client_id= :clientSelection', {
+        clientSelection,
+      });
     }
     if (clientSelectionStatus !== -1) {
       if (clientSelectionStatus !== 0) {
@@ -137,7 +151,7 @@ export class PatientsService {
       } else {
         query = query.andWhere('patient.total_canceled = 0');
       }
-    }    
+    }
     if (invoice) {
       query = query.andWhere('patient.invoice IS NULL');
     }
@@ -159,19 +173,30 @@ export class PatientsService {
       .createQueryBuilder('patient')
       .select('COALESCE(SUM(patient.total), 0)', 'total')
       .addSelect('COALESCE(SUM(patient.total_dollars), 0)', 'totalDollares')
-      .where('patient.admission_date BETWEEN :firstDate AND :lastDate', { firstDate, lastDate })
-      .orderBy('patient.id', 'ASC')
+      .where('patient.admission_date BETWEEN :firstDate AND :lastDate', {
+        firstDate,
+        lastDate,
+      })
+      .orderBy('patient.id', 'ASC');
     if (namePatient) {
-      query = query.andWhere('patient.name LIKE :namePatient', { namePatient: `%${namePatient}%` });
+      query = query.andWhere('patient.name LIKE :namePatient', {
+        namePatient: `%${namePatient}%`,
+      });
     }
     if (ciPatient) {
-      query = query.andWhere('patient.document_number LIKE :ciPatient', { ciPatient: `%${ciPatient}%` });
+      query = query.andWhere('patient.document_number LIKE :ciPatient', {
+        ciPatient: `%${ciPatient}%`,
+      });
     }
     if (userSelection !== 0) {
-      query = query.andWhere('patient.user_id= :userSelection', { userSelection});
+      query = query.andWhere('patient.user_id= :userSelection', {
+        userSelection,
+      });
     }
     if (clientSelection > 1) {
-      query = query.andWhere('patient.client_id= :clientSelection', { clientSelection});
+      query = query.andWhere('patient.client_id= :clientSelection', {
+        clientSelection,
+      });
     }
     if (clientSelectionStatus !== -1) {
       if (clientSelectionStatus !== 0) {
@@ -279,13 +304,16 @@ export class PatientsService {
     return this.patientRepository.save(updatePatient);
   }
 
-  async getTotalPatientsMonth(firstDate: Date,lastDate: Date) {
+  async getTotalPatientsMonth(firstDate: Date, lastDate: Date) {
     const result = await this.patientRepository
-    .createQueryBuilder('Patient')
-    .select('COUNT(id)', 'total')
-    .where('admission_date BETWEEN :firstDate AND :lastDate', { firstDate, lastDate })
-    .andWhere('canceled = 0')
-    .getRawOne();
+      .createQueryBuilder('Patient')
+      .select('COUNT(id)', 'total')
+      .where('admission_date BETWEEN :firstDate AND :lastDate', {
+        firstDate,
+        lastDate,
+      })
+      .andWhere('canceled = 0')
+      .getRawOne();
 
     return result && result.total ? parseInt(result.total, 10) : 0;
   }

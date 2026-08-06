@@ -15,7 +15,9 @@ import { JwtUserGuard } from '../users/jwt-user.guard';
 
 @Controller('accountsreceivable')
 export class Customer_accounts_receivableController {
-  constructor(private customerAccountsReceivableService: CustomerAccountsReceivableService) {}
+  constructor(
+    private customerAccountsReceivableService: CustomerAccountsReceivableService,
+  ) {}
 
   @UseGuards(JwtUserGuard)
   @Get(':id')
@@ -24,8 +26,12 @@ export class Customer_accounts_receivableController {
   }
 
   @Post()
-  createAccountsReceivable(@Body() newAccount: CreateCustomerAccountsReceivableDto) {
-    return this.customerAccountsReceivableService.createAccountsReceivable(newAccount);
+  createAccountsReceivable(
+    @Body() newAccount: CreateCustomerAccountsReceivableDto,
+  ) {
+    return this.customerAccountsReceivableService.createAccountsReceivable(
+      newAccount,
+    );
   }
 
   @UseGuards(JwtUserGuard)
@@ -34,22 +40,25 @@ export class Customer_accounts_receivableController {
     @Param('id', ParseIntPipe) id: number,
     @Body() newAccount: UpdateCustomerAccountsReceivableDto,
   ) {
-    return this.customerAccountsReceivableService.updateAccountsReceivable(id, newAccount);
+    return this.customerAccountsReceivableService.updateAccountsReceivable(
+      id,
+      newAccount,
+    );
   }
 
   @UseGuards(JwtUserGuard)
   @Get('/client/:id')
-  getAccountsReceivableWithClient(
-    @Param('id', ParseIntPipe) id: number) {
-    return this.customerAccountsReceivableService.getAccountsReceivableWithClient(id);
+  getAccountsReceivableWithClient(@Param('id', ParseIntPipe) id: number) {
+    return this.customerAccountsReceivableService.getAccountsReceivableWithClient(
+      id,
+    );
   }
 
   @UseGuards(JwtUserGuard)
   @Post('/client')
-  getAccountsReceivableWithClientDate(@Body() body: {
-    id: number,
-    fecha: Date,
-  }) {
+  getAccountsReceivableWithClientDate(
+    @Body() body: { id: number; fecha: Date },
+  ) {
     return this.customerAccountsReceivableService.getAccountsReceivableWithClientDate(
       body.id,
       body.fecha,
@@ -58,11 +67,9 @@ export class Customer_accounts_receivableController {
 
   @UseGuards(JwtUserGuard)
   @Post('/client-date')
-  getAccountsReceivableWithClientBetweenDate(@Body() body: {
-    clientId: number,
-    firstDate: Date,
-    lastDate: Date,
-  }) {
+  getAccountsReceivableWithClientBetweenDate(
+    @Body() body: { clientId: number; firstDate: Date; lastDate: Date },
+  ) {
     console.log('body: ', body);
     return this.customerAccountsReceivableService.getAccountsReceivableWithClientBetweenDate(
       body.clientId,

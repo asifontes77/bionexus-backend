@@ -60,10 +60,10 @@ export class WaypayService {
     const totales = await this.waypayRepository
       .createQueryBuilder('way_pay')
       .select([
-        "COALESCE(SUM(CASE WHEN way_pay.annulment = false THEN way_pay_items.amount ELSE 0 END), 0) AS total_not_annulled",
-        "COALESCE(SUM(CASE WHEN way_pay.annulment = true THEN way_pay_items.amount ELSE 0 END), 0) AS total_annulled",
-        "COALESCE(SUM(CASE WHEN way_pay.annulment = false THEN way_pay_items.amountDollar ELSE 0 END), 0) AS total_dollars_not_annulled",
-        "COALESCE(SUM(CASE WHEN way_pay.annulment = true THEN way_pay_items.amountDollar ELSE 0 END), 0) AS total_dollars_annulled",
+        'COALESCE(SUM(CASE WHEN way_pay.annulment = false THEN way_pay_items.amount ELSE 0 END), 0) AS total_not_annulled',
+        'COALESCE(SUM(CASE WHEN way_pay.annulment = true THEN way_pay_items.amount ELSE 0 END), 0) AS total_annulled',
+        'COALESCE(SUM(CASE WHEN way_pay.annulment = false THEN way_pay_items.amountDollar ELSE 0 END), 0) AS total_dollars_not_annulled',
+        'COALESCE(SUM(CASE WHEN way_pay.annulment = true THEN way_pay_items.amountDollar ELSE 0 END), 0) AS total_dollars_annulled',
       ])
       .innerJoin('way_pay.waypayitems', 'way_pay_items')
       .where('DATE(way_pay.date) = :admission', { admission })

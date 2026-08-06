@@ -7,10 +7,10 @@ export class Routines {
 
   @Column({ type: 'varchar', length: 50 })
   description: string;
-  
+
   @Column({ type: 'json', nullable: true })
   registered_exams: string;
-  
+
   @Column('varchar', { length: 200 })
   details: string;
 }

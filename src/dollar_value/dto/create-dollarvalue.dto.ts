@@ -1,4 +1,4 @@
 export class CreateDollarvalueDto {
-    date?: Date
-    value: number
+  date?: Date;
+  value: number;
 }

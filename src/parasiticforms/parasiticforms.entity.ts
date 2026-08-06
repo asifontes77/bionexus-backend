@@ -1,13 +1,13 @@
-import {Entity, Column, PrimaryGeneratedColumn} from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity({name: 'parasiticforms'})
-export class Parasiticforms {    
-    @PrimaryGeneratedColumn()
-    id: number
+@Entity({ name: 'parasiticforms' })
+export class Parasiticforms {
+  @PrimaryGeneratedColumn()
+  id: number;
 
-    @Column('varchar', {length: 50})
-    description: string
+  @Column('varchar', { length: 50 })
+  description: string;
 
-    @Column('tinyint', {default: () => '0'})
-    annulled: boolean
+  @Column('tinyint', { default: () => '0' })
+  annulled: boolean;
 }

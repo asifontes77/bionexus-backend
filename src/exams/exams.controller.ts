@@ -36,33 +36,28 @@ export class ExamsController {
   ) {
     return this.examService.updateExam(id, exam);
   }
-  
+
   @UseGuards(JwtUserGuard)
   @Post('/client')
-  getPatientsWithClient(@Body() body: {clientIds: number[]}) {
+  getPatientsWithClient(@Body() body: { clientIds: number[] }) {
     return this.examService.getPatientsWithClient(body.clientIds);
   }
-  
+
   @UseGuards(JwtUserGuard)
   @Post('/groupHtItems')
-  getTotalExamWithGroup(@Body() body: {
-    examIds: number[],
-    firstDate: Date,
-    lastDate: Date,
-  }) {
+  getTotalExamWithGroup(
+    @Body() body: { examIds: number[]; firstDate: Date; lastDate: Date },
+  ) {
     return this.examService.getTotalExamWithGroup(
       body.examIds,
       body.firstDate,
-      body.lastDate
-    )
+      body.lastDate,
+    );
   }
 
   @UseGuards(JwtUserGuard)
   @Post('/clienttax')
-  getPatientsWithClientTax(@Body() body: {
-    clientIds: number[];
-    tax: number;
-  }) {
+  getPatientsWithClientTax(@Body() body: { clientIds: number[]; tax: number }) {
     return this.examService.getPatientsWithClientTax(body.clientIds, body.tax);
   }
 }

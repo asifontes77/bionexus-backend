@@ -33,9 +33,7 @@ describe('AppController (e2e)', () => {
   });
 
   it('debe responder 404 para la raíz del prefijo API', async () => {
-    await request(app.getHttpServer())
-      .get('/api')
-      .expect(404);
+    await request(app.getHttpServer()).get('/api').expect(404);
   });
 
   it('no debe servir contenido estático para una ruta API no registrada', async () => {

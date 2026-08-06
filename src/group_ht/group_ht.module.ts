@@ -6,10 +6,7 @@ import { Groupht } from './group_ht.entity';
 import { UsersModule } from 'src/users/users.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Groupht]),
-    UsersModule
-  ],
+  imports: [TypeOrmModule.forFeature([Groupht]), UsersModule],
   controllers: [GroupHtController],
   providers: [GroupHtService],
 })

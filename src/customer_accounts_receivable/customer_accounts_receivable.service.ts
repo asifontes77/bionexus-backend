@@ -8,29 +8,38 @@ import { UpdateCustomerAccountsReceivableDto } from './dto/update-customer_accou
 @Injectable()
 export class CustomerAccountsReceivableService {
   constructor(
-    @InjectRepository(Customeraccountsreceivable) private customer_accounts_receivableRepository: Repository<Customeraccountsreceivable>
+    @InjectRepository(Customeraccountsreceivable)
+    private customer_accounts_receivableRepository: Repository<Customeraccountsreceivable>,
   ) {}
 
   async getAccountsReceivable(id: number) {
-    const accountsReceivable = this.customer_accounts_receivableRepository.findOne({
+    const accountsReceivable =
+      this.customer_accounts_receivableRepository.findOne({
         where: {
-          id
-        }
-    })
+          id,
+        },
+      });
     if (!accountsReceivable) {
-        return new HttpException('cuenta por cobrar no encontradas', HttpStatus.NOT_FOUND)
+      return new HttpException(
+        'cuenta por cobrar no encontradas',
+        HttpStatus.NOT_FOUND,
+      );
     }
-    return accountsReceivable
+    return accountsReceivable;
   }
 
   async getAccountsReceivableWithClient(id: number) {
-    const accountsReceivableFound = this.customer_accounts_receivableRepository.find({
-      where: {
-        client_id: id,
-      },
-    });
+    const accountsReceivableFound =
+      this.customer_accounts_receivableRepository.find({
+        where: {
+          client_id: id,
+        },
+      });
     if (!accountsReceivableFound) {
-      return new HttpException('cuenta por cobrar no encontradas', HttpStatus.NOT_FOUND);
+      return new HttpException(
+        'cuenta por cobrar no encontradas',
+        HttpStatus.NOT_FOUND,
+      );
     }
     return accountsReceivableFound;
   }
@@ -44,30 +53,54 @@ export class CustomerAccountsReceivableService {
       .getMany();
   }
 
-  async getAccountsReceivableWithClientBetweenDate(clientId: number, firstDate: Date,lastDate: Date ) {
+  async getAccountsReceivableWithClientBetweenDate(
+    clientId: number,
+    firstDate: Date,
+    lastDate: Date,
+  ) {
     return this.customer_accounts_receivableRepository
       .createQueryBuilder('Customeraccountsreceivable')
       .where('client_id = :clientId', { clientId: clientId })
-      .andWhere('DATE(createdAt) BETWEEN :firstDate AND :lastDate', { firstDate, lastDate })
+      .andWhere('DATE(createdAt) BETWEEN :firstDate AND :lastDate', {
+        firstDate,
+        lastDate,
+      })
       .orderBy('id', 'DESC')
       .getMany();
   }
 
-  async createAccountsReceivable(accountsReceivable: CreateCustomerAccountsReceivableDto) {
-    const newAccountsReceivable = this.customer_accounts_receivableRepository.create(accountsReceivable);
-    return this.customer_accounts_receivableRepository.save(newAccountsReceivable);
+  async createAccountsReceivable(
+    accountsReceivable: CreateCustomerAccountsReceivableDto,
+  ) {
+    const newAccountsReceivable =
+      this.customer_accounts_receivableRepository.create(accountsReceivable);
+    return this.customer_accounts_receivableRepository.save(
+      newAccountsReceivable,
+    );
   }
 
-  async updateAccountsReceivable(id: number, accountsReceivable: UpdateCustomerAccountsReceivableDto) {
-    const accountsReceivableFound = await this.customer_accounts_receivableRepository.findOne({
-      where: {
-        id,
-      },
-    });
+  async updateAccountsReceivable(
+    id: number,
+    accountsReceivable: UpdateCustomerAccountsReceivableDto,
+  ) {
+    const accountsReceivableFound =
+      await this.customer_accounts_receivableRepository.findOne({
+        where: {
+          id,
+        },
+      });
     if (!accountsReceivableFound) {
-      return new HttpException('cuenta por cobrar no encontrada', HttpStatus.NOT_FOUND);
+      return new HttpException(
+        'cuenta por cobrar no encontrada',
+        HttpStatus.NOT_FOUND,
+      );
     }
-    const updateAccountsReceivable = Object.assign(accountsReceivableFound, accountsReceivable);
-    return this.customer_accounts_receivableRepository.save(updateAccountsReceivable);
+    const updateAccountsReceivable = Object.assign(
+      accountsReceivableFound,
+      accountsReceivable,
+    );
+    return this.customer_accounts_receivableRepository.save(
+      updateAccountsReceivable,
+    );
   }
 }

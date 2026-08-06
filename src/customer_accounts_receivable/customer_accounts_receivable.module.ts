@@ -7,10 +7,10 @@ import { UsersModule } from 'src/users/users.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Customeraccountsreceivable]), 
-    UsersModule
+    TypeOrmModule.forFeature([Customeraccountsreceivable]),
+    UsersModule,
   ],
   controllers: [Customer_accounts_receivableController],
-  providers: [CustomerAccountsReceivableService]
+  providers: [CustomerAccountsReceivableService],
 })
 export class CustomerAccountsReceivableModule {}

@@ -1,4 +1,4 @@
 export class UpdateDollarvalueDto {
-    date?: Date
-    value?: number
+  date?: Date;
+  value?: number;
 }

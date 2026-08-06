@@ -1,33 +1,33 @@
 import { Examlists } from 'src/exam_lists/examlists.entity';
-import {Entity, Column, PrimaryGeneratedColumn, OneToMany} from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import { Exam } from 'src/exams/exams.entity';
 
-@Entity({name: 'exam_group'})
+@Entity({ name: 'exam_group' })
 export class Examgroup {
-    @PrimaryGeneratedColumn()
-    id: number
+  @PrimaryGeneratedColumn()
+  id: number;
 
-    @Column('varchar', {length: 150})
-    description: string
+  @Column('varchar', { length: 150 })
+  description: string;
 
-    @Column('tinyint', {default: 1})
-    annulled: boolean
+  @Column('tinyint', { default: 1 })
+  annulled: boolean;
 
-    @Column('int')
-    position: number
+  @Column('int')
+  position: number;
 
-    @Column('tinyint', {default: 1})
-    its_exam: boolean
-  
-    @Column({type: 'datetime', default: () => 'CURRENT_TIMESTAMP'})
-    createdAt: Date
+  @Column('tinyint', { default: 1 })
+  its_exam: boolean;
 
-    @Column({type: 'datetime', default: () => 'CURRENT_TIMESTAMP'})
-    updatedAt: Date
+  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
+  createdAt: Date;
 
-    @OneToMany(() => Examlists, (examlists) => examlists.examgroup)
-    examlists: Examlists[]
+  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
+  updatedAt: Date;
 
-    @OneToMany(() => Exam, (exam) => exam.examGroup)
-    exam: Exam;
+  @OneToMany(() => Examlists, (examlists) => examlists.examgroup)
+  examlists: Examlists[];
+
+  @OneToMany(() => Exam, (exam) => exam.examGroup)
+  exam: Exam;
 }

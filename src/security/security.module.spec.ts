@@ -53,7 +53,7 @@ describe('SecurityModule', () => {
           }),
           SecurityModule,
         ],
-      }).compile()
+      }).compile(),
     ).rejects.toThrow('The SECRET environment variable is required.');
   });
 });

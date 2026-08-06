@@ -16,7 +16,7 @@ export class cash_register {
 
   @Column({ type: 'json', nullable: true })
   totals: string;
-  
+
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 

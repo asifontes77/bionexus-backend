@@ -49,7 +49,7 @@ export class WaypayController {
   @UseGuards(JwtUserGuard)
   @Post('/totales')
   getInvoiceTotales(
-    @Body() body: { date: Date; idUser: number; idTypePay: number; },
+    @Body() body: { date: Date; idUser: number; idTypePay: number },
   ) {
     return this.waypayService.getInvoiceTotales(
       body.date,

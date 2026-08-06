@@ -5,9 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Waypayitems } from './waypayitems.entity';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Waypayitems])
-  ],
+  imports: [TypeOrmModule.forFeature([Waypayitems])],
   controllers: [WaypayitemsController],
   providers: [WaypayitemsService],
 })

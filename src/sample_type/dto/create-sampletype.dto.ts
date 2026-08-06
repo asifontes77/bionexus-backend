@@ -1,3 +1,3 @@
 export class CreateSampletypeDto {
-    description: string
+  description: string;
 }

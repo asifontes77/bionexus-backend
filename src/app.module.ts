@@ -43,16 +43,17 @@ import { resolveDatabaseOptions } from './database/database.config';
     SecurityModule,
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => resolveDatabaseOptions(
-        {
-          DB_HOST: configService.get<string>('DB_HOST'),
-          DB_PORT: configService.get<string>('DB_PORT'),
-          DB_USER: configService.get<string>('DB_USER'),
-          DB_PASSWORD: configService.get<string>('DB_PASSWORD'),
-          DB_DATABASE: configService.get<string>('DB_DATABASE'),
-        },
-        __dirname
-      ),
+      useFactory: (configService: ConfigService) =>
+        resolveDatabaseOptions(
+          {
+            DB_HOST: configService.get<string>('DB_HOST'),
+            DB_PORT: configService.get<string>('DB_PORT'),
+            DB_USER: configService.get<string>('DB_USER'),
+            DB_PASSWORD: configService.get<string>('DB_PASSWORD'),
+            DB_DATABASE: configService.get<string>('DB_DATABASE'),
+          },
+          __dirname,
+        ),
     }),
     ExamsModule,
     ExamGroupModule,

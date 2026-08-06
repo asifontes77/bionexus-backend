@@ -6,11 +6,8 @@ import { SampleType } from './sampletype.entity';
 import { UsersModule } from 'src/users/users.module';
 
 @Module({
-    imports: [
-      TypeOrmModule.forFeature([SampleType]),
-      UsersModule
-    ],
-    controllers: [SampletypeController],
-    providers: [SampleTypeService]
-  })
-  export class SampleTypeModule {}
+  imports: [TypeOrmModule.forFeature([SampleType]), UsersModule],
+  controllers: [SampletypeController],
+  providers: [SampleTypeService],
+})
+export class SampleTypeModule {}

@@ -39,35 +39,35 @@ describe('resolveBootstrapConfig', () => {
     it('falla con texto no numérico', () => {
       const env: BootstrapEnvironment = { PORT: 'abc' };
       expect(() => resolveBootstrapConfig(env, jest.fn())).toThrow(
-        'PORT must be an integer between 1 and 65535.'
+        'PORT must be an integer between 1 and 65535.',
       );
     });
 
     it('falla con cero', () => {
       const env: BootstrapEnvironment = { PORT: '0' };
       expect(() => resolveBootstrapConfig(env, jest.fn())).toThrow(
-        'PORT must be an integer between 1 and 65535.'
+        'PORT must be an integer between 1 and 65535.',
       );
     });
 
     it('falla con 3000abc', () => {
       const env: BootstrapEnvironment = { PORT: '3000abc' };
       expect(() => resolveBootstrapConfig(env, jest.fn())).toThrow(
-        'PORT must be an integer between 1 and 65535.'
+        'PORT must be an integer between 1 and 65535.',
       );
     });
 
     it('falla con 12.5', () => {
       const env: BootstrapEnvironment = { PORT: '12.5' };
       expect(() => resolveBootstrapConfig(env, jest.fn())).toThrow(
-        'PORT must be an integer between 1 and 65535.'
+        'PORT must be an integer between 1 and 65535.',
       );
     });
 
     it('falla mayor a 65535', () => {
       const env: BootstrapEnvironment = { PORT: '65536' };
       expect(() => resolveBootstrapConfig(env, jest.fn())).toThrow(
-        'PORT must be an integer between 1 and 65535.'
+        'PORT must be an integer between 1 and 65535.',
       );
     });
   });
@@ -75,7 +75,7 @@ describe('resolveBootstrapConfig', () => {
   it('falla con HTTPS_ENABLED inválido', () => {
     const env: BootstrapEnvironment = { HTTPS_ENABLED: 'yes' };
     expect(() => resolveBootstrapConfig(env, jest.fn())).toThrow(
-      'HTTPS_ENABLED must be either "true" or "false".'
+      'HTTPS_ENABLED must be either "true" or "false".',
     );
   });
 
@@ -114,7 +114,7 @@ describe('resolveBootstrapConfig', () => {
       TLS_CERT_PATH: 'cert.crt',
     };
     expect(() => resolveBootstrapConfig(env, jest.fn())).toThrow(
-      'TLS_KEY_PATH is required when HTTPS_ENABLED is true.'
+      'TLS_KEY_PATH is required when HTTPS_ENABLED is true.',
     );
   });
 
@@ -124,7 +124,7 @@ describe('resolveBootstrapConfig', () => {
       TLS_KEY_PATH: 'key.pem',
     };
     expect(() => resolveBootstrapConfig(env, jest.fn())).toThrow(
-      'TLS_CERT_PATH is required when HTTPS_ENABLED is true.'
+      'TLS_CERT_PATH is required when HTTPS_ENABLED is true.',
     );
   });
 

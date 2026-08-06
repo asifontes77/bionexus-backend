@@ -1,5 +1,5 @@
 export class UpdateGroup_htDto {
-    description?: string
-    details?: string
-    annulled?: boolean
+  description?: string;
+  details?: string;
+  annulled?: boolean;
 }

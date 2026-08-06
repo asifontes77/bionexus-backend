@@ -1,3 +1,3 @@
 export class CreateParasiticformsDto {
-    description: string
+  description: string;
 }

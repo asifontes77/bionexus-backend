@@ -21,7 +21,7 @@ export type FileReader = (path: string) => Buffer;
 
 export function resolveBootstrapConfig(
   environment: BootstrapEnvironment,
-  readFile: FileReader
+  readFile: FileReader,
 ): BootstrapConfig {
   const host = environment.HOST || '0.0.0.0';
 
@@ -34,12 +34,13 @@ export function resolveBootstrapConfig(
   const rawCorsOrigins = environment.CORS_ORIGINS || 'http://localhost:8080';
   const corsOrigins = rawCorsOrigins
     .split(',')
-    .map(origin => origin.trim())
-    .filter(origin => origin.length > 0);
+    .map((origin) => origin.trim())
+    .filter((origin) => origin.length > 0);
 
   const uniqueCorsOrigins = [...new Set(corsOrigins)];
 
-  const rawHttpsEnabled = environment.HTTPS_ENABLED?.trim().toLowerCase() || 'false';
+  const rawHttpsEnabled =
+    environment.HTTPS_ENABLED?.trim().toLowerCase() || 'false';
   let httpsEnabled = false;
 
   if (rawHttpsEnabled === 'true') {

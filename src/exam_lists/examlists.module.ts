@@ -6,10 +6,7 @@ import { Examlists } from './examlists.entity';
 import { UsersModule } from 'src/users/users.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Examlists]),
-    UsersModule
-  ],
+  imports: [TypeOrmModule.forFeature([Examlists]), UsersModule],
   controllers: [ExamListsController],
   providers: [ExamListsService],
 })

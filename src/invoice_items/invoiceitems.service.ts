@@ -7,24 +7,25 @@ import { UpdateInvoiceitemsDto } from './dto/update-invoiceitems.dto';
 
 @Injectable()
 export class InvoiceitemsService {
-    constructor(
-        @InjectRepository(Invoiceitems) private invoiceitemsRepository: Repository<Invoiceitems>
-    ) {}
+  constructor(
+    @InjectRepository(Invoiceitems)
+    private invoiceitemsRepository: Repository<Invoiceitems>,
+  ) {}
 
-    async createInvoiceitems(invoiceitems: CreateInvoiceitemsDto): Promise<any> {
-        return this.invoiceitemsRepository.save(invoiceitems) 
-    }
+  async createInvoiceitems(invoiceitems: CreateInvoiceitemsDto): Promise<any> {
+    return this.invoiceitemsRepository.save(invoiceitems);
+  }
 
-    async updateInvoiceitems(id: number, invoiceitems: UpdateInvoiceitemsDto) {
-        const invoiceitemsFound = await this.invoiceitemsRepository.findOne({
-            where: {
-                id
-            }
-        })
-        if (!invoiceitemsFound) {
-            return new HttpException('factura no encontrado', HttpStatus.NOT_FOUND)
-        }
-        const updateInvoice = Object.assign(invoiceitemsFound, invoiceitems)
-        return this.invoiceitemsRepository.save(updateInvoice)
+  async updateInvoiceitems(id: number, invoiceitems: UpdateInvoiceitemsDto) {
+    const invoiceitemsFound = await this.invoiceitemsRepository.findOne({
+      where: {
+        id,
+      },
+    });
+    if (!invoiceitemsFound) {
+      return new HttpException('factura no encontrado', HttpStatus.NOT_FOUND);
     }
+    const updateInvoice = Object.assign(invoiceitemsFound, invoiceitems);
+    return this.invoiceitemsRepository.save(updateInvoice);
+  }
 }

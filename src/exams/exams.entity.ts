@@ -1,4 +1,10 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { Patient } from 'src/patients/patients.entity';
 import { Examgroup } from 'src/exam_group/examgroup.entity';
 
@@ -74,6 +80,6 @@ export class Exam {
   patients: Patient;
 
   @ManyToOne(() => Examgroup, (examGroup) => examGroup.exam)
-  @JoinColumn({ name: 'group_id' }) 
+  @JoinColumn({ name: 'group_id' })
   examGroup: Examgroup;
 }

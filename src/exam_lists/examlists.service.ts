@@ -26,7 +26,7 @@ export class ExamListsService {
     });
     return this.examListRepository.save(newExam);
   }
-  
+
   async getMaxPosition(groupId: number): Promise<number> {
     const result = await this.examListRepository
       .createQueryBuilder('exam_lists')
@@ -34,7 +34,7 @@ export class ExamListsService {
       .where('exam_lists.group_id = :groupId', { groupId })
       .getRawOne();
 
-    return result.max || 0; 
+    return result.max || 0;
   }
 
   async getExamList(id: number) {

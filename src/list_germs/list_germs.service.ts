@@ -41,7 +41,6 @@ export class ListGermsService {
     const newExam = this.listGermsRepository.create(listGerm);
     return this.listGermsRepository.save(newExam);
   }
-  
 
   async updateGerm(id: number, germ: UpdateList_germsDto) {
     const germFound = await this.listGermsRepository.findOne({

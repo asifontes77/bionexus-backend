@@ -16,7 +16,7 @@ async function bootstrap() {
         TLS_KEY_PATH: process.env.TLS_KEY_PATH,
         TLS_CERT_PATH: process.env.TLS_CERT_PATH,
       },
-      readFileSync
+      readFileSync,
     );
 
     const appOptions = config.httpsOptions
@@ -25,7 +25,7 @@ async function bootstrap() {
 
     const app = await NestFactory.create<NestExpressApplication>(
       AppModule,
-      appOptions
+      appOptions,
     );
 
     app.enableCors({
