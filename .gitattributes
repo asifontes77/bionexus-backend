@@ -1,0 +1,40 @@
+# Normalize text files to LF in the Git index.
+# The working tree may use the platform-native EOL through core.autocrlf.
+* text=auto
+
+# Source code and configuration files.
+*.ts text
+*.js text
+*.json text
+*.md text
+*.html text
+*.css text
+*.scss text
+*.svg text
+*.xml text
+*.sql text
+*.yml text
+*.yaml text
+*.env text
+*.example text
+
+# Shell scripts must remain LF for Linux compatibility.
+*.sh text eol=lf
+
+# Windows command scripts use CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text
+
+# Binary files.
+*.jpg binary
+*.jpeg binary
+*.png binary
+*.gif binary
+*.webp binary
+*.pdf binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
