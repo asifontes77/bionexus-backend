@@ -16,7 +16,9 @@ export class WaypayService {
       where: {
         date: admission,
       },
-      relations: ['waypayitems'],
+      relations: {
+        waypayitems: true,
+      },
     });
   }
 
@@ -25,7 +27,9 @@ export class WaypayService {
       where: {
         id_patients: id,
       },
-      relations: ['waypayitems'],
+      relations: {
+        waypayitems: true,
+      },
     });
     if (!waypayFound) {
       return new HttpException(

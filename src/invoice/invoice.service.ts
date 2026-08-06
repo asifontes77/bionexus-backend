@@ -33,7 +33,9 @@ export class InvoiceService {
       where: {
         id,
       },
-      relations: ['invoiceitems'],
+      relations: {
+        invoiceitems: true,
+      },
     });
     if (!invoiceFound) {
       return new HttpException('factura no encontrado', HttpStatus.NOT_FOUND);
@@ -46,7 +48,9 @@ export class InvoiceService {
       where: {
         no_invoice,
       },
-      relations: ['invoiceitems'],
+      relations: {
+        invoiceitems: true,
+      },
     });
     if (!invoiceFound) {
       return new HttpException('factura no encontrado', HttpStatus.NOT_FOUND);

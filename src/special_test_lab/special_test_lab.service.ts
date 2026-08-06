@@ -20,7 +20,9 @@ export class SpecialTestLabService {
 
   async getSpecialTestLabList() {
     return this.specialTestLabRepository.find({
-      relations: ['specialTestItems'], // Carga la relación OneToMany
+      relations: {
+        specialTestItems: true,
+      }, // Carga la relación OneToMany
     });
   }
 
@@ -29,7 +31,9 @@ export class SpecialTestLabService {
       where: {
         id,
       },
-      relations: ['specialTestItems'],
+      relations: {
+        specialTestItems: true,
+      },
     });
     if (!laboratoryFound) {
       return new HttpException(

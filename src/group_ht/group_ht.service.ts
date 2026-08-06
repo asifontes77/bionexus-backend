@@ -20,7 +20,9 @@ export class GroupHtService {
       where: {
         annulled: false,
       },
-      relations: ['grouphtitems'],
+      relations: {
+        grouphtitems: true,
+      },
     });
   }
 
@@ -37,7 +39,9 @@ export class GroupHtService {
       where: {
         id,
       },
-      relations: ['grouphtitems'],
+      relations: {
+        grouphtitems: true,
+      },
     });
     if (!groupHtFound) {
       return new HttpException('grupo HT no encontrado', HttpStatus.NOT_FOUND);
@@ -68,7 +72,9 @@ export class GroupHtService {
       where: {
         id,
       },
-      relations: ['grouphtitems'],
+      relations: {
+        grouphtitems: true,
+      },
     });
     if (!groupHtFound) {
       return new HttpException('grupo ht no encontrado', HttpStatus.NOT_FOUND);
