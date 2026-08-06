@@ -1,8 +1,22 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+﻿import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Laboratory } from './laboratory.entity';
 import { Repository } from 'typeorm';
 import { UpdateLaboratoryDto } from './dto/update-laboratorio.dto';
+import { Laboratory } from './laboratory.entity';
+
+type EmailSettings = {
+  isGmail?: boolean;
+  host?: string;
+  port?: number | null;
+  secure?: boolean;
+  user?: string;
+  pass?: string;
+  from?: string;
+};
+
+type PublicLaboratory = Omit<Laboratory, 'license' | 'sendEmail'> & {
+  sendEmail: EmailSettings | null;
+};
 
 @Injectable()
 export class LaboratoryService {
@@ -12,26 +26,40 @@ export class LaboratoryService {
   ) {}
 
   async getLaboratory(id: number) {
-    const laboratoryFound = this.laboratoryRepository.findOne({
+    const laboratoryFound = await this.laboratoryRepository.findOne({
       where: {
         id,
       },
     });
+
     if (!laboratoryFound) {
       return new HttpException(
         'Laboratorio no encontrado',
         HttpStatus.NOT_FOUND,
       );
     }
+
     return laboratoryFound;
   }
 
-  async getLaboratorySetting() {
-    const query = this.laboratoryRepository
-      .createQueryBuilder('entity')
-      .limit(1);
+  async getPublicLaboratory(id: number) {
+    const laboratoryResult = await this.getLaboratory(id);
 
-    return query.getMany();
+    if (laboratoryResult instanceof HttpException) {
+      return laboratoryResult;
+    }
+
+    return this.toPublicLaboratory(laboratoryResult);
+  }
+
+  async getPublicLaboratorySetting() {
+    const laboratoryFound = await this.laboratoryRepository.find({
+      take: 1,
+    });
+
+    return laboratoryFound.map((laboratory) =>
+      this.toPublicLaboratory(laboratory),
+    );
   }
 
   async updateLaboratory(id: number, laboratory: UpdateLaboratoryDto) {
@@ -40,13 +68,88 @@ export class LaboratoryService {
         id,
       },
     });
+
     if (!laboratoryFound) {
       return new HttpException(
-        'Laboeatorio no encontrado',
+        'Laboratorio no encontrado',
         HttpStatus.NOT_FOUND,
       );
     }
-    const updateLaboratory = Object.assign(laboratoryFound, laboratory);
-    return this.laboratoryRepository.save(updateLaboratory);
+
+    const changes = this.preserveEmailPassword(laboratoryFound, laboratory);
+
+    const updatedLaboratory = Object.assign(laboratoryFound, changes);
+
+    return this.laboratoryRepository.save(updatedLaboratory);
+  }
+
+  private toPublicLaboratory(laboratory: Laboratory): PublicLaboratory {
+    const serialized = JSON.parse(JSON.stringify(laboratory)) as Omit<
+      Laboratory,
+      'sendEmail'
+    > & {
+      sendEmail: EmailSettings | null;
+    };
+
+    const {
+      license: omittedLicense,
+      sendEmail,
+      ...publicLaboratory
+    } = serialized;
+
+    void omittedLicense;
+
+    return {
+      ...publicLaboratory,
+      sendEmail:
+        sendEmail === null
+          ? null
+          : {
+              ...sendEmail,
+              pass: '',
+            },
+    };
+  }
+
+  private preserveEmailPassword(
+    laboratory: Laboratory,
+    changes: UpdateLaboratoryDto,
+  ): UpdateLaboratoryDto {
+    if (!changes.sendEmail) {
+      return changes;
+    }
+
+    const currentEmail = this.parseEmailSettings(laboratory.sendEmail);
+
+    const incomingEmail = this.parseEmailSettings(changes.sendEmail);
+
+    if (incomingEmail.pass === undefined || incomingEmail.pass.trim() === '') {
+      incomingEmail.pass = currentEmail.pass ?? '';
+    }
+
+    return {
+      ...changes,
+      sendEmail: incomingEmail as unknown as JSON,
+    };
+  }
+
+  private parseEmailSettings(value: unknown): EmailSettings {
+    if (value === null || value === undefined) {
+      return {};
+    }
+
+    if (typeof value === 'string') {
+      try {
+        return JSON.parse(value) as EmailSettings;
+      } catch {
+        return {};
+      }
+    }
+
+    if (typeof value === 'object') {
+      return { ...(value as EmailSettings) };
+    }
+
+    return {};
   }
 }

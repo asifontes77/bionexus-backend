@@ -1,28 +1,29 @@
 import {
-  Get,
+  Body,
   Controller,
+  Get,
   Param,
   ParseIntPipe,
   Patch,
-  Body,
-  UseGuards,
   Post,
-  UseInterceptors,
   UploadedFile,
+  UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
-import { LaboratoryService } from './laboratory.service';
-import { UpdateLaboratoryDto } from './dto/update-laboratorio.dto';
-import { JwtUserGuard } from '../users/jwt-user.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
+import { JwtUserGuard } from '../users/jwt-user.guard';
+import { UpdateLaboratoryDto } from './dto/update-laboratorio.dto';
+import { LaboratoryService } from './laboratory.service';
 
 @Controller('laboratory')
 export class LaboratoryController {
   constructor(private laboratoryService: LaboratoryService) {}
 
+  @UseGuards(JwtUserGuard)
   @Get(':id')
   getLaboratory(@Param('id', ParseIntPipe) id: number) {
-    return this.laboratoryService.getLaboratory(id);
+    return this.laboratoryService.getPublicLaboratory(id);
   }
 
   @UseGuards(JwtUserGuard)
@@ -34,11 +35,13 @@ export class LaboratoryController {
     return this.laboratoryService.updateLaboratory(id, laboratory);
   }
 
+  @UseGuards(JwtUserGuard)
   @Get()
   getLaboratorySetting() {
-    return this.laboratoryService.getLaboratorySetting();
+    return this.laboratoryService.getPublicLaboratorySetting();
   }
 
+  @UseGuards(JwtUserGuard)
   @Post('upload')
   @UseInterceptors(
     FileInterceptor('file', {
@@ -55,6 +58,7 @@ export class LaboratoryController {
     const change = {
       logo: file.filename,
     };
+
     return this.laboratoryService.updateLaboratory(id, change);
   }
 }

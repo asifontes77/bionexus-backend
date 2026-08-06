@@ -332,7 +332,6 @@ export class PatientsService {
     const laboratoryFound = await this.laboratoryService.getLaboratory(1);
     const row = JSON.parse(JSON.stringify(laboratoryFound));
     let transporterData = null;
-    console.log('row.sendEmail: ', row.sendEmail);
     if (row.sendEmail.isGmail) {
       transporterData = {
         service: 'Gmail',
