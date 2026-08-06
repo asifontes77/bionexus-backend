@@ -1,14 +1,10 @@
 import { Module } from '@nestjs/common';
+import { LaboratoryModule } from '../laboratory/laboratory.module';
 import { LicenseController } from './license.controller';
 import { LicenseService } from './license.service';
-import { MulterModule } from '@nestjs/platform-express';
 
 @Module({
-  imports: [
-    MulterModule.register({
-      dest: './uploads', // Ruta donde se almacenarán los archivos cargados
-    }),
-  ],
+  imports: [LaboratoryModule],
   controllers: [LicenseController],
   providers: [LicenseService],
   exports: [LicenseService],

@@ -1,12 +1,13 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Body, Controller, Patch } from '@nestjs/common';
+import { ActivateLicenseDto } from './dto/activate-license.dto';
 import { LicenseService } from './license.service';
 
 @Controller('license')
 export class LicenseController {
   constructor(private readonly licenseService: LicenseService) {}
 
-  @Post()
-  getLicenseKey(@Body() body: { rif: string; businessName: string }) {
-    return this.licenseService.generateLicenseKey(body.rif, body.businessName);
+  @Patch('activate')
+  activateLicense(@Body() body: ActivateLicenseDto) {
+    return this.licenseService.activateLicense(body);
   }
 }

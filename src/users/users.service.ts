@@ -127,8 +127,8 @@ export class UsersService {
     const laboratoryFound = await this.laboratoryService.getLaboratory(1);
     const row = JSON.parse(JSON.stringify(laboratoryFound));
     const license = await this.LicenseService.validateLicenseKey(
-      row.rif.replace(/-/g, ''),
-      row.business_name.replace(/\s+/g, ''),
+      row.rif,
+      row.business_name,
       row.license,
     );
     if (!license) {
