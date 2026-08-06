@@ -7,9 +7,13 @@ import { join } from 'path';
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
-  @Get(':filePath*')
-  servePublicFile(@Param('filePath') filePath: string, @Res() response: Response) {
-    const file = join(__dirname, '..', 'public', filePath);
+  @Get('{*filePath}')
+  servePublicFile(
+    @Param('filePath') filePath: string | string[],
+    @Res() response: Response,
+  ) {
+    const relativePath = Array.isArray(filePath) ? filePath.join('/') : filePath;
+    const file = join(__dirname, '..', 'public', relativePath);
     response.sendFile(file);
   }
 }

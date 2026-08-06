@@ -1,3 +1,5 @@
+import { existsSync, unlinkSync } from 'fs';
+import { join } from 'path';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import * as request from 'supertest';
@@ -40,5 +42,24 @@ describe('AppController (e2e)', () => {
     await request(app.getHttpServer())
       .get('/api/ruta-no-registrada')
       .expect(404);
+  });
+
+  it('debe procesar una carga multipart con Multer 2', async () => {
+    const fileName = `toro-multer--.txt`;
+    const outputPath = join(process.cwd(), 'public', 'images', fileName);
+
+    try {
+      const response = await request(app.getHttpServer())
+        .post('/api/users/upload')
+        .attach('file', Buffer.from('TORO Multer 2'), fileName)
+        .expect(201);
+
+      expect(response.text).toBe(fileName);
+      expect(existsSync(outputPath)).toBe(true);
+    } finally {
+      if (existsSync(outputPath)) {
+        unlinkSync(outputPath);
+      }
+    }
   });
 });
