@@ -19,6 +19,7 @@ describe('AuthorizationController role administration', () => {
     getRoles: jest.Mock;
     createRole: jest.Mock;
     updateRole: jest.Mock;
+    replaceRolePermissions: jest.Mock;
   };
 
   beforeEach(() => {
@@ -27,6 +28,7 @@ describe('AuthorizationController role administration', () => {
       getRoles: jest.fn(),
       createRole: jest.fn(),
       updateRole: jest.fn(),
+      replaceRolePermissions: jest.fn(),
     };
 
     controller = new AuthorizationController(
@@ -111,6 +113,75 @@ describe('AuthorizationController role administration', () => {
     ).toHaveBeenCalledWith(body);
   });
 
+  it('delega el reemplazo de permisos del rol', async () => {
+    const body = {
+      permissionIds: [1, 2, 3],
+    };
+
+    const permissions = [
+      {
+        id: 1,
+        code: 'security.permissions.read',
+        name: 'Consultar permisos',
+        description: null,
+        module: 'security',
+        isActive: true,
+      },
+    ];
+
+    administrationService.replaceRolePermissions.mockResolvedValue(
+      permissions,
+    );
+
+    await expect(
+      controller.replaceRolePermissions(4, body),
+    ).resolves.toEqual(permissions);
+
+    expect(
+      administrationService.replaceRolePermissions,
+    ).toHaveBeenCalledTimes(1);
+
+    expect(
+      administrationService.replaceRolePermissions,
+    ).toHaveBeenCalledWith(
+      4,
+      body,
+    );
+  });
+
+  it('delega una lista vacia de permisos sin modificar el cuerpo', async () => {
+    const body = {
+      permissionIds: [],
+    };
+
+    administrationService.replaceRolePermissions.mockResolvedValue(
+      [],
+    );
+
+    await expect(
+      controller.replaceRolePermissions(4, body),
+    ).resolves.toEqual([]);
+
+    expect(
+      administrationService.replaceRolePermissions,
+    ).toHaveBeenCalledWith(
+      4,
+      body,
+    );
+  });
+
+  it('registra el reemplazo como PUT roles por id y permissions', () => {
+    const method =
+      AuthorizationController.prototype.replaceRolePermissions;
+
+    expect(
+      Reflect.getMetadata(PATH_METADATA, method),
+    ).toBe('roles/:id/permissions');
+
+    expect(
+      Reflect.getMetadata(METHOD_METADATA, method),
+    ).toBe(RequestMethod.PUT);
+  });
   it('delega la actualizacion de un rol', async () => {
     const body = {
       name: 'Supervisor operativo',
@@ -200,6 +271,7 @@ describe('AuthorizationController role administration', () => {
     ['getRoles', 'security.roles.read'],
     ['createRole', 'security.roles.create'],
     ['updateRole', 'security.roles.update'],
+    ['replaceRolePermissions', 'security.roles.assign-permissions'],
   ] as const)(
     'protege %s con JWT y %s',
     (methodName, expectedPermission) => {

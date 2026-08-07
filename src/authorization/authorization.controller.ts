@@ -7,12 +7,14 @@
   ParseIntPipe,
   Patch,
   Post,
+  Put,
   Req,
   UseGuards,
 } from '@nestjs/common';
 import { AuthorizationService } from './authorization.service';
 import { AuthorizationAdministrationService } from './authorization-administration.service';
 import { CreateSecurityRoleDto } from './dto/create-security-role.dto';
+import { ReplaceRolePermissionsDto } from './dto/replace-role-permissions.dto';
 import { UpdateSecurityRoleDto } from './dto/update-security-role.dto';
 import { RequirePermissions } from './decorators/require-permissions.decorator';
 import { PermissionGuard } from './guards/permission.guard';
@@ -73,6 +75,18 @@ export class AuthorizationController {
     return this.administrationService.getRoles();
   }
 
+  @UseGuards(JwtUserGuard, PermissionGuard)
+  @RequirePermissions('security.roles.assign-permissions')
+  @Put('roles/:id/permissions')
+  async replaceRolePermissions(
+    @Param('id', ParseIntPipe) roleId: number,
+    @Body() body: ReplaceRolePermissionsDto,
+  ) {
+    return this.administrationService.replaceRolePermissions(
+      roleId,
+      body,
+    );
+  }
   @UseGuards(JwtUserGuard, PermissionGuard)
   @RequirePermissions('security.roles.update')
   @Patch('roles/:id')
