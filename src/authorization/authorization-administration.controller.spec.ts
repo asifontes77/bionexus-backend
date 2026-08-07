@@ -18,6 +18,7 @@ describe('AuthorizationController role administration', () => {
     getPermissions: jest.Mock;
     getRoles: jest.Mock;
     createRole: jest.Mock;
+    updateRole: jest.Mock;
   };
 
   beforeEach(() => {
@@ -25,6 +26,7 @@ describe('AuthorizationController role administration', () => {
       getPermissions: jest.fn(),
       getRoles: jest.fn(),
       createRole: jest.fn(),
+      updateRole: jest.fn(),
     };
 
     controller = new AuthorizationController(
@@ -109,6 +111,52 @@ describe('AuthorizationController role administration', () => {
     ).toHaveBeenCalledWith(body);
   });
 
+  it('delega la actualizacion de un rol', async () => {
+    const body = {
+      name: 'Supervisor operativo',
+      description: 'Supervision general',
+      isActive: false,
+    };
+
+    const updatedRole = {
+      id: 4,
+      code: 'supervisor',
+      ...body,
+      isSystem: false,
+    };
+
+    administrationService.updateRole.mockResolvedValue(
+      updatedRole,
+    );
+
+    await expect(
+      controller.updateRole(4, body),
+    ).resolves.toEqual(updatedRole);
+
+    expect(
+      administrationService.updateRole,
+    ).toHaveBeenCalledTimes(1);
+
+    expect(
+      administrationService.updateRole,
+    ).toHaveBeenCalledWith(
+      4,
+      body,
+    );
+  });
+
+  it('registra la actualizacion como PATCH roles por id', () => {
+    const method =
+      AuthorizationController.prototype.updateRole;
+
+    expect(
+      Reflect.getMetadata(PATH_METADATA, method),
+    ).toBe('roles/:id');
+
+    expect(
+      Reflect.getMetadata(METHOD_METADATA, method),
+    ).toBe(RequestMethod.PATCH);
+  });
   it('registra el catalogo como GET permissions', () => {
     const method =
       AuthorizationController.prototype.getPermissions;
@@ -151,6 +199,7 @@ describe('AuthorizationController role administration', () => {
     ['getPermissions', 'security.permissions.read'],
     ['getRoles', 'security.roles.read'],
     ['createRole', 'security.roles.create'],
+    ['updateRole', 'security.roles.update'],
   ] as const)(
     'protege %s con JWT y %s',
     (methodName, expectedPermission) => {

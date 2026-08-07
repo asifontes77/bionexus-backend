@@ -3,6 +3,9 @@
   Controller,
   ForbiddenException,
   Get,
+  Param,
+  ParseIntPipe,
+  Patch,
   Post,
   Req,
   UseGuards,
@@ -10,6 +13,7 @@
 import { AuthorizationService } from './authorization.service';
 import { AuthorizationAdministrationService } from './authorization-administration.service';
 import { CreateSecurityRoleDto } from './dto/create-security-role.dto';
+import { UpdateSecurityRoleDto } from './dto/update-security-role.dto';
 import { RequirePermissions } from './decorators/require-permissions.decorator';
 import { PermissionGuard } from './guards/permission.guard';
 import { JwtUserGuard } from '../users/jwt-user.guard';
@@ -69,6 +73,18 @@ export class AuthorizationController {
     return this.administrationService.getRoles();
   }
 
+  @UseGuards(JwtUserGuard, PermissionGuard)
+  @RequirePermissions('security.roles.update')
+  @Patch('roles/:id')
+  async updateRole(
+    @Param('id', ParseIntPipe) roleId: number,
+    @Body() body: UpdateSecurityRoleDto,
+  ) {
+    return this.administrationService.updateRole(
+      roleId,
+      body,
+    );
+  }
   @UseGuards(JwtUserGuard, PermissionGuard)
   @RequirePermissions('security.roles.create')
   @Post('roles')
