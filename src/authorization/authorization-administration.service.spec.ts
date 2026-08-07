@@ -1,16 +1,20 @@
 ﻿import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
+  NotFoundException,
 } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { AuthorizationAdministrationService } from './authorization-administration.service';
 import { SecurityPermission } from './entities/security-permission.entity';
 import { SecurityRole } from './entities/security-role.entity';
+import { SecurityRolePermission } from './entities/security-role-permission.entity';
 
 describe('AuthorizationAdministrationService', () => {
   let service: AuthorizationAdministrationService;
   let rolesRepository: RepositoryMock;
   let permissionsRepository: RepositoryMock;
+  let dataSourceMock: { transaction: jest.Mock };
 
   beforeEach(() => {
     rolesRepository = {
@@ -27,9 +31,14 @@ describe('AuthorizationAdministrationService', () => {
       save: jest.fn(),
     };
 
+    dataSourceMock = {
+      transaction: jest.fn(),
+    };
+
     service = new AuthorizationAdministrationService(
       rolesRepository as unknown as Repository<SecurityRole>,
       permissionsRepository as unknown as Repository<SecurityPermission>,
+      dataSourceMock as unknown as DataSource,
     );
   });
 
@@ -549,6 +558,308 @@ describe('AuthorizationAdministrationService', () => {
         isActive: true,
       }),
     );
+  });
+
+  describe('replaceRolePermissions', () => {
+    let transactionalRolesRepository: RepositoryMock;
+    let transactionalPermissionsRepository: RepositoryMock;
+    let transactionalRolePermissionsRepository: RepositoryMock & { delete: jest.Mock };
+    let entityManagerMock: any;
+
+    beforeEach(() => {
+      transactionalRolesRepository = {
+        find: jest.fn(),
+        findOne: jest.fn(),
+        create: jest.fn(),
+        save: jest.fn(),
+      };
+
+      transactionalPermissionsRepository = {
+        find: jest.fn(),
+        findOne: jest.fn(),
+        create: jest.fn(),
+        save: jest.fn(),
+      };
+
+      transactionalRolePermissionsRepository = {
+        find: jest.fn(),
+        findOne: jest.fn(),
+        create: jest.fn(),
+        save: jest.fn(),
+        delete: jest.fn(),
+      };
+
+      entityManagerMock = {
+        getRepository: jest.fn((entity) => {
+          if (entity === SecurityRole) return transactionalRolesRepository;
+          if (entity === SecurityPermission) return transactionalPermissionsRepository;
+          if (entity === SecurityRolePermission) return transactionalRolePermissionsRepository;
+          throw new Error('Unknown entity');
+        }),
+      };
+
+      dataSourceMock.transaction.mockImplementation(async (cb) => {
+        return cb(entityManagerMock);
+      });
+    });
+
+    it.each([0, -1, 1.5, Number.NaN])('rechaza roleId %s', async (roleId) => {
+      await expect(service.replaceRolePermissions(roleId, { permissionIds: [] }))
+        .rejects.toThrow(BadRequestException);
+    });
+
+    it('rechaza DTO ausente', async () => {
+      await expect(service.replaceRolePermissions(1, undefined as any))
+        .rejects.toThrow(BadRequestException);
+    });
+
+    it('rechaza permissionIds que no sea arreglo', async () => {
+      await expect(service.replaceRolePermissions(1, { permissionIds: 'not-array' } as any))
+        .rejects.toThrow(BadRequestException);
+    });
+
+    it.each([0, -1, 1.5, Number.NaN])('rechaza permissionId %s', async (permissionId) => {
+      await expect(service.replaceRolePermissions(1, { permissionIds: [permissionId] }))
+        .rejects.toThrow(BadRequestException);
+    });
+
+    it('elimina identificadores duplicados', async () => {
+      const role = createRole(2, 'user', true);
+      transactionalRolesRepository.findOne.mockResolvedValue(role);
+
+      const p1 = createPermission(10, 'modulo1', 'codigo1', true);
+      transactionalPermissionsRepository.find.mockResolvedValue([p1]);
+      transactionalRolePermissionsRepository.delete.mockResolvedValue({});
+      transactionalRolePermissionsRepository.save.mockResolvedValue({});
+
+      await service.replaceRolePermissions(2, { permissionIds: [10, 10, 10] });
+
+      expect(transactionalPermissionsRepository.find).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ id: expect.objectContaining({ value: [10] }) }),
+        }),
+      );
+    });
+
+    it('rechaza rol inexistente', async () => {
+      transactionalRolesRepository.findOne.mockResolvedValue(null);
+
+      await expect(service.replaceRolePermissions(1, { permissionIds: [] }))
+        .rejects.toThrow(NotFoundException);
+    });
+
+    it('rechaza permisos inexistentes', async () => {
+      const role = createRole(2, 'user', true);
+      transactionalRolesRepository.findOne.mockResolvedValue(role);
+
+      transactionalPermissionsRepository.find.mockResolvedValue([]);
+
+      await expect(service.replaceRolePermissions(2, { permissionIds: [10] }))
+        .rejects.toThrow(BadRequestException);
+    });
+
+    it('rechaza permisos inactivos', async () => {
+      // By returning fewer permissions than requested, we simulate missing or inactive
+      const role = createRole(2, 'user', true);
+      transactionalRolesRepository.findOne.mockResolvedValue(role);
+
+      transactionalPermissionsRepository.find.mockResolvedValue([]);
+
+      await expect(service.replaceRolePermissions(2, { permissionIds: [10] }))
+        .rejects.toThrow(BadRequestException);
+    });
+
+    it('permite a un rol configurable quedar sin permisos', async () => {
+      const role = createRole(2, 'user', true);
+      transactionalRolesRepository.findOne.mockResolvedValue(role);
+
+      transactionalRolePermissionsRepository.delete.mockResolvedValue({});
+
+      const result = await service.replaceRolePermissions(2, { permissionIds: [] });
+
+      expect(result).toEqual([]);
+      expect(transactionalRolePermissionsRepository.delete).toHaveBeenCalledWith({ roleId: 2 });
+      expect(transactionalRolePermissionsRepository.save).not.toHaveBeenCalled();
+    });
+
+    it('reemplaza asignaciones dentro de una sola transaccion', async () => {
+      const role = createRole(2, 'user', true);
+      transactionalRolesRepository.findOne.mockResolvedValue(role);
+
+      const p1 = createPermission(10, 'sec.a', 'modulo2', true);
+      transactionalPermissionsRepository.find.mockResolvedValue([p1]);
+      transactionalRolePermissionsRepository.delete.mockResolvedValue({});
+      transactionalRolePermissionsRepository.save.mockResolvedValue({});
+
+      await service.replaceRolePermissions(2, { permissionIds: [10] });
+
+      expect(dataSourceMock.transaction).toHaveBeenCalled();
+      expect(transactionalRolePermissionsRepository.delete).toHaveBeenCalled();
+      expect(transactionalRolePermissionsRepository.save).toHaveBeenCalled();
+      expect(rolesRepository.findOne).not.toHaveBeenCalled(); // Original repo shouldn't be touched
+    });
+
+    it('elimina asignaciones antes de insertar las nuevas', async () => {
+      const role = createRole(2, 'user', true);
+      transactionalRolesRepository.findOne.mockResolvedValue(role);
+
+      const p1 = createPermission(10, 'sec.a', 'modulo2', true);
+      transactionalPermissionsRepository.find.mockResolvedValue([p1]);
+
+      const callOrder: string[] = [];
+      transactionalRolePermissionsRepository.delete.mockImplementation(async () => {
+        callOrder.push('delete');
+      });
+      transactionalRolePermissionsRepository.save.mockImplementation(async () => {
+        callOrder.push('save');
+      });
+
+      await service.replaceRolePermissions(2, { permissionIds: [10] });
+
+      expect(callOrder).toEqual(['delete', 'save']);
+    });
+
+    it('no inserta cuando la lista normalizada queda vacia', async () => {
+      const role = createRole(2, 'user', true);
+      transactionalRolesRepository.findOne.mockResolvedValue(role);
+      transactionalRolePermissionsRepository.delete.mockResolvedValue({});
+
+      await service.replaceRolePermissions(2, { permissionIds: [] });
+
+      expect(transactionalRolePermissionsRepository.save).not.toHaveBeenCalled();
+    });
+
+    it('devuelve permisos ordenados por module y code', async () => {
+      const role = createRole(2, 'user', true);
+      transactionalRolesRepository.findOne.mockResolvedValue(role);
+
+      // Return out of order
+      const p1 = createPermission(10, 'codeB', 'modZ', true);
+      const p2 = createPermission(11, 'codeA', 'modZ', true);
+      const p3 = createPermission(12, 'codeC', 'modA', true);
+
+      transactionalPermissionsRepository.find.mockResolvedValue([p1, p2, p3]);
+
+      const result = await service.replaceRolePermissions(2, { permissionIds: [10, 11, 12] });
+
+      expect(result.map(p => `${p.module}.${p.code}`)).toEqual([
+        'modA.codeC',
+        'modZ.codeA',
+        'modZ.codeB',
+      ]);
+    });
+
+    it('impide que admin quede sin permisos', async () => {
+      const role = createRole(1, 'admin', true);
+      transactionalRolesRepository.findOne.mockResolvedValue(role);
+
+      await expect(service.replaceRolePermissions(1, { permissionIds: [] }))
+        .rejects.toThrow(ForbiddenException);
+    });
+
+    it('impide que admin pierda cualquiera de los 10 permisos esenciales', async () => {
+      const role = createRole(1, 'admin', true);
+      transactionalRolesRepository.findOne.mockResolvedValue(role);
+
+      const p1 = createPermission(10, 'security.permissions.read', 'security', true);
+      // Missing 9 other essentials
+      transactionalPermissionsRepository.find.mockResolvedValue([p1]);
+
+      await expect(service.replaceRolePermissions(1, { permissionIds: [10] }))
+        .rejects.toThrow(ForbiddenException);
+    });
+
+    it('permite actualizar admin cuando conserva exactamente los 10 permisos esenciales', async () => {
+      const role = createRole(1, 'admin', true);
+      transactionalRolesRepository.findOne.mockResolvedValue(role);
+
+      const essentials = [
+        'security.permissions.read',
+        'security.roles.assign-permissions',
+        'security.roles.create',
+        'security.roles.read',
+        'security.roles.update',
+        'security.users.assign-permissions',
+        'security.users.assign-roles',
+        'security.users.create',
+        'security.users.read',
+        'security.users.update',
+      ];
+
+      const perms = essentials.map((code, i) => createPermission(i + 1, code, 'security', true));
+      const ids = perms.map(p => p.id);
+
+      transactionalPermissionsRepository.find.mockResolvedValue(perms);
+
+      const result = await service.replaceRolePermissions(1, { permissionIds: ids });
+      expect(result).toHaveLength(10);
+    });
+
+    it('permite que admin conserve los 10 esenciales y tenga permisos adicionales', async () => {
+      const role = createRole(1, 'admin', true);
+      transactionalRolesRepository.findOne.mockResolvedValue(role);
+
+      const essentials = [
+        'security.permissions.read',
+        'security.roles.assign-permissions',
+        'security.roles.create',
+        'security.roles.read',
+        'security.roles.update',
+        'security.users.assign-permissions',
+        'security.users.assign-roles',
+        'security.users.create',
+        'security.users.read',
+        'security.users.update',
+      ];
+
+      const perms = essentials.map((code, i) => createPermission(i + 1, code, 'security', true));
+      const extraPerm = createPermission(99, 'other.code', 'other', true);
+      perms.push(extraPerm);
+      const ids = perms.map(p => p.id);
+
+      transactionalPermissionsRepository.find.mockResolvedValue(perms);
+
+      const result = await service.replaceRolePermissions(1, { permissionIds: ids });
+      expect(result).toHaveLength(11);
+    });
+
+    it('si delete falla, save no debe ejecutarse', async () => {
+      const role = createRole(2, 'user', true);
+      transactionalRolesRepository.findOne.mockResolvedValue(role);
+      const p1 = createPermission(10, 'sec.a', 'modulo2', true);
+      transactionalPermissionsRepository.find.mockResolvedValue([p1]);
+
+      transactionalRolePermissionsRepository.delete.mockRejectedValue(new Error('Delete DB Error'));
+
+      await expect(service.replaceRolePermissions(2, { permissionIds: [10] }))
+        .rejects.toThrow('Delete DB Error');
+
+      expect(transactionalRolePermissionsRepository.save).not.toHaveBeenCalled();
+    });
+
+    it('si save falla, la promesa de transaction debe rechazarse', async () => {
+      const role = createRole(2, 'user', true);
+      transactionalRolesRepository.findOne.mockResolvedValue(role);
+      const p1 = createPermission(10, 'sec.a', 'modulo2', true);
+      transactionalPermissionsRepository.find.mockResolvedValue([p1]);
+
+      transactionalRolePermissionsRepository.delete.mockResolvedValue({});
+      transactionalRolePermissionsRepository.save.mockRejectedValue(new Error('Save DB Error'));
+
+      await expect(service.replaceRolePermissions(2, { permissionIds: [10] }))
+        .rejects.toThrow('Save DB Error');
+    });
+
+    it('los repositorios inyectados no deben usarse para el reemplazo transaccional', async () => {
+      const role = createRole(2, 'user', true);
+      transactionalRolesRepository.findOne.mockResolvedValue(role);
+      transactionalRolePermissionsRepository.delete.mockResolvedValue({});
+
+      await service.replaceRolePermissions(2, { permissionIds: [] });
+
+      expect(rolesRepository.findOne).not.toHaveBeenCalled();
+      expect(permissionsRepository.find).not.toHaveBeenCalled();
+    });
   });
 });
 
