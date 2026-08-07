@@ -928,6 +928,518 @@ describe('AuthorizationAdministrationService', () => {
       expect(permissionsRepository.save).toBeUndefined();
     });
   });
+  describe('replaceUserPermissionOverrides', () => {
+    let transactionalUserRepository: {
+      findOne: jest.Mock;
+    };
+
+    let transactionalPermissionsRepository: {
+      find: jest.Mock;
+    };
+
+    let transactionalOverridesRepository: {
+      delete: jest.Mock;
+      save: jest.Mock;
+    };
+
+    let transactionalManager: {
+      getRepository: jest.Mock;
+    };
+
+    beforeEach(() => {
+      transactionalUserRepository = {
+        findOne: jest.fn(),
+      };
+
+      transactionalPermissionsRepository = {
+        find: jest.fn(),
+      };
+
+      transactionalOverridesRepository = {
+        delete: jest.fn(),
+        save: jest.fn(),
+      };
+
+      transactionalManager = {
+        getRepository: jest.fn((entity) => {
+          if (entity === User) {
+            return transactionalUserRepository;
+          }
+
+          if (entity === SecurityPermission) {
+            return transactionalPermissionsRepository;
+          }
+
+          if (entity === SecurityUserPermissionOverride) {
+            return transactionalOverridesRepository;
+          }
+
+          throw new Error('UNKNOWN_TRANSACTIONAL_ENTITY');
+        }),
+      };
+
+      dataSourceMock.transaction.mockImplementation(
+        async (callback) => callback(transactionalManager),
+      );
+    });
+
+    it.each([
+      0,
+      -1,
+      1.5,
+      Number.NaN,
+    ])(
+      'rechaza el identificador de usuario invalido %s',
+      async (userId) => {
+        await expect(
+          service.replaceUserPermissionOverrides(userId, {
+            overrides: [],
+          }),
+        ).rejects.toMatchObject({
+          response: {
+            message: 'USER_ID_INVALID',
+          },
+        });
+
+        expect(
+          dataSourceMock.transaction,
+        ).not.toHaveBeenCalled();
+      },
+    );
+
+    it('rechaza un DTO ausente', async () => {
+      await expect(
+        service.replaceUserPermissionOverrides(
+          7,
+          undefined as unknown as {
+            overrides: [];
+          },
+        ),
+      ).rejects.toMatchObject({
+        response: {
+          message: 'PERMISSION_OVERRIDES_REQUIRED',
+        },
+      });
+
+      expect(
+        dataSourceMock.transaction,
+      ).not.toHaveBeenCalled();
+    });
+
+    it('rechaza overrides cuando no es un arreglo', async () => {
+      await expect(
+        service.replaceUserPermissionOverrides(7, {
+          overrides: 'invalid',
+        } as unknown as {
+          overrides: [];
+        }),
+      ).rejects.toMatchObject({
+        response: {
+          message: 'PERMISSION_OVERRIDES_REQUIRED',
+        },
+      });
+
+      expect(
+        dataSourceMock.transaction,
+      ).not.toHaveBeenCalled();
+    });
+
+    it('rechaza un elemento de override invalido', async () => {
+      await expect(
+        service.replaceUserPermissionOverrides(7, {
+          overrides: [
+            null,
+          ],
+        } as unknown as {
+          overrides: [];
+        }),
+      ).rejects.toMatchObject({
+        response: {
+          message: 'PERMISSION_OVERRIDE_INVALID',
+        },
+      });
+
+      expect(
+        dataSourceMock.transaction,
+      ).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      0,
+      -1,
+      1.5,
+      Number.NaN,
+    ])(
+      'rechaza el identificador de permiso invalido %s',
+      async (permissionId) => {
+        await expect(
+          service.replaceUserPermissionOverrides(7, {
+            overrides: [
+              {
+                permissionId,
+                effect: SecurityPermissionEffect.Allow,
+              },
+            ],
+          }),
+        ).rejects.toMatchObject({
+          response: {
+            message: 'PERMISSION_ID_INVALID',
+          },
+        });
+
+        expect(
+          dataSourceMock.transaction,
+        ).not.toHaveBeenCalled();
+      },
+    );
+
+    it('rechaza un effect no soportado', async () => {
+      await expect(
+        service.replaceUserPermissionOverrides(7, {
+          overrides: [
+            {
+              permissionId: 10,
+              effect: 'grant',
+            },
+          ],
+        } as unknown as {
+          overrides: Array<{
+            permissionId: number;
+            effect: SecurityPermissionEffect;
+          }>;
+        }),
+      ).rejects.toMatchObject({
+        response: {
+          message: 'PERMISSION_EFFECT_INVALID',
+        },
+      });
+
+      expect(
+        dataSourceMock.transaction,
+      ).not.toHaveBeenCalled();
+    });
+
+    it('rechaza permissionId duplicado aunque cambie el effect', async () => {
+      await expect(
+        service.replaceUserPermissionOverrides(7, {
+          overrides: [
+            {
+              permissionId: 10,
+              effect: SecurityPermissionEffect.Allow,
+            },
+            {
+              permissionId: 10,
+              effect: SecurityPermissionEffect.Deny,
+            },
+          ],
+        }),
+      ).rejects.toMatchObject({
+        response: {
+          message: 'PERMISSION_OVERRIDE_DUPLICATED',
+        },
+      });
+
+      expect(
+        dataSourceMock.transaction,
+      ).not.toHaveBeenCalled();
+    });
+
+    it('rechaza un usuario inexistente', async () => {
+      transactionalUserRepository.findOne.mockResolvedValue(
+        null,
+      );
+
+      await expect(
+        service.replaceUserPermissionOverrides(999, {
+          overrides: [],
+        }),
+      ).rejects.toMatchObject({
+        response: {
+          message: 'USER_NOT_FOUND',
+        },
+      });
+
+      expect(
+        transactionalPermissionsRepository.find,
+      ).not.toHaveBeenCalled();
+
+      expect(
+        transactionalOverridesRepository.delete,
+      ).not.toHaveBeenCalled();
+    });
+
+    it('rechaza permisos inexistentes o inactivos', async () => {
+      const user = createUser();
+
+      transactionalUserRepository.findOne.mockResolvedValue(
+        user,
+      );
+
+      transactionalPermissionsRepository.find.mockResolvedValue(
+        [],
+      );
+
+      await expect(
+        service.replaceUserPermissionOverrides(7, {
+          overrides: [
+            {
+              permissionId: 10,
+              effect: SecurityPermissionEffect.Allow,
+            },
+          ],
+        }),
+      ).rejects.toMatchObject({
+        response: {
+          message: 'PERMISSIONS_NOT_FOUND_OR_INACTIVE',
+        },
+      });
+
+      expect(
+        transactionalOverridesRepository.delete,
+      ).not.toHaveBeenCalled();
+    });
+
+    it('permite eliminar todos los overrides del usuario', async () => {
+      const user = createUser();
+
+      transactionalUserRepository.findOne.mockResolvedValue(
+        user,
+      );
+
+      transactionalOverridesRepository.delete.mockResolvedValue(
+        {},
+      );
+
+      const result =
+        await service.replaceUserPermissionOverrides(7, {
+          overrides: [],
+        });
+
+      expect(result).toEqual([]);
+
+      expect(
+        transactionalPermissionsRepository.find,
+      ).not.toHaveBeenCalled();
+
+      expect(
+        transactionalOverridesRepository.delete,
+      ).toHaveBeenCalledWith({
+        userId: 7,
+      });
+
+      expect(
+        transactionalOverridesRepository.save,
+      ).not.toHaveBeenCalled();
+    });
+
+    it('reemplaza overrides atomicamente y devuelve una vista ordenada', async () => {
+      const user = createUser();
+
+      const permissionA = createPermission(
+        10,
+        'patients.cancel',
+        'patients',
+        true,
+      );
+
+      const permissionB = createPermission(
+        11,
+        'security.users.read',
+        'security',
+        true,
+      );
+
+      transactionalUserRepository.findOne.mockResolvedValue(
+        user,
+      );
+
+      transactionalPermissionsRepository.find.mockResolvedValue([
+        permissionB,
+        permissionA,
+      ]);
+
+      const callOrder: string[] = [];
+
+      transactionalOverridesRepository.delete.mockImplementation(
+        async () => {
+          callOrder.push('delete');
+        },
+      );
+
+      transactionalOverridesRepository.save.mockImplementation(
+        async () => {
+          callOrder.push('save');
+        },
+      );
+
+      const result =
+        await service.replaceUserPermissionOverrides(7, {
+          overrides: [
+            {
+              permissionId: 11,
+              effect: SecurityPermissionEffect.Allow,
+            },
+            {
+              permissionId: 10,
+              effect: SecurityPermissionEffect.Deny,
+            },
+          ],
+        });
+
+      expect(
+        dataSourceMock.transaction,
+      ).toHaveBeenCalledTimes(1);
+
+      expect(callOrder).toEqual([
+        'delete',
+        'save',
+      ]);
+
+      expect(
+        transactionalPermissionsRepository.find,
+      ).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            id: expect.objectContaining({
+              value: [
+                11,
+                10,
+              ],
+            }),
+            isActive: true,
+          }),
+        }),
+      );
+
+      expect(
+        transactionalOverridesRepository.save,
+      ).toHaveBeenCalledWith([
+        {
+          userId: 7,
+          permissionId: 11,
+          effect: SecurityPermissionEffect.Allow,
+        },
+        {
+          userId: 7,
+          permissionId: 10,
+          effect: SecurityPermissionEffect.Deny,
+        },
+      ]);
+
+      expect(
+        result.map((override) => ({
+          code: override.permission.code,
+          effect: override.effect,
+        })),
+      ).toEqual([
+        {
+          code: 'patients.cancel',
+          effect: SecurityPermissionEffect.Deny,
+        },
+        {
+          code: 'security.users.read',
+          effect: SecurityPermissionEffect.Allow,
+        },
+      ]);
+    });
+
+    it('no ejecuta save cuando delete falla', async () => {
+      const user = createUser();
+
+      transactionalUserRepository.findOne.mockResolvedValue(
+        user,
+      );
+
+      transactionalOverridesRepository.delete.mockRejectedValue(
+        new Error('DELETE_OVERRIDE_FAILED'),
+      );
+
+      await expect(
+        service.replaceUserPermissionOverrides(7, {
+          overrides: [],
+        }),
+      ).rejects.toThrow('DELETE_OVERRIDE_FAILED');
+
+      expect(
+        transactionalOverridesRepository.save,
+      ).not.toHaveBeenCalled();
+    });
+
+    it('rechaza la transaccion cuando save falla', async () => {
+      const user = createUser();
+      const permission = createPermission(
+        10,
+        'patients.cancel',
+        'patients',
+        true,
+      );
+
+      transactionalUserRepository.findOne.mockResolvedValue(
+        user,
+      );
+
+      transactionalPermissionsRepository.find.mockResolvedValue([
+        permission,
+      ]);
+
+      transactionalOverridesRepository.delete.mockResolvedValue(
+        {},
+      );
+
+      transactionalOverridesRepository.save.mockRejectedValue(
+        new Error('SAVE_OVERRIDE_FAILED'),
+      );
+
+      await expect(
+        service.replaceUserPermissionOverrides(7, {
+          overrides: [
+            {
+              permissionId: 10,
+              effect: SecurityPermissionEffect.Deny,
+            },
+          ],
+        }),
+      ).rejects.toThrow('SAVE_OVERRIDE_FAILED');
+    });
+
+    it('usa repositorios transaccionales sin modificar roles ni users roles', async () => {
+      const user = createUser();
+      const legacyRoles = user.roles;
+
+      transactionalUserRepository.findOne.mockResolvedValue(
+        user,
+      );
+
+      transactionalOverridesRepository.delete.mockResolvedValue(
+        {},
+      );
+
+      await service.replaceUserPermissionOverrides(7, {
+        overrides: [],
+      });
+
+      expect(userRepository.findOne).not.toHaveBeenCalled();
+
+      expect(
+        permissionsRepository.find,
+      ).not.toHaveBeenCalled();
+
+      expect(
+        userPermissionOverridesRepository.find,
+      ).not.toHaveBeenCalled();
+
+      expect(
+        userRolesRepository.find,
+      ).not.toHaveBeenCalled();
+
+      expect(
+        rolePermissionsRepository.find,
+      ).not.toHaveBeenCalled();
+
+      expect(rolesRepository.find).not.toHaveBeenCalled();
+      expect(user.roles).toBe(legacyRoles);
+    });
+  });
   describe('replaceUserRoles', () => {
     let transactionalUserRepository: {
       findOne: jest.Mock;

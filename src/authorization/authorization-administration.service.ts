@@ -8,6 +8,7 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, In, Not, Repository } from 'typeorm';
 import { CreateSecurityRoleDto } from './dto/create-security-role.dto';
+import { ReplaceUserPermissionOverridesDto } from './dto/replace-user-permission-overrides.dto';
 import { UpdateSecurityRoleDto } from './dto/update-security-role.dto';
 import { ReplaceRolePermissionsDto } from './dto/replace-role-permissions.dto';
 import { ReplaceUserRolesDto } from './dto/replace-user-roles.dto';
@@ -16,9 +17,15 @@ import { SecurityRole } from './entities/security-role.entity';
 import { SecurityRolePermission } from './entities/security-role-permission.entity';
 import { User } from '../users/users.entity';
 import { SecurityUserRole } from './entities/security-user-role.entity';
-import { SecurityUserPermissionOverride } from './entities/security-user-permission-override.entity';
+import {
+  SecurityPermissionEffect,
+  SecurityUserPermissionOverride,
+} from './entities/security-user-permission-override.entity';
 import { AuthorizationService } from './authorization.service';
-import { AuthorizationUserAdministration } from './models/authorization-user-administration';
+import {
+  AuthorizationPermissionOverrideView,
+  AuthorizationUserAdministration,
+} from './models/authorization-user-administration';
 import { toSafeUserResponse } from '../users/responses/user-response.mapper';
 
 @Injectable()
@@ -595,6 +602,179 @@ export class AuthorizationAdministrationService {
       }
 
       return selectedRoles.sort((a, b) => a.code.localeCompare(b.code));
+    });
+  }
+  async replaceUserPermissionOverrides(
+    userId: number,
+    dto: ReplaceUserPermissionOverridesDto,
+  ): Promise<AuthorizationPermissionOverrideView[]> {
+    if (!Number.isInteger(userId) || userId <= 0) {
+      throw new BadRequestException('USER_ID_INVALID');
+    }
+
+    if (!dto || typeof dto !== 'object') {
+      throw new BadRequestException(
+        'PERMISSION_OVERRIDES_REQUIRED',
+      );
+    }
+
+    if (!Array.isArray(dto.overrides)) {
+      throw new BadRequestException(
+        'PERMISSION_OVERRIDES_REQUIRED',
+      );
+    }
+
+    const normalizedOverrides: Array<{
+      permissionId: number;
+      effect: SecurityPermissionEffect;
+    }> = [];
+
+    for (const override of dto.overrides) {
+      if (!override || typeof override !== 'object') {
+        throw new BadRequestException(
+          'PERMISSION_OVERRIDE_INVALID',
+        );
+      }
+
+      if (
+        !Number.isInteger(override.permissionId) ||
+        override.permissionId <= 0
+      ) {
+        throw new BadRequestException(
+          'PERMISSION_ID_INVALID',
+        );
+      }
+
+      if (
+        override.effect !== SecurityPermissionEffect.Allow &&
+        override.effect !== SecurityPermissionEffect.Deny
+      ) {
+        throw new BadRequestException(
+          'PERMISSION_EFFECT_INVALID',
+        );
+      }
+
+      if (
+        normalizedOverrides.some(
+          (item) =>
+            item.permissionId === override.permissionId,
+        )
+      ) {
+        throw new BadRequestException(
+          'PERMISSION_OVERRIDE_DUPLICATED',
+        );
+      }
+
+      normalizedOverrides.push({
+        permissionId: override.permissionId,
+        effect: override.effect,
+      });
+    }
+
+    return this.dataSource.transaction(async (manager) => {
+      const transactionalUserRepository =
+        manager.getRepository(User);
+
+      const transactionalPermissionsRepository =
+        manager.getRepository(SecurityPermission);
+
+      const transactionalOverridesRepository =
+        manager.getRepository(
+          SecurityUserPermissionOverride,
+        );
+
+      const user = await transactionalUserRepository.findOne({
+        where: {
+          id: userId,
+        },
+      });
+
+      if (!user) {
+        throw new NotFoundException('USER_NOT_FOUND');
+      }
+
+      const permissionIds = normalizedOverrides.map(
+        (override) => override.permissionId,
+      );
+
+      let selectedPermissions: SecurityPermission[] = [];
+
+      if (permissionIds.length > 0) {
+        selectedPermissions =
+          await transactionalPermissionsRepository.find({
+            where: {
+              id: In(permissionIds),
+              isActive: true,
+            },
+            select: {
+              id: true,
+              code: true,
+              name: true,
+              description: true,
+              module: true,
+              isActive: true,
+            },
+          });
+
+        if (
+          selectedPermissions.length !==
+          permissionIds.length
+        ) {
+          throw new BadRequestException(
+            'PERMISSIONS_NOT_FOUND_OR_INACTIVE',
+          );
+        }
+      }
+
+      await transactionalOverridesRepository.delete({
+        userId,
+      });
+
+      if (normalizedOverrides.length > 0) {
+        await transactionalOverridesRepository.save(
+          normalizedOverrides.map((override) => ({
+            userId,
+            permissionId: override.permissionId,
+            effect: override.effect,
+          })),
+        );
+      }
+
+      const permissionsById = new Map(
+        selectedPermissions.map((permission) => [
+          permission.id,
+          permission,
+        ]),
+      );
+
+      return normalizedOverrides
+        .map((override) => ({
+          permission: permissionsById.get(
+            override.permissionId,
+          ) as SecurityPermission,
+          effect: override.effect,
+        }))
+        .sort((left, right) => {
+          if (
+            left.permission.module !==
+            right.permission.module
+          ) {
+            return left.permission.module.localeCompare(
+              right.permission.module,
+            );
+          }
+
+          if (
+            left.permission.code !==
+            right.permission.code
+          ) {
+            return left.permission.code.localeCompare(
+              right.permission.code,
+            );
+          }
+
+          return left.effect.localeCompare(right.effect);
+        });
     });
   }
 }
