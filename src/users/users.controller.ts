@@ -14,6 +14,7 @@
 import { UsersService } from './users.service';
 import { CreateUsersDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { VerifySignatureDto } from './dto/verify-signature.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { JwtUserGuard } from './jwt-user.guard';
 import { RequirePermissions } from '../authorization/decorators/require-permissions.decorator';
@@ -95,6 +96,14 @@ export class UsersController {
     return this.usersService.verifySignature(id, passwordSignature);
   }
 
+  @UseGuards(JwtUserGuard)
+  @Post('/verify-signature')
+  verifySignatureSecure(@Body() body: VerifySignatureDto) {
+    return this.usersService.verifySignature(
+      body.userId,
+      body.passwordSignature,
+    );
+  }
   @UseGuards(JwtUserGuard, PermissionGuard)
   @RequirePermissions('security.users.update')
   @Patch(':id')
