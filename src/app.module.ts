@@ -1,6 +1,7 @@
-import { Module } from '@nestjs/common';
+﻿import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SecurityModule } from './security/security.module';
+import { AuthorizationModule } from './authorization/authorization.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ExamsModule } from './exams/exams.module';
@@ -41,6 +42,7 @@ import { resolveDatabaseOptions } from './database/database.config';
       isGlobal: true,
     }),
     SecurityModule,
+    AuthorizationModule,
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) =>
