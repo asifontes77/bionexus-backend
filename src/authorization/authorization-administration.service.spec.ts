@@ -49,6 +49,7 @@ describe('AuthorizationAdministrationService', () => {
 
     userRepository = {
       findOne: jest.fn(),
+      count: jest.fn(),
     };
 
     userRolesRepository = {
@@ -925,6 +926,660 @@ describe('AuthorizationAdministrationService', () => {
       expect(dataSourceMock.transaction).not.toHaveBeenCalled();
       expect(rolesRepository.save).not.toHaveBeenCalled();
       expect(permissionsRepository.save).toBeUndefined();
+    });
+  });
+  describe('replaceUserRoles', () => {
+    let transactionalUserRepository: {
+      findOne: jest.Mock;
+      count: jest.Mock;
+    };
+
+    let transactionalRolesRepository: {
+      find: jest.Mock;
+      findOne: jest.Mock;
+    };
+
+    let transactionalUserRolesRepository: {
+      find: jest.Mock;
+      delete: jest.Mock;
+      save: jest.Mock;
+    };
+
+    let transactionalManager: {
+      getRepository: jest.Mock;
+    };
+
+    beforeEach(() => {
+      transactionalUserRepository = {
+        findOne: jest.fn(),
+        count: jest.fn(),
+      };
+
+      transactionalRolesRepository = {
+        find: jest.fn(),
+        findOne: jest.fn(),
+      };
+
+      transactionalUserRolesRepository = {
+        find: jest.fn(),
+        delete: jest.fn(),
+        save: jest.fn(),
+      };
+
+      transactionalManager = {
+        getRepository: jest.fn((entity) => {
+          if (entity === User) {
+            return transactionalUserRepository;
+          }
+
+          if (entity === SecurityRole) {
+            return transactionalRolesRepository;
+          }
+
+          if (entity === SecurityUserRole) {
+            return transactionalUserRolesRepository;
+          }
+
+          throw new Error('UNKNOWN_TRANSACTIONAL_ENTITY');
+        }),
+      };
+
+      dataSourceMock.transaction.mockImplementation(
+        async (callback) => callback(transactionalManager),
+      );
+    });
+
+    it.each([
+      0,
+      -1,
+      1.5,
+      Number.NaN,
+    ])(
+      'rechaza el identificador de usuario invalido %s',
+      async (userId) => {
+        await expect(
+          service.replaceUserRoles(userId, {
+            roleIds: [],
+          }),
+        ).rejects.toMatchObject({
+          response: {
+            message: 'USER_ID_INVALID',
+          },
+        });
+
+        expect(
+          dataSourceMock.transaction,
+        ).not.toHaveBeenCalled();
+      },
+    );
+
+    it('rechaza un DTO ausente', async () => {
+      await expect(
+        service.replaceUserRoles(
+          7,
+          undefined as unknown as {
+            roleIds: number[];
+          },
+        ),
+      ).rejects.toMatchObject({
+        response: {
+          message: 'ROLE_IDS_REQUIRED',
+        },
+      });
+
+      expect(
+        dataSourceMock.transaction,
+      ).not.toHaveBeenCalled();
+    });
+
+    it('rechaza roleIds cuando no es un arreglo', async () => {
+      await expect(
+        service.replaceUserRoles(7, {
+          roleIds: 'admin',
+        } as unknown as {
+          roleIds: number[];
+        }),
+      ).rejects.toMatchObject({
+        response: {
+          message: 'ROLE_IDS_REQUIRED',
+        },
+      });
+
+      expect(
+        dataSourceMock.transaction,
+      ).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      0,
+      -1,
+      1.5,
+      Number.NaN,
+    ])(
+      'rechaza el identificador de rol invalido %s',
+      async (roleId) => {
+        await expect(
+          service.replaceUserRoles(7, {
+            roleIds: [roleId],
+          }),
+        ).rejects.toMatchObject({
+          response: {
+            message: 'ROLE_ID_INVALID',
+          },
+        });
+
+        expect(
+          dataSourceMock.transaction,
+        ).not.toHaveBeenCalled();
+      },
+    );
+
+    it('rechaza un usuario inexistente', async () => {
+      transactionalUserRepository.findOne.mockResolvedValue(
+        null,
+      );
+
+      await expect(
+        service.replaceUserRoles(999, {
+          roleIds: [],
+        }),
+      ).rejects.toMatchObject({
+        response: {
+          message: 'USER_NOT_FOUND',
+        },
+      });
+
+      expect(
+        transactionalRolesRepository.find,
+      ).not.toHaveBeenCalled();
+
+      expect(
+        transactionalUserRolesRepository.delete,
+      ).not.toHaveBeenCalled();
+    });
+
+    it('elimina identificadores de rol duplicados', async () => {
+      const user = createUser();
+      const role = createRole(2, 'operator', false);
+
+      transactionalUserRepository.findOne.mockResolvedValue(
+        user,
+      );
+
+      transactionalRolesRepository.find.mockResolvedValue([
+        role,
+      ]);
+
+      transactionalRolesRepository.findOne.mockResolvedValue(
+        null,
+      );
+
+      transactionalUserRolesRepository.find.mockResolvedValue(
+        [],
+      );
+
+      transactionalUserRolesRepository.delete.mockResolvedValue(
+        {},
+      );
+
+      transactionalUserRolesRepository.save.mockResolvedValue(
+        [],
+      );
+
+      await service.replaceUserRoles(7, {
+        roleIds: [2, 2, 2],
+      });
+
+      expect(
+        transactionalRolesRepository.find,
+      ).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            id: expect.objectContaining({
+              value: [2],
+            }),
+            isActive: true,
+          }),
+        }),
+      );
+
+      expect(
+        transactionalUserRolesRepository.save,
+      ).toHaveBeenCalledWith([
+        {
+          userId: 7,
+          roleId: 2,
+        },
+      ]);
+    });
+
+    it('rechaza roles inexistentes o inactivos', async () => {
+      const user = createUser();
+
+      transactionalUserRepository.findOne.mockResolvedValue(
+        user,
+      );
+
+      transactionalRolesRepository.find.mockResolvedValue(
+        [],
+      );
+
+      await expect(
+        service.replaceUserRoles(7, {
+          roleIds: [99],
+        }),
+      ).rejects.toMatchObject({
+        response: {
+          message: 'ROLES_NOT_FOUND_OR_INACTIVE',
+        },
+      });
+
+      expect(
+        transactionalUserRolesRepository.delete,
+      ).not.toHaveBeenCalled();
+    });
+
+    it('permite a un usuario no administrador quedar sin roles', async () => {
+      const user = createUser();
+
+      transactionalUserRepository.findOne.mockResolvedValue(
+        user,
+      );
+
+      transactionalRolesRepository.findOne.mockResolvedValue(
+        createRole(1, 'admin', true),
+      );
+
+      transactionalUserRolesRepository.find.mockResolvedValue(
+        [],
+      );
+
+      transactionalUserRolesRepository.delete.mockResolvedValue(
+        {},
+      );
+
+      const result = await service.replaceUserRoles(7, {
+        roleIds: [],
+      });
+
+      expect(result).toEqual([]);
+
+      expect(
+        transactionalUserRolesRepository.delete,
+      ).toHaveBeenCalledWith({
+        userId: 7,
+      });
+
+      expect(
+        transactionalUserRolesRepository.save,
+      ).not.toHaveBeenCalled();
+    });
+
+    it('reemplaza roles en una transaccion y los ordena', async () => {
+      const user = createUser();
+      const auditorRole = createRole(3, 'auditor', false);
+      const operatorRole = createRole(2, 'operator', false);
+
+      transactionalUserRepository.findOne.mockResolvedValue(
+        user,
+      );
+
+      transactionalRolesRepository.find.mockResolvedValue([
+        operatorRole,
+        auditorRole,
+      ]);
+
+      transactionalRolesRepository.findOne.mockResolvedValue(
+        null,
+      );
+
+      transactionalUserRolesRepository.find.mockResolvedValue(
+        [],
+      );
+
+      const callOrder: string[] = [];
+
+      transactionalUserRolesRepository.delete.mockImplementation(
+        async () => {
+          callOrder.push('delete');
+        },
+      );
+
+      transactionalUserRolesRepository.save.mockImplementation(
+        async () => {
+          callOrder.push('save');
+        },
+      );
+
+      const result = await service.replaceUserRoles(7, {
+        roleIds: [2, 3],
+      });
+
+      expect(
+        dataSourceMock.transaction,
+      ).toHaveBeenCalledTimes(1);
+
+      expect(callOrder).toEqual([
+        'delete',
+        'save',
+      ]);
+
+      expect(
+        result.map((role) => role.code),
+      ).toEqual([
+        'auditor',
+        'operator',
+      ]);
+    });
+
+    it('permite conservar admin en el usuario actual', async () => {
+      const user = createUser();
+      const adminRole = createRole(1, 'admin', true);
+
+      transactionalUserRepository.findOne.mockResolvedValue(
+        user,
+      );
+
+      transactionalRolesRepository.find.mockResolvedValue([
+        adminRole,
+      ]);
+
+      transactionalRolesRepository.findOne.mockResolvedValue(
+        adminRole,
+      );
+
+      transactionalUserRolesRepository.find.mockResolvedValue([
+        {
+          userId: 7,
+          roleId: 1,
+        },
+      ]);
+
+      transactionalUserRolesRepository.delete.mockResolvedValue(
+        {},
+      );
+
+      transactionalUserRolesRepository.save.mockResolvedValue(
+        [],
+      );
+
+      await expect(
+        service.replaceUserRoles(7, {
+          roleIds: [1],
+        }),
+      ).resolves.toEqual([
+        adminRole,
+      ]);
+
+      expect(
+        transactionalUserRepository.count,
+      ).not.toHaveBeenCalled();
+    });
+
+    it('permite retirar admin si existe otro administrador visible', async () => {
+      const user = createUser();
+      const adminRole = createRole(1, 'admin', true);
+      const operatorRole = createRole(2, 'operator', false);
+
+      transactionalUserRepository.findOne.mockResolvedValue(
+        user,
+      );
+
+      transactionalRolesRepository.find.mockResolvedValue([
+        operatorRole,
+      ]);
+
+      transactionalRolesRepository.findOne.mockResolvedValue(
+        adminRole,
+      );
+
+      transactionalUserRolesRepository.find
+        .mockResolvedValueOnce([
+          {
+            userId: 7,
+            roleId: 1,
+          },
+        ])
+        .mockResolvedValueOnce([
+          {
+            userId: 8,
+            roleId: 1,
+          },
+        ]);
+
+      transactionalUserRepository.count.mockResolvedValue(1);
+
+      transactionalUserRolesRepository.delete.mockResolvedValue(
+        {},
+      );
+
+      transactionalUserRolesRepository.save.mockResolvedValue(
+        [],
+      );
+
+      await expect(
+        service.replaceUserRoles(7, {
+          roleIds: [2],
+        }),
+      ).resolves.toEqual([
+        operatorRole,
+      ]);
+
+      expect(
+        transactionalUserRepository.count,
+      ).toHaveBeenCalledTimes(1);
+    });
+
+    it('impide retirar admin si no existe otro administrador', async () => {
+      const user = createUser();
+      const adminRole = createRole(1, 'admin', true);
+
+      transactionalUserRepository.findOne.mockResolvedValue(
+        user,
+      );
+
+      transactionalRolesRepository.findOne.mockResolvedValue(
+        adminRole,
+      );
+
+      transactionalUserRolesRepository.find
+        .mockResolvedValueOnce([
+          {
+            userId: 7,
+            roleId: 1,
+          },
+        ])
+        .mockResolvedValueOnce([]);
+
+      await expect(
+        service.replaceUserRoles(7, {
+          roleIds: [],
+        }),
+      ).rejects.toMatchObject({
+        response: {
+          message: 'LAST_ADMIN_ROLE_REQUIRED',
+        },
+      });
+
+      expect(
+        transactionalUserRolesRepository.delete,
+      ).not.toHaveBeenCalled();
+    });
+
+    it('excluye administradores ocultos y normaliza identificadores', async () => {
+      const user = createUser();
+      const adminRole = createRole(1, 'admin', true);
+
+      transactionalUserRepository.findOne.mockResolvedValue(
+        user,
+      );
+
+      transactionalRolesRepository.findOne.mockResolvedValue(
+        adminRole,
+      );
+
+      transactionalUserRolesRepository.find
+        .mockResolvedValueOnce([
+          {
+            userId: 7,
+            roleId: 1,
+          },
+        ])
+        .mockResolvedValueOnce([
+          {
+            userId: 8,
+            roleId: 1,
+          },
+          {
+            userId: 8,
+            roleId: 1,
+          },
+          {
+            userId: 0,
+            roleId: 1,
+          },
+          {
+            userId: -1,
+            roleId: 1,
+          },
+          {
+            userId: 1.5,
+            roleId: 1,
+          },
+        ]);
+
+      transactionalUserRepository.count.mockResolvedValue(0);
+
+      await expect(
+        service.replaceUserRoles(7, {
+          roleIds: [],
+        }),
+      ).rejects.toMatchObject({
+        response: {
+          message: 'LAST_ADMIN_ROLE_REQUIRED',
+        },
+      });
+
+      expect(
+        transactionalUserRepository.count,
+      ).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            id: expect.objectContaining({
+              value: [8],
+            }),
+            hide_user: false,
+          }),
+        }),
+      );
+
+      expect(
+        transactionalUserRolesRepository.delete,
+      ).not.toHaveBeenCalled();
+    });
+
+    it('no ejecuta save cuando delete falla', async () => {
+      const user = createUser();
+
+      transactionalUserRepository.findOne.mockResolvedValue(
+        user,
+      );
+
+      transactionalRolesRepository.findOne.mockResolvedValue(
+        null,
+      );
+
+      transactionalUserRolesRepository.find.mockResolvedValue(
+        [],
+      );
+
+      transactionalUserRolesRepository.delete.mockRejectedValue(
+        new Error('DELETE_FAILED'),
+      );
+
+      await expect(
+        service.replaceUserRoles(7, {
+          roleIds: [],
+        }),
+      ).rejects.toThrow('DELETE_FAILED');
+
+      expect(
+        transactionalUserRolesRepository.save,
+      ).not.toHaveBeenCalled();
+    });
+
+    it('rechaza la transaccion cuando save falla', async () => {
+      const user = createUser();
+      const role = createRole(2, 'operator', false);
+
+      transactionalUserRepository.findOne.mockResolvedValue(
+        user,
+      );
+
+      transactionalRolesRepository.find.mockResolvedValue([
+        role,
+      ]);
+
+      transactionalRolesRepository.findOne.mockResolvedValue(
+        null,
+      );
+
+      transactionalUserRolesRepository.find.mockResolvedValue(
+        [],
+      );
+
+      transactionalUserRolesRepository.delete.mockResolvedValue(
+        {},
+      );
+
+      transactionalUserRolesRepository.save.mockRejectedValue(
+        new Error('SAVE_FAILED'),
+      );
+
+      await expect(
+        service.replaceUserRoles(7, {
+          roleIds: [2],
+        }),
+      ).rejects.toThrow('SAVE_FAILED');
+    });
+
+    it('usa repositorios transaccionales y preserva users roles', async () => {
+      const user = createUser();
+      const legacyRoles = user.roles;
+
+      transactionalUserRepository.findOne.mockResolvedValue(
+        user,
+      );
+
+      transactionalRolesRepository.findOne.mockResolvedValue(
+        null,
+      );
+
+      transactionalUserRolesRepository.find.mockResolvedValue(
+        [],
+      );
+
+      transactionalUserRolesRepository.delete.mockResolvedValue(
+        {},
+      );
+
+      await service.replaceUserRoles(7, {
+        roleIds: [],
+      });
+
+      expect(userRepository.findOne).not.toHaveBeenCalled();
+      expect(rolesRepository.find).not.toHaveBeenCalled();
+      expect(userRolesRepository.find).not.toHaveBeenCalled();
+
+      expect(
+        userPermissionOverridesRepository.find,
+      ).not.toHaveBeenCalled();
+
+      expect(
+        rolePermissionsRepository.find,
+      ).not.toHaveBeenCalled();
+
+      expect(user.roles).toBe(legacyRoles);
     });
   });
   describe('replaceRolePermissions', () => {

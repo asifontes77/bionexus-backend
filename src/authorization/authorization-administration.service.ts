@@ -6,10 +6,11 @@
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, In, Repository } from 'typeorm';
+import { DataSource, In, Not, Repository } from 'typeorm';
 import { CreateSecurityRoleDto } from './dto/create-security-role.dto';
 import { UpdateSecurityRoleDto } from './dto/update-security-role.dto';
 import { ReplaceRolePermissionsDto } from './dto/replace-role-permissions.dto';
+import { ReplaceUserRolesDto } from './dto/replace-user-roles.dto';
 import { SecurityPermission } from './entities/security-permission.entity';
 import { SecurityRole } from './entities/security-role.entity';
 import { SecurityRolePermission } from './entities/security-role-permission.entity';
@@ -467,5 +468,133 @@ export class AuthorizationAdministrationService {
       permissionOverrides,
       context,
     };
+  }
+
+  async replaceUserRoles(
+    userId: number,
+    dto: ReplaceUserRolesDto,
+  ): Promise<SecurityRole[]> {
+    if (!Number.isInteger(userId) || userId <= 0) {
+      throw new BadRequestException('USER_ID_INVALID');
+    }
+
+    if (!dto || typeof dto !== 'object') {
+      throw new BadRequestException('ROLE_IDS_REQUIRED');
+    }
+
+    if (!Array.isArray(dto.roleIds)) {
+      throw new BadRequestException('ROLE_IDS_REQUIRED');
+    }
+
+    const normalizedRoleIds: number[] = [];
+
+    for (const roleId of dto.roleIds) {
+      if (!Number.isInteger(roleId) || roleId <= 0) {
+        throw new BadRequestException('ROLE_ID_INVALID');
+      }
+
+      if (!normalizedRoleIds.includes(roleId)) {
+        normalizedRoleIds.push(roleId);
+      }
+    }
+
+    return this.dataSource.transaction(async (manager) => {
+      const transactionalUserRepository = manager.getRepository(User);
+      const transactionalRolesRepository = manager.getRepository(SecurityRole);
+      const transactionalUserRolesRepository = manager.getRepository(SecurityUserRole);
+
+      const user = await transactionalUserRepository.findOne({
+        where: { id: userId },
+      });
+
+      if (!user) {
+        throw new NotFoundException('USER_NOT_FOUND');
+      }
+
+      let selectedRoles: SecurityRole[] = [];
+
+      if (normalizedRoleIds.length > 0) {
+        selectedRoles = await transactionalRolesRepository.find({
+          where: {
+            id: In(normalizedRoleIds),
+            isActive: true,
+          },
+          select: {
+            id: true,
+            code: true,
+            name: true,
+            description: true,
+            isSystem: true,
+            isActive: true,
+          },
+        });
+
+        if (selectedRoles.length !== normalizedRoleIds.length) {
+          throw new BadRequestException('ROLES_NOT_FOUND_OR_INACTIVE');
+        }
+      }
+
+      const currentUserRoles = await transactionalUserRolesRepository.find({
+        where: { userId },
+      });
+
+      const currentRoleIds = currentUserRoles.map(
+        (assignment) => assignment.roleId,
+      );
+
+      const adminRole = await transactionalRolesRepository.findOne({
+        where: { code: 'admin', isActive: true },
+      });
+
+      if (adminRole) {
+        const hadAdminRole = currentRoleIds.includes(adminRole.id);
+        const willHaveAdminRole = normalizedRoleIds.includes(adminRole.id);
+
+        if (hadAdminRole && !willHaveAdminRole) {
+          const otherAdminAssignments = await transactionalUserRolesRepository.find({
+            where: { roleId: adminRole.id, userId: Not(userId) },
+          });
+
+          const otherAdminUserIds = Array.from(
+            new Set(
+              otherAdminAssignments
+                .map((assignment) => assignment.userId)
+                .filter(
+                  (otherUserId) =>
+                    Number.isInteger(otherUserId) &&
+                    otherUserId > 0,
+                ),
+            ),
+          );
+
+          let hasOtherActiveAdmin = false;
+          if (otherAdminUserIds.length > 0) {
+            const activeAdminsCount = await transactionalUserRepository.count({
+              where: {
+                id: In(otherAdminUserIds),
+                hide_user: false,
+              },
+            });
+            hasOtherActiveAdmin = activeAdminsCount > 0;
+          }
+
+          if (!hasOtherActiveAdmin) {
+            throw new ForbiddenException('LAST_ADMIN_ROLE_REQUIRED');
+          }
+        }
+      }
+
+      await transactionalUserRolesRepository.delete({ userId });
+
+      if (normalizedRoleIds.length > 0) {
+        const newAssignments = normalizedRoleIds.map((roleId) => ({
+          userId,
+          roleId,
+        }));
+        await transactionalUserRolesRepository.save(newAssignments);
+      }
+
+      return selectedRoles.sort((a, b) => a.code.localeCompare(b.code));
+    });
   }
 }
