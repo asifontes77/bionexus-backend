@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common/constants';
 import { AuthorizationAdministrationService } from './authorization-administration.service';
 import { AuthorizationController } from './authorization.controller';
+import { SecurityPermissionEffect } from './entities/security-user-permission-override.entity';
 import { AuthorizationService } from './authorization.service';
 import { REQUIRED_PERMISSIONS_KEY } from './decorators/require-permissions.decorator';
 import { PermissionGuard } from './guards/permission.guard';
@@ -22,6 +23,7 @@ describe('AuthorizationController role administration', () => {
     replaceRolePermissions: jest.Mock;
     getUserAuthorization: jest.Mock;
     replaceUserRoles: jest.Mock;
+    replaceUserPermissionOverrides: jest.Mock;
   };
 
   beforeEach(() => {
@@ -33,6 +35,7 @@ describe('AuthorizationController role administration', () => {
       replaceRolePermissions: jest.fn(),
       getUserAuthorization: jest.fn(),
       replaceUserRoles: jest.fn(),
+      replaceUserPermissionOverrides: jest.fn(),
     };
 
     controller = new AuthorizationController(
@@ -43,6 +46,104 @@ describe('AuthorizationController role administration', () => {
     );
   });
 
+  it('delega el reemplazo de overrides del usuario', async () => {
+    const body = {
+      overrides: [
+        {
+          permissionId: 10,
+          effect: SecurityPermissionEffect.Allow,
+        },
+        {
+          permissionId: 11,
+          effect: SecurityPermissionEffect.Deny,
+        },
+      ],
+    };
+
+    const result = [
+      {
+        permission: {
+          id: 10,
+          code: 'security.users.read',
+          name: 'Consultar usuarios',
+          description: null,
+          module: 'security',
+          isActive: true,
+        },
+        effect: SecurityPermissionEffect.Allow,
+      },
+      {
+        permission: {
+          id: 11,
+          code: 'patients.cancel',
+          name: 'Anular pacientes',
+          description: null,
+          module: 'patients',
+          isActive: true,
+        },
+        effect: SecurityPermissionEffect.Deny,
+      },
+    ];
+
+    administrationService.replaceUserPermissionOverrides.mockResolvedValue(
+      result,
+    );
+
+    await expect(
+      controller.replaceUserPermissionOverrides(
+        7,
+        body,
+      ),
+    ).resolves.toEqual(result);
+
+    expect(
+      administrationService.replaceUserPermissionOverrides,
+    ).toHaveBeenCalledTimes(1);
+
+    expect(
+      administrationService.replaceUserPermissionOverrides,
+    ).toHaveBeenCalledWith(
+      7,
+      body,
+    );
+  });
+
+  it('delega una lista vacia de overrides sin modificar el cuerpo', async () => {
+    const body = {
+      overrides: [],
+    };
+
+    administrationService.replaceUserPermissionOverrides.mockResolvedValue(
+      [],
+    );
+
+    await expect(
+      controller.replaceUserPermissionOverrides(
+        7,
+        body,
+      ),
+    ).resolves.toEqual([]);
+
+    expect(
+      administrationService.replaceUserPermissionOverrides,
+    ).toHaveBeenCalledWith(
+      7,
+      body,
+    );
+  });
+
+  it('registra el reemplazo como PUT users por id y permission overrides', () => {
+    const method =
+      AuthorizationController.prototype.replaceUserPermissionOverrides;
+
+    expect(
+      Reflect.getMetadata(PATH_METADATA, method),
+    ).toBe('users/:id/permission-overrides');
+
+    expect(
+      Reflect.getMetadata(METHOD_METADATA, method),
+    ).toBe(RequestMethod.PUT);
+  });
   it('delega el reemplazo de roles del usuario', async () => {
     const body = {
       roleIds: [1, 2],
@@ -430,6 +531,7 @@ describe('AuthorizationController role administration', () => {
     ['replaceRolePermissions', 'security.roles.assign-permissions'],
     ['getUserAuthorization', 'security.users.read'],
     ['replaceUserRoles', 'security.users.assign-roles'],
+    ['replaceUserPermissionOverrides', 'security.users.assign-permissions'],
   ] as const)(
     'protege %s con JWT y %s',
     (methodName, expectedPermission) => {
