@@ -16,6 +16,8 @@ import { CreateUsersDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { JwtUserGuard } from './jwt-user.guard';
+import { RequirePermissions } from '../authorization/decorators/require-permissions.decorator';
+import { PermissionGuard } from '../authorization/guards/permission.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 
@@ -23,7 +25,8 @@ import { diskStorage } from 'multer';
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
-  @UseGuards(JwtUserGuard)
+  @UseGuards(JwtUserGuard, PermissionGuard)
+  @RequirePermissions('security.users.read')
   @Get('/list')
   getUsers() {
     return this.usersService.getUsers();
@@ -34,12 +37,14 @@ export class UsersController {
     return this.usersService.getSignatureUsers();
   }
 
-  @UseGuards(JwtUserGuard)
+  @UseGuards(JwtUserGuard, PermissionGuard)
+  @RequirePermissions('security.users.read')
   @Get('/order')
   getUsersOrder() {
     return this.usersService.getUsersOrder();
   }
-  @UseGuards(JwtUserGuard)
+  @UseGuards(JwtUserGuard, PermissionGuard)
+  @RequirePermissions('security.users.read')
   @Get(':id')
   getUser(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.getUser(id);
@@ -50,21 +55,29 @@ export class UsersController {
     return this.usersService.getUserSession(userLogin);
   }
 
+  @UseGuards(JwtUserGuard, PermissionGuard)
+  @RequirePermissions('security.users.create')
   @Post('/insert')
   createUser(@Body() newUser: CreateUsersDto) {
     return this.usersService.createUser(newUser);
   }
 
+  @UseGuards(JwtUserGuard, PermissionGuard)
+  @RequirePermissions('security.users.update')
   @Delete(':id')
   deleteUser(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.deleteUser(id);
   }
 
+  @UseGuards(JwtUserGuard, PermissionGuard)
+  @RequirePermissions('security.users.read')
   @Get('/verify/:email')
   verifyEmail(@Param('email') email: string) {
     return this.usersService.verifyEmail(email);
   }
 
+  @UseGuards(JwtUserGuard, PermissionGuard)
+  @RequirePermissions('security.users.read')
   @Get('/verify-id/:id/:email')
   verifyEmailId(
     @Param('id', ParseIntPipe) id: number,
@@ -82,6 +95,8 @@ export class UsersController {
     return this.usersService.verifySignature(id, passwordSignature);
   }
 
+  @UseGuards(JwtUserGuard, PermissionGuard)
+  @RequirePermissions('security.users.update')
   @Patch(':id')
   updateUser(
     @Param('id', ParseIntPipe) id: number,
@@ -90,6 +105,8 @@ export class UsersController {
     return this.usersService.updateUser(id, user);
   }
 
+  @UseGuards(JwtUserGuard, PermissionGuard)
+  @RequirePermissions('security.users.update')
   @Post('upload')
   @UseInterceptors(
     FileInterceptor('file', {
