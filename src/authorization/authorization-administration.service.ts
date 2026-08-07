@@ -13,6 +13,12 @@ import { ReplaceRolePermissionsDto } from './dto/replace-role-permissions.dto';
 import { SecurityPermission } from './entities/security-permission.entity';
 import { SecurityRole } from './entities/security-role.entity';
 import { SecurityRolePermission } from './entities/security-role-permission.entity';
+import { User } from '../users/users.entity';
+import { SecurityUserRole } from './entities/security-user-role.entity';
+import { SecurityUserPermissionOverride } from './entities/security-user-permission-override.entity';
+import { AuthorizationService } from './authorization.service';
+import { AuthorizationUserAdministration } from './models/authorization-user-administration';
+import { toSafeUserResponse } from '../users/responses/user-response.mapper';
 
 @Injectable()
 export class AuthorizationAdministrationService {
@@ -21,6 +27,15 @@ export class AuthorizationAdministrationService {
     private readonly rolesRepository: Repository<SecurityRole>,
     @InjectRepository(SecurityPermission)
     private readonly permissionsRepository: Repository<SecurityPermission>,
+    @InjectRepository(SecurityRolePermission)
+    private readonly rolePermissionsRepository: Repository<SecurityRolePermission>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+    @InjectRepository(SecurityUserRole)
+    private readonly userRolesRepository: Repository<SecurityUserRole>,
+    @InjectRepository(SecurityUserPermissionOverride)
+    private readonly userPermissionOverridesRepository: Repository<SecurityUserPermissionOverride>,
+    private readonly authorizationService: AuthorizationService,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -338,5 +353,119 @@ export class AuthorizationAdministrationService {
     }
 
     return normalizedValue;
+  }
+
+  async getUserAuthorization(userId: number): Promise<AuthorizationUserAdministration> {
+    if (!Number.isInteger(userId) || userId <= 0) {
+      throw new BadRequestException('USER_ID_INVALID');
+    }
+
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('USER_NOT_FOUND');
+    }
+
+    const userRoles = await this.userRolesRepository.find({ where: { userId } });
+    const userRoleIds = Array.from(
+      new Set(
+        userRoles
+          .map((assignment) => assignment.roleId)
+          .filter(
+            (roleId) =>
+              Number.isInteger(roleId) && roleId > 0,
+          ),
+      ),
+    );
+
+    let assignedRoles: SecurityRole[] = [];
+    if (userRoleIds.length > 0) {
+      assignedRoles = await this.rolesRepository.find({
+        where: { id: In(userRoleIds) },
+      });
+      assignedRoles.sort((a, b) => a.code.localeCompare(b.code));
+    }
+
+    const activeRoleIds = assignedRoles.filter((r) => r.isActive).map((r) => r.id);
+    let inheritedPermissions: SecurityPermission[] = [];
+
+    if (activeRoleIds.length > 0) {
+      const rolePermissions = await this.rolePermissionsRepository.find({
+        where: { roleId: In(activeRoleIds) },
+      });
+      const inheritedPermissionIds = Array.from(
+        new Set(
+          rolePermissions
+            .map((assignment) => assignment.permissionId)
+            .filter(
+              (permissionId) =>
+                Number.isInteger(permissionId) &&
+                permissionId > 0,
+            ),
+        ),
+      );
+
+      if (inheritedPermissionIds.length > 0) {
+        inheritedPermissions = await this.permissionsRepository.find({
+          where: { id: In(inheritedPermissionIds), isActive: true },
+        });
+        inheritedPermissions.sort((a, b) => {
+          if (a.module === b.module) {
+            return a.code.localeCompare(b.code);
+          }
+          return a.module.localeCompare(b.module);
+        });
+      }
+    }
+
+    const overrides = await this.userPermissionOverridesRepository.find({ where: { userId } });
+    const overridePermissionIds = Array.from(
+      new Set(
+        overrides
+          .map((override) => override.permissionId)
+          .filter(
+            (permissionId) =>
+              Number.isInteger(permissionId) &&
+              permissionId > 0,
+          ),
+      ),
+    );
+
+    let permissionOverrides = [];
+    if (overridePermissionIds.length > 0) {
+      const overridePermissions = await this.permissionsRepository.find({
+        where: { id: In(overridePermissionIds) },
+      });
+
+      permissionOverrides = overrides
+        .map((override) => {
+          const permission = overridePermissions.find((p) => p.id === override.permissionId);
+          if (!permission) return null;
+          return {
+            permission,
+            effect: override.effect,
+          };
+        })
+        .filter((override) => override !== null);
+
+      permissionOverrides.sort((a, b) => {
+        if (a.permission.module === b.permission.module) {
+          if (a.permission.code === b.permission.code) {
+             return a.effect.localeCompare(b.effect);
+          }
+          return a.permission.code.localeCompare(b.permission.code);
+        }
+        return a.permission.module.localeCompare(b.permission.module);
+      });
+    }
+
+    const context = await this.authorizationService.resolveContext(userId);
+
+    return {
+      user: toSafeUserResponse(user),
+      assignedRoles,
+      inheritedPermissions,
+      permissionOverrides,
+      context,
+    };
   }
 }

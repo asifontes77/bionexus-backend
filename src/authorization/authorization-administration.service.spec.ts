@@ -9,11 +9,25 @@ import { AuthorizationAdministrationService } from './authorization-administrati
 import { SecurityPermission } from './entities/security-permission.entity';
 import { SecurityRole } from './entities/security-role.entity';
 import { SecurityRolePermission } from './entities/security-role-permission.entity';
+import { User } from '../users/users.entity';
+import { SecurityUserRole } from './entities/security-user-role.entity';
+import {
+  SecurityPermissionEffect,
+  SecurityUserPermissionOverride,
+} from './entities/security-user-permission-override.entity';
+import { AuthorizationService } from './authorization.service';
+
+type RepositoryMockType = Partial<Record<keyof Repository<any>, jest.Mock>>;
 
 describe('AuthorizationAdministrationService', () => {
   let service: AuthorizationAdministrationService;
-  let rolesRepository: RepositoryMock;
-  let permissionsRepository: RepositoryMock;
+  let rolesRepository: RepositoryMockType;
+  let permissionsRepository: RepositoryMockType;
+  let rolePermissionsRepository: RepositoryMockType;
+  let userRepository: RepositoryMockType;
+  let userRolesRepository: RepositoryMockType;
+  let userPermissionOverridesRepository: RepositoryMockType;
+  let authorizationServiceMock: Partial<AuthorizationService>;
   let dataSourceMock: { transaction: jest.Mock };
 
   beforeEach(() => {
@@ -27,8 +41,26 @@ describe('AuthorizationAdministrationService', () => {
     permissionsRepository = {
       find: jest.fn(),
       findOne: jest.fn(),
-      create: jest.fn(),
-      save: jest.fn(),
+    };
+
+    rolePermissionsRepository = {
+      find: jest.fn(),
+    };
+
+    userRepository = {
+      findOne: jest.fn(),
+    };
+
+    userRolesRepository = {
+      find: jest.fn(),
+    };
+
+    userPermissionOverridesRepository = {
+      find: jest.fn(),
+    };
+
+    authorizationServiceMock = {
+      resolveContext: jest.fn(),
     };
 
     dataSourceMock = {
@@ -36,11 +68,17 @@ describe('AuthorizationAdministrationService', () => {
     };
 
     service = new AuthorizationAdministrationService(
-      rolesRepository as unknown as Repository<SecurityRole>,
-      permissionsRepository as unknown as Repository<SecurityPermission>,
-      dataSourceMock as unknown as DataSource,
+      rolesRepository as any,
+      permissionsRepository as any,
+      rolePermissionsRepository as any,
+      userRepository as any,
+      userRolesRepository as any,
+      userPermissionOverridesRepository as any,
+      authorizationServiceMock as any,
+      dataSourceMock as any,
     );
   });
+
 
   it('consulta permisos activos e inactivos ordenados', async () => {
     const permissions = [
@@ -560,6 +598,335 @@ describe('AuthorizationAdministrationService', () => {
     );
   });
 
+  describe('getUserAuthorization', () => {
+    it.each([
+      0,
+      -1,
+      1.5,
+      Number.NaN,
+    ])(
+      'rechaza el identificador de usuario invalido %s',
+      async (userId) => {
+        await expect(
+          service.getUserAuthorization(userId),
+        ).rejects.toMatchObject({
+          response: {
+            message: 'USER_ID_INVALID',
+          },
+        });
+
+        expect(userRepository.findOne).not.toHaveBeenCalled();
+      },
+    );
+
+    it('rechaza un usuario inexistente', async () => {
+      userRepository.findOne.mockResolvedValue(null);
+
+      await expect(
+        service.getUserAuthorization(999),
+      ).rejects.toMatchObject({
+        response: {
+          message: 'USER_NOT_FOUND',
+        },
+      });
+
+      expect(userRolesRepository.find).not.toHaveBeenCalled();
+    });
+
+    it('devuelve una vista segura, ordenada y completa', async () => {
+      const user = createUser();
+      const activeRole = createRole(2, 'operator', false);
+      const inactiveRole = createRole(3, 'auditor', false);
+      inactiveRole.isActive = false;
+
+      const inheritedPermissionA = createPermission(
+        10,
+        'patients.read',
+        'patients',
+        true,
+      );
+
+      const inheritedPermissionB = createPermission(
+        11,
+        'reports.read',
+        'reports',
+        true,
+      );
+
+      const allowedPermission = createPermission(
+        12,
+        'security.users.read',
+        'security',
+        true,
+      );
+
+      const deniedPermission = createPermission(
+        13,
+        'patients.cancel',
+        'patients',
+        false,
+      );
+
+      const context = {
+        userId: 7,
+        roles: ['operator'],
+        permissions: [
+          'patients.read',
+          'reports.read',
+          'security.users.read',
+        ],
+        deniedPermissions: ['patients.cancel'],
+      };
+
+      userRepository.findOne.mockResolvedValue(user);
+
+      userRolesRepository.find.mockResolvedValue([
+        {
+          userId: 7,
+          roleId: 2,
+        },
+        {
+          userId: 7,
+          roleId: 3,
+        },
+        {
+          userId: 7,
+          roleId: 2,
+        },
+        {
+          userId: 7,
+          roleId: 0,
+        },
+        {
+          userId: 7,
+          roleId: 1.5,
+        },
+      ]);
+
+      rolesRepository.find.mockResolvedValue([
+        activeRole,
+        inactiveRole,
+      ]);
+
+      rolePermissionsRepository.find.mockResolvedValue([
+        {
+          roleId: 2,
+          permissionId: 11,
+        },
+        {
+          roleId: 2,
+          permissionId: 10,
+        },
+        {
+          roleId: 2,
+          permissionId: 10,
+        },
+        {
+          roleId: 2,
+          permissionId: 0,
+        },
+        {
+          roleId: 2,
+          permissionId: 1.5,
+        },
+      ]);
+
+      permissionsRepository.find
+        .mockResolvedValueOnce([
+          inheritedPermissionB,
+          inheritedPermissionA,
+        ])
+        .mockResolvedValueOnce([
+          deniedPermission,
+          allowedPermission,
+        ]);
+
+      userPermissionOverridesRepository.find.mockResolvedValue([
+        {
+          userId: 7,
+          permissionId: 12,
+          effect: SecurityPermissionEffect.Allow,
+        },
+        {
+          userId: 7,
+          permissionId: 13,
+          effect: SecurityPermissionEffect.Deny,
+        },
+        {
+          userId: 7,
+          permissionId: 999,
+          effect: SecurityPermissionEffect.Allow,
+        },
+        {
+          userId: 7,
+          permissionId: 0,
+          effect: SecurityPermissionEffect.Allow,
+        },
+      ]);
+
+      authorizationServiceMock.resolveContext =
+        jest.fn().mockResolvedValue(context);
+
+      const result = await service.getUserAuthorization(7);
+
+      expect(result.user).toMatchObject({
+        id: 7,
+        user_name: 'test.user',
+        roles: 'admin,annular',
+      });
+
+      expect(result.user).not.toHaveProperty('password');
+      expect(result.user).not.toHaveProperty(
+        'passwordSignature',
+      );
+      expect(result.user).not.toHaveProperty('key_signing');
+      expect(result.user).not.toHaveProperty('key_recover');
+      expect(result.user).not.toHaveProperty(
+        'request_password',
+      );
+
+      expect(
+        result.assignedRoles.map((role) => role.code),
+      ).toEqual([
+        'auditor',
+        'operator',
+      ]);
+
+      expect(
+        result.inheritedPermissions.map(
+          (permission) =>
+            `${permission.module}.${permission.code}`,
+        ),
+      ).toEqual([
+        'patients.patients.read',
+        'reports.reports.read',
+      ]);
+
+      expect(
+        result.permissionOverrides.map((override) => ({
+          code: override.permission.code,
+          effect: override.effect,
+          active: override.permission.isActive,
+        })),
+      ).toEqual([
+        {
+          code: 'patients.cancel',
+          effect: SecurityPermissionEffect.Deny,
+          active: false,
+        },
+        {
+          code: 'security.users.read',
+          effect: SecurityPermissionEffect.Allow,
+          active: true,
+        },
+      ]);
+
+      expect(result.context).toEqual(context);
+
+      expect(
+        authorizationServiceMock.resolveContext,
+      ).toHaveBeenCalledWith(7);
+
+      expect(dataSourceMock.transaction).not.toHaveBeenCalled();
+    });
+
+    it('consulta permisos heredados solo desde roles activos', async () => {
+      const user = createUser();
+      const activeRole = createRole(2, 'operator', false);
+      const inactiveRole = createRole(3, 'auditor', false);
+      inactiveRole.isActive = false;
+
+      userRepository.findOne.mockResolvedValue(user);
+
+      userRolesRepository.find.mockResolvedValue([
+        {
+          userId: 7,
+          roleId: 2,
+        },
+        {
+          userId: 7,
+          roleId: 3,
+        },
+      ]);
+
+      rolesRepository.find.mockResolvedValue([
+        inactiveRole,
+        activeRole,
+      ]);
+
+      rolePermissionsRepository.find.mockResolvedValue([]);
+      userPermissionOverridesRepository.find.mockResolvedValue([]);
+
+      authorizationServiceMock.resolveContext =
+        jest.fn().mockResolvedValue({
+          userId: 7,
+          roles: ['operator'],
+          permissions: [],
+          deniedPermissions: [],
+        });
+
+      await service.getUserAuthorization(7);
+
+      expect(
+        rolePermissionsRepository.find,
+      ).toHaveBeenCalledTimes(1);
+
+      expect(
+        rolePermissionsRepository.find,
+      ).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            roleId: expect.objectContaining({
+              value: [2],
+            }),
+          }),
+        }),
+      );
+    });
+
+    it('conserva context null para un usuario oculto', async () => {
+      const user = createUser();
+      user.hide_user = true;
+
+      userRepository.findOne.mockResolvedValue(user);
+      userRolesRepository.find.mockResolvedValue([]);
+      userPermissionOverridesRepository.find.mockResolvedValue([]);
+
+      authorizationServiceMock.resolveContext =
+        jest.fn().mockResolvedValue(null);
+
+      const result = await service.getUserAuthorization(7);
+
+      expect(result.user.hide_user).toBe(true);
+      expect(result.assignedRoles).toEqual([]);
+      expect(result.inheritedPermissions).toEqual([]);
+      expect(result.permissionOverrides).toEqual([]);
+      expect(result.context).toBeNull();
+
+      expect(userRepository.findOne).toHaveBeenCalledWith({
+        where: {
+          id: 7,
+        },
+      });
+    });
+
+    it('es una operacion exclusivamente de lectura', async () => {
+      const user = createUser();
+
+      userRepository.findOne.mockResolvedValue(user);
+      userRolesRepository.find.mockResolvedValue([]);
+      userPermissionOverridesRepository.find.mockResolvedValue([]);
+
+      authorizationServiceMock.resolveContext =
+        jest.fn().mockResolvedValue(null);
+
+      await service.getUserAuthorization(7);
+
+      expect(dataSourceMock.transaction).not.toHaveBeenCalled();
+      expect(rolesRepository.save).not.toHaveBeenCalled();
+      expect(permissionsRepository.save).toBeUndefined();
+    });
+  });
   describe('replaceRolePermissions', () => {
     let transactionalRolesRepository: RepositoryMock;
     let transactionalPermissionsRepository: RepositoryMock;
@@ -870,6 +1237,29 @@ type RepositoryMock = {
   save: jest.Mock;
 };
 
+function createUser(): User {
+  return {
+    id: 7,
+    password: 'password-hash',
+    name: 'Usuario de prueba',
+    user_name: 'test.user',
+    college_number: 'BIO-123',
+    telephone: '+58 0000 000 0000',
+    key_signing: 'internal-key',
+    url_photo: 'user.png',
+    url_signature: 'signature.png',
+    direction: 'Direccion de prueba',
+    position: 'Bioanalista',
+    email: 'test@example.com',
+    key_recover: 123456,
+    request_password: false,
+    createdAt: new Date('2026-08-07T00:00:00.000Z'),
+    updatedAt: new Date('2026-08-07T01:00:00.000Z'),
+    roles: 'admin,annular',
+    passwordSignature: 'signature-hash',
+    hide_user: false,
+  };
+}
 function createPermission(
   id: number,
   code: string,
