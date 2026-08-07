@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../users/users.entity';
 import { AuthorizationController } from './authorization.controller';
 import { AuthorizationService } from './authorization.service';
+import { AuthorizationAdministrationService } from './authorization-administration.service';
 import { SecurityPermission } from './entities/security-permission.entity';
 import { SecurityRolePermission } from './entities/security-role-permission.entity';
 import { SecurityRole } from './entities/security-role.entity';
@@ -24,6 +25,7 @@ import { PermissionGuard } from './guards/permission.guard';
   controllers: [AuthorizationController],
   providers: [
     AuthorizationService,
+    AuthorizationAdministrationService,
     PermissionGuard,
   ],
   exports: [

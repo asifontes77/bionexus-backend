@@ -3,6 +3,7 @@
 } from '@nestjs/common';
 import { GUARDS_METADATA } from '@nestjs/common/constants';
 import { AuthorizationContext } from './models/authorization-context';
+import { AuthorizationAdministrationService } from './authorization-administration.service';
 import { AuthorizationController } from './authorization.controller';
 import { AuthorizationService } from './authorization.service';
 import { JwtUserGuard } from '../users/jwt-user.guard';
@@ -20,6 +21,10 @@ describe('AuthorizationController', () => {
 
     controller = new AuthorizationController(
       authorizationService as unknown as AuthorizationService,
+      {
+        getRoles: jest.fn(),
+        createRole: jest.fn(),
+      } as unknown as AuthorizationAdministrationService,
     );
   });
 
