@@ -20,6 +20,7 @@ describe('AuthorizationController role administration', () => {
     createRole: jest.Mock;
     updateRole: jest.Mock;
     replaceRolePermissions: jest.Mock;
+    getUserAuthorization: jest.Mock;
   };
 
   beforeEach(() => {
@@ -29,6 +30,7 @@ describe('AuthorizationController role administration', () => {
       createRole: jest.fn(),
       updateRole: jest.fn(),
       replaceRolePermissions: jest.fn(),
+      getUserAuthorization: jest.fn(),
     };
 
     controller = new AuthorizationController(
@@ -39,6 +41,81 @@ describe('AuthorizationController role administration', () => {
     );
   });
 
+  it('delega la consulta administrativa de un usuario', async () => {
+    const result = {
+      user: {
+        id: 7,
+        name: 'Usuario de prueba',
+        user_name: 'test.user',
+        roles: 'admin,annular',
+        hide_user: false,
+      },
+      assignedRoles: [],
+      inheritedPermissions: [],
+      permissionOverrides: [],
+      context: {
+        userId: 7,
+        roles: ['admin', 'annular'],
+        permissions: ['security.users.read'],
+        deniedPermissions: [],
+      },
+    };
+
+    administrationService.getUserAuthorization.mockResolvedValue(
+      result,
+    );
+
+    await expect(
+      controller.getUserAuthorization(7),
+    ).resolves.toEqual(result);
+
+    expect(
+      administrationService.getUserAuthorization,
+    ).toHaveBeenCalledTimes(1);
+
+    expect(
+      administrationService.getUserAuthorization,
+    ).toHaveBeenCalledWith(7);
+  });
+
+  it('conserva context null en la respuesta administrativa', async () => {
+    const result = {
+      user: {
+        id: 7,
+        name: 'Usuario oculto',
+        user_name: 'hidden.user',
+        roles: 'user',
+        hide_user: true,
+      },
+      assignedRoles: [],
+      inheritedPermissions: [],
+      permissionOverrides: [],
+      context: null,
+    };
+
+    administrationService.getUserAuthorization.mockResolvedValue(
+      result,
+    );
+
+    await expect(
+      controller.getUserAuthorization(7),
+    ).resolves.toEqual(result);
+
+    expect(result.context).toBeNull();
+  });
+
+  it('registra la consulta como GET authorization users por id', () => {
+    const method =
+      AuthorizationController.prototype.getUserAuthorization;
+
+    expect(
+      Reflect.getMetadata(PATH_METADATA, method),
+    ).toBe('users/:id');
+
+    expect(
+      Reflect.getMetadata(METHOD_METADATA, method),
+    ).toBe(RequestMethod.GET);
+  });
   it('delega el catalogo de permisos', async () => {
     const permissions = [
       {
@@ -272,6 +349,7 @@ describe('AuthorizationController role administration', () => {
     ['createRole', 'security.roles.create'],
     ['updateRole', 'security.roles.update'],
     ['replaceRolePermissions', 'security.roles.assign-permissions'],
+    ['getUserAuthorization', 'security.users.read'],
   ] as const)(
     'protege %s con JWT y %s',
     (methodName, expectedPermission) => {

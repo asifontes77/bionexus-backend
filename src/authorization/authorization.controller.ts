@@ -63,6 +63,16 @@ export class AuthorizationController {
     return context;
   }
   @UseGuards(JwtUserGuard, PermissionGuard)
+  @RequirePermissions('security.users.read')
+  @Get('users/:id')
+  async getUserAuthorization(
+    @Param('id', ParseIntPipe) userId: number,
+  ) {
+    return this.administrationService.getUserAuthorization(
+      userId,
+    );
+  }
+  @UseGuards(JwtUserGuard, PermissionGuard)
   @RequirePermissions('security.permissions.read')
   @Get('permissions')
   async getPermissions() {
