@@ -21,6 +21,7 @@ describe('AuthorizationController role administration', () => {
     updateRole: jest.Mock;
     replaceRolePermissions: jest.Mock;
     getUserAuthorization: jest.Mock;
+    replaceUserRoles: jest.Mock;
   };
 
   beforeEach(() => {
@@ -31,6 +32,7 @@ describe('AuthorizationController role administration', () => {
       updateRole: jest.fn(),
       replaceRolePermissions: jest.fn(),
       getUserAuthorization: jest.fn(),
+      replaceUserRoles: jest.fn(),
     };
 
     controller = new AuthorizationController(
@@ -41,6 +43,83 @@ describe('AuthorizationController role administration', () => {
     );
   });
 
+  it('delega el reemplazo de roles del usuario', async () => {
+    const body = {
+      roleIds: [1, 2],
+    };
+
+    const roles = [
+      {
+        id: 1,
+        code: 'admin',
+        name: 'Administrador',
+        description: null,
+        isSystem: true,
+        isActive: true,
+      },
+      {
+        id: 2,
+        code: 'operator',
+        name: 'Operador',
+        description: null,
+        isSystem: false,
+        isActive: true,
+      },
+    ];
+
+    administrationService.replaceUserRoles.mockResolvedValue(
+      roles,
+    );
+
+    await expect(
+      controller.replaceUserRoles(7, body),
+    ).resolves.toEqual(roles);
+
+    expect(
+      administrationService.replaceUserRoles,
+    ).toHaveBeenCalledTimes(1);
+
+    expect(
+      administrationService.replaceUserRoles,
+    ).toHaveBeenCalledWith(
+      7,
+      body,
+    );
+  });
+
+  it('delega una lista vacia de roles sin modificar el cuerpo', async () => {
+    const body = {
+      roleIds: [],
+    };
+
+    administrationService.replaceUserRoles.mockResolvedValue(
+      [],
+    );
+
+    await expect(
+      controller.replaceUserRoles(7, body),
+    ).resolves.toEqual([]);
+
+    expect(
+      administrationService.replaceUserRoles,
+    ).toHaveBeenCalledWith(
+      7,
+      body,
+    );
+  });
+
+  it('registra el reemplazo como PUT users por id y roles', () => {
+    const method =
+      AuthorizationController.prototype.replaceUserRoles;
+
+    expect(
+      Reflect.getMetadata(PATH_METADATA, method),
+    ).toBe('users/:id/roles');
+
+    expect(
+      Reflect.getMetadata(METHOD_METADATA, method),
+    ).toBe(RequestMethod.PUT);
+  });
   it('delega la consulta administrativa de un usuario', async () => {
     const result = {
       user: {
@@ -350,6 +429,7 @@ describe('AuthorizationController role administration', () => {
     ['updateRole', 'security.roles.update'],
     ['replaceRolePermissions', 'security.roles.assign-permissions'],
     ['getUserAuthorization', 'security.users.read'],
+    ['replaceUserRoles', 'security.users.assign-roles'],
   ] as const)(
     'protege %s con JWT y %s',
     (methodName, expectedPermission) => {

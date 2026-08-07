@@ -14,6 +14,7 @@
 import { AuthorizationService } from './authorization.service';
 import { AuthorizationAdministrationService } from './authorization-administration.service';
 import { CreateSecurityRoleDto } from './dto/create-security-role.dto';
+import { ReplaceUserRolesDto } from './dto/replace-user-roles.dto';
 import { ReplaceRolePermissionsDto } from './dto/replace-role-permissions.dto';
 import { UpdateSecurityRoleDto } from './dto/update-security-role.dto';
 import { RequirePermissions } from './decorators/require-permissions.decorator';
@@ -61,6 +62,18 @@ export class AuthorizationController {
     }
 
     return context;
+  }
+  @UseGuards(JwtUserGuard, PermissionGuard)
+  @RequirePermissions('security.users.assign-roles')
+  @Put('users/:id/roles')
+  async replaceUserRoles(
+    @Param('id', ParseIntPipe) userId: number,
+    @Body() body: ReplaceUserRolesDto,
+  ) {
+    return this.administrationService.replaceUserRoles(
+      userId,
+      body,
+    );
   }
   @UseGuards(JwtUserGuard, PermissionGuard)
   @RequirePermissions('security.users.read')
