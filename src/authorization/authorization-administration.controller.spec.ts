@@ -15,12 +15,14 @@ describe('AuthorizationController role administration', () => {
   let controller: AuthorizationController;
 
   let administrationService: {
+    getPermissions: jest.Mock;
     getRoles: jest.Mock;
     createRole: jest.Mock;
   };
 
   beforeEach(() => {
     administrationService = {
+      getPermissions: jest.fn(),
       getRoles: jest.fn(),
       createRole: jest.fn(),
     };
@@ -33,6 +35,30 @@ describe('AuthorizationController role administration', () => {
     );
   });
 
+  it('delega el catalogo de permisos', async () => {
+    const permissions = [
+      {
+        id: 1,
+        code: 'security.permissions.read',
+        name: 'Consultar permisos',
+        description: null,
+        module: 'security',
+        isActive: true,
+      },
+    ];
+
+    administrationService.getPermissions.mockResolvedValue(
+      permissions,
+    );
+
+    await expect(
+      controller.getPermissions(),
+    ).resolves.toEqual(permissions);
+
+    expect(
+      administrationService.getPermissions,
+    ).toHaveBeenCalledTimes(1);
+  });
   it('delega el listado de roles', async () => {
     const roles = [
       {
@@ -83,6 +109,18 @@ describe('AuthorizationController role administration', () => {
     ).toHaveBeenCalledWith(body);
   });
 
+  it('registra el catalogo como GET permissions', () => {
+    const method =
+      AuthorizationController.prototype.getPermissions;
+
+    expect(
+      Reflect.getMetadata(PATH_METADATA, method),
+    ).toBe('permissions');
+
+    expect(
+      Reflect.getMetadata(METHOD_METADATA, method),
+    ).toBe(RequestMethod.GET);
+  });
   it('registra el listado como GET roles', () => {
     const method =
       AuthorizationController.prototype.getRoles;
@@ -110,6 +148,7 @@ describe('AuthorizationController role administration', () => {
   });
 
   it.each([
+    ['getPermissions', 'security.permissions.read'],
     ['getRoles', 'security.roles.read'],
     ['createRole', 'security.roles.create'],
   ] as const)(

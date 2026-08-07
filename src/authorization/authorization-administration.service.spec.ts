@@ -4,11 +4,13 @@
 } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { AuthorizationAdministrationService } from './authorization-administration.service';
+import { SecurityPermission } from './entities/security-permission.entity';
 import { SecurityRole } from './entities/security-role.entity';
 
 describe('AuthorizationAdministrationService', () => {
   let service: AuthorizationAdministrationService;
   let rolesRepository: RepositoryMock;
+  let permissionsRepository: RepositoryMock;
 
   beforeEach(() => {
     rolesRepository = {
@@ -18,11 +20,42 @@ describe('AuthorizationAdministrationService', () => {
       save: jest.fn(),
     };
 
+    permissionsRepository = {
+      find: jest.fn(),
+      findOne: jest.fn(),
+      create: jest.fn(),
+      save: jest.fn(),
+    };
+
     service = new AuthorizationAdministrationService(
       rolesRepository as unknown as Repository<SecurityRole>,
+      permissionsRepository as unknown as Repository<SecurityPermission>,
     );
   });
 
+  it('consulta permisos activos e inactivos ordenados', async () => {
+    const permissions = [
+      createPermission(1, 'security.permissions.read', 'security', true),
+      createPermission(2, 'users.legacy', 'users', false),
+    ];
+
+    permissionsRepository.find.mockResolvedValue(
+      permissions,
+    );
+
+    const result = await service.getPermissions();
+
+    expect(result).toEqual(permissions);
+
+    expect(
+      permissionsRepository.find,
+    ).toHaveBeenCalledWith({
+      order: {
+        module: 'ASC',
+        code: 'ASC',
+      },
+    });
+  });
   it('consulta los roles ordenados por codigo', async () => {
     rolesRepository.find.mockResolvedValue([
       createRole(1, 'admin', true),
@@ -240,6 +273,23 @@ type RepositoryMock = {
   save: jest.Mock;
 };
 
+function createPermission(
+  id: number,
+  code: string,
+  module: string,
+  isActive: boolean,
+): SecurityPermission {
+  return {
+    id,
+    code,
+    name: code,
+    description: null,
+    module,
+    isActive,
+    createdAt: new Date('2026-08-07T00:00:00.000Z'),
+    updatedAt: new Date('2026-08-07T00:00:00.000Z'),
+  };
+}
 function createRole(
   id: number,
   code: string,

@@ -57,6 +57,12 @@ export class AuthorizationController {
     return context;
   }
   @UseGuards(JwtUserGuard, PermissionGuard)
+  @RequirePermissions('security.permissions.read')
+  @Get('permissions')
+  async getPermissions() {
+    return this.administrationService.getPermissions();
+  }
+  @UseGuards(JwtUserGuard, PermissionGuard)
   @RequirePermissions('security.roles.read')
   @Get('roles')
   async getRoles() {

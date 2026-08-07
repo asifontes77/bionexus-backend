@@ -6,6 +6,7 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateSecurityRoleDto } from './dto/create-security-role.dto';
+import { SecurityPermission } from './entities/security-permission.entity';
 import { SecurityRole } from './entities/security-role.entity';
 
 @Injectable()
@@ -13,6 +14,8 @@ export class AuthorizationAdministrationService {
   constructor(
     @InjectRepository(SecurityRole)
     private readonly rolesRepository: Repository<SecurityRole>,
+    @InjectRepository(SecurityPermission)
+    private readonly permissionsRepository: Repository<SecurityPermission>,
   ) {}
 
   async getRoles(): Promise<SecurityRole[]> {
@@ -23,6 +26,14 @@ export class AuthorizationAdministrationService {
     });
   }
 
+  async getPermissions(): Promise<SecurityPermission[]> {
+    return this.permissionsRepository.find({
+      order: {
+        module: 'ASC',
+        code: 'ASC',
+      },
+    });
+  }
   async createRole(
     dto: CreateSecurityRoleDto,
   ): Promise<SecurityRole> {
