@@ -1,11 +1,14 @@
 ﻿import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateSecurityRoleDto } from './dto/create-security-role.dto';
+import { UpdateSecurityRoleDto } from './dto/update-security-role.dto';
 import { SecurityPermission } from './entities/security-permission.entity';
 import { SecurityRole } from './entities/security-role.entity';
 
@@ -33,6 +36,91 @@ export class AuthorizationAdministrationService {
         code: 'ASC',
       },
     });
+  }
+  async updateRole(
+    roleId: number,
+    dto: UpdateSecurityRoleDto,
+  ): Promise<SecurityRole> {
+    if (!Number.isInteger(roleId) || roleId <= 0) {
+      throw new BadRequestException('ROLE_ID_INVALID');
+    }
+
+    if (!dto || typeof dto !== 'object') {
+      throw new BadRequestException('ROLE_UPDATE_REQUIRED');
+    }
+
+    const payload = dto as UpdateSecurityRoleDto & {
+      code?: unknown;
+      isSystem?: unknown;
+    };
+
+    if (payload.code !== undefined) {
+      throw new BadRequestException('ROLE_CODE_IMMUTABLE');
+    }
+
+    if (payload.isSystem !== undefined) {
+      throw new BadRequestException('ROLE_SYSTEM_FLAG_IMMUTABLE');
+    }
+
+    const hasName = dto.name !== undefined;
+    const hasDescription = dto.description !== undefined;
+    const hasActiveState = dto.isActive !== undefined;
+
+    if (
+      !hasName &&
+      !hasDescription &&
+      !hasActiveState
+    ) {
+      throw new BadRequestException('ROLE_UPDATE_REQUIRED');
+    }
+
+    const role = await this.rolesRepository.findOne({
+      where: {
+        id: roleId,
+      },
+    });
+
+    if (!role) {
+      throw new NotFoundException('ROLE_NOT_FOUND');
+    }
+
+    if (hasName) {
+      role.name = this.normalizeRequiredText(
+        dto.name as string,
+        'ROLE_NAME_REQUIRED',
+        100,
+        'ROLE_NAME_TOO_LONG',
+      );
+    }
+
+    if (hasDescription) {
+      role.description = this.normalizeOptionalText(
+        dto.description,
+        250,
+        'ROLE_DESCRIPTION_TOO_LONG',
+      );
+    }
+
+    if (hasActiveState) {
+      if (typeof dto.isActive !== 'boolean') {
+        throw new BadRequestException(
+          'ROLE_ACTIVE_STATE_INVALID',
+        );
+      }
+
+      if (
+        role.code === 'admin' &&
+        dto.isActive === false
+      ) {
+        throw new ForbiddenException(
+          'ADMIN_ROLE_MUST_REMAIN_ACTIVE',
+        );
+      }
+
+      role.isActive = dto.isActive;
+    }
+
+    return this.rolesRepository.save(role);
   }
   async createRole(
     dto: CreateSecurityRoleDto,
