@@ -1,4 +1,4 @@
-import {
+﻿import {
   Body,
   Controller,
   Get,
@@ -12,7 +12,6 @@ import {
   UploadedFile,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { User } from './users.entity';
 import { CreateUsersDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
@@ -26,18 +25,18 @@ export class UsersController {
 
   @UseGuards(JwtUserGuard)
   @Get('/list')
-  getUsers(): Promise<User[]> {
+  getUsers() {
     return this.usersService.getUsers();
   }
   @UseGuards(JwtUserGuard)
   @Get('/listsignature')
-  getSignatureUsers(): Promise<User[]> {
+  getSignatureUsers() {
     return this.usersService.getSignatureUsers();
   }
 
   @UseGuards(JwtUserGuard)
   @Get('/order')
-  getUsersOrder(): Promise<User[]> {
+  getUsersOrder() {
     return this.usersService.getUsersOrder();
   }
   @UseGuards(JwtUserGuard)

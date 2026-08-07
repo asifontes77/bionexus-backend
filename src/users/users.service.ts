@@ -1,4 +1,4 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+﻿import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './users.entity';
 import { Repository, Not } from 'typeorm';
@@ -6,9 +6,14 @@ import { CreateUsersDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { JwtService } from '@nestjs/jwt';
-import { LaboratoryService } from 'src/laboratory/laboratory.service';
-import { LicenseService } from 'src/license/license.service';
+import { LaboratoryService } from '../laboratory/laboratory.service';
+import { LicenseService } from '../license/license.service';
 import * as bcrypt from 'bcrypt';
+import {
+  SafeUserResponse,
+  toSafeUserResponse,
+  toSafeUserResponses,
+} from './responses/user-response.mapper';
 
 @Injectable()
 export class UsersService {
@@ -38,26 +43,34 @@ export class UsersService {
       const passwordHash = await bcrypt.hash(password, 8);
       users.password = passwordHash;
     }
-    return this.usersRepository.save(users);
+    const savedUser = await this.usersRepository.save(users);
+
+    return toSafeUserResponse(savedUser);
   }
 
-  getUsers() {
-    return this.usersRepository.find();
+  async getUsers(): Promise<SafeUserResponse[]> {
+    const users = await this.usersRepository.find();
+
+    return toSafeUserResponses(users);
   }
 
-  getUsersOrder() {
-    return this.usersRepository.find({
+  async getUsersOrder(): Promise<SafeUserResponse[]> {
+    const users = await this.usersRepository.find({
       order: {
         name: 'ASC',
       },
     });
+
+    return toSafeUserResponses(users);
   }
 
-  getSignatureUsers() {
-    return this.usersRepository
+  async getSignatureUsers(): Promise<SafeUserResponse[]> {
+    const users = await this.usersRepository
       .createQueryBuilder('entidad')
       .where('entidad.college_number != :valorVacio', { valorVacio: '' })
       .getMany();
+
+    return toSafeUserResponses(users);
   }
 
   async getUser(id: number) {
@@ -71,7 +84,7 @@ export class UsersService {
       return new HttpException('Usuario no encontrado', HttpStatus.NOT_FOUND);
     }
 
-    return userFound;
+    return toSafeUserResponse(userFound);
   }
 
   async verifyEmail(email: string) {
@@ -152,7 +165,7 @@ export class UsersService {
     const token = await this.jwtUserService.sign(payload);
 
     const dataUser = {
-      user: userFound,
+      user: toSafeUserResponse(userFound),
       token,
     };
     return dataUser;
@@ -200,6 +213,8 @@ export class UsersService {
       user.passwordSignature = passwordHash;
     }
     const updateUser = Object.assign(userFound, user);
-    return this.usersRepository.save(updateUser);
+    const savedUser = await this.usersRepository.save(updateUser);
+
+    return toSafeUserResponse(savedUser);
   }
 }
