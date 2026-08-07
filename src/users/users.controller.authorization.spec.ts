@@ -61,19 +61,5 @@ describe('UsersController authorization', () => {
     expect(permissions).toBeUndefined();
   });
 
-  it('mantiene la verificacion de firma autenticada sin permiso administrativo', () => {
-    const guards = Reflect.getMetadata(
-      GUARDS_METADATA,
-      UsersController.prototype.verifySignature,
-    );
 
-    const permissions = Reflect.getMetadata(
-      REQUIRED_PERMISSIONS_KEY,
-      UsersController.prototype.verifySignature,
-    );
-
-    expect(guards).toContain(JwtUserGuard);
-    expect(guards).not.toContain(PermissionGuard);
-    expect(permissions).toBeUndefined();
-  });
 });

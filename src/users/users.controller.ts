@@ -87,14 +87,6 @@ export class UsersController {
     return this.usersService.verifyEmailId(id, email);
   }
 
-  @UseGuards(JwtUserGuard)
-  @Get('/verifypassword/:id/:passwordSignature')
-  verifySignature(
-    @Param('id', ParseIntPipe) id: number,
-    @Param('passwordSignature') passwordSignature: string,
-  ) {
-    return this.usersService.verifySignature(id, passwordSignature);
-  }
 
   @UseGuards(JwtUserGuard)
   @Post('/verify-signature')

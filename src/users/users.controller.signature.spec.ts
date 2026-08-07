@@ -70,12 +70,5 @@ describe('UsersController signature verification', () => {
     expect(guards).toContain(JwtUserGuard);
   });
 
-  it('mantiene temporalmente el endpoint legacy', () => {
-    const method =
-      UsersController.prototype.verifySignature;
 
-    expect(
-      Reflect.getMetadata(PATH_METADATA, method),
-    ).toBe('/verifypassword/:id/:passwordSignature');
-  });
 });
