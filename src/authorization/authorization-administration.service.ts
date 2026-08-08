@@ -63,6 +63,56 @@ export class AuthorizationAdministrationService {
       },
     });
   }
+  async getRolePermissions(roleId: number): Promise<SecurityPermission[]> {
+    if (!Number.isInteger(roleId) || roleId <= 0) {
+      throw new BadRequestException('ROLE_ID_INVALID');
+    }
+
+    const role = await this.rolesRepository.findOne({
+      where: {
+        id: roleId,
+      },
+    });
+
+    if (!role) {
+      throw new NotFoundException('ROLE_NOT_FOUND');
+    }
+
+    const assignments = await this.rolePermissionsRepository.find({
+      where: {
+        roleId,
+      },
+    });
+
+    const permissionIds = Array.from(
+      new Set(
+        assignments
+          .map((assignment) => assignment.permissionId)
+          .filter(
+            (permissionId) =>
+              Number.isInteger(permissionId) && permissionId > 0,
+          ),
+      ),
+    );
+
+    if (permissionIds.length === 0) {
+      return [];
+    }
+
+    const permissions = await this.permissionsRepository.find({
+      where: {
+        id: In(permissionIds),
+      },
+    });
+
+    return permissions.sort((left, right) => {
+      if (left.module !== right.module) {
+        return left.module.localeCompare(right.module);
+      }
+
+      return left.code.localeCompare(right.code);
+    });
+  }
   async updateRole(
     roleId: number,
     dto: UpdateSecurityRoleDto,
@@ -92,11 +142,7 @@ export class AuthorizationAdministrationService {
     const hasDescription = dto.description !== undefined;
     const hasActiveState = dto.isActive !== undefined;
 
-    if (
-      !hasName &&
-      !hasDescription &&
-      !hasActiveState
-    ) {
+    if (!hasName && !hasDescription && !hasActiveState) {
       throw new BadRequestException('ROLE_UPDATE_REQUIRED');
     }
 
@@ -129,18 +175,11 @@ export class AuthorizationAdministrationService {
 
     if (hasActiveState) {
       if (typeof dto.isActive !== 'boolean') {
-        throw new BadRequestException(
-          'ROLE_ACTIVE_STATE_INVALID',
-        );
+        throw new BadRequestException('ROLE_ACTIVE_STATE_INVALID');
       }
 
-      if (
-        role.code === 'admin' &&
-        dto.isActive === false
-      ) {
-        throw new ForbiddenException(
-          'ADMIN_ROLE_MUST_REMAIN_ACTIVE',
-        );
+      if (role.code === 'admin' && dto.isActive === false) {
+        throw new ForbiddenException('ADMIN_ROLE_MUST_REMAIN_ACTIVE');
       }
 
       role.isActive = dto.isActive;
@@ -148,9 +187,7 @@ export class AuthorizationAdministrationService {
 
     return this.rolesRepository.save(role);
   }
-  async createRole(
-    dto: CreateSecurityRoleDto,
-  ): Promise<SecurityRole> {
+  async createRole(dto: CreateSecurityRoleDto): Promise<SecurityRole> {
     const code = this.normalizeCode(dto?.code);
     const name = this.normalizeRequiredText(
       dto?.name,
@@ -219,8 +256,11 @@ export class AuthorizationAdministrationService {
 
     return this.dataSource.transaction(async (manager) => {
       const transactionalRolesRepository = manager.getRepository(SecurityRole);
-      const transactionalPermissionsRepository = manager.getRepository(SecurityPermission);
-      const transactionalRolePermissionsRepository = manager.getRepository(SecurityRolePermission);
+      const transactionalPermissionsRepository =
+        manager.getRepository(SecurityPermission);
+      const transactionalRolePermissionsRepository = manager.getRepository(
+        SecurityRolePermission,
+      );
 
       const role = await transactionalRolesRepository.findOne({
         where: { id: roleId },
@@ -266,7 +306,9 @@ export class AuthorizationAdministrationService {
         ];
 
         const selectedCodes = selectedPermissions.map((p) => p.code);
-        const hasAllEssential = essentialPermissions.every((code) => selectedCodes.includes(code));
+        const hasAllEssential = essentialPermissions.every((code) =>
+          selectedCodes.includes(code),
+        );
 
         if (!hasAllEssential) {
           throw new ForbiddenException('ADMIN_ESSENTIAL_PERMISSIONS_REQUIRED');
@@ -363,7 +405,9 @@ export class AuthorizationAdministrationService {
     return normalizedValue;
   }
 
-  async getUserAuthorization(userId: number): Promise<AuthorizationUserAdministration> {
+  async getUserAuthorization(
+    userId: number,
+  ): Promise<AuthorizationUserAdministration> {
     if (!Number.isInteger(userId) || userId <= 0) {
       throw new BadRequestException('USER_ID_INVALID');
     }
@@ -373,15 +417,14 @@ export class AuthorizationAdministrationService {
       throw new NotFoundException('USER_NOT_FOUND');
     }
 
-    const userRoles = await this.userRolesRepository.find({ where: { userId } });
+    const userRoles = await this.userRolesRepository.find({
+      where: { userId },
+    });
     const userRoleIds = Array.from(
       new Set(
         userRoles
           .map((assignment) => assignment.roleId)
-          .filter(
-            (roleId) =>
-              Number.isInteger(roleId) && roleId > 0,
-          ),
+          .filter((roleId) => Number.isInteger(roleId) && roleId > 0),
       ),
     );
 
@@ -393,7 +436,9 @@ export class AuthorizationAdministrationService {
       assignedRoles.sort((a, b) => a.code.localeCompare(b.code));
     }
 
-    const activeRoleIds = assignedRoles.filter((r) => r.isActive).map((r) => r.id);
+    const activeRoleIds = assignedRoles
+      .filter((r) => r.isActive)
+      .map((r) => r.id);
     let inheritedPermissions: SecurityPermission[] = [];
 
     if (activeRoleIds.length > 0) {
@@ -406,8 +451,7 @@ export class AuthorizationAdministrationService {
             .map((assignment) => assignment.permissionId)
             .filter(
               (permissionId) =>
-                Number.isInteger(permissionId) &&
-                permissionId > 0,
+                Number.isInteger(permissionId) && permissionId > 0,
             ),
         ),
       );
@@ -425,15 +469,16 @@ export class AuthorizationAdministrationService {
       }
     }
 
-    const overrides = await this.userPermissionOverridesRepository.find({ where: { userId } });
+    const overrides = await this.userPermissionOverridesRepository.find({
+      where: { userId },
+    });
     const overridePermissionIds = Array.from(
       new Set(
         overrides
           .map((override) => override.permissionId)
           .filter(
             (permissionId) =>
-              Number.isInteger(permissionId) &&
-              permissionId > 0,
+              Number.isInteger(permissionId) && permissionId > 0,
           ),
       ),
     );
@@ -446,7 +491,9 @@ export class AuthorizationAdministrationService {
 
       permissionOverrides = overrides
         .map((override) => {
-          const permission = overridePermissions.find((p) => p.id === override.permissionId);
+          const permission = overridePermissions.find(
+            (p) => p.id === override.permissionId,
+          );
           if (!permission) return null;
           return {
             permission,
@@ -458,7 +505,7 @@ export class AuthorizationAdministrationService {
       permissionOverrides.sort((a, b) => {
         if (a.permission.module === b.permission.module) {
           if (a.permission.code === b.permission.code) {
-             return a.effect.localeCompare(b.effect);
+            return a.effect.localeCompare(b.effect);
           }
           return a.permission.code.localeCompare(b.permission.code);
         }
@@ -508,7 +555,8 @@ export class AuthorizationAdministrationService {
     return this.dataSource.transaction(async (manager) => {
       const transactionalUserRepository = manager.getRepository(User);
       const transactionalRolesRepository = manager.getRepository(SecurityRole);
-      const transactionalUserRolesRepository = manager.getRepository(SecurityUserRole);
+      const transactionalUserRolesRepository =
+        manager.getRepository(SecurityUserRole);
 
       const user = await transactionalUserRepository.findOne({
         where: { id: userId },
@@ -558,9 +606,10 @@ export class AuthorizationAdministrationService {
         const willHaveAdminRole = normalizedRoleIds.includes(adminRole.id);
 
         if (hadAdminRole && !willHaveAdminRole) {
-          const otherAdminAssignments = await transactionalUserRolesRepository.find({
-            where: { roleId: adminRole.id, userId: Not(userId) },
-          });
+          const otherAdminAssignments =
+            await transactionalUserRolesRepository.find({
+              where: { roleId: adminRole.id, userId: Not(userId) },
+            });
 
           const otherAdminUserIds = Array.from(
             new Set(
@@ -568,8 +617,7 @@ export class AuthorizationAdministrationService {
                 .map((assignment) => assignment.userId)
                 .filter(
                   (otherUserId) =>
-                    Number.isInteger(otherUserId) &&
-                    otherUserId > 0,
+                    Number.isInteger(otherUserId) && otherUserId > 0,
                 ),
             ),
           );
@@ -613,15 +661,11 @@ export class AuthorizationAdministrationService {
     }
 
     if (!dto || typeof dto !== 'object') {
-      throw new BadRequestException(
-        'PERMISSION_OVERRIDES_REQUIRED',
-      );
+      throw new BadRequestException('PERMISSION_OVERRIDES_REQUIRED');
     }
 
     if (!Array.isArray(dto.overrides)) {
-      throw new BadRequestException(
-        'PERMISSION_OVERRIDES_REQUIRED',
-      );
+      throw new BadRequestException('PERMISSION_OVERRIDES_REQUIRED');
     }
 
     const normalizedOverrides: Array<{
@@ -631,38 +675,29 @@ export class AuthorizationAdministrationService {
 
     for (const override of dto.overrides) {
       if (!override || typeof override !== 'object') {
-        throw new BadRequestException(
-          'PERMISSION_OVERRIDE_INVALID',
-        );
+        throw new BadRequestException('PERMISSION_OVERRIDE_INVALID');
       }
 
       if (
         !Number.isInteger(override.permissionId) ||
         override.permissionId <= 0
       ) {
-        throw new BadRequestException(
-          'PERMISSION_ID_INVALID',
-        );
+        throw new BadRequestException('PERMISSION_ID_INVALID');
       }
 
       if (
         override.effect !== SecurityPermissionEffect.Allow &&
         override.effect !== SecurityPermissionEffect.Deny
       ) {
-        throw new BadRequestException(
-          'PERMISSION_EFFECT_INVALID',
-        );
+        throw new BadRequestException('PERMISSION_EFFECT_INVALID');
       }
 
       if (
         normalizedOverrides.some(
-          (item) =>
-            item.permissionId === override.permissionId,
+          (item) => item.permissionId === override.permissionId,
         )
       ) {
-        throw new BadRequestException(
-          'PERMISSION_OVERRIDE_DUPLICATED',
-        );
+        throw new BadRequestException('PERMISSION_OVERRIDE_DUPLICATED');
       }
 
       normalizedOverrides.push({
@@ -672,16 +707,14 @@ export class AuthorizationAdministrationService {
     }
 
     return this.dataSource.transaction(async (manager) => {
-      const transactionalUserRepository =
-        manager.getRepository(User);
+      const transactionalUserRepository = manager.getRepository(User);
 
       const transactionalPermissionsRepository =
         manager.getRepository(SecurityPermission);
 
-      const transactionalOverridesRepository =
-        manager.getRepository(
-          SecurityUserPermissionOverride,
-        );
+      const transactionalOverridesRepository = manager.getRepository(
+        SecurityUserPermissionOverride,
+      );
 
       const user = await transactionalUserRepository.findOne({
         where: {
@@ -700,29 +733,23 @@ export class AuthorizationAdministrationService {
       let selectedPermissions: SecurityPermission[] = [];
 
       if (permissionIds.length > 0) {
-        selectedPermissions =
-          await transactionalPermissionsRepository.find({
-            where: {
-              id: In(permissionIds),
-              isActive: true,
-            },
-            select: {
-              id: true,
-              code: true,
-              name: true,
-              description: true,
-              module: true,
-              isActive: true,
-            },
-          });
+        selectedPermissions = await transactionalPermissionsRepository.find({
+          where: {
+            id: In(permissionIds),
+            isActive: true,
+          },
+          select: {
+            id: true,
+            code: true,
+            name: true,
+            description: true,
+            module: true,
+            isActive: true,
+          },
+        });
 
-        if (
-          selectedPermissions.length !==
-          permissionIds.length
-        ) {
-          throw new BadRequestException(
-            'PERMISSIONS_NOT_FOUND_OR_INACTIVE',
-          );
+        if (selectedPermissions.length !== permissionIds.length) {
+          throw new BadRequestException('PERMISSIONS_NOT_FOUND_OR_INACTIVE');
         }
       }
 
@@ -741,10 +768,7 @@ export class AuthorizationAdministrationService {
       }
 
       const permissionsById = new Map(
-        selectedPermissions.map((permission) => [
-          permission.id,
-          permission,
-        ]),
+        selectedPermissions.map((permission) => [permission.id, permission]),
       );
 
       return normalizedOverrides
@@ -755,22 +779,14 @@ export class AuthorizationAdministrationService {
           effect: override.effect,
         }))
         .sort((left, right) => {
-          if (
-            left.permission.module !==
-            right.permission.module
-          ) {
+          if (left.permission.module !== right.permission.module) {
             return left.permission.module.localeCompare(
               right.permission.module,
             );
           }
 
-          if (
-            left.permission.code !==
-            right.permission.code
-          ) {
-            return left.permission.code.localeCompare(
-              right.permission.code,
-            );
+          if (left.permission.code !== right.permission.code) {
+            return left.permission.code.localeCompare(right.permission.code);
           }
 
           return left.effect.localeCompare(right.effect);

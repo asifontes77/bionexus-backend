@@ -38,28 +38,17 @@ export class AuthorizationController {
 
   @UseGuards(JwtUserGuard)
   @Get('me')
-  async getCurrentContext(
-    @Req() request: AuthenticatedRequest,
-  ) {
+  async getCurrentContext(@Req() request: AuthenticatedRequest) {
     const userId = request.user?.userId;
 
-    if (
-      !Number.isInteger(userId) ||
-      userId === undefined ||
-      userId <= 0
-    ) {
-      throw new ForbiddenException(
-        'AUTHORIZATION_CONTEXT_UNAVAILABLE',
-      );
+    if (!Number.isInteger(userId) || userId === undefined || userId <= 0) {
+      throw new ForbiddenException('AUTHORIZATION_CONTEXT_UNAVAILABLE');
     }
 
-    const context =
-      await this.authorizationService.resolveContext(userId);
+    const context = await this.authorizationService.resolveContext(userId);
 
     if (!context) {
-      throw new ForbiddenException(
-        'AUTHORIZATION_CONTEXT_UNAVAILABLE',
-      );
+      throw new ForbiddenException('AUTHORIZATION_CONTEXT_UNAVAILABLE');
     }
 
     return context;
@@ -83,20 +72,13 @@ export class AuthorizationController {
     @Param('id', ParseIntPipe) userId: number,
     @Body() body: ReplaceUserRolesDto,
   ) {
-    return this.administrationService.replaceUserRoles(
-      userId,
-      body,
-    );
+    return this.administrationService.replaceUserRoles(userId, body);
   }
   @UseGuards(JwtUserGuard, PermissionGuard)
   @RequirePermissions('security.users.read')
   @Get('users/:id')
-  async getUserAuthorization(
-    @Param('id', ParseIntPipe) userId: number,
-  ) {
-    return this.administrationService.getUserAuthorization(
-      userId,
-    );
+  async getUserAuthorization(@Param('id', ParseIntPipe) userId: number) {
+    return this.administrationService.getUserAuthorization(userId);
   }
   @UseGuards(JwtUserGuard, PermissionGuard)
   @RequirePermissions('security.permissions.read')
@@ -112,16 +94,20 @@ export class AuthorizationController {
   }
 
   @UseGuards(JwtUserGuard, PermissionGuard)
+  @RequirePermissions('security.roles.read', 'security.permissions.read')
+  @Get('roles/:id/permissions')
+  async getRolePermissions(@Param('id', ParseIntPipe) roleId: number) {
+    return this.administrationService.getRolePermissions(roleId);
+  }
+
+  @UseGuards(JwtUserGuard, PermissionGuard)
   @RequirePermissions('security.roles.assign-permissions')
   @Put('roles/:id/permissions')
   async replaceRolePermissions(
     @Param('id', ParseIntPipe) roleId: number,
     @Body() body: ReplaceRolePermissionsDto,
   ) {
-    return this.administrationService.replaceRolePermissions(
-      roleId,
-      body,
-    );
+    return this.administrationService.replaceRolePermissions(roleId, body);
   }
   @UseGuards(JwtUserGuard, PermissionGuard)
   @RequirePermissions('security.roles.update')
@@ -130,17 +116,12 @@ export class AuthorizationController {
     @Param('id', ParseIntPipe) roleId: number,
     @Body() body: UpdateSecurityRoleDto,
   ) {
-    return this.administrationService.updateRole(
-      roleId,
-      body,
-    );
+    return this.administrationService.updateRole(roleId, body);
   }
   @UseGuards(JwtUserGuard, PermissionGuard)
   @RequirePermissions('security.roles.create')
   @Post('roles')
-  async createRole(
-    @Body() body: CreateSecurityRoleDto,
-  ) {
+  async createRole(@Body() body: CreateSecurityRoleDto) {
     return this.administrationService.createRole(body);
   }
 }
