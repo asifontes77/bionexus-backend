@@ -1,4 +1,4 @@
-export class UpdateparasiticformsDto {
+export class UpdateParasiticformsDto {
   description?: string;
   annulled?: boolean;
 }

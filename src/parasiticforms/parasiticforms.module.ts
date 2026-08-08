@@ -1,12 +1,17 @@
 import { Module } from '@nestjs/common';
-import { ParasiticformsController } from './parasiticforms.controller';
-import { ParasiticformsService } from './parasiticforms.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthorizationModule } from '../authorization/authorization.module';
+import { UsersModule } from '../users/users.module';
+import { ParasiticformsController } from './parasiticforms.controller';
 import { Parasiticforms } from './parasiticforms.entity';
-import { UsersModule } from 'src/users/users.module';
+import { ParasiticformsService } from './parasiticforms.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Parasiticforms]), UsersModule],
+  imports: [
+    TypeOrmModule.forFeature([Parasiticforms]),
+    UsersModule,
+    AuthorizationModule,
+  ],
   controllers: [ParasiticformsController],
   providers: [ParasiticformsService],
 })
