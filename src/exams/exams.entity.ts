@@ -1,4 +1,4 @@
-import {
+﻿import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
@@ -49,11 +49,11 @@ export class Exam {
   @Column('int', { default: () => '0' })
   size: number;
 
-  @Column('int', { default: () => '0' })
-  processed_id: number;
+  @Column('int', { nullable: true, default: null })
+  processed_id: number | null;
 
-  @Column('int', { default: () => '0' })
-  approved_id: number;
+  @Column('int', { nullable: true, default: null })
+  approved_id: number | null;
 
   @Column('varchar', { length: 20, default: 'Exo' })
   tax_description: string;
@@ -63,9 +63,6 @@ export class Exam {
 
   @Column({ type: 'decimal', precision: 18, scale: 2, default: () => '0.00' })
   tax_total: number;
-
-  @Column('int', { default: () => '0' })
-  canceled_id: number;
 
   @Column({ type: 'smallint', default: () => '0' })
   email_status: number;

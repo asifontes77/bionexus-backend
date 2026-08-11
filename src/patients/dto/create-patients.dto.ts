@@ -1,4 +1,4 @@
-export class CreatePatientsDto {
+﻿export class CreatePatientsDto {
   patient_position?: number;
   name: string;
   document_number: string;
@@ -14,7 +14,7 @@ export class CreatePatientsDto {
   user_id_canceled?: number;
   client_id: number;
   process?: boolean;
-  cashier_id?: number;
+
   birth_date: Date;
   sex: boolean;
   observation: string;
@@ -39,7 +39,7 @@ export class CreatePatientsDto {
   dollar_price: number;
   dollar_price_date: Date;
   deliver_date?: Date;
-  delivery_id?: number;
+  delivery_id?: number | null;
   receive?: string;
   sample_type: string;
   sample: string;

@@ -1,4 +1,4 @@
-import { Exam } from 'src/exams/exams.entity';
+﻿import { Exam } from 'src/exams/exams.entity';
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 
 @Entity({ name: 'patients' })
@@ -27,7 +27,7 @@ export class Patient {
   @Column({ type: 'smallint' })
   age: number;
 
-  @Column('varchar', { length: 5, default: 'años' })
+  @Column('varchar', { length: 5, default: 'aÃ±os' })
   month_year: string;
 
   @Column('tinyint', { default: () => '0', nullable: true })
@@ -62,9 +62,6 @@ export class Patient {
 
   @Column({ type: 'datetime', nullable: true })
   cancellation_date: Date;
-
-  @Column('int', { default: () => '0' })
-  cashier_id: number;
 
   @Column({ type: 'json', nullable: true })
   foot_payments: string;
@@ -126,8 +123,8 @@ export class Patient {
   @Column({ type: 'datetime', nullable: true })
   deliver_date: Date;
 
-  @Column('int', { default: () => '0' })
-  delivery_id: number;
+  @Column('int', { nullable: true, default: null })
+  delivery_id: number | null;
 
   @Column('varchar', { length: 100, nullable: true })
   receive: string;

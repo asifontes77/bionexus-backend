@@ -1,4 +1,4 @@
-export class UpdateExamsDto {
+﻿export class UpdateExamsDto {
   patientsId?: number;
   examlistsId?: number;
   date?: Date;
@@ -10,12 +10,12 @@ export class UpdateExamsDto {
   status?: boolean;
   result?: string;
   size?: number;
-  processed_id?: number;
-  approved_id?: number;
+  processed_id?: number | null;
+  approved_id?: number | null;
   tax_description?: string;
   tax_amount?: number;
   tax_total?: number;
-  canceled_id?: number;
+
   email_status?: number;
   description?: string;
 }
