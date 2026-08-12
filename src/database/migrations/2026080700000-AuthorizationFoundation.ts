@@ -1,23 +1,36 @@
 ﻿import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class AuthorizationFoundation2026080700000
-  implements MigrationInterface
-{
+export class AuthorizationFoundation2026080700000 implements MigrationInterface {
   name = 'AuthorizationFoundation2026080700000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
-    const administrators = (await queryRunner.query(`
-      SELECT COUNT(*) AS total
+    const userCounts = (await queryRunner.query(`
+      SELECT
+        COUNT(*) AS users_total,
+        SUM(
+          CASE
+            WHEN FIND_IN_SET(
+              'admin',
+              REPLACE(LOWER(COALESCE(roles, '')), ' ', '')
+            ) > 0
+            THEN 1
+            ELSE 0
+          END
+        ) AS administrators_total
       FROM users
-      WHERE FIND_IN_SET(
-        'admin',
-        REPLACE(LOWER(COALESCE(roles, '')), ' ', '')
-      ) > 0
-    `)) as Array<{ total: string | number }>;
+    `)) as Array<{
+      users_total: string | number;
+      administrators_total: string | number;
+    }>;
 
-    if (Number(administrators[0]?.total ?? 0) === 0) {
+    const usersTotal = Number(userCounts[0]?.users_total ?? 0);
+    const administratorsTotal = Number(
+      userCounts[0]?.administrators_total ?? 0,
+    );
+
+    if (usersTotal > 0 && administratorsTotal === 0) {
       throw new Error(
-        'Authorization migration requires at least one legacy admin user.',
+        'Authorization migration requires at least one legacy admin user when users already exist.',
       );
     }
 
@@ -384,7 +397,10 @@ export class AuthorizationFoundation2026080700000
         AND role.is_active = 1
     `)) as Array<{ total: string | number }>;
 
-    if (Number(normalizedAdministrators[0]?.total ?? 0) === 0) {
+    if (
+      usersTotal > 0 &&
+      Number(normalizedAdministrators[0]?.total ?? 0) === 0
+    ) {
       throw new Error(
         'Authorization migration did not assign any active administrator.',
       );

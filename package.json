@@ -24,7 +24,8 @@
     "migration:run:fake": "npm run typeorm -- migration:run -d src/database/data-source.ts --fake",
     "migration:revert": "npm run typeorm -- migration:revert -d src/database/data-source.ts",
     "migration:generate": "npm run typeorm -- migration:generate src/database/migrations/Generated -d src/database/data-source.ts --pretty",
-    "migration:check": "npm run typeorm -- migration:generate src/database/migrations/SchemaCheck -d src/database/data-source.ts --check"
+    "migration:check": "npm run typeorm -- migration:generate src/database/migrations/SchemaCheck -d src/database/data-source.ts --check",
+    "bootstrap:first-admin": "node -r ts-node/register -r tsconfig-paths/register src/database/commands/bootstrap-first-admin.ts"
   },
   "dependencies": {
     "@nestjs/common": "11.1.28",
