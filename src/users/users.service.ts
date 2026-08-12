@@ -1,7 +1,7 @@
-﻿import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './users.entity';
-import { Repository, Not } from 'typeorm';
+import { DataSource, EntityManager, In, Repository, Not } from 'typeorm';
 import { CreateUsersDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
@@ -9,6 +9,9 @@ import { JwtService } from '@nestjs/jwt';
 import { LaboratoryService } from '../laboratory/laboratory.service';
 import { LicenseService } from '../license/license.service';
 import * as bcrypt from 'bcrypt';
+import { ForbiddenException, MethodNotAllowedException, Optional } from '@nestjs/common';
+import { SecurityRole } from '../authorization/entities/security-role.entity';
+import { SecurityUserRole } from '../authorization/entities/security-user-role.entity';
 import {
   SafeUserResponse,
   toSafeUserResponse,
@@ -22,6 +25,7 @@ export class UsersService {
     private jwtUserService: JwtService,
     private readonly laboratoryService: LaboratoryService,
     private readonly LicenseService: LicenseService,
+  @Optional() private readonly dataSource?: DataSource,
   ) {}
 
   async createUser(users: CreateUsersDto): Promise<any> {
@@ -171,50 +175,123 @@ export class UsersService {
     return dataUser;
   }
 
-  async deleteUser(id: number) {
-    const result = await this.usersRepository.delete({ id });
-    if (result.affected === 0) {
-      return new HttpException('Usuario no encontrado', HttpStatus.NOT_FOUND);
-    }
-
-    return result;
+  async deleteUser(_id: number): Promise<never> {
+    throw new MethodNotAllowedException('USER_PHYSICAL_DELETE_DISABLED');
   }
 
-  async updateUser(id: number, user: UpdateUserDto) {
-    const userFound = await this.usersRepository.findOne({
-      where: {
-        id,
-      },
-    });
-    if (!userFound) {
-      return new HttpException('Usuario no encontrado', HttpStatus.NOT_FOUND);
+  async updateUser(id: number, user: UpdateUserDto): Promise<SafeUserResponse> {
+    if (user.hide_user === undefined) {
+      return this.updateUserWithRepository(this.usersRepository, id, user);
     }
-    const userFondN = await this.usersRepository.findOne({
-      where: {
-        id: Not(id),
-        user_name: user.user_name,
-      },
+
+    if (!this.dataSource) {
+      throw new Error('USER_STATE_TRANSACTION_UNAVAILABLE');
+    }
+
+    return this.dataSource.transaction(async (manager) => {
+      const transactionalUsersRepository = manager.getRepository(User);
+      const userFound = await transactionalUsersRepository.findOne({
+        where: { id },
+      });
+
+      if (!userFound) {
+        return new HttpException('Usuario no encontrado', HttpStatus.NOT_FOUND) as never;
+      }
+
+      if (user.hide_user === true && userFound.hide_user !== true) {
+        await this.assertCanHideUser(manager, userFound.id);
+      }
+
+      return this.updateUserWithRepository(
+        transactionalUsersRepository,
+        id,
+        user,
+        userFound,
+      );
+    });
+  }
+
+  private async assertCanHideUser(
+    manager: EntityManager,
+    userId: number,
+  ): Promise<void> {
+    const rolesRepository = manager.getRepository(SecurityRole);
+    const userRolesRepository = manager.getRepository(SecurityUserRole);
+    const usersRepository = manager.getRepository(User);
+
+    const adminRole = await rolesRepository.findOne({
+      where: { code: 'admin', isActive: true },
+      select: { id: true },
+    });
+
+    if (!adminRole) return;
+
+    const currentAdminAssignment = await userRolesRepository.findOne({
+      where: { userId, roleId: adminRole.id },
+      select: { userId: true, roleId: true },
+    });
+
+    if (!currentAdminAssignment) return;
+
+    const otherAssignments = await userRolesRepository.find({
+      where: { roleId: adminRole.id, userId: Not(userId) },
+      select: { userId: true },
+    });
+
+    const otherAdminUserIds = Array.from(
+      new Set(
+        otherAssignments
+          .map((assignment) => assignment.userId)
+          .filter((id) => Number.isInteger(id) && id > 0),
+      ),
+    );
+
+    const otherVisibleAdmins = otherAdminUserIds.length === 0
+      ? 0
+      : await usersRepository.count({
+          where: { id: In(otherAdminUserIds), hide_user: false },
+        });
+
+    if (otherVisibleAdmins === 0) {
+      throw new ForbiddenException('LAST_ACTIVE_ADMIN_REQUIRED');
+    }
+  }
+
+  private async updateUserWithRepository(
+    repository: Repository<User>,
+    id: number,
+    user: UpdateUserDto,
+    existingUser?: User,
+  ): Promise<SafeUserResponse> {
+    const userFound = existingUser ?? await repository.findOne({
+      where: { id },
+    });
+
+    if (!userFound) {
+      return new HttpException('Usuario no encontrado', HttpStatus.NOT_FOUND) as never;
+    }
+
+    const userFondN = await repository.findOne({
+      where: { id: Not(id), user_name: user.user_name },
     });
 
     if (userFondN) {
       return new HttpException(
         'Ya existe un usuario con ese nombre de usuario',
         HttpStatus.CONFLICT,
-      );
+      ) as never;
     }
-    if (user.password !== undefined) {
-      const password = user.password;
-      const passwordHash = await bcrypt.hash(password, 8);
-      user.password = passwordHash;
-    }
-    if (user.passwordSignature !== undefined) {
-      const passwordS = user.passwordSignature;
-      const passwordHash = await bcrypt.hash(passwordS, 8);
-      user.passwordSignature = passwordHash;
-    }
-    const updateUser = Object.assign(userFound, user);
-    const savedUser = await this.usersRepository.save(updateUser);
 
+    if (user.password !== undefined) {
+      user.password = await bcrypt.hash(user.password, 8);
+    }
+
+    if (user.passwordSignature !== undefined) {
+      user.passwordSignature = await bcrypt.hash(user.passwordSignature, 8);
+    }
+
+    const updatedUser = Object.assign(userFound, user);
+    const savedUser = await repository.save(updatedUser);
     return toSafeUserResponse(savedUser);
   }
 }
