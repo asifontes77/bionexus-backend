@@ -118,121 +118,71 @@ export class AuthorizationAdministrationService {
       return left.code.localeCompare(right.code);
     });
   }
-  async updateRole(
+async updateRole(
     roleId: number,
     dto: UpdateSecurityRoleDto,
     actorUserId?: number,
   ): Promise<SecurityRole> {
-    if (!Number.isInteger(roleId) || roleId <= 0) {
-      throw new BadRequestException('ROLE_ID_INVALID');
+    if (actorUserId === undefined) {
+      return this.updateRoleWithRepository(
+        this.rolesRepository,
+        roleId,
+        dto,
+      );
     }
 
-    if (!dto || typeof dto !== 'object') {
-      throw new BadRequestException('ROLE_UPDATE_REQUIRED');
-    }
-
-    const payload = dto as UpdateSecurityRoleDto & {
-      code?: unknown;
-      isSystem?: unknown;
-    };
-
-    if (payload.code !== undefined) {
-      throw new BadRequestException('ROLE_CODE_IMMUTABLE');
-    }
-
-    if (payload.isSystem !== undefined) {
-      throw new BadRequestException('ROLE_SYSTEM_FLAG_IMMUTABLE');
-    }
-
-    const hasName = dto.name !== undefined;
-    const hasDescription = dto.description !== undefined;
-    const hasActiveState = dto.isActive !== undefined;
-
-    if (!hasName && !hasDescription && !hasActiveState) {
-      throw new BadRequestException('ROLE_UPDATE_REQUIRED');
-    }
-
-    const role = await this.rolesRepository.findOne({
-      where: {
-        id: roleId,
-      },
+    return this.dataSource.transaction(async (manager) => {
+      const repository = manager.getRepository(SecurityRole);
+      const role = await this.updateRoleWithRepository(
+        repository,
+        roleId,
+        dto,
+      );
+      await this.writeAudit(manager, actorUserId, {
+        action: 'security.role.updated',
+        entityType: 'security_role',
+        entityId: role.id,
+        summary: 'Rol actualizado',
+        metadata: {
+          roleCode: role.code,
+          changedFields: this.getRoleChangedFields(dto),
+          isActive: role.isActive,
+        },
+      });
+      return role;
     });
-
-    if (!role) {
-      throw new NotFoundException('ROLE_NOT_FOUND');
-    }
-
-    if (hasName) {
-      role.name = this.normalizeRequiredText(
-        dto.name as string,
-        'ROLE_NAME_REQUIRED',
-        100,
-        'ROLE_NAME_TOO_LONG',
-      );
-    }
-
-    if (hasDescription) {
-      role.description = this.normalizeOptionalText(
-        dto.description,
-        250,
-        'ROLE_DESCRIPTION_TOO_LONG',
-      );
-    }
-
-    if (hasActiveState) {
-      if (typeof dto.isActive !== 'boolean') {
-        throw new BadRequestException('ROLE_ACTIVE_STATE_INVALID');
-      }
-
-      if (role.code === 'admin' && dto.isActive === false) {
-        throw new ForbiddenException('ADMIN_ROLE_MUST_REMAIN_ACTIVE');
-      }
-
-      role.isActive = dto.isActive;
-    }
-
-    return this.rolesRepository.save(role);
   }
-  async createRole(
+
+async createRole(
     dto: CreateSecurityRoleDto,
     actorUserId?: number,
   ): Promise<SecurityRole> {
-    const code = this.normalizeCode(dto?.code);
-    const name = this.normalizeRequiredText(
-      dto?.name,
-      'ROLE_NAME_REQUIRED',
-      100,
-      'ROLE_NAME_TOO_LONG',
-    );
-
-    const description = this.normalizeOptionalText(
-      dto?.description,
-      250,
-      'ROLE_DESCRIPTION_TOO_LONG',
-    );
-
-    const existingRole = await this.rolesRepository.findOne({
-      where: {
-        code,
-      },
-      select: {
-        id: true,
-      },
-    });
-
-    if (existingRole) {
-      throw new ConflictException('ROLE_CODE_ALREADY_EXISTS');
+    if (actorUserId === undefined) {
+      return this.createRoleWithRepository(
+        this.rolesRepository,
+        dto,
+      );
     }
 
-    const role = this.rolesRepository.create({
-      code,
-      name,
-      description,
-      isSystem: false,
-      isActive: true,
+    return this.dataSource.transaction(async (manager) => {
+      const repository = manager.getRepository(SecurityRole);
+      const role = await this.createRoleWithRepository(
+        repository,
+        dto,
+      );
+      await this.writeAudit(manager, actorUserId, {
+        action: 'security.role.created',
+        entityType: 'security_role',
+        entityId: role.id,
+        summary: 'Rol creado',
+        metadata: {
+          roleCode: role.code,
+          isSystem: role.isSystem,
+          isActive: role.isActive,
+        },
+      });
+      return role;
     });
-
-    return this.rolesRepository.save(role);
   }
 
   async replaceRolePermissions(
@@ -928,6 +878,112 @@ export class AuthorizationAdministrationService {
       actorUserId,
       ...input,
     });
+  }
+
+  private async updateRoleWithRepository(
+    repository: Repository<SecurityRole>,
+    roleId: number,
+    dto: UpdateSecurityRoleDto,
+  ): Promise<SecurityRole> {
+    if (!Number.isInteger(roleId) || roleId <= 0) {
+      throw new BadRequestException('ROLE_ID_INVALID');
+    }
+    if (!dto || typeof dto !== 'object') {
+      throw new BadRequestException('ROLE_UPDATE_REQUIRED');
+    }
+
+    const payload = dto as UpdateSecurityRoleDto & {
+      code?: unknown;
+      isSystem?: unknown;
+    };
+    if (payload.code !== undefined) {
+      throw new BadRequestException('ROLE_CODE_IMMUTABLE');
+    }
+    if (payload.isSystem !== undefined) {
+      throw new BadRequestException('ROLE_SYSTEM_FLAG_IMMUTABLE');
+    }
+
+    const hasName = dto.name !== undefined;
+    const hasDescription = dto.description !== undefined;
+    const hasActiveState = dto.isActive !== undefined;
+    if (!hasName && !hasDescription && !hasActiveState) {
+      throw new BadRequestException('ROLE_UPDATE_REQUIRED');
+    }
+
+    const role = await repository.findOne({
+      where: { id: roleId },
+    });
+    if (!role) {
+      throw new NotFoundException('ROLE_NOT_FOUND');
+    }
+
+    if (hasName) {
+      role.name = this.normalizeRequiredText(
+        dto.name as string,
+        'ROLE_NAME_REQUIRED',
+        100,
+        'ROLE_NAME_TOO_LONG',
+      );
+    }
+    if (hasDescription) {
+      role.description = this.normalizeOptionalText(
+        dto.description,
+        250,
+        'ROLE_DESCRIPTION_TOO_LONG',
+      );
+    }
+    if (hasActiveState) {
+      if (typeof dto.isActive !== 'boolean') {
+        throw new BadRequestException('ROLE_ACTIVE_STATE_INVALID');
+      }
+      if (role.code === 'admin' && dto.isActive === false) {
+        throw new ForbiddenException('ADMIN_ROLE_MUST_REMAIN_ACTIVE');
+      }
+      role.isActive = dto.isActive;
+    }
+
+    return repository.save(role);
+  }
+
+  private async createRoleWithRepository(
+    repository: Repository<SecurityRole>,
+    dto: CreateSecurityRoleDto,
+  ): Promise<SecurityRole> {
+    const code = this.normalizeCode(dto?.code);
+    const name = this.normalizeRequiredText(
+      dto?.name,
+      'ROLE_NAME_REQUIRED',
+      100,
+      'ROLE_NAME_TOO_LONG',
+    );
+    const description = this.normalizeOptionalText(
+      dto?.description,
+      250,
+      'ROLE_DESCRIPTION_TOO_LONG',
+    );
+
+    const existingRole = await repository.findOne({
+      where: { code },
+      select: { id: true },
+    });
+    if (existingRole) {
+      throw new ConflictException('ROLE_CODE_ALREADY_EXISTS');
+    }
+
+    const role = repository.create({
+      code,
+      name,
+      description,
+      isSystem: false,
+      isActive: true,
+    });
+    return repository.save(role);
+  }
+
+  private getRoleChangedFields(dto: UpdateSecurityRoleDto): string[] {
+    return ['name', 'description', 'isActive'].filter(
+      (field) => dto[field as keyof UpdateSecurityRoleDto] !== undefined,
+    );
   }
 
 }

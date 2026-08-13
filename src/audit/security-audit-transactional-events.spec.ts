@@ -15,8 +15,34 @@ describe('transactional security audit event wiring', () => {
     expect(source).toContain(eventName);
   });
 
-  it('escribe tres eventos usando el manager transaccional', () => {
-    expect((source.match(/await this\.writeAudit\(manager/g) || []).length).toBe(3);
+  it('mantiene los tres eventos de asignaciones dentro de transacciones', () => {
+    const assignmentEvents = [
+      'security.role.permissions.replaced',
+      'security.user.roles.replaced',
+      'security.user.permission_overrides.replaced',
+    ];
+
+    for (const eventName of assignmentEvents) {
+      const eventIndex = source.indexOf(eventName);
+      expect(eventIndex).toBeGreaterThan(-1);
+      const transactionIndex = source.lastIndexOf(
+        'this.dataSource.transaction',
+        eventIndex,
+      );
+      const writeIndex = source.lastIndexOf(
+        'await this.writeAudit(manager',
+        eventIndex,
+      );
+      expect(transactionIndex).toBeGreaterThan(-1);
+      expect(writeIndex).toBeGreaterThan(transactionIndex);
+    }
+  });
+
+  it('permite acumular nuevos eventos sin invalidar este contrato', () => {
+    const totalWrites = (
+      source.match(/await this\.writeAudit\(manager/g) || []
+    ).length;
+    expect(totalWrites).toBeGreaterThanOrEqual(3);
   });
 
   it('preserva metadata segura', () => {
