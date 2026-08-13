@@ -1,6 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { SecurityAuditLog } from './security-audit-log.entity';
+import { getSecurityAuditActorUserId } from './security-audit-context';
 import { SecurityAuditService } from './security-audit.service';
 
 describe('SecurityAuditService', () => {
@@ -87,4 +88,29 @@ describe('SecurityAuditService', () => {
       expect(save).not.toHaveBeenCalled();
     },
   );
+  it('usa IP y User-Agent capturados cuando el input no los especifica', async () => {
+    getSecurityAuditActorUserId({
+      user: { userId: 7 },
+      ip: '127.0.0.1',
+      headers: {
+        'user-agent': 'TORO audit test',
+      },
+    });
+
+    await service.write(manager, {
+      actorUserId: 7,
+      action: 'security.user.updated',
+      entityType: 'user',
+      entityId: 8,
+      summary: 'Usuario actualizado',
+    });
+
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        ipAddress: '127.0.0.1',
+        userAgent: 'TORO audit test',
+      }),
+    );
+  });
+
 });

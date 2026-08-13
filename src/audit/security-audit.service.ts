@@ -4,6 +4,7 @@ import {
 } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { SecurityAuditLog } from './security-audit-log.entity';
+import { getSecurityAuditHttpContext } from './security-audit-context';
 
 export interface SecurityAuditWrite {
   actorUserId: number;
@@ -34,6 +35,7 @@ export class SecurityAuditService {
     }
 
     const repository = manager.getRepository(SecurityAuditLog);
+    const httpContext = getSecurityAuditHttpContext();
     const audit = repository.create({
       actorUserId: input.actorUserId,
       action: this.requiredText(
@@ -57,8 +59,14 @@ export class SecurityAuditService {
         'AUDIT_SUMMARY_INVALID',
       ),
       metadata: this.sanitizeMetadata(input.metadata),
-      ipAddress: this.optionalText(input.ipAddress, 45),
-      userAgent: this.optionalText(input.userAgent, 500),
+      ipAddress: this.optionalText(
+        input.ipAddress ?? httpContext?.ipAddress,
+        45,
+      ),
+      userAgent: this.optionalText(
+        input.userAgent ?? httpContext?.userAgent,
+        500,
+      ),
     });
 
     await repository.save(audit);

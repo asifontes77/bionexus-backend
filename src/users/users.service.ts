@@ -196,7 +196,7 @@ async updateUser(
       if (!existing) {
         return new HttpException('Usuario no encontrado', HttpStatus.NOT_FOUND) as never;
       }
-      const previousHidden = existing.hide_user;
+      const previousHidden = Boolean(existing.hide_user);
       if (user.hide_user === true && previousHidden !== true) {
         await this.assertCanHideUser(manager, existing.id);
       }

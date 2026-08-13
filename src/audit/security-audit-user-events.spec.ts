@@ -18,4 +18,12 @@ describe('user security audit events', () => {
   it('escribe con el mismo manager', () => {
     expect(source).toContain('this.securityAuditService.write(manager');
   });
+  it('normaliza el estado previo de MySQL antes de clasificar activacion', () => {
+    expect(source).toMatch(
+      /const previousHidden = Boolean\([^;]+\);/,
+    );
+    expect(source).toContain('security.user.activated');
+    expect(source).toContain('security.user.deactivated');
+  });
+
 });
