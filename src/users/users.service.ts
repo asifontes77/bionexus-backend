@@ -12,6 +12,7 @@ import * as bcrypt from 'bcrypt';
 import { ForbiddenException, MethodNotAllowedException, Optional } from '@nestjs/common';
 import { SecurityRole } from '../authorization/entities/security-role.entity';
 import { SecurityUserRole } from '../authorization/entities/security-user-role.entity';
+import { SecurityAuditService } from '../audit/security-audit.service';
 import {
   SafeUserResponse,
   toSafeUserResponse,
@@ -26,33 +27,29 @@ export class UsersService {
     private readonly laboratoryService: LaboratoryService,
     private readonly LicenseService: LicenseService,
   @Optional() private readonly dataSource?: DataSource,
+  @Optional() private readonly securityAuditService?: SecurityAuditService,
   ) {}
 
-  async createUser(
+async createUser(
     users: CreateUsersDto,
-    _actorUserId?: number,
+    actorUserId?: number,
   ): Promise<any> {
-    const userFond = await this.usersRepository.findOne({
-      where: {
-        user_name: users.user_name,
-      },
+    if (actorUserId === undefined) {
+      return this.createUserWithRepository(this.usersRepository, users);
+    }
+    if (!this.dataSource) throw new Error('USER_TRANSACTION_UNAVAILABLE');
+    return this.dataSource.transaction(async (manager) => {
+      const repository = manager.getRepository(User);
+      const result = await this.createUserWithRepository(repository, users);
+      if (result instanceof HttpException) return result;
+      await this.writeUserAudit(manager, actorUserId, {
+        action: 'security.user.created',
+        entityId: result.id,
+        summary: 'Usuario creado',
+        metadata: { userName: result.user_name },
+      });
+      return result;
     });
-
-    if (userFond) {
-      return new HttpException(
-        'Ya existe un usuario con ese nombre de usuario',
-        HttpStatus.CONFLICT,
-      );
-    }
-
-    if (users.password !== undefined) {
-      const password = users.password;
-      const passwordHash = await bcrypt.hash(password, 8);
-      users.password = passwordHash;
-    }
-    const savedUser = await this.usersRepository.save(users);
-
-    return toSafeUserResponse(savedUser);
   }
 
   async getUsers(): Promise<SafeUserResponse[]> {
@@ -182,39 +179,51 @@ export class UsersService {
     throw new MethodNotAllowedException('USER_PHYSICAL_DELETE_DISABLED');
   }
 
-  async updateUser(
+async updateUser(
     id: number,
     user: UpdateUserDto,
-    _actorUserId?: number,
+    actorUserId?: number,
   ): Promise<SafeUserResponse> {
-    if (user.hide_user === undefined) {
+    if (actorUserId === undefined && user.hide_user === undefined) {
       return this.updateUserWithRepository(this.usersRepository, id, user);
     }
-
     if (!this.dataSource) {
       throw new Error('USER_STATE_TRANSACTION_UNAVAILABLE');
     }
-
     return this.dataSource.transaction(async (manager) => {
-      const transactionalUsersRepository = manager.getRepository(User);
-      const userFound = await transactionalUsersRepository.findOne({
-        where: { id },
-      });
-
-      if (!userFound) {
+      const repository = manager.getRepository(User);
+      const existing = await repository.findOne({ where: { id } });
+      if (!existing) {
         return new HttpException('Usuario no encontrado', HttpStatus.NOT_FOUND) as never;
       }
-
-      if (user.hide_user === true && userFound.hide_user !== true) {
-        await this.assertCanHideUser(manager, userFound.id);
+      const previousHidden = existing.hide_user;
+      if (user.hide_user === true && previousHidden !== true) {
+        await this.assertCanHideUser(manager, existing.id);
       }
-
-      return this.updateUserWithRepository(
-        transactionalUsersRepository,
-        id,
-        user,
-        userFound,
+      const result = await this.updateUserWithRepository(
+        repository, id, user, existing,
       );
+      if (actorUserId !== undefined) {
+        const action = user.hide_user === true && previousHidden !== true
+          ? 'security.user.deactivated'
+          : user.hide_user === false && previousHidden === true
+            ? 'security.user.activated'
+            : 'security.user.updated';
+        await this.writeUserAudit(manager, actorUserId, {
+          action,
+          entityId: id,
+          summary: action === 'security.user.updated'
+            ? 'Usuario actualizado'
+            : action === 'security.user.activated'
+              ? 'Usuario activado'
+              : 'Usuario inactivado',
+          metadata: {
+            userName: result.user_name,
+            changedFields: this.getSafeUserChangedFields(user),
+          },
+        });
+      }
+      return result;
     });
   }
 
@@ -309,4 +318,58 @@ export class UsersService {
     const savedUser = await repository.save(updatedUser);
     return toSafeUserResponse(savedUser);
   }
+  private async createUserWithRepository(
+    repository: Repository<User>,
+    users: CreateUsersDto,
+  ): Promise<any> {
+    const existing = await repository.findOne({
+      where: { user_name: users.user_name },
+    });
+    if (existing) {
+      return new HttpException(
+        'Ya existe un usuario con ese nombre de usuario',
+        HttpStatus.CONFLICT,
+      );
+    }
+    const payload = { ...users };
+    if (payload.password !== undefined) {
+      payload.password = await bcrypt.hash(payload.password, 8);
+    }
+    const savedUser = await repository.save(payload);
+    return toSafeUserResponse(savedUser);
+  }
+
+  private async writeUserAudit(
+    manager: EntityManager,
+    actorUserId: number,
+    input: {
+      action: string;
+      entityId: number;
+      summary: string;
+      metadata: Record<string, unknown>;
+    },
+  ): Promise<void> {
+    if (!this.securityAuditService) {
+      throw new Error('SECURITY_AUDIT_SERVICE_UNAVAILABLE');
+    }
+    await this.securityAuditService.write(manager, {
+      actorUserId,
+      entityType: 'user',
+      ...input,
+    });
+  }
+
+  private getSafeUserChangedFields(user: UpdateUserDto): string[] {
+    const forbidden = new Set([
+      'password',
+      'passwordSignature',
+      'key_signing',
+      'key_recover',
+      'request_password',
+    ]);
+    return Object.keys(user).filter(
+      (field) => user[field as keyof UpdateUserDto] !== undefined && !forbidden.has(field),
+    );
+  }
+
 }
