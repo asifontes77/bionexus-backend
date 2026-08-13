@@ -114,16 +114,20 @@ describe('ParasiticformsController', () => {
       const payload = {
         description: 'Giardia',
       };
-
       const record = parasiticform(8, 'Giardia', false);
-
       service.createParasiticforms.mockResolvedValue(record);
 
-      await expect(controller.createParasiticforms(payload)).resolves.toBe(
-        record,
-      );
+      await expect(
+        controller.createParasiticforms(
+          authenticatedRequest(5),
+          payload,
+        ),
+      ).resolves.toBe(record);
 
-      expect(service.createParasiticforms).toHaveBeenCalledWith(payload);
+      expect(service.createParasiticforms).toHaveBeenCalledWith(
+        payload,
+        5,
+      );
     });
   });
 
@@ -147,7 +151,7 @@ describe('ParasiticformsController', () => {
         'parasiticforms.update',
       ]);
 
-      expect(service.updateParasiticforms).toHaveBeenCalledWith(1, payload);
+      expect(service.updateParasiticforms).toHaveBeenCalledWith(1, payload, expect.any(Number));
     });
 
     it('exige change-status cuando cambia annulled', async () => {
@@ -193,7 +197,7 @@ describe('ParasiticformsController', () => {
         'parasiticforms.change-status',
       ]);
 
-      expect(service.updateParasiticforms).toHaveBeenCalledWith(1, payload);
+      expect(service.updateParasiticforms).toHaveBeenCalledWith(1, payload, expect.any(Number));
     });
 
     it('rechaza la actualizacion cuando faltan permisos', async () => {
@@ -220,9 +224,7 @@ describe('ParasiticformsController', () => {
         controller.updateParasiticforms(request, 1, {
           description: 'Giardia',
         }),
-      ).rejects.toThrow(
-        new ForbiddenException('AUTHORIZATION_CONTEXT_UNAVAILABLE'),
-      );
+      ).rejects.toThrow('AUDIT_ACTOR_UNAVAILABLE');
 
       expect(authorizationService.hasAllPermissions).not.toHaveBeenCalled();
 
@@ -240,7 +242,7 @@ describe('ParasiticformsController', () => {
 
       expect(authorizationService.hasAllPermissions).not.toHaveBeenCalled();
 
-      expect(service.updateParasiticforms).toHaveBeenCalledWith(1, {});
+      expect(service.updateParasiticforms).toHaveBeenCalledWith(1, {}, 5);
     });
   });
 

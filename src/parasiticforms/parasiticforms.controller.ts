@@ -14,16 +14,14 @@ import { AuthorizationService } from '../authorization/authorization.service';
 import { RequirePermissions } from '../authorization/decorators/require-permissions.decorator';
 import { PermissionGuard } from '../authorization/guards/permission.guard';
 import { JwtUserGuard } from '../users/jwt-user.guard';
+import {
+  getSecurityAuditActorUserId,
+  SecurityAuthenticatedRequest,
+} from '../audit/security-audit-context';
 import { CreateParasiticformsDto } from './dto/create-parasiticforms.dto';
 import { UpdateParasiticformsDto } from './dto/update-parasiticforms.dto';
 import { ParasiticformsService } from './parasiticforms.service';
 
-interface AuthenticatedRequest {
-  user?: {
-    userId?: number;
-    username?: string;
-  };
-}
 
 @Controller('parasiticforms')
 export class ParasiticformsController {
@@ -56,22 +54,29 @@ export class ParasiticformsController {
   @UseGuards(JwtUserGuard, PermissionGuard)
   @RequirePermissions('parasiticforms.create')
   @Post()
-  createParasiticforms(@Body() body: CreateParasiticformsDto) {
-    return this.parasiticformsService.createParasiticforms(body);
+  createParasiticforms(
+    @Req() request: SecurityAuthenticatedRequest,
+    @Body() body: CreateParasiticformsDto,
+  ) {
+    const actorUserId = getSecurityAuditActorUserId(request);
+    return this.parasiticformsService.createParasiticforms(
+      body,
+      actorUserId ?? undefined,
+    );
   }
 
   @UseGuards(JwtUserGuard)
   @Patch(':id')
   async updateParasiticforms(
-    @Req() request: AuthenticatedRequest,
+    @Req() request: SecurityAuthenticatedRequest,
     @Param('id', ParseIntPipe) id: number,
     @Body() body: UpdateParasiticformsDto,
   ) {
-    const userId = request.user?.userId;
-
-    if (!Number.isInteger(userId) || userId === undefined || userId <= 0) {
+    const actorUserId = getSecurityAuditActorUserId(request);
+    if (actorUserId === null) {
       throw new ForbiddenException('AUTHORIZATION_CONTEXT_UNAVAILABLE');
     }
+    const userId = actorUserId;
 
     const requiredPermissions: string[] = [];
 
@@ -96,6 +101,10 @@ export class ParasiticformsController {
       }
     }
 
-    return this.parasiticformsService.updateParasiticforms(id, body);
+    return this.parasiticformsService.updateParasiticforms(
+      id,
+      body,
+      actorUserId,
+    );
   }
 }
