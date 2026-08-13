@@ -51,6 +51,29 @@ describe('UsersService identity management hardening', () => {
     );
   });
 
+  it('no consulta duplicidad de username para un parche exclusivo de estado', async () => {
+    const user = createUser(false);
+    transactionalUsersRepository.findOne.mockResolvedValueOnce(user);
+    rolesRepository.findOne.mockResolvedValue({ id: 1 });
+    userRolesRepository.findOne.mockResolvedValue(null);
+    transactionalUsersRepository.save.mockImplementation(async (value) => value);
+
+    await expect(
+      service.updateUser(7, { hide_user: true }),
+    ).resolves.toMatchObject({
+      id: 7,
+      hide_user: true,
+    });
+
+    expect(transactionalUsersRepository.findOne).toHaveBeenCalledTimes(1);
+    expect(transactionalUsersRepository.findOne).toHaveBeenCalledWith({
+      where: { id: 7 },
+    });
+    expect(transactionalUsersRepository.findOne).not.toHaveBeenCalledWith({
+      where: expect.objectContaining({ user_name: undefined }),
+    });
+  });
+
   it('reactiva un usuario dentro de una transaccion', async () => {
     const user = createUser(true);
     transactionalUsersRepository.findOne

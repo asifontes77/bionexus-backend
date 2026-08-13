@@ -271,15 +271,23 @@ export class UsersService {
       return new HttpException('Usuario no encontrado', HttpStatus.NOT_FOUND) as never;
     }
 
-    const userFondN = await repository.findOne({
-      where: { id: Not(id), user_name: user.user_name },
-    });
+    if (
+      user.user_name !== undefined &&
+      user.user_name !== userFound.user_name
+    ) {
+      const duplicatedUser = await repository.findOne({
+        where: {
+          id: Not(id),
+          user_name: user.user_name,
+        },
+      });
 
-    if (userFondN) {
-      return new HttpException(
-        'Ya existe un usuario con ese nombre de usuario',
-        HttpStatus.CONFLICT,
-      ) as never;
+      if (duplicatedUser) {
+        return new HttpException(
+          'Ya existe un usuario con ese nombre de usuario',
+          HttpStatus.CONFLICT,
+        ) as never;
+      }
     }
 
     if (user.password !== undefined) {
