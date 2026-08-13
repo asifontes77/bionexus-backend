@@ -117,6 +117,7 @@ export class AuthorizationAdministrationService {
   async updateRole(
     roleId: number,
     dto: UpdateSecurityRoleDto,
+    _actorUserId?: number,
   ): Promise<SecurityRole> {
     if (!Number.isInteger(roleId) || roleId <= 0) {
       throw new BadRequestException('ROLE_ID_INVALID');
@@ -188,7 +189,10 @@ export class AuthorizationAdministrationService {
 
     return this.rolesRepository.save(role);
   }
-  async createRole(dto: CreateSecurityRoleDto): Promise<SecurityRole> {
+  async createRole(
+    dto: CreateSecurityRoleDto,
+    _actorUserId?: number,
+  ): Promise<SecurityRole> {
     const code = this.normalizeCode(dto?.code);
     const name = this.normalizeRequiredText(
       dto?.name,
@@ -230,6 +234,7 @@ export class AuthorizationAdministrationService {
   async replaceRolePermissions(
     roleId: number,
     dto: ReplaceRolePermissionsDto,
+    _actorUserId?: number,
   ): Promise<SecurityPermission[]> {
     if (!Number.isInteger(roleId) || roleId <= 0) {
       throw new BadRequestException('ROLE_ID_INVALID');
@@ -573,6 +578,7 @@ export class AuthorizationAdministrationService {
   async replaceUserRoles(
     userId: number,
     dto: ReplaceUserRolesDto,
+    _actorUserId?: number,
   ): Promise<SecurityRole[]> {
     if (!Number.isInteger(userId) || userId <= 0) {
       throw new BadRequestException('USER_ID_INVALID');
@@ -701,6 +707,7 @@ export class AuthorizationAdministrationService {
   async replaceUserPermissionOverrides(
     userId: number,
     dto: ReplaceUserPermissionOverridesDto,
+    _actorUserId?: number,
   ): Promise<AuthorizationPermissionOverrideView[]> {
     if (!Number.isInteger(userId) || userId <= 0) {
       throw new BadRequestException('USER_ID_INVALID');

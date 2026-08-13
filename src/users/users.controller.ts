@@ -1,4 +1,4 @@
-﻿import {
+import {
   Body,
   Controller,
   Get,
@@ -7,6 +7,7 @@
   ParseIntPipe,
   Delete,
   Patch,
+  Req,
   UseInterceptors,
   UseGuards,
   UploadedFile,
@@ -21,6 +22,10 @@ import { RequirePermissions } from '../authorization/decorators/require-permissi
 import { PermissionGuard } from '../authorization/guards/permission.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
+import {
+  getSecurityAuditActorUserId,
+  SecurityAuthenticatedRequest,
+} from '../audit/security-audit-context';
 
 @Controller('users')
 export class UsersController {
@@ -59,8 +64,14 @@ export class UsersController {
   @UseGuards(JwtUserGuard, PermissionGuard)
   @RequirePermissions('security.users.create')
   @Post('/insert')
-  createUser(@Body() newUser: CreateUsersDto) {
-    return this.usersService.createUser(newUser);
+  createUser(
+    @Body() newUser: CreateUsersDto,
+    @Req() request?: SecurityAuthenticatedRequest,
+  ) {
+    const actorUserId = getSecurityAuditActorUserId(request);
+    return actorUserId === null
+      ? this.usersService.createUser(newUser)
+      : this.usersService.createUser(newUser, actorUserId);
   }
 
   @UseGuards(JwtUserGuard, PermissionGuard)
@@ -102,8 +113,12 @@ export class UsersController {
   updateUser(
     @Param('id', ParseIntPipe) id: number,
     @Body() user: UpdateUserDto,
+    @Req() request?: SecurityAuthenticatedRequest,
   ) {
-    return this.usersService.updateUser(id, user);
+    const actorUserId = getSecurityAuditActorUserId(request);
+    return actorUserId === null
+      ? this.usersService.updateUser(id, user)
+      : this.usersService.updateUser(id, user, actorUserId);
   }
 
   @UseGuards(JwtUserGuard, PermissionGuard)

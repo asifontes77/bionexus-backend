@@ -21,6 +21,10 @@ import { UpdateSecurityRoleDto } from './dto/update-security-role.dto';
 import { RequirePermissions } from './decorators/require-permissions.decorator';
 import { PermissionGuard } from './guards/permission.guard';
 import { JwtUserGuard } from '../users/jwt-user.guard';
+import {
+  getSecurityAuditActorUserId,
+  SecurityAuthenticatedRequest,
+} from '../audit/security-audit-context';
 
 interface AuthenticatedRequest {
   user?: {
@@ -59,11 +63,19 @@ export class AuthorizationController {
   async replaceUserPermissionOverrides(
     @Param('id', ParseIntPipe) userId: number,
     @Body() body: ReplaceUserPermissionOverridesDto,
+    @Req() request?: SecurityAuthenticatedRequest,
   ) {
-    return this.administrationService.replaceUserPermissionOverrides(
-      userId,
-      body,
-    );
+    const actorUserId = getSecurityAuditActorUserId(request);
+    return actorUserId === null
+      ? this.administrationService.replaceUserPermissionOverrides(
+          userId,
+          body,
+        )
+      : this.administrationService.replaceUserPermissionOverrides(
+          userId,
+          body,
+          actorUserId,
+        );
   }
   @UseGuards(JwtUserGuard, PermissionGuard)
   @RequirePermissions('security.users.assign-roles')
@@ -71,8 +83,16 @@ export class AuthorizationController {
   async replaceUserRoles(
     @Param('id', ParseIntPipe) userId: number,
     @Body() body: ReplaceUserRolesDto,
+    @Req() request?: SecurityAuthenticatedRequest,
   ) {
-    return this.administrationService.replaceUserRoles(userId, body);
+    const actorUserId = getSecurityAuditActorUserId(request);
+    return actorUserId === null
+      ? this.administrationService.replaceUserRoles(userId, body)
+      : this.administrationService.replaceUserRoles(
+          userId,
+          body,
+          actorUserId,
+        );
   }
   @UseGuards(JwtUserGuard, PermissionGuard)
   @RequirePermissions('security.users.read')
@@ -113,8 +133,16 @@ export class AuthorizationController {
   async replaceRolePermissions(
     @Param('id', ParseIntPipe) roleId: number,
     @Body() body: ReplaceRolePermissionsDto,
+    @Req() request?: SecurityAuthenticatedRequest,
   ) {
-    return this.administrationService.replaceRolePermissions(roleId, body);
+    const actorUserId = getSecurityAuditActorUserId(request);
+    return actorUserId === null
+      ? this.administrationService.replaceRolePermissions(roleId, body)
+      : this.administrationService.replaceRolePermissions(
+          roleId,
+          body,
+          actorUserId,
+        );
   }
   @UseGuards(JwtUserGuard, PermissionGuard)
   @RequirePermissions('security.roles.update')
@@ -122,13 +150,27 @@ export class AuthorizationController {
   async updateRole(
     @Param('id', ParseIntPipe) roleId: number,
     @Body() body: UpdateSecurityRoleDto,
+    @Req() request?: SecurityAuthenticatedRequest,
   ) {
-    return this.administrationService.updateRole(roleId, body);
+    const actorUserId = getSecurityAuditActorUserId(request);
+    return actorUserId === null
+      ? this.administrationService.updateRole(roleId, body)
+      : this.administrationService.updateRole(
+          roleId,
+          body,
+          actorUserId,
+        );
   }
   @UseGuards(JwtUserGuard, PermissionGuard)
   @RequirePermissions('security.roles.create')
   @Post('roles')
-  async createRole(@Body() body: CreateSecurityRoleDto) {
-    return this.administrationService.createRole(body);
+  async createRole(
+    @Body() body: CreateSecurityRoleDto,
+    @Req() request?: SecurityAuthenticatedRequest,
+  ) {
+    const actorUserId = getSecurityAuditActorUserId(request);
+    return actorUserId === null
+      ? this.administrationService.createRole(body)
+      : this.administrationService.createRole(body, actorUserId);
   }
 }

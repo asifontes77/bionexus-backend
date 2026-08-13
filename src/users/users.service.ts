@@ -28,7 +28,10 @@ export class UsersService {
   @Optional() private readonly dataSource?: DataSource,
   ) {}
 
-  async createUser(users: CreateUsersDto): Promise<any> {
+  async createUser(
+    users: CreateUsersDto,
+    _actorUserId?: number,
+  ): Promise<any> {
     const userFond = await this.usersRepository.findOne({
       where: {
         user_name: users.user_name,
@@ -179,7 +182,11 @@ export class UsersService {
     throw new MethodNotAllowedException('USER_PHYSICAL_DELETE_DISABLED');
   }
 
-  async updateUser(id: number, user: UpdateUserDto): Promise<SafeUserResponse> {
+  async updateUser(
+    id: number,
+    user: UpdateUserDto,
+    _actorUserId?: number,
+  ): Promise<SafeUserResponse> {
     if (user.hide_user === undefined) {
       return this.updateUserWithRepository(this.usersRepository, id, user);
     }
