@@ -1,4 +1,4 @@
-﻿import { SafeUserResponse } from '../../users/responses/user-response.mapper';
+import { SafeUserResponse } from '../../users/responses/user-response.mapper';
 import { SecurityRole } from '../entities/security-role.entity';
 import { SecurityPermission } from '../entities/security-permission.entity';
 import { SecurityPermissionEffect } from '../entities/security-user-permission-override.entity';
@@ -15,4 +15,9 @@ export interface AuthorizationUserAdministration {
   inheritedPermissions: SecurityPermission[];
   permissionOverrides: AuthorizationPermissionOverrideView[];
   context: AuthorizationContext | null;
+}
+
+export interface AuthorizationUserListItem {
+  user: SafeUserResponse;
+  assignedRoles: SecurityRole[];
 }

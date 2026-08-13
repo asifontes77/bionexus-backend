@@ -1,4 +1,4 @@
-﻿import {
+import {
   BadRequestException,
   ConflictException,
   ForbiddenException,
@@ -25,6 +25,7 @@ import { AuthorizationService } from './authorization.service';
 import {
   AuthorizationPermissionOverrideView,
   AuthorizationUserAdministration,
+  AuthorizationUserListItem,
 } from './models/authorization-user-administration';
 import { toSafeUserResponse } from '../users/responses/user-response.mapper';
 
@@ -403,6 +404,51 @@ export class AuthorizationAdministrationService {
     }
 
     return normalizedValue;
+  }
+
+  async getUsersAdministration(): Promise<AuthorizationUserListItem[]> {
+    const users = await this.userRepository.find({
+      order: {
+        name: 'ASC',
+      },
+    });
+
+    if (users.length === 0) {
+      return [];
+    }
+
+    const userIds = users
+      .map((user) => user.id)
+      .filter((userId) => Number.isInteger(userId) && userId > 0);
+    const assignments = await this.userRolesRepository.find({
+      where: { userId: In(userIds) },
+    });
+    const roleIds = Array.from(
+      new Set(
+        assignments
+          .map((assignment) => assignment.roleId)
+          .filter((roleId) => Number.isInteger(roleId) && roleId > 0),
+      ),
+    );
+    const roles = roleIds.length === 0
+      ? []
+      : await this.rolesRepository.find({ where: { id: In(roleIds) } });
+    const rolesById = new Map(roles.map((role) => [role.id, role]));
+    const roleIdsByUserId = new Map<number, number[]>();
+
+    for (const assignment of assignments) {
+      const currentRoleIds = roleIdsByUserId.get(assignment.userId) ?? [];
+      currentRoleIds.push(assignment.roleId);
+      roleIdsByUserId.set(assignment.userId, currentRoleIds);
+    }
+
+    return users.map((user) => ({
+      user: toSafeUserResponse(user),
+      assignedRoles: (roleIdsByUserId.get(user.id) ?? [])
+        .map((roleId) => rolesById.get(roleId))
+        .filter((role): role is SecurityRole => role !== undefined)
+        .sort((left, right) => left.code.localeCompare(right.code)),
+    }));
   }
 
   async getUserAuthorization(

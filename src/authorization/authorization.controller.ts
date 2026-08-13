@@ -1,4 +1,4 @@
-﻿import {
+import {
   Body,
   Controller,
   ForbiddenException,
@@ -74,6 +74,13 @@ export class AuthorizationController {
   ) {
     return this.administrationService.replaceUserRoles(userId, body);
   }
+  @UseGuards(JwtUserGuard, PermissionGuard)
+  @RequirePermissions('security.users.read')
+  @Get('users')
+  async getUsersAdministration() {
+    return this.administrationService.getUsersAdministration();
+  }
+
   @UseGuards(JwtUserGuard, PermissionGuard)
   @RequirePermissions('security.users.read')
   @Get('users/:id')
