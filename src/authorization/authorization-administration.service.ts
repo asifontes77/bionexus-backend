@@ -4,9 +4,10 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
+  Optional,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, In, Not, Repository } from 'typeorm';
+import { DataSource, EntityManager, In, Not, Repository } from 'typeorm';
 import { CreateSecurityRoleDto } from './dto/create-security-role.dto';
 import { ReplaceUserPermissionOverridesDto } from './dto/replace-user-permission-overrides.dto';
 import { UpdateSecurityRoleDto } from './dto/update-security-role.dto';
@@ -28,6 +29,7 @@ import {
   AuthorizationUserListItem,
 } from './models/authorization-user-administration';
 import { toSafeUserResponse } from '../users/responses/user-response.mapper';
+import { SecurityAuditService } from '../audit/security-audit.service';
 
 @Injectable()
 export class AuthorizationAdministrationService {
@@ -46,6 +48,8 @@ export class AuthorizationAdministrationService {
     private readonly userPermissionOverridesRepository: Repository<SecurityUserPermissionOverride>,
     private readonly authorizationService: AuthorizationService,
     private readonly dataSource: DataSource,
+    @Optional()
+    private readonly securityAuditService?: SecurityAuditService,
   ) {}
 
   async getRoles(): Promise<SecurityRole[]> {
@@ -117,7 +121,7 @@ export class AuthorizationAdministrationService {
   async updateRole(
     roleId: number,
     dto: UpdateSecurityRoleDto,
-    _actorUserId?: number,
+    actorUserId?: number,
   ): Promise<SecurityRole> {
     if (!Number.isInteger(roleId) || roleId <= 0) {
       throw new BadRequestException('ROLE_ID_INVALID');
@@ -191,7 +195,7 @@ export class AuthorizationAdministrationService {
   }
   async createRole(
     dto: CreateSecurityRoleDto,
-    _actorUserId?: number,
+    actorUserId?: number,
   ): Promise<SecurityRole> {
     const code = this.normalizeCode(dto?.code);
     const name = this.normalizeRequiredText(
@@ -234,7 +238,7 @@ export class AuthorizationAdministrationService {
   async replaceRolePermissions(
     roleId: number,
     dto: ReplaceRolePermissionsDto,
-    _actorUserId?: number,
+    actorUserId?: number,
   ): Promise<SecurityPermission[]> {
     if (!Number.isInteger(roleId) || roleId <= 0) {
       throw new BadRequestException('ROLE_ID_INVALID');
@@ -267,6 +271,11 @@ export class AuthorizationAdministrationService {
       const transactionalRolePermissionsRepository = manager.getRepository(
         SecurityRolePermission,
       );
+      const previousAssignments = actorUserId === undefined
+        ? []
+        : await transactionalRolePermissionsRepository.find({
+            where: { roleId },
+          });
 
       const role = await transactionalRolesRepository.findOne({
         where: { id: roleId },
@@ -331,12 +340,31 @@ export class AuthorizationAdministrationService {
         await transactionalRolePermissionsRepository.save(newAssignments);
       }
 
-      return selectedPermissions.sort((a, b) => {
+      const sortedPermissions = selectedPermissions.sort((a, b) => {
         if (a.module !== b.module) {
           return a.module.localeCompare(b.module);
         }
         return a.code.localeCompare(b.code);
       });
+      await this.writeAudit(manager, actorUserId, {
+        action: 'security.role.permissions.replaced',
+        entityType: 'security_role',
+        entityId: roleId,
+        summary: 'Permisos del rol actualizados',
+        metadata: {
+          roleCode: role.code,
+          beforePermissionIds: previousAssignments.map(
+            (assignment) => assignment.permissionId,
+          ),
+          afterPermissionIds: sortedPermissions.map(
+            (permission) => permission.id,
+          ),
+          afterPermissionCodes: sortedPermissions.map(
+            (permission) => permission.code,
+          ),
+        },
+      });
+      return sortedPermissions;
     });
   }
 
@@ -578,7 +606,7 @@ export class AuthorizationAdministrationService {
   async replaceUserRoles(
     userId: number,
     dto: ReplaceUserRolesDto,
-    _actorUserId?: number,
+    actorUserId?: number,
   ): Promise<SecurityRole[]> {
     if (!Number.isInteger(userId) || userId <= 0) {
       throw new BadRequestException('USER_ID_INVALID');
@@ -701,13 +729,27 @@ export class AuthorizationAdministrationService {
         await transactionalUserRolesRepository.save(newAssignments);
       }
 
-      return selectedRoles.sort((a, b) => a.code.localeCompare(b.code));
+      const sortedRoles = selectedRoles.sort((a, b) =>
+        a.code.localeCompare(b.code),
+      );
+      await this.writeAudit(manager, actorUserId, {
+        action: 'security.user.roles.replaced',
+        entityType: 'user',
+        entityId: userId,
+        summary: 'Roles del usuario actualizados',
+        metadata: {
+          beforeRoleIds: currentRoleIds,
+          afterRoleIds: sortedRoles.map((roleItem) => roleItem.id),
+          afterRoleCodes: sortedRoles.map((roleItem) => roleItem.code),
+        },
+      });
+      return sortedRoles;
     });
   }
   async replaceUserPermissionOverrides(
     userId: number,
     dto: ReplaceUserPermissionOverridesDto,
-    _actorUserId?: number,
+    actorUserId?: number,
   ): Promise<AuthorizationPermissionOverrideView[]> {
     if (!Number.isInteger(userId) || userId <= 0) {
       throw new BadRequestException('USER_ID_INVALID');
@@ -768,6 +810,11 @@ export class AuthorizationAdministrationService {
       const transactionalOverridesRepository = manager.getRepository(
         SecurityUserPermissionOverride,
       );
+      const previousOverrides = actorUserId === undefined
+        ? []
+        : await transactionalOverridesRepository.find({
+            where: { userId },
+          });
 
       const user = await transactionalUserRepository.findOne({
         where: {
@@ -824,7 +871,7 @@ export class AuthorizationAdministrationService {
         selectedPermissions.map((permission) => [permission.id, permission]),
       );
 
-      return normalizedOverrides
+      const sortedOverrides = normalizedOverrides
         .map((override) => ({
           permission: permissionsById.get(
             override.permissionId,
@@ -837,13 +884,50 @@ export class AuthorizationAdministrationService {
               right.permission.module,
             );
           }
-
           if (left.permission.code !== right.permission.code) {
             return left.permission.code.localeCompare(right.permission.code);
           }
-
           return left.effect.localeCompare(right.effect);
         });
+      await this.writeAudit(manager, actorUserId, {
+        action: 'security.user.permission_overrides.replaced',
+        entityType: 'user',
+        entityId: userId,
+        summary: 'Excepciones de permisos del usuario actualizadas',
+        metadata: {
+          beforeOverrides: previousOverrides.map((override) => ({
+            permissionId: override.permissionId,
+            effect: override.effect,
+          })),
+          afterOverrides: sortedOverrides.map((override) => ({
+            permissionId: override.permission.id,
+            permissionCode: override.permission.code,
+            effect: override.effect,
+          })),
+        },
+      });
+      return sortedOverrides;
     });
   }
+  private async writeAudit(
+    manager: EntityManager,
+    actorUserId: number | undefined,
+    input: {
+      action: string;
+      entityType: string;
+      entityId: number;
+      summary: string;
+      metadata: Record<string, unknown>;
+    },
+  ): Promise<void> {
+    if (actorUserId === undefined) return;
+    if (!this.securityAuditService) {
+      throw new Error('SECURITY_AUDIT_SERVICE_UNAVAILABLE');
+    }
+    await this.securityAuditService.write(manager, {
+      actorUserId,
+      ...input,
+    });
+  }
+
 }
