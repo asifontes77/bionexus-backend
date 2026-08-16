@@ -39,12 +39,14 @@ export class TypePaymentService {
   ): Promise<TypePayment> {
     const normalized = this.normalizeCreate(body);
     if (actorUserId === undefined) {
+      await this.ensureDescriptionIsUnique(this.typePaymentRepository, normalized.description);
       const record = this.typePaymentRepository.create(normalized);
       return this.typePaymentRepository.save(record);
     }
     if (!this.dataSource) throw new Error('TYPEPAYMENT_TRANSACTION_UNAVAILABLE');
     return this.dataSource.transaction(async (manager) => {
       const repository = manager.getRepository(TypePayment);
+      await this.ensureDescriptionIsUnique(repository, normalized.description);
       const saved = await repository.save(repository.create(normalized));
       await this.writeAudit(manager, actorUserId, {
         action: 'typepayment.created',
@@ -67,6 +69,10 @@ export class TypePaymentService {
       throw new BadRequestException('TYPEPAYMENT_UPDATE_REQUIRED');
     }
     if (actorUserId === undefined) {
+      if (Object.prototype.hasOwnProperty.call(body, 'description')) {
+        const normalizedDescription = this.normalizeRequiredText(body.description, 'TYPEPAYMENT_DESCRIPTION_REQUIRED');
+        await this.ensureDescriptionIsUnique(this.typePaymentRepository, normalizedDescription, id);
+      }
       return this.updateWithRepository(this.typePaymentRepository, id, body);
     }
     if (!this.dataSource) throw new Error('TYPEPAYMENT_TRANSACTION_UNAVAILABLE');
@@ -74,6 +80,10 @@ export class TypePaymentService {
       const repository = manager.getRepository(TypePayment);
       const existing = await repository.findOne({ where: { id } });
       if (!existing) throw new NotFoundException('TYPEPAYMENT_NOT_FOUND');
+      if (Object.prototype.hasOwnProperty.call(body, 'description')) {
+        const normalizedDescription = this.normalizeRequiredText(body.description, 'TYPEPAYMENT_DESCRIPTION_REQUIRED');
+        await this.ensureDescriptionIsUnique(repository, normalizedDescription, id);
+      }
       const previous = this.auditMetadata(existing, changedFields);
       const previousAnnulled = Boolean(existing.annulled);
       const saved = await this.updateWithRepository(repository, id, body, existing);
@@ -127,6 +137,22 @@ export class TypePaymentService {
     }
     return repository.save(record);
   }
+  private async ensureDescriptionIsUnique(
+    repository: Repository<TypePayment>,
+    description: string,
+    excludedId?: number,
+  ): Promise<void> {
+    const normalizedDescription = description.trim().toLocaleLowerCase();
+    const records = await repository.find({ select: { id: true, description: true } });
+    const duplicate = (records ?? []).some((record) =>
+      record.id !== excludedId &&
+      String(record.description ?? '').trim().toLocaleLowerCase() === normalizedDescription,
+    );
+    if (duplicate) {
+      throw new BadRequestException('TYPEPAYMENT_DESCRIPTION_ALREADY_EXISTS');
+    }
+  }
+
 
   private normalizeCreate(body: CreateTypepaymantDto): Partial<TypePayment> {
     return {

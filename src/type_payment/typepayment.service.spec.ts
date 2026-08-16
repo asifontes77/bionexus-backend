@@ -50,6 +50,13 @@ describe('TypePaymentService', () => {
     });
   });
 
+  it('rechaza create con descripcion principal duplicada sin distinguir espacios ni mayusculas', async () => {
+    find.mockResolvedValue([{ id: 7, description: ' Efectivo ' }]);
+    await expect(service.createTypepayment({ description: 'efectivo' }))
+      .rejects.toMatchObject({ response: { message: 'TYPEPAYMENT_DESCRIPTION_ALREADY_EXISTS' } });
+    expect(save).not.toHaveBeenCalled();
+  });
+
   it('rechaza create sin descripcion', async () => {
     await expect(service.createTypepayment({ description: ' ' }))
       .rejects.toMatchObject({ response: { message: 'TYPEPAYMENT_DESCRIPTION_REQUIRED' } });
@@ -62,6 +69,21 @@ describe('TypePaymentService', () => {
     expect(record.description_1).toBe('Referencia');
     expect(record.only_dollars).toBe(true);
     expect(record.description).toBe('Efectivo');
+  });
+
+  it('rechaza update con descripcion principal duplicada y excluye el mismo id', async () => {
+    find.mockResolvedValue([{ id: 1, description: 'Actual' }, { id: 2, description: ' Tarjeta ' }]);
+    await expect(service.updateTypepayment(1, { description: 'tarjeta' }))
+      .rejects.toMatchObject({ response: { message: 'TYPEPAYMENT_DESCRIPTION_ALREADY_EXISTS' } });
+    expect(save).not.toHaveBeenCalled();
+  });
+
+  it('permite conservar la misma descripcion del registro actual', async () => {
+    const record = payment();
+    find.mockResolvedValue([{ id: 1, description: ' Efectivo ' }]);
+    findOne.mockResolvedValue(record);
+    await service.updateTypepayment(1, { description: 'efectivo' });
+    expect(record.description).toBe('efectivo');
   });
 
   it('rechaza payload vacio', async () => {
