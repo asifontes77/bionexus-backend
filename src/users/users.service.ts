@@ -1,4 +1,4 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+﻿import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './users.entity';
 import { DataSource, EntityManager, In, Repository, Not } from 'typeorm';
@@ -41,7 +41,6 @@ async createUser(
     return this.dataSource.transaction(async (manager) => {
       const repository = manager.getRepository(User);
       const result = await this.createUserWithRepository(repository, users);
-      if (result instanceof HttpException) return result;
       await this.writeUserAudit(manager, actorUserId, {
         action: 'security.user.created',
         entityId: result.id,
@@ -322,23 +321,45 @@ async updateUser(
     repository: Repository<User>,
     users: CreateUsersDto,
   ): Promise<any> {
-    const existing = await repository.findOne({
+    const existingUserName = await repository.findOne({
       where: { user_name: users.user_name },
     });
-    if (existing) {
-      return new HttpException(
+    if (existingUserName) {
+      throw new HttpException(
         'Ya existe un usuario con ese nombre de usuario',
         HttpStatus.CONFLICT,
       );
     }
+
+    const existingEmail = await repository.findOne({
+      where: { email: users.email },
+    });
+    if (existingEmail) {
+      throw new HttpException(
+        'Ya existe un usuario con ese correo electronico',
+        HttpStatus.CONFLICT,
+      );
+    }
+
     const payload = { ...users };
     if (payload.password !== undefined) {
       payload.password = await bcrypt.hash(payload.password, 8);
     }
-    const savedUser = await repository.save(payload);
-    return toSafeUserResponse(savedUser);
-  }
 
+    try {
+      const savedUser = await repository.save(payload);
+      return toSafeUserResponse(savedUser);
+    } catch (error) {
+      const databaseError = error as { code?: string; errno?: number };
+      if (databaseError.code === 'ER_DUP_ENTRY' || databaseError.errno === 1062) {
+        throw new HttpException(
+          'Ya existe un usuario con ese nombre de usuario o correo electronico',
+          HttpStatus.CONFLICT,
+        );
+      }
+      throw error;
+    }
+  }
   private async writeUserAudit(
     manager: EntityManager,
     actorUserId: number,
