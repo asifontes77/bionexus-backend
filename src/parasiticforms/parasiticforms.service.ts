@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
   Optional,
@@ -60,13 +61,14 @@ export class ParasiticformsService {
     actorUserId?: number,
   ): Promise<Parasiticforms> {
     const description = this.normalizeDescription(body?.description);
+    await this.ensureDescriptionAvailable(this.parasiticformsRepository, description);
 
     if (actorUserId === undefined) {
       const parasiticform = this.parasiticformsRepository.create({
         description,
         annulled: false,
       });
-      return this.parasiticformsRepository.save(parasiticform);
+      return this.saveParasiticform(this.parasiticformsRepository, parasiticform);
     }
 
     if (!this.dataSource) {
@@ -79,7 +81,7 @@ export class ParasiticformsService {
         description,
         annulled: false,
       });
-      const saved = await repository.save(parasiticform);
+      const saved = await this.saveParasiticform(repository, parasiticform);
       await this.writeAudit(manager, actorUserId, {
         action: 'parasiticforms.created',
         entityId: saved.id,
@@ -191,7 +193,9 @@ export class ParasiticformsService {
       throw new NotFoundException('PARASITICFORM_NOT_FOUND');
     }
     if (hasDescription) {
-      parasiticform.description = this.normalizeDescription(body.description);
+      const description = this.normalizeDescription(body.description);
+      await this.ensureDescriptionAvailable(repository, description, id);
+      parasiticform.description = description;
     }
     if (hasAnnulled) {
       if (typeof body.annulled !== 'boolean') {
@@ -199,7 +203,7 @@ export class ParasiticformsService {
       }
       parasiticform.annulled = body.annulled;
     }
-    return repository.save(parasiticform);
+    return this.saveParasiticform(repository, parasiticform);
   }
 
   private async writeAudit(
@@ -228,6 +232,36 @@ export class ParasiticformsService {
     }
   }
 
+  private async ensureDescriptionAvailable(
+    repository: Repository<Parasiticforms>,
+    description: string,
+    excludedId?: number,
+  ): Promise<void> {
+    const duplicate = await repository
+      .createQueryBuilder('parasiticform')
+      .where('LOWER(TRIM(parasiticform.description)) = LOWER(:description)', { description })
+      .andWhere(excludedId === undefined ? '1 = 1' : 'parasiticform.id <> :excludedId', { excludedId })
+      .getOne();
+    if (duplicate) {
+      throw new ConflictException('PARASITICFORM_DESCRIPTION_ALREADY_EXISTS');
+    }
+  }
+  private async saveParasiticform(
+    repository: Repository<Parasiticforms>,
+    parasiticform: Parasiticforms,
+  ): Promise<Parasiticforms> {
+    try {
+      return await repository.save(parasiticform);
+    } catch (error) {
+      const driverError = error && typeof error === 'object' && 'driverError' in error
+        ? error.driverError as { code?: string }
+        : undefined;
+      if (driverError?.code === 'ER_DUP_ENTRY') {
+        throw new ConflictException('PARASITICFORM_DESCRIPTION_ALREADY_EXISTS');
+      }
+      throw error;
+    }
+  }
   private normalizeDescription(description: unknown): string {
     if (typeof description !== 'string') {
       throw new BadRequestException('PARASITICFORM_DESCRIPTION_REQUIRED');

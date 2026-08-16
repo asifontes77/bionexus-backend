@@ -9,18 +9,26 @@ describe('ParasiticformsService', () => {
   let findOne: jest.Mock;
   let create: jest.Mock;
   let save: jest.Mock;
+  let createQueryBuilder: jest.Mock;
+  let getOne: jest.Mock;
 
   beforeEach(() => {
     find = jest.fn();
     findOne = jest.fn();
     create = jest.fn();
     save = jest.fn();
+    getOne = jest.fn().mockResolvedValue(null);
+    const queryBuilder = { where: jest.fn(), andWhere: jest.fn(), getOne };
+    queryBuilder.where.mockReturnValue(queryBuilder);
+    queryBuilder.andWhere.mockReturnValue(queryBuilder);
+    createQueryBuilder = jest.fn().mockReturnValue(queryBuilder);
 
     const repository = {
       find,
       findOne,
       create,
       save,
+      createQueryBuilder,
     } as unknown as Repository<Parasiticforms>;
 
     service = new ParasiticformsService(repository);
@@ -99,6 +107,11 @@ describe('ParasiticformsService', () => {
   });
 
   describe('createParasiticforms', () => {
+    it('rechaza una descripcion duplicada normalizada', async () => {
+      getOne.mockResolvedValue(parasiticform(4, 'Giardia', false));
+      await expect(service.createParasiticforms({ description: '  GIARDIA  ' })).rejects.toThrow('PARASITICFORM_DESCRIPTION_ALREADY_EXISTS');
+      expect(save).not.toHaveBeenCalled();
+    });
     it('normaliza la descripcion y crea el registro visible', async () => {
       const createdRecord = parasiticform(0, 'Giardia', false);
 
