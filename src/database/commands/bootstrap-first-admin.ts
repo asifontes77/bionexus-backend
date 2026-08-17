@@ -4,11 +4,11 @@ import { DataSource, EntityManager } from 'typeorm';
 import AppDataSource from '../data-source';
 
 export interface FirstAdminEnvironment {
-  TORO_ADMIN_USERNAME?: string;
-  TORO_ADMIN_PASSWORD?: string;
-  TORO_ADMIN_NAME?: string;
-  TORO_ADMIN_TELEPHONE?: string;
-  TORO_ADMIN_EMAIL?: string;
+  BIO_NEXUS_ADMIN_USERNAME?: string;
+  BIO_NEXUS_ADMIN_PASSWORD?: string;
+  BIO_NEXUS_ADMIN_NAME?: string;
+  BIO_NEXUS_ADMIN_TELEPHONE?: string;
+  BIO_NEXUS_ADMIN_EMAIL?: string;
 }
 
 export interface FirstAdminInput {
@@ -37,32 +37,32 @@ export function resolveFirstAdminInput(
   environment: FirstAdminEnvironment,
 ): FirstAdminInput {
   const username = normalizeRequired(
-    environment.TORO_ADMIN_USERNAME,
-    'TORO_ADMIN_USERNAME',
+    environment.BIO_NEXUS_ADMIN_USERNAME,
+    'BIO_NEXUS_ADMIN_USERNAME',
   );
   const password = normalizeRequired(
-    environment.TORO_ADMIN_PASSWORD,
-    'TORO_ADMIN_PASSWORD',
+    environment.BIO_NEXUS_ADMIN_PASSWORD,
+    'BIO_NEXUS_ADMIN_PASSWORD',
     false,
   );
   const name = normalizeRequired(
-    environment.TORO_ADMIN_NAME,
-    'TORO_ADMIN_NAME',
+    environment.BIO_NEXUS_ADMIN_NAME,
+    'BIO_NEXUS_ADMIN_NAME',
   );
   const telephone = normalizeRequired(
-    environment.TORO_ADMIN_TELEPHONE,
-    'TORO_ADMIN_TELEPHONE',
+    environment.BIO_NEXUS_ADMIN_TELEPHONE,
+    'BIO_NEXUS_ADMIN_TELEPHONE',
   );
-  const emailValue = environment.TORO_ADMIN_EMAIL?.trim() ?? '';
+  const emailValue = environment.BIO_NEXUS_ADMIN_EMAIL?.trim() ?? '';
 
-  if (username.length > 100) throw new Error('TORO_ADMIN_USERNAME_TOO_LONG');
+  if (username.length > 100) throw new Error('BIO_NEXUS_ADMIN_USERNAME_TOO_LONG');
   if (!/^[A-Za-z0-9._-]+$/.test(username))
-    throw new Error('TORO_ADMIN_USERNAME_INVALID');
-  if (name.length > 100) throw new Error('TORO_ADMIN_NAME_TOO_LONG');
-  if (telephone.length > 20) throw new Error('TORO_ADMIN_TELEPHONE_TOO_LONG');
-  if (emailValue.length > 100) throw new Error('TORO_ADMIN_EMAIL_TOO_LONG');
+    throw new Error('BIO_NEXUS_ADMIN_USERNAME_INVALID');
+  if (name.length > 100) throw new Error('BIO_NEXUS_ADMIN_NAME_TOO_LONG');
+  if (telephone.length > 20) throw new Error('BIO_NEXUS_ADMIN_TELEPHONE_TOO_LONG');
+  if (emailValue.length > 100) throw new Error('BIO_NEXUS_ADMIN_EMAIL_TOO_LONG');
   if (emailValue !== '' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue)) {
-    throw new Error('TORO_ADMIN_EMAIL_INVALID');
+    throw new Error('BIO_NEXUS_ADMIN_EMAIL_INVALID');
   }
   validatePassword(password);
 
@@ -189,16 +189,16 @@ function normalizeRequired(
 }
 
 function validatePassword(password: string): void {
-  if (password.length < 12) throw new Error('TORO_ADMIN_PASSWORD_TOO_SHORT');
-  if (password.length > 200) throw new Error('TORO_ADMIN_PASSWORD_TOO_LONG');
+  if (password.length < 12) throw new Error('BIO_NEXUS_ADMIN_PASSWORD_TOO_SHORT');
+  if (password.length > 200) throw new Error('BIO_NEXUS_ADMIN_PASSWORD_TOO_LONG');
   if (!/[a-z]/.test(password))
-    throw new Error('TORO_ADMIN_PASSWORD_REQUIRES_LOWERCASE');
+    throw new Error('BIO_NEXUS_ADMIN_PASSWORD_REQUIRES_LOWERCASE');
   if (!/[A-Z]/.test(password))
-    throw new Error('TORO_ADMIN_PASSWORD_REQUIRES_UPPERCASE');
+    throw new Error('BIO_NEXUS_ADMIN_PASSWORD_REQUIRES_UPPERCASE');
   if (!/[0-9]/.test(password))
-    throw new Error('TORO_ADMIN_PASSWORD_REQUIRES_NUMBER');
+    throw new Error('BIO_NEXUS_ADMIN_PASSWORD_REQUIRES_NUMBER');
   if (!/[^A-Za-z0-9]/.test(password))
-    throw new Error('TORO_ADMIN_PASSWORD_REQUIRES_SYMBOL');
+    throw new Error('BIO_NEXUS_ADMIN_PASSWORD_REQUIRES_SYMBOL');
 }
 
 async function main(): Promise<void> {

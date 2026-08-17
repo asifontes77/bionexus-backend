@@ -2,11 +2,11 @@
 
 describe('resolveFirstAdminInput', () => {
   const validEnvironment = {
-    TORO_ADMIN_USERNAME: 'admin.initial',
-    TORO_ADMIN_PASSWORD: 'StrongPassword1!',
-    TORO_ADMIN_NAME: 'Administrador Inicial',
-    TORO_ADMIN_TELEPHONE: '0000000000',
-    TORO_ADMIN_EMAIL: 'ADMIN@EXAMPLE.COM',
+    BIO_NEXUS_ADMIN_USERNAME: 'admin.initial',
+    BIO_NEXUS_ADMIN_PASSWORD: 'StrongPassword1!',
+    BIO_NEXUS_ADMIN_NAME: 'Administrador Inicial',
+    BIO_NEXUS_ADMIN_TELEPHONE: '0000000000',
+    BIO_NEXUS_ADMIN_EMAIL: 'ADMIN@EXAMPLE.COM',
   };
 
   it('normalizes safe bootstrap input without exposing the password', () => {
@@ -21,10 +21,10 @@ describe('resolveFirstAdminInput', () => {
   });
 
   it.each([
-    ['TORO_ADMIN_USERNAME', { TORO_ADMIN_USERNAME: '' }],
-    ['TORO_ADMIN_PASSWORD', { TORO_ADMIN_PASSWORD: '' }],
-    ['TORO_ADMIN_NAME', { TORO_ADMIN_NAME: '' }],
-    ['TORO_ADMIN_TELEPHONE', { TORO_ADMIN_TELEPHONE: '' }],
+    ['BIO_NEXUS_ADMIN_USERNAME', { BIO_NEXUS_ADMIN_USERNAME: '' }],
+    ['BIO_NEXUS_ADMIN_PASSWORD', { BIO_NEXUS_ADMIN_PASSWORD: '' }],
+    ['BIO_NEXUS_ADMIN_NAME', { BIO_NEXUS_ADMIN_NAME: '' }],
+    ['BIO_NEXUS_ADMIN_TELEPHONE', { BIO_NEXUS_ADMIN_TELEPHONE: '' }],
   ])('rejects missing %s', (_name, override) => {
     expect(() =>
       resolveFirstAdminInput({ ...validEnvironment, ...override }),
@@ -41,7 +41,7 @@ describe('resolveFirstAdminInput', () => {
     expect(() =>
       resolveFirstAdminInput({
         ...validEnvironment,
-        TORO_ADMIN_PASSWORD: password,
+        BIO_NEXUS_ADMIN_PASSWORD: password,
       }),
     ).toThrow();
   });
@@ -49,7 +49,7 @@ describe('resolveFirstAdminInput', () => {
   it('allows an omitted email', () => {
     const result = resolveFirstAdminInput({
       ...validEnvironment,
-      TORO_ADMIN_EMAIL: undefined,
+      BIO_NEXUS_ADMIN_EMAIL: undefined,
     });
     expect(result.email).toBeNull();
   });
