@@ -16,7 +16,7 @@ describe('LicenseService', () => {
   const laboratory = {
     id: 1,
     rif: 'J-12345678-9',
-    business_name: 'Laboratorio TORO',
+    business_name: 'Laboratorio Bio Nexus',
   } as Laboratory;
 
   beforeEach(() => {
@@ -32,7 +32,7 @@ describe('LicenseService', () => {
   });
 
   it('normaliza el RIF y la razon social al validar', async () => {
-    const validLicense = await bcrypt.hash('J123456789-LaboratorioTORO', 4);
+    const validLicense = await bcrypt.hash('J123456789-LaboratorioBioNexus', 4);
 
     await expect(
       service.validateLicenseKey(

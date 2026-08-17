@@ -25,7 +25,7 @@ describe('AppController (e2e)', () => {
 
   it('debe servir un archivo público mediante una ruta anidada', async () => {
     const response = await request(app.getHttpServer())
-      .get('/api/public/toro.svg')
+      .get('/api/public/bionexus.svg')
       .expect(200);
 
     expect(response.headers['content-type']).toContain('image/svg+xml');
@@ -43,13 +43,13 @@ describe('AppController (e2e)', () => {
   });
 
   it('debe procesar una carga multipart con Multer 2', async () => {
-    const fileName = `toro-multer--.txt`;
+    const fileName = `bionexus-multer--.txt`;
     const outputPath = join(process.cwd(), 'public', 'images', fileName);
 
     try {
       const response = await request(app.getHttpServer())
         .post('/api/users/upload')
-        .attach('file', Buffer.from('TORO Multer 2'), fileName)
+        .attach('file', Buffer.from('Bio Nexus Multer 2'), fileName)
         .expect(201);
 
       expect(response.text).toBe(fileName);

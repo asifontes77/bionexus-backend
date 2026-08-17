@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Auditoria Backend TORO - 02-modulos-controladores-dtos</title>
+<title>Auditoria Backend Bio Nexus - 02-modulos-controladores-dtos</title>
 <style>
 body{margin:0;background:#f8fafc;color:#172033;font-family:Segoe UI,Arial,sans-serif;line-height:1.5}
 header{background:#111827;color:#fff;border-bottom:5px solid #e0234e;padding:32px 22px}
@@ -13,9 +13,9 @@ pre{margin:0;padding:17px;white-space:pre-wrap;overflow-wrap:anywhere;tab-size:4
 .ln{display:inline-block;color:#64748b;min-width:5.7em;user-select:none}.redacted{color:#b91c1c;font-weight:700}
 footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <header><div>
-<h1>Auditoria Backend TORO - 02-modulos-controladores-dtos</h1>
+<h1>Auditoria Backend Bio Nexus - 02-modulos-controladores-dtos</h1>
 <p>Parte: 1</p>
-<p>Raiz auditada: C:\Users\Alexis\Documents\Sistema TORO\Aplicacion\Toro Backend</p>
+<p>Raiz auditada: C:\Users\Alexis\Documents\Sistema Bio Nexus\Aplicacion\Bio Nexus Backend</p>
 <p>Generado: 04-08-2026 08:55 a. m.</p>
 </div></header><main>
 <section class="notice"><strong>Extraccion estatica de solo lectura.</strong>
@@ -96,7 +96,7 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">   10 | </span>
 <span class="ln">   11 | </span>@Module({
 <span class="ln">   12 | </span>    imports: [
-<span class="ln">   13 | </span>      TypeOrmModule.forFeature([Antibiotic]), 
+<span class="ln">   13 | </span>      TypeOrmModule.forFeature([Antibiotic]),
 <span class="ln">   14 | </span>      UsersModule,
 <span class="ln">   15 | </span>      JwtModule.register({
 <span class="ln">   16 | </span>        secret: jwtConstants.secret,
@@ -450,7 +450,7 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">   10 | </span>
 <span class="ln">   11 | </span>@Module({
 <span class="ln">   12 | </span>    imports: [
-<span class="ln">   13 | </span>      TypeOrmModule.forFeature([Client]), 
+<span class="ln">   13 | </span>      TypeOrmModule.forFeature([Client]),
 <span class="ln">   14 | </span>      UsersModule,
 <span class="ln">   15 | </span>      JwtModule.register({
 <span class="ln">   16 | </span>        secret: jwtConstants.secret,
@@ -602,7 +602,7 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">   10 | </span>
 <span class="ln">   11 | </span>@Module({
 <span class="ln">   12 | </span>  imports: [
-<span class="ln">   13 | </span>    TypeOrmModule.forFeature([Customeraccountsreceivable]), 
+<span class="ln">   13 | </span>    TypeOrmModule.forFeature([Customeraccountsreceivable]),
 <span class="ln">   14 | </span>    UsersModule,
 <span class="ln">   15 | </span>    JwtModule.register({
 <span class="ln">   16 | </span>      secret: jwtConstants.secret,
@@ -857,7 +857,7 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">   10 | </span>
 <span class="ln">   11 | </span>@Module({
 <span class="ln">   12 | </span>  imports: [
-<span class="ln">   13 | </span>    TypeOrmModule.forFeature([Examgroup]), 
+<span class="ln">   13 | </span>    TypeOrmModule.forFeature([Examgroup]),
 <span class="ln">   14 | </span>    UsersModule,
 <span class="ln">   15 | </span>    JwtModule.register({
 <span class="ln">   16 | </span>      secret: jwtConstants.secret,
@@ -1070,8 +1070,8 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">   16 | </span>    tax_amount?: number
 <span class="ln">   17 | </span>    tax_total?: number
 <span class="ln">   18 | </span>    canceled_id?: number
-<span class="ln">   19 | </span>    email_status?: number   
-<span class="ln">   20 | </span>    description?: string 
+<span class="ln">   19 | </span>    email_status?: number
+<span class="ln">   20 | </span>    description?: string
 <span class="ln">   21 | </span>}
 
 </pre></section>
@@ -1118,13 +1118,13 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">   36 | </span>  ) {
 <span class="ln">   37 | </span>    return this.examService.updateExam(id, exam);
 <span class="ln">   38 | </span>  }
-<span class="ln">   39 | </span>  
+<span class="ln">   39 | </span>
 <span class="ln">   40 | </span>  @UseGuards(JwtUserGuard)
 <span class="ln">   41 | </span>  @Post(&#39;/client&#39;)
 <span class="ln">   42 | </span>  getPatientsWithClient(@Body() body: {clientIds: number[]}) {
 <span class="ln">   43 | </span>    return this.examService.getPatientsWithClient(body.clientIds);
 <span class="ln">   44 | </span>  }
-<span class="ln">   45 | </span>  
+<span class="ln">   45 | </span>
 <span class="ln">   46 | </span>  @UseGuards(JwtUserGuard)
 <span class="ln">   47 | </span>  @Post(&#39;/groupHtItems&#39;)
 <span class="ln">   48 | </span>  getTotalExamWithGroup(@Body() body: {
@@ -1169,7 +1169,7 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">   11 | </span>
 <span class="ln">   12 | </span>@Module({
 <span class="ln">   13 | </span>  imports: [
-<span class="ln">   14 | </span>    TypeOrmModule.forFeature([Exam]), 
+<span class="ln">   14 | </span>    TypeOrmModule.forFeature([Exam]),
 <span class="ln">   15 | </span>    UsersModule,
 <span class="ln">   16 | </span>    PatientsModule,
 <span class="ln">   17 | </span>    JwtModule.register({
@@ -1355,24 +1355,24 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">    7 | </span>@Controller(&#39;groupHtItems&#39;)
 <span class="ln">    8 | </span>export class GroupHtItemsController {
 <span class="ln">    9 | </span>    constructor(private groupHtService: GroupHtItemsService) {}
-<span class="ln">   10 | </span>        
+<span class="ln">   10 | </span>
 <span class="ln">   11 | </span>    @UseGuards(JwtUserGuard)
 <span class="ln">   12 | </span>    @Get(&#39;:id&#39;)
 <span class="ln">   13 | </span>    getGroupItemsHt(@Param(&#39;id&#39;, ParseIntPipe) id: number) {
 <span class="ln">   14 | </span>        return this.groupHtService.getGroupItemsHt(id)
 <span class="ln">   15 | </span>    }
-<span class="ln">   16 | </span>    
+<span class="ln">   16 | </span>
 <span class="ln">   17 | </span>    @Post()
 <span class="ln">   18 | </span>    createGroupItemsHt(@Body() newGroupHt: CreateGroup_ht_itemsDto) {
 <span class="ln">   19 | </span>        return this.groupHtService.createGroupItemsHt(newGroupHt)
 <span class="ln">   20 | </span>    }
-<span class="ln">   21 | </span>    
+<span class="ln">   21 | </span>
 <span class="ln">   22 | </span>    @UseGuards(JwtUserGuard)
 <span class="ln">   23 | </span>    @Patch(&#39;:id&#39;)
 <span class="ln">   24 | </span>    updateGroupItemsHt(@Param(&#39;id&#39;, ParseIntPipe) id: number, @Body() groupHt: UpdateGroup_ht_itemsDto) {
 <span class="ln">   25 | </span>        return this.groupHtService.updateGroupItemsHt(id, groupHt)
 <span class="ln">   26 | </span>    }
-<span class="ln">   27 | </span>    
+<span class="ln">   27 | </span>
 <span class="ln">   28 | </span>    @Delete(&#39;:id&#39;)
 <span class="ln">   29 | </span>    deleteGroupItems(@Param(&#39;id&#39;, ParseIntPipe) id: number) {
 <span class="ln">   30 | </span>        return this.groupHtService.deleteGroupItems(id)
@@ -1397,7 +1397,7 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">   10 | </span>
 <span class="ln">   11 | </span>@Module({
 <span class="ln">   12 | </span>    imports: [
-<span class="ln">   13 | </span>      TypeOrmModule.forFeature([Grouphtitems]), 
+<span class="ln">   13 | </span>      TypeOrmModule.forFeature([Grouphtitems]),
 <span class="ln">   14 | </span>      UsersModule,
 <span class="ln">   15 | </span>      JwtModule.register({
 <span class="ln">   16 | </span>        secret: jwtConstants.secret,
@@ -1665,7 +1665,7 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">   19 | </span>      providers: [InvoiceitemsService, JwtStrategy]
 <span class="ln">   20 | </span>  })
 <span class="ln">   21 | </span>  export class InvoiceitemsModule {}
-<span class="ln">   22 | </span>  
+<span class="ln">   22 | </span>
 
 </pre></section>
 <section class="file">
@@ -2015,18 +2015,18 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">   19 | </span>    getParasiticformsListsOrder() {
 <span class="ln">   20 | </span>        return this.parasiticformsService.getParasiticformsListsOrder()
 <span class="ln">   21 | </span>    }
-<span class="ln">   22 | </span>    
+<span class="ln">   22 | </span>
 <span class="ln">   23 | </span>    @UseGuards(JwtUserGuard)
 <span class="ln">   24 | </span>    @Get(&#39;:id&#39;)
 <span class="ln">   25 | </span>    getParasiticforms(@Param(&#39;id&#39;, ParseIntPipe) id: number) {
 <span class="ln">   26 | </span>        return this.parasiticformsService.getParasiticforms(id)
 <span class="ln">   27 | </span>    }
-<span class="ln">   28 | </span>    
+<span class="ln">   28 | </span>
 <span class="ln">   29 | </span>    @Post()
 <span class="ln">   30 | </span>    createParasiticforms(@Body() newAntibiotic: CreateParasiticformsDto) {
 <span class="ln">   31 | </span>        return this.parasiticformsService.createParasiticforms(newAntibiotic)
 <span class="ln">   32 | </span>    }
-<span class="ln">   33 | </span>    
+<span class="ln">   33 | </span>
 <span class="ln">   34 | </span>    @UseGuards(JwtUserGuard)
 <span class="ln">   35 | </span>    @Patch(&#39;:id&#39;)
 <span class="ln">   36 | </span>    updateParasiticforms(@Param(&#39;id&#39;, ParseIntPipe) id: number, @Body() parasitic: UpdateparasiticformsDto) {
@@ -2052,7 +2052,7 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">   10 | </span>
 <span class="ln">   11 | </span>@Module({
 <span class="ln">   12 | </span>    imports: [
-<span class="ln">   13 | </span>      TypeOrmModule.forFeature([Parasiticforms]), 
+<span class="ln">   13 | </span>      TypeOrmModule.forFeature([Parasiticforms]),
 <span class="ln">   14 | </span>      UsersModule,
 <span class="ln">   15 | </span>      JwtModule.register({
 <span class="ln">   16 | </span>        secret: jwtConstants.secret,
@@ -2247,7 +2247,7 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">   58 | </span>    return this.patienService.getPatientsWithInvoice(body.date);
 <span class="ln">   59 | </span>  }
 <span class="ln">   60 | </span>
-<span class="ln">   61 | </span>  
+<span class="ln">   61 | </span>
 <span class="ln">   62 | </span>  @UseGuards(JwtUserGuard)
 <span class="ln">   63 | </span>  @Post(&#39;/speciallist&#39;)
 <span class="ln">   64 | </span>  async getPatientsSpecial(@Body() body: { firstDate: string; lastDate: string; examIds: number[] }) {
@@ -2279,7 +2279,7 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">   90 | </span>      body.invoice,
 <span class="ln">   91 | </span>    );
 <span class="ln">   92 | </span>  }
-<span class="ln">   93 | </span>    
+<span class="ln">   93 | </span>
 <span class="ln">   94 | </span>  @UseGuards(JwtUserGuard)
 <span class="ln">   95 | </span>  @Post(&#39;/queriestotal&#39;)
 <span class="ln">   96 | </span>  getPatientsWithQueriesTotal(@Body() body: {
@@ -2723,7 +2723,7 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <div class="meta">Lineas: 6 | Bytes: 125 | SHA256: 1D21F8B03DD9BE681EA296366FBE7DD3A515588DD0D52B4BE0BB3727776CEE1C</div>
 </div><pre>
 <span class="ln">    1 | </span>export class CreateSpecialTestItemsDto {
-<span class="ln">    2 | </span>  
+<span class="ln">    2 | </span>
 <span class="ln">    3 | </span>  specialTestLabId: number;
 <span class="ln">    4 | </span>  exam_list_Id: number;
 <span class="ln">    5 | </span>  description: string;
@@ -2736,7 +2736,7 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <div class="meta">Lineas: 6 | Bytes: 128 | SHA256: 99932C0CBC8345CFF6A3F87930947B39D367EA168D677EB01DFAB4287D9035BA</div>
 </div><pre>
 <span class="ln">    1 | </span>export class updateSpecialTestItemsDto {
-<span class="ln">    2 | </span>  
+<span class="ln">    2 | </span>
 <span class="ln">    3 | </span>  specialTestLabId?: number;
 <span class="ln">    4 | </span>  exam_list_Id?: number;
 <span class="ln">    5 | </span>  description?: string;
@@ -2767,7 +2767,7 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">   17 | </span>@Controller(&#39;specialtestItems&#39;)
 <span class="ln">   18 | </span>export class SpecialtestItemsController {
 <span class="ln">   19 | </span>  constructor(private specialtestItemsService: SpecialTestItemsService) {}
-<span class="ln">   20 | </span>  
+<span class="ln">   20 | </span>
 <span class="ln">   21 | </span>  @Post()
 <span class="ln">   22 | </span>  createSpecialTestItems(@Body() test: CreateSpecialTestItemsDto) {
 <span class="ln">   23 | </span>    return this.specialtestItemsService.createSpecialTestItems(test);
@@ -2778,13 +2778,13 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">   28 | </span>  getSpecialTestItemsList() {
 <span class="ln">   29 | </span>    return this.specialtestItemsService.getSpecialTestItemsList();
 <span class="ln">   30 | </span>  }
-<span class="ln">   31 | </span>  
+<span class="ln">   31 | </span>
 <span class="ln">   32 | </span>  @UseGuards(JwtUserGuard)
 <span class="ln">   33 | </span>  @Get(&#39;:id&#39;)
 <span class="ln">   34 | </span>  getSpecialTestItems(@Param(&#39;id&#39;, ParseIntPipe) id: number) {
 <span class="ln">   35 | </span>    return this.specialtestItemsService.getSpecialTestItems(id);
 <span class="ln">   36 | </span>  }
-<span class="ln">   37 | </span>  
+<span class="ln">   37 | </span>
 <span class="ln">   38 | </span>  @UseGuards(JwtUserGuard)
 <span class="ln">   39 | </span>  @Patch(&#39;:id&#39;)
 <span class="ln">   40 | </span>  updateSpecialTestItems(
@@ -2793,7 +2793,7 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">   43 | </span>  ) {
 <span class="ln">   44 | </span>    return this.specialtestItemsService.updateSpecialTestItems(id, laboratory);
 <span class="ln">   45 | </span>  }
-<span class="ln">   46 | </span>  
+<span class="ln">   46 | </span>
 <span class="ln">   47 | </span>  @Delete(&#39;:id&#39;)
 <span class="ln">   48 | </span>  deleteTestItems(@Param(&#39;id&#39;, ParseIntPipe) id: number) {
 <span class="ln">   49 | </span>      return this.specialtestItemsService.deleteTestItems(id)
@@ -2818,7 +2818,7 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">   10 | </span>
 <span class="ln">   11 | </span>@Module({
 <span class="ln">   12 | </span>  imports: [
-<span class="ln">   13 | </span>    TypeOrmModule.forFeature([special_test_items]), 
+<span class="ln">   13 | </span>    TypeOrmModule.forFeature([special_test_items]),
 <span class="ln">   14 | </span>    UsersModule,
 <span class="ln">   15 | </span>    JwtModule.register({
 <span class="ln">   16 | </span>      secret: jwtConstants.secret,
@@ -2856,7 +2856,7 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">    4 | </span>  phone_1?: string;
 <span class="ln">    5 | </span>  phone_2?: string;
 <span class="ln">    6 | </span>  email?: string;
-<span class="ln">    7 | </span>  annulled?: boolean; 
+<span class="ln">    7 | </span>  annulled?: boolean;
 <span class="ln">    8 | </span>}
 
 </pre></section>
@@ -2883,7 +2883,7 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">   16 | </span>@Controller(&#39;specialtestlab&#39;)
 <span class="ln">   17 | </span>export class SpecialtestlabController {
 <span class="ln">   18 | </span>  constructor(private specialtestlabService: SpecialTestLabService) {}
-<span class="ln">   19 | </span>  
+<span class="ln">   19 | </span>
 <span class="ln">   20 | </span>  @Post()
 <span class="ln">   21 | </span>  createSpecialTestLab(@Body() newLaboratory: CreateSpecialTestLabDto) {
 <span class="ln">   22 | </span>    return this.specialtestlabService.createSpecialTestLab(newLaboratory);
@@ -2894,13 +2894,13 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">   27 | </span>  getSpecialTestLabList() {
 <span class="ln">   28 | </span>    return this.specialtestlabService.getSpecialTestLabList();
 <span class="ln">   29 | </span>  }
-<span class="ln">   30 | </span>  
+<span class="ln">   30 | </span>
 <span class="ln">   31 | </span>  @UseGuards(JwtUserGuard)
 <span class="ln">   32 | </span>  @Get(&#39;:id&#39;)
 <span class="ln">   33 | </span>  getSpecialTestLab(@Param(&#39;id&#39;, ParseIntPipe) id: number) {
 <span class="ln">   34 | </span>    return this.specialtestlabService.getSpecialTestLab(id);
 <span class="ln">   35 | </span>  }
-<span class="ln">   36 | </span>  
+<span class="ln">   36 | </span>
 <span class="ln">   37 | </span>  @UseGuards(JwtUserGuard)
 <span class="ln">   38 | </span>  @Patch(&#39;:id&#39;)
 <span class="ln">   39 | </span>  updateSpecialTestLab(
@@ -2929,7 +2929,7 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">   10 | </span>
 <span class="ln">   11 | </span>@Module({
 <span class="ln">   12 | </span>  imports: [
-<span class="ln">   13 | </span>    TypeOrmModule.forFeature([special_test_lab]), 
+<span class="ln">   13 | </span>    TypeOrmModule.forFeature([special_test_lab]),
 <span class="ln">   14 | </span>    UsersModule,
 <span class="ln">   15 | </span>    JwtModule.register({
 <span class="ln">   16 | </span>      secret: jwtConstants.secret,
@@ -3041,7 +3041,7 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">   10 | </span>
 <span class="ln">   11 | </span>@Module({
 <span class="ln">   12 | </span>    imports: [
-<span class="ln">   13 | </span>      TypeOrmModule.forFeature([Tax]), 
+<span class="ln">   13 | </span>      TypeOrmModule.forFeature([Tax]),
 <span class="ln">   14 | </span>      UsersModule,
 <span class="ln">   15 | </span>      JwtModule.register({
 <span class="ln">   16 | </span>        secret: jwtConstants.secret,
@@ -3561,7 +3561,7 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">   12 | </span>    createWaypay(@Body() newWaypayitems: CreateWaypayitemsDto) {
 <span class="ln">   13 | </span>        return this.waypayitemsService.createWaypayitems(newWaypayitems)
 <span class="ln">   14 | </span>    }
-<span class="ln">   15 | </span>    
+<span class="ln">   15 | </span>
 <span class="ln">   16 | </span>    @UseGuards(JwtUserGuard)
 <span class="ln">   17 | </span>    @Patch(&#39;:id&#39;)
 <span class="ln">   18 | </span>    updateWaypay(@Param(&#39;id&#39;, ParseIntPipe) id: number, @Body() waypayitems: UpdateWaypayitemsDto) {

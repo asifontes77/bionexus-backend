@@ -56,7 +56,7 @@ async function main() {
   }
 
   const temporaryDatabase =
-    `toro_authorization_test_${Date.now()}`
+    `bionexus_authorization_test_${Date.now()}`
 
   const connectionOptions = {
     host: configuration.DB_HOST.trim(),
@@ -237,7 +237,7 @@ async function main() {
         )
       }
 
-      console.log('TORO authorization migration smoke test')
+      console.log('Bio Nexus authorization migration smoke test')
       console.log('')
       console.log(`Temporary database = ${temporaryDatabase}`)
       console.log('Synthetic data     = true')

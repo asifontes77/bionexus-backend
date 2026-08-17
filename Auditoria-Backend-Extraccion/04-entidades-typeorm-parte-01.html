@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Auditoria Backend TORO - 04-entidades-typeorm</title>
+<title>Auditoria Backend Bio Nexus - 04-entidades-typeorm</title>
 <style>
 body{margin:0;background:#f8fafc;color:#172033;font-family:Segoe UI,Arial,sans-serif;line-height:1.5}
 header{background:#111827;color:#fff;border-bottom:5px solid #e0234e;padding:32px 22px}
@@ -13,9 +13,9 @@ pre{margin:0;padding:17px;white-space:pre-wrap;overflow-wrap:anywhere;tab-size:4
 .ln{display:inline-block;color:#64748b;min-width:5.7em;user-select:none}.redacted{color:#b91c1c;font-weight:700}
 footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <header><div>
-<h1>Auditoria Backend TORO - 04-entidades-typeorm</h1>
+<h1>Auditoria Backend Bio Nexus - 04-entidades-typeorm</h1>
 <p>Parte: 1</p>
-<p>Raiz auditada: C:\Users\Alexis\Documents\Sistema TORO\Aplicacion\Toro Backend</p>
+<p>Raiz auditada: C:\Users\Alexis\Documents\Sistema Bio Nexus\Aplicacion\Bio Nexus Backend</p>
 <p>Generado: 04-08-2026 08:55 a. m.</p>
 </div></header><main>
 <section class="notice"><strong>Extraccion estatica de solo lectura.</strong>
@@ -67,7 +67,7 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">   16 | </span>
 <span class="ln">   17 | </span>  @Column({ type: &#39;json&#39;, nullable: true })
 <span class="ln">   18 | </span>  totals: string;
-<span class="ln">   19 | </span>  
+<span class="ln">   19 | </span>
 <span class="ln">   20 | </span>  @Column({ type: &#39;datetime&#39;, default: () =&gt; &#39;CURRENT_TIMESTAMP&#39; })
 <span class="ln">   21 | </span>  createdAt: Date;
 <span class="ln">   22 | </span>
@@ -138,16 +138,16 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">    7 | </span>
 <span class="ln">    8 | </span>  @Column(&#39;int&#39;, { default: () =&gt; 0 })
 <span class="ln">    9 | </span>  client_id: number;
-<span class="ln">   10 | </span>  
+<span class="ln">   10 | </span>
 <span class="ln">   11 | </span>  @Column(&#39;varchar&#39;, { length: 250, nullable: true })
 <span class="ln">   12 | </span>  invoice: string;
-<span class="ln">   13 | </span>  
+<span class="ln">   13 | </span>
 <span class="ln">   14 | </span>  @Column({ type: &#39;decimal&#39;, precision: 18, scale: 2, default: () =&gt; 0 })
 <span class="ln">   15 | </span>  total: number;
 <span class="ln">   16 | </span>
 <span class="ln">   17 | </span>  @Column({ type: &#39;decimal&#39;, precision: 18, scale: 2, default: () =&gt; 0 })
 <span class="ln">   18 | </span>  total_dollars: number;
-<span class="ln">   19 | </span>  
+<span class="ln">   19 | </span>
 <span class="ln">   20 | </span>  @Column({ type: &#39;decimal&#39;, precision: 18, scale: 2, default: () =&gt; 0 })
 <span class="ln">   21 | </span>  total_canceled: number;
 <span class="ln">   22 | </span>
@@ -210,7 +210,7 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">   18 | </span>
 <span class="ln">   19 | </span>    @Column(&#39;tinyint&#39;, {default: 1})
 <span class="ln">   20 | </span>    its_exam: boolean
-<span class="ln">   21 | </span>  
+<span class="ln">   21 | </span>
 <span class="ln">   22 | </span>    @Column({type: &#39;datetime&#39;, default: () =&gt; &#39;CURRENT_TIMESTAMP&#39;})
 <span class="ln">   23 | </span>    createdAt: Date
 <span class="ln">   24 | </span>
@@ -389,7 +389,7 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">   74 | </span>  patients: Patient;
 <span class="ln">   75 | </span>
 <span class="ln">   76 | </span>  @ManyToOne(() =&gt; Examgroup, (examGroup) =&gt; examGroup.exam)
-<span class="ln">   77 | </span>  @JoinColumn({ name: &#39;group_id&#39; }) 
+<span class="ln">   77 | </span>  @JoinColumn({ name: &#39;group_id&#39; })
 <span class="ln">   78 | </span>  examGroup: Examgroup;
 <span class="ln">   79 | </span>}
 <span class="ln">   80 | </span>
@@ -441,7 +441,7 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">   11 | </span>
 <span class="ln">   12 | </span>    @Column(&#39;int&#39;, {default: () =&gt; 0})
 <span class="ln">   13 | </span>    examId: number
-<span class="ln">   14 | </span>    
+<span class="ln">   14 | </span>
 <span class="ln">   15 | </span>    @Column(&#39;varchar&#39;, {length: 60})
 <span class="ln">   16 | </span>    description: string
 <span class="ln">   17 | </span>
@@ -670,7 +670,7 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">  100 | </span>
 <span class="ln">  101 | </span>  @Column(&#39;int&#39;, { default: 0 })
 <span class="ln">  102 | </span>  receipt_number: number;
-<span class="ln">  103 | </span>  
+<span class="ln">  103 | </span>
 <span class="ln">  104 | </span>  @Column(&#39;tinyint&#39;, { default: () =&gt; 0, nullable: true })
 <span class="ln">  105 | </span>  print_receipt: boolean;
 <span class="ln">  106 | </span>}
@@ -696,7 +696,7 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">   12 | </span>  @Column(&#39;varchar&#39;, { length: 50, nullable: true })
 <span class="ln">   13 | </span>  germen: string;
 <span class="ln">   14 | </span>
-<span class="ln">   15 | </span>  
+<span class="ln">   15 | </span>
 <span class="ln">   16 | </span>  @Column(&#39;tinyint&#39;, { default: () =&gt; 0 })
 <span class="ln">   17 | </span>  annulled: boolean;
 <span class="ln">   18 | </span>}
@@ -711,7 +711,7 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">    1 | </span>import {Entity, Column, PrimaryGeneratedColumn, ManyToOne, NumericType, OneToMany, JoinColumn} from &#39;typeorm&#39;;
 <span class="ln">    2 | </span>
 <span class="ln">    3 | </span>@Entity({name: &#39;parasiticforms&#39;})
-<span class="ln">    4 | </span>export class Parasiticforms {    
+<span class="ln">    4 | </span>export class Parasiticforms {
 <span class="ln">    5 | </span>    @PrimaryGeneratedColumn()
 <span class="ln">    6 | </span>    id: number
 <span class="ln">    7 | </span>
@@ -912,10 +912,10 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">    7 | </span>
 <span class="ln">    8 | </span>  @Column({ type: &#39;varchar&#39;, length: 50 })
 <span class="ln">    9 | </span>  description: string;
-<span class="ln">   10 | </span>  
+<span class="ln">   10 | </span>
 <span class="ln">   11 | </span>  @Column({ type: &#39;json&#39;, nullable: true })
 <span class="ln">   12 | </span>  registered_exams: string;
-<span class="ln">   13 | </span>  
+<span class="ln">   13 | </span>
 <span class="ln">   14 | </span>  @Column(&#39;varchar&#39;, { length: 200 })
 <span class="ln">   15 | </span>  details: string;
 <span class="ln">   16 | </span>}
@@ -952,10 +952,10 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">    7 | </span>
 <span class="ln">    8 | </span>  @Column(&#39;int&#39;, {default: () =&gt; 0})
 <span class="ln">    9 | </span>  specialTestLabId: number;
-<span class="ln">   10 | </span>  
+<span class="ln">   10 | </span>
 <span class="ln">   11 | </span>  @Column(&#39;int&#39;, {default: () =&gt; 0})
 <span class="ln">   12 | </span>  exam_list_Id: number;
-<span class="ln">   13 | </span>  
+<span class="ln">   13 | </span>
 <span class="ln">   14 | </span>  @Column({ type: &#39;char&#39;, length: 60 })
 <span class="ln">   15 | </span>  description: string;
 <span class="ln">   16 | </span>
@@ -981,13 +981,13 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">   10 | </span>
 <span class="ln">   11 | </span>  @Column(&#39;varchar&#39;, { length: 200 })
 <span class="ln">   12 | </span>  address: string;
-<span class="ln">   13 | </span>  
+<span class="ln">   13 | </span>
 <span class="ln">   14 | </span>  @Column({ type: &#39;char&#39;, length: 20 })
 <span class="ln">   15 | </span>  phone_1: string;
 <span class="ln">   16 | </span>
 <span class="ln">   17 | </span>  @Column({ type: &#39;char&#39;, length: 20 })
 <span class="ln">   18 | </span>  phone_2: string;
-<span class="ln">   19 | </span>  
+<span class="ln">   19 | </span>
 <span class="ln">   20 | </span>  @Column(&#39;varchar&#39;, { length: 100 })
 <span class="ln">   21 | </span>  email: string;
 <span class="ln">   22 | </span>
@@ -1044,10 +1044,10 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">    7 | </span>
 <span class="ln">    8 | </span>    @Column(&#39;varchar&#39;, {length: 50, nullable: true})
 <span class="ln">    9 | </span>    description: string
-<span class="ln">   10 | </span>    
+<span class="ln">   10 | </span>
 <span class="ln">   11 | </span>    @Column(&#39;varchar&#39;, {length: 50, nullable: true})
 <span class="ln">   12 | </span>    description_1: string
-<span class="ln">   13 | </span>    
+<span class="ln">   13 | </span>
 <span class="ln">   14 | </span>    @Column(&#39;varchar&#39;, {length: 50, nullable: true})
 <span class="ln">   15 | </span>    description_2: string
 <span class="ln">   16 | </span>
@@ -1199,7 +1199,7 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">   28 | </span>
 <span class="ln">   29 | </span>  @Column({ type: &#39;decimal&#39;, precision: 18, scale: 2, default: () =&gt; 0 })
 <span class="ln">   30 | </span>  amountDollar: number;
-<span class="ln">   31 | </span>  
+<span class="ln">   31 | </span>
 <span class="ln">   32 | </span>  @Column(&#39;tinyint&#39;, { default: () =&gt; 0 })
 <span class="ln">   33 | </span>  dollar: boolean;
 <span class="ln">   34 | </span>

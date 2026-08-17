@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Auditoría de Arquitectura - Toro Backend</title>
+    <title>Auditoría de Arquitectura - Bio Nexus Backend</title>
     <style>
         :root {
             --primary: #e0234e;
@@ -116,7 +116,7 @@
             color: #22863a;
             border: 1px solid #b7ebc6;
         }
-        
+
         .badge.warning {
             background-color: #fffbdd;
             color: #735c0f;
@@ -170,17 +170,17 @@
 
     <header>
         <h1>Auditoría de Arquitectura</h1>
-        <div class="subtitle">Análisis del Workspace - Sistema TORO Backend (NestJS)</div>
+        <div class="subtitle">Análisis del Workspace - Sistema Bio Nexus Backend (NestJS)</div>
     </header>
 
     <div class="container">
-        
+
         <!-- 1. Versiones y Dependencias -->
         <div class="card">
             <div class="card-header">1. Versiones y Dependencias Clave</div>
             <div class="card-body">
                 <p>El proyecto está desarrollado utilizando el framework <strong>NestJS v9.0.0</strong>.</p>
-                
+
                 <h3>Core / Framework</h3>
                 <div class="dependencies-grid">
                     <div class="dep-item"><span>@nestjs/common</span> <span class="badge">^9.0.0</span></div>
@@ -221,7 +221,7 @@
             <div class="card-header">2. Estructura de Proyecto (Arquitectura Modular)</div>
             <div class="card-body">
                 <p>El proyecto sigue fielmente los principios de arquitectura modular de NestJS, agrupando cada entidad de negocio en su propio directorio con sus respectivos controladores, servicios, entidades y DTOs.</p>
-                
+
                 <pre class="code-block dir-structure" style="margin: 0;">
 ├── <span class="folder">public/</span> (Archivos estáticos)
 │   ├── <span class="file">index.html</span>
@@ -263,7 +263,7 @@
             <div class="card-header">3. Conexión a Base de Datos e Infraestructura</div>
             <div class="card-body">
                 <p>El proyecto utiliza <strong>TypeORM</strong> sobre una base de datos <strong>MySQL</strong>. </p>
-                
+
                 <span class="badge warning">Observación de Seguridad</span>
                 <p style="font-size: 0.9rem; color: #718096; margin-top: 5px;">Las credenciales de la base de datos están "hardcodeadas" (incrustadas) en el <code>app.module.ts</code>. Deberían migrarse al uso de variables de entorno mediante <code>@nestjs/config</code> (que ya está en <code>package.json</code>).</p>
 
@@ -301,7 +301,7 @@ TypeOrmModule.forRoot({
             <div class="card-header">5. Módulos y Dominio de la API</div>
             <div class="card-body">
                 <p>El backend expone una API robusta orientada a un sistema de gestión médico/laboratorio y facturación, con los siguientes dominios principales abstraídos de los módulos (<code>AppModule</code>):</p>
-                
+
                 <table>
                     <thead>
                         <tr>

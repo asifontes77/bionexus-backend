@@ -139,7 +139,7 @@
             margin: 1rem 0;
             position: relative;
         }
-        
+
         .code-title {
             position: absolute;
             top: 0;
@@ -239,7 +239,7 @@
 
     <header>
         <h1>Auditoría Técnica y Plan de Migración</h1>
-        <p>Sistema TORO Backend &middot; Evaluación de Escalabilidad y Seguridad</p>
+        <p>Sistema Bio Nexus Backend &middot; Evaluación de Escalabilidad y Seguridad</p>
     </header>
 
     <div class="container">
@@ -251,7 +251,7 @@
             </div>
             <div class="section-body">
                 <p>El proyecto actualmente utiliza la major version <strong>v9</strong> de NestJS, liberada a mediados de 2022. Existen mayores versiones LTS en el mercado (v10) que incorporan mejoras sustanciales en rendimiento (SWC) e inyección de dependencias más rápida.</p>
-                
+
                 <table class="version-table">
                     <thead>
                         <tr>
@@ -297,7 +297,7 @@
                 <h2><span class="section-number">2</span> Deuda Técnica y Riesgos Críticos de Seguridad</h2>
             </div>
             <div class="section-body">
-                
+
                 <div class="alert alert-danger">
                     <div>
                         <span class="alert-title">CRÍTICO: Sincronización Automática de Base de Datos</span>
@@ -360,10 +360,10 @@ nest update -t 10</pre>
             </div>
             <div class="section-body">
                 <p>Propuesta de refactorización de configuración (<code>app.module.ts</code>) implementando el patrón <strong>ConfigModule asíncrono y variables de entorno</strong>.</p>
-                
+
                 <h3>Refactorización: TypeOrm y Variables de Entorno</h3>
                 <p>Configurar TypeORM de manera segura utilizando <code>ConfigModule</code> y cargando `TypeOrmModule.forRootAsync`.</p>
-                
+
                 <pre class="code-block"><span class="code-title">app.module.ts (Refactorizado)</span>import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -372,7 +372,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
   imports: [
     // 1. Inicializar gestión de variables de entorno (.env)
     ConfigModule.forRoot({
-      isGlobal: true, 
+      isGlobal: true,
       envFilePath: '.env', // No commitear en GIT
     }),
 
@@ -388,15 +388,15 @@ import { TypeOrmModule } from '@nestjs/typeorm';
         password: configService.get&lt;string&gt;('DB_PASSWORD'),
         database: configService.get&lt;string&gt;('DB_NAME'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        
+
         // CRÍTICO: Nunca sincronizar en prod, usar Migraciones
         synchronize: configService.get&lt;string&gt;('NODE_ENV') === 'development',
-        
+
         // Logs de DB (útil en dev)
         logging: configService.get&lt;string&gt;('NODE_ENV') === 'development',
       }),
     }),
-    
+
     // ... [Resto de tus módulos] ...
   ],
 })
@@ -404,13 +404,13 @@ export class AppModule {}</pre>
 
                 <h3>Habilitar Validaciones y Transformaciones Globales</h3>
                 <p>Añadir interceptores de seguridad en <code>main.ts</code> para validar los DTOs por defecto y evitar payload polution.</p>
-                
+
                 <pre class="code-block"><span class="code-title">main.ts (Update)</span>import { ValidationPipe } from '@nestjs/common';
 // ...
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  
+
   // Habilitar la validación global de DTOs automatizada
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true, // Borra campos no definidos en el DTO

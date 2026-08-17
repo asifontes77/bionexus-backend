@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Auditoria Backend TORO - 05-seguridad-integraciones</title>
+<title>Auditoria Backend Bio Nexus - 05-seguridad-integraciones</title>
 <style>
 body{margin:0;background:#f8fafc;color:#172033;font-family:Segoe UI,Arial,sans-serif;line-height:1.5}
 header{background:#111827;color:#fff;border-bottom:5px solid #e0234e;padding:32px 22px}
@@ -13,9 +13,9 @@ pre{margin:0;padding:17px;white-space:pre-wrap;overflow-wrap:anywhere;tab-size:4
 .ln{display:inline-block;color:#64748b;min-width:5.7em;user-select:none}.redacted{color:#b91c1c;font-weight:700}
 footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <header><div>
-<h1>Auditoria Backend TORO - 05-seguridad-integraciones</h1>
+<h1>Auditoria Backend Bio Nexus - 05-seguridad-integraciones</h1>
 <p>Parte: 1</p>
-<p>Raiz auditada: C:\Users\Alexis\Documents\Sistema TORO\Aplicacion\Toro Backend</p>
+<p>Raiz auditada: C:\Users\Alexis\Documents\Sistema Bio Nexus\Aplicacion\Bio Nexus Backend</p>
 <p>Generado: 04-08-2026 08:55 a. m.</p>
 </div></header><main>
 <section class="notice"><strong>Extraccion estatica de solo lectura.</strong>
@@ -48,7 +48,7 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">   12 | </span>          secretOrKey: jwtConstants.secret,
 <span class="ln">   13 | </span>        });
 <span class="ln">   14 | </span>      }
-<span class="ln">   15 | </span>    
+<span class="ln">   15 | </span>
 <span class="ln">   16 | </span>      async validate(payload: any) {
 <span class="ln">   17 | </span>        return { userId: payload.id, username: payload.name };
 <span class="ln">   18 | </span>      }

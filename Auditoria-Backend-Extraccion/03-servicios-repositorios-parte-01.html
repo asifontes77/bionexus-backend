@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Auditoria Backend TORO - 03-servicios-repositorios</title>
+<title>Auditoria Backend Bio Nexus - 03-servicios-repositorios</title>
 <style>
 body{margin:0;background:#f8fafc;color:#172033;font-family:Segoe UI,Arial,sans-serif;line-height:1.5}
 header{background:#111827;color:#fff;border-bottom:5px solid #e0234e;padding:32px 22px}
@@ -13,9 +13,9 @@ pre{margin:0;padding:17px;white-space:pre-wrap;overflow-wrap:anywhere;tab-size:4
 .ln{display:inline-block;color:#64748b;min-width:5.7em;user-select:none}.redacted{color:#b91c1c;font-weight:700}
 footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <header><div>
-<h1>Auditoria Backend TORO - 03-servicios-repositorios</h1>
+<h1>Auditoria Backend Bio Nexus - 03-servicios-repositorios</h1>
 <p>Parte: 1</p>
-<p>Raiz auditada: C:\Users\Alexis\Documents\Sistema TORO\Aplicacion\Toro Backend</p>
+<p>Raiz auditada: C:\Users\Alexis\Documents\Sistema Bio Nexus\Aplicacion\Bio Nexus Backend</p>
 <p>Generado: 04-08-2026 08:55 a. m.</p>
 </div></header><main>
 <section class="notice"><strong>Extraccion estatica de solo lectura.</strong>
@@ -451,7 +451,7 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">   59 | </span>      .select(&#39;MAX(exam_group.position)&#39;, &#39;max&#39;)
 <span class="ln">   60 | </span>      .getRawOne();
 <span class="ln">   61 | </span>
-<span class="ln">   62 | </span>    return result.max || 0; 
+<span class="ln">   62 | </span>    return result.max || 0;
 <span class="ln">   63 | </span>  }
 <span class="ln">   64 | </span>
 <span class="ln">   65 | </span>  async getExamgroupsList() {
@@ -535,7 +535,7 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">   26 | </span>    });
 <span class="ln">   27 | </span>    return this.examListRepository.save(newExam);
 <span class="ln">   28 | </span>  }
-<span class="ln">   29 | </span>  
+<span class="ln">   29 | </span>
 <span class="ln">   30 | </span>  async getMaxPosition(groupId: number): Promise&lt;number&gt; {
 <span class="ln">   31 | </span>    const result = await this.examListRepository
 <span class="ln">   32 | </span>      .createQueryBuilder(&#39;exam_lists&#39;)
@@ -543,7 +543,7 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">   34 | </span>      .where(&#39;exam_lists.group_id = :groupId&#39;, { groupId })
 <span class="ln">   35 | </span>      .getRawOne();
 <span class="ln">   36 | </span>
-<span class="ln">   37 | </span>    return result.max || 0; 
+<span class="ln">   37 | </span>    return result.max || 0;
 <span class="ln">   38 | </span>  }
 <span class="ln">   39 | </span>
 <span class="ln">   40 | </span>  async getExamList(id: number) {
@@ -669,7 +669,7 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">   49 | </span>    const updateExam = Object.assign(examFound, exam);
 <span class="ln">   50 | </span>    return this.examRepository.save(updateExam);
 <span class="ln">   51 | </span>  }
-<span class="ln">   52 | </span>  
+<span class="ln">   52 | </span>
 <span class="ln">   53 | </span>  async getPatientsWithClient(clientIds: number[]): Promise&lt;any&gt; {
 <span class="ln">   54 | </span>    return this.examRepository
 <span class="ln">   55 | </span>      .createQueryBuilder(&#39;exam&#39;)
@@ -831,7 +831,7 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">   10 | </span>    constructor(
 <span class="ln">   11 | </span>        @InjectRepository(Grouphtitems) private group_ht_itemsRepository: Repository&lt;Grouphtitems&gt;
 <span class="ln">   12 | </span>    ) {}
-<span class="ln">   13 | </span>    
+<span class="ln">   13 | </span>
 <span class="ln">   14 | </span>    async getGroupItemsHt(id: number) {
 <span class="ln">   15 | </span>        const groupHtFound = this.group_ht_itemsRepository.findOne({
 <span class="ln">   16 | </span>            where: {
@@ -843,12 +843,12 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">   22 | </span>        }
 <span class="ln">   23 | </span>        return groupHtFound
 <span class="ln">   24 | </span>    }
-<span class="ln">   25 | </span>    
+<span class="ln">   25 | </span>
 <span class="ln">   26 | </span>    async createGroupItemsHt(groupHt: CreateGroup_ht_itemsDto) {
 <span class="ln">   27 | </span>        const newGroupHt = this.group_ht_itemsRepository.create(groupHt)
 <span class="ln">   28 | </span>        return this.group_ht_itemsRepository.save(newGroupHt)
 <span class="ln">   29 | </span>    }
-<span class="ln">   30 | </span>    
+<span class="ln">   30 | </span>
 <span class="ln">   31 | </span>    async updateGroupItemsHt(id: number, groupHt: UpdateGroup_ht_itemsDto) {
 <span class="ln">   32 | </span>        const groupHtFound = await this.group_ht_itemsRepository.findOne({
 <span class="ln">   33 | </span>            where: {
@@ -861,7 +861,7 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">   40 | </span>        const updateGroupHt = Object.assign(groupHtFound, groupHt)
 <span class="ln">   41 | </span>        return this.group_ht_itemsRepository.save(updateGroupHt)
 <span class="ln">   42 | </span>    }
-<span class="ln">   43 | </span>    
+<span class="ln">   43 | </span>
 <span class="ln">   44 | </span>    async deleteGroupItems(id: number) {
 <span class="ln">   45 | </span>        const result = await this.group_ht_itemsRepository.delete({ id })
 <span class="ln">   46 | </span>        if (result.affected === 0) {
@@ -987,7 +987,7 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">   12 | </span>    ) {}
 <span class="ln">   13 | </span>
 <span class="ln">   14 | </span>    async createInvoiceitems(invoiceitems: CreateInvoiceitemsDto): Promise&lt;any&gt; {
-<span class="ln">   15 | </span>        return this.invoiceitemsRepository.save(invoiceitems) 
+<span class="ln">   15 | </span>        return this.invoiceitemsRepository.save(invoiceitems)
 <span class="ln">   16 | </span>    }
 <span class="ln">   17 | </span>
 <span class="ln">   18 | </span>    async updateInvoiceitems(id: number, invoiceitems: UpdateInvoiceitemsDto) {
@@ -1075,10 +1075,10 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">    3 | </span>
 <span class="ln">    4 | </span>@Injectable()
 <span class="ln">    5 | </span>export class LicenseService {
-<span class="ln">    6 | </span>  
+<span class="ln">    6 | </span>
 <span class="ln">    7 | </span>  async generateLicenseKey(rif: string, businessName: string): Promise&lt;string&gt; {
 <span class="ln">    8 | </span>    const data = `${rif.replace(/-/g, &#39;&#39;)}-${businessName.replace(/\s+/g, &#39;&#39;)}`;
-<span class="ln">    9 | </span>    
+<span class="ln">    9 | </span>
 <span class="ln">   10 | </span>    // Genera un salt
 <span class="ln">   11 | </span>    const saltRounds = 10;
 <span class="ln">   12 | </span>    const salt = await bcrypt.genSalt(saltRounds);
@@ -1145,7 +1145,7 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">   41 | </span>    const newExam = this.listGermsRepository.create(listGerm);
 <span class="ln">   42 | </span>    return this.listGermsRepository.save(newExam);
 <span class="ln">   43 | </span>  }
-<span class="ln">   44 | </span>  
+<span class="ln">   44 | </span>
 <span class="ln">   45 | </span>
 <span class="ln">   46 | </span>  async updateGerm(id: number, germ: UpdateList_germsDto) {
 <span class="ln">   47 | </span>    const germFound = await this.listGermsRepository.findOne({
@@ -1199,7 +1199,7 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">   29 | </span>        }
 <span class="ln">   30 | </span>        return parasiticformsFound
 <span class="ln">   31 | </span>    }
-<span class="ln">   32 | </span>    
+<span class="ln">   32 | </span>
 <span class="ln">   33 | </span>    async getParasiticforms(id: number) {
 <span class="ln">   34 | </span>        const parasiticformsFound = this.parasiticformsRepository.findOne({
 <span class="ln">   35 | </span>            where: {
@@ -1211,12 +1211,12 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">   41 | </span>        }
 <span class="ln">   42 | </span>        return parasiticformsFound
 <span class="ln">   43 | </span>    }
-<span class="ln">   44 | </span>    
+<span class="ln">   44 | </span>
 <span class="ln">   45 | </span>    async createParasiticforms(parasiticforms: CreateParasiticformsDto) {
 <span class="ln">   46 | </span>        const newParasiticforms = this.parasiticformsRepository.create(parasiticforms)
 <span class="ln">   47 | </span>        return this.parasiticformsRepository.save(newParasiticforms)
 <span class="ln">   48 | </span>    }
-<span class="ln">   49 | </span>    
+<span class="ln">   49 | </span>
 <span class="ln">   50 | </span>    async updateParasiticforms(id: number, parasitic: UpdateparasiticformsDto) {
 <span class="ln">   51 | </span>        const parasiticformsFound = await this.parasiticformsRepository.findOne({
 <span class="ln">   52 | </span>            where: {
@@ -1300,9 +1300,9 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">   61 | </span>    return this.patientRepository
 <span class="ln">   62 | </span>      .createQueryBuilder(&#39;patient&#39;)
 <span class="ln">   63 | </span>      .leftJoinAndSelect(&#39;patient.exams&#39;, &#39;exam&#39;)
-<span class="ln">   64 | </span>      .leftJoinAndSelect(&#39;exam.examGroup&#39;, &#39;exam_group&#39;) 
+<span class="ln">   64 | </span>      .leftJoinAndSelect(&#39;exam.examGroup&#39;, &#39;exam_group&#39;)
 <span class="ln">   65 | </span>      .where(&#39;patient.id = :id&#39;, { id })
-<span class="ln">   66 | </span>      .orderBy(&#39;exam_group.position&#39;, &#39;ASC&#39;) 
+<span class="ln">   66 | </span>      .orderBy(&#39;exam_group.position&#39;, &#39;ASC&#39;)
 <span class="ln">   67 | </span>      .addOrderBy(&#39;exam.position&#39;, &#39;ASC&#39;)
 <span class="ln">   68 | </span>      .getOne();
 <span class="ln">   69 | </span>  }
@@ -1311,11 +1311,11 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">   72 | </span>    return this.patientRepository
 <span class="ln">   73 | </span>      .createQueryBuilder(&#39;patient&#39;)
 <span class="ln">   74 | </span>      .leftJoinAndSelect(&#39;patient.exams&#39;, &#39;exam&#39;)
-<span class="ln">   75 | </span>      .leftJoinAndSelect(&#39;exam.examGroup&#39;, &#39;exam_group&#39;) 
+<span class="ln">   75 | </span>      .leftJoinAndSelect(&#39;exam.examGroup&#39;, &#39;exam_group&#39;)
 <span class="ln">   76 | </span>      .where(&#39;patient.id = :id&#39;, { id })
 <span class="ln">   77 | </span>      .andWhere(&#39;exam.approved_id &gt; 0&#39;)
 <span class="ln">   78 | </span>      .orderBy(&#39;exam.approved_id&#39;, &#39;ASC&#39;)
-<span class="ln">   79 | </span>      .addOrderBy(&#39;exam_group.position&#39;, &#39;ASC&#39;) 
+<span class="ln">   79 | </span>      .addOrderBy(&#39;exam_group.position&#39;, &#39;ASC&#39;)
 <span class="ln">   80 | </span>      .addOrderBy(&#39;exam.position&#39;, &#39;ASC&#39;)
 <span class="ln">   81 | </span>      .getOne();
 <span class="ln">   82 | </span>  }
@@ -1375,7 +1375,7 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">  136 | </span>      } else {
 <span class="ln">  137 | </span>        query = query.andWhere(&#39;patient.total_canceled = 0&#39;);
 <span class="ln">  138 | </span>      }
-<span class="ln">  139 | </span>    }    
+<span class="ln">  139 | </span>    }
 <span class="ln">  140 | </span>    if (invoice) {
 <span class="ln">  141 | </span>      query = query.andWhere(&#39;patient.invoice IS NULL&#39;);
 <span class="ln">  142 | </span>    }
@@ -1593,7 +1593,7 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">  354 | </span>    await page.setContent(html);
 <span class="ln">  355 | </span>
 <span class="ln">  356 | </span>    const pdfBuffer = await page.pdf({ format: &#39;letter&#39; });
-<span class="ln">  357 | </span>  
+<span class="ln">  357 | </span>
 <span class="ln">  358 | </span>    await browser.close();
 <span class="ln">  359 | </span>    return pdfBuffer;
 <span class="ln">  360 | </span>  }
@@ -1759,14 +1759,14 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">   12 | </span>    ) {}
 <span class="ln">   13 | </span>
 <span class="ln">   14 | </span>    async createSampletype(sampletype: CreateSampletypeDto): Promise&lt;any&gt; {
-<span class="ln">   15 | </span>        return this.sampletypeRepository.save(sampletype) 
+<span class="ln">   15 | </span>        return this.sampletypeRepository.save(sampletype)
 <span class="ln">   16 | </span>    }
 <span class="ln">   17 | </span>
 <span class="ln">   18 | </span>    async getSampletypes() {
 <span class="ln">   19 | </span>        const query = this.sampletypeRepository
 <span class="ln">   20 | </span>      .createQueryBuilder(&#39;entity&#39;)
 <span class="ln">   21 | </span>      .orderBy(&#39;description&#39;, &#39;ASC&#39;);
-<span class="ln">   22 | </span>        
+<span class="ln">   22 | </span>
 <span class="ln">   23 | </span>      return query.getMany();
 <span class="ln">   24 | </span>    }
 <span class="ln">   25 | </span>
@@ -1815,11 +1815,11 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">   11 | </span>    @InjectRepository(special_test_items)
 <span class="ln">   12 | </span>    private specialTestItemsRepository: Repository&lt;special_test_items&gt;,
 <span class="ln">   13 | </span>  ) {}
-<span class="ln">   14 | </span>  
+<span class="ln">   14 | </span>
 <span class="ln">   15 | </span>  async createSpecialTestItems(test: CreateSpecialTestItemsDto): Promise&lt;any&gt; {
 <span class="ln">   16 | </span>    return this.specialTestItemsRepository.save(test);
 <span class="ln">   17 | </span>  }
-<span class="ln">   18 | </span>  
+<span class="ln">   18 | </span>
 <span class="ln">   19 | </span>  async getSpecialTestItemsList() {
 <span class="ln">   20 | </span>    return this.specialTestItemsRepository.find();
 <span class="ln">   21 | </span>  }
@@ -1847,7 +1847,7 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">   43 | </span>    }
 <span class="ln">   44 | </span>    const updateLaboratorio = Object.assign(itemsFound, laboratory);
 <span class="ln">   45 | </span>    return this.specialTestItemsRepository.save(updateLaboratorio);
-<span class="ln">   46 | </span>  }  
+<span class="ln">   46 | </span>  }
 <span class="ln">   47 | </span>
 <span class="ln">   48 | </span>  async deleteTestItems(id: number) {
 <span class="ln">   49 | </span>    const result = await this.specialTestItemsRepository.delete({ id })
@@ -1882,7 +1882,7 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">   15 | </span>  async createSpecialTestLab(laboratory: CreateSpecialTestLabDto): Promise&lt;any&gt; {
 <span class="ln">   16 | </span>    return this.specialTestLabRepository.save(laboratory);
 <span class="ln">   17 | </span>  }
-<span class="ln">   18 | </span>  
+<span class="ln">   18 | </span>
 <span class="ln">   19 | </span>  async getSpecialTestLabList() {
 <span class="ln">   20 | </span>    return this.specialTestLabRepository.find({
 <span class="ln">   21 | </span>      relations: [&#39;specialTestItems&#39;], // Carga la relaci&#243;n OneToMany
@@ -2354,7 +2354,7 @@ footer{text-align:center;color:#64748b;padding:20px}</style></head><body>
 <span class="ln">   12 | </span>    ) {}
 <span class="ln">   13 | </span>
 <span class="ln">   14 | </span>    async createWaypayitems(waypayitems: CreateWaypayitemsDto): Promise&lt;any&gt; {
-<span class="ln">   15 | </span>        return this.waypayitemsRepository.save(waypayitems) 
+<span class="ln">   15 | </span>        return this.waypayitemsRepository.save(waypayitems)
 <span class="ln">   16 | </span>    }
 <span class="ln">   17 | </span>
 <span class="ln">   18 | </span>    async updateWaypayitems(id: number, waypayitems: UpdateWaypayitemsDto) {

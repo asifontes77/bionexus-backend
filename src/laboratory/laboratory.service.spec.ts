@@ -12,8 +12,8 @@ describe('LaboratoryService', () => {
   function createLaboratory(): Laboratory {
     return {
       id: 1,
-      name: 'Laboratorio TORO',
-      business_name: 'Laboratorio TORO C.A.',
+      name: 'Laboratorio Bio Nexus',
+      business_name: 'Laboratorio Bio Nexus C.A.',
       rif: 'J-12345678-9',
       license: 'secret-license',
       sendEmail: {

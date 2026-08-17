@@ -93,7 +93,7 @@ describe('SecurityAuditService', () => {
       user: { userId: 7 },
       ip: '127.0.0.1',
       headers: {
-        'user-agent': 'TORO audit test',
+        'user-agent': 'Bio Nexus audit test',
       },
     });
 
@@ -108,7 +108,7 @@ describe('SecurityAuditService', () => {
     expect(create).toHaveBeenCalledWith(
       expect.objectContaining({
         ipAddress: '127.0.0.1',
-        userAgent: 'TORO audit test',
+        userAgent: 'Bio Nexus audit test',
       }),
     );
   });
