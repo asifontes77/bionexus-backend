@@ -1,5 +1,16 @@
 import { resolveDatabaseOptions, DatabaseEnvironment } from './database.config';
-import { MysqlConnectionOptions } from 'typeorm/driver/mysql/MysqlConnectionOptions';
+type MysqlConnectionOptions = {
+  type: 'mysql';
+  host: string;
+  port: number;
+  username: string;
+  password: string;
+  database: string;
+  synchronize: boolean;
+  migrationsRun: boolean;
+  entities?: unknown[];
+  migrations?: unknown[];
+};
 import { join } from 'path';
 
 describe('Configuración de Base de Datos', () => {
