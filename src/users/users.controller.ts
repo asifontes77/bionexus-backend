@@ -1,4 +1,8 @@
+import { mkdirSync } from 'node:fs';
+import { extname, join } from 'node:path';
+import { randomUUID } from 'node:crypto';
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -123,19 +127,52 @@ export class UsersController {
 
   @UseGuards(JwtUserGuard, PermissionGuard)
   @RequirePermissions('security.users.update')
-  @Post('upload')
+  @Post('upload/:assetType')
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({
-        destination: './public/images',
-        filename: function (req, file, cb) {
-          const filename = file.originalname;
-          cb(null, filename);
+        destination: (request, _file, callback) => {
+          const rawAssetType = request.params.assetType;
+          const assetType = Array.isArray(rawAssetType)
+            ? rawAssetType[0]
+            : rawAssetType;
+          if (!assetType || !['photos', 'signatures'].includes(assetType)) {
+            return callback(
+              new BadRequestException('USER_IMAGE_TYPE_INVALID'),
+              '',
+            );
+          }
+          const destination = join(
+            process.cwd(),
+            'public',
+            'images',
+            assetType,
+          );
+          mkdirSync(destination, { recursive: true });
+          callback(null, destination);
+        },
+        filename: (_request, file, callback) => {
+          const extension = extname(file.originalname).toLowerCase();
+          callback(null, `${randomUUID()}${extension}`);
         },
       }),
+      fileFilter: (_request, file, callback) => {
+        callback(
+          null,
+          ['image/png', 'image/jpeg', 'image/webp'].includes(file.mimetype),
+        );
+      },
+      limits: { fileSize: 5 * 1024 * 1024 },
     }),
   )
-  async uploadFile(@UploadedFile() file: Express.Multer.File) {
-    return file.filename;
+  async uploadFile(
+    @Param('assetType') assetType: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (!['photos', 'signatures'].includes(assetType)) {
+      throw new BadRequestException('USER_IMAGE_TYPE_INVALID');
+    }
+    if (!file) throw new BadRequestException('USER_IMAGE_REQUIRED');
+    return { filename: `${assetType}/${file.filename}` };
   }
 }

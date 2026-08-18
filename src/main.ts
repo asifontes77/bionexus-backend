@@ -4,6 +4,8 @@ import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { resolveBootstrapConfig } from './bootstrap/bootstrap.config';
 import { readFileSync } from 'fs';
+import { BioNexusExceptionFilter } from './observability/bio-nexus-exception.filter';
+import { BioNexusRequestLoggingInterceptor } from './observability/bio-nexus-request-logging.interceptor';
 
 async function bootstrap() {
   try {
@@ -37,6 +39,8 @@ async function bootstrap() {
 
     app.setGlobalPrefix('api');
 
+  app.useGlobalFilters(new BioNexusExceptionFilter());
+  app.useGlobalInterceptors(new BioNexusRequestLoggingInterceptor());
     await app.listen(config.port, config.host);
   } catch {
     console.error('Failed to start application.');
