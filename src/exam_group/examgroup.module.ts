@@ -1,13 +1,2 @@
-import { Module } from '@nestjs/common';
-import { ExamGroupController } from './examgroup.controller';
-import { ExamGroupService } from './examgroup.service';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { Examgroup } from './examgroup.entity';
-import { UsersModule } from 'src/users/users.module';
-
-@Module({
-  imports: [TypeOrmModule.forFeature([Examgroup]), UsersModule],
-  controllers: [ExamGroupController],
-  providers: [ExamGroupService],
-})
-export class ExamGroupModule {}
+import { Module } from '@nestjs/common'; import { TypeOrmModule } from '@nestjs/typeorm'; import { AuthorizationModule } from '../authorization/authorization.module'; import { SecurityModule } from '../security/security.module'; import { UsersModule } from '../users/users.module'; import { ExamGroupController } from './examgroup.controller'; import { Examgroup } from './examgroup.entity'; import { ExamGroupService } from './examgroup.service';
+@Module({imports:[TypeOrmModule.forFeature([Examgroup]),UsersModule,AuthorizationModule,SecurityModule],controllers:[ExamGroupController],providers:[ExamGroupService]}) export class ExamGroupModule {}

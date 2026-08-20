@@ -1,63 +1,6 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Post,
-  Param,
-  ParseIntPipe,
-  Patch,
-  UseGuards,
-} from '@nestjs/common';
-import { ExamGroupService } from './examgroup.service';
-import { JwtUserGuard } from 'src/users/jwt-user.guard';
-import { CreateExamgroupDto } from './dto/create-examgroup.dto';
-import { UpdateExamgroupDto } from './dto/update-examgroup.dto';
-
-@Controller('examgroup')
-export class ExamGroupController {
-  constructor(private examGroupService: ExamGroupService) {}
-
-  @UseGuards(JwtUserGuard)
-  @Get('/all')
-  getExamgroupstodos() {
-    return this.examGroupService.getExamgroupstodos();
-  }
-
-  @UseGuards(JwtUserGuard)
-  @Get(':id')
-  getExamgroup(@Param('id', ParseIntPipe) id: number) {
-    return this.examGroupService.getExamgroup(id);
-  }
-
-  @UseGuards(JwtUserGuard)
-  @Get()
-  getExamgroups() {
-    return this.examGroupService.getExamgroups();
-  }
-
-  @UseGuards(JwtUserGuard)
-  @Get('/group/:id')
-  getExamgroupsListGroup() {
-    return this.examGroupService.getExamgroupsList();
-  }
-
-  @UseGuards(JwtUserGuard)
-  @Get('/view/:id')
-  getExamgroupsViewList() {
-    return this.examGroupService.getExamgroupsViewList();
-  }
-
-  @Post()
-  createExamgroup(@Body() newGroup: CreateExamgroupDto) {
-    return this.examGroupService.createExamgroup(newGroup);
-  }
-
-  @UseGuards(JwtUserGuard)
-  @Patch(':id')
-  updateExamgroup(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() examgroup: UpdateExamgroupDto,
-  ) {
-    return this.examGroupService.updateExamgroup(id, examgroup);
-  }
-}
+import { Body,Controller,ForbiddenException,Get,Param,ParseIntPipe,Patch,Post,Req,UseGuards } from '@nestjs/common'; import { AuthorizationService } from '../authorization/authorization.service'; import { RequirePermissions } from '../authorization/decorators/require-permissions.decorator'; import { PermissionGuard } from '../authorization/guards/permission.guard'; import { getSecurityAuditActorUserId,SecurityAuthenticatedRequest } from '../audit/security-audit-context'; import { JwtUserGuard } from '../users/jwt-user.guard'; import { CreateExamgroupDto } from './dto/create-examgroup.dto'; import { UpdateExamgroupDto } from './dto/update-examgroup.dto'; import { ExamGroupService } from './examgroup.service';
+@Controller('examgroup') export class ExamGroupController { constructor(private readonly service:ExamGroupService,private readonly auth:AuthorizationService){}
+@UseGuards(JwtUserGuard,PermissionGuard) @RequirePermissions('exam-catalog.read') @Get('/all') all(){return this.service.getAll()}
+@UseGuards(JwtUserGuard,PermissionGuard) @RequirePermissions('exam-catalog.read') @Get(':id') one(@Param('id',ParseIntPipe)id:number){return this.service.getOne(id)}
+@UseGuards(JwtUserGuard,PermissionGuard) @RequirePermissions('exam-catalog.create') @Post() create(@Req()r:SecurityAuthenticatedRequest,@Body()b:CreateExamgroupDto){return this.service.create(b,getSecurityAuditActorUserId(r)??undefined)}
+@UseGuards(JwtUserGuard) @Patch(':id') async update(@Req()r:SecurityAuthenticatedRequest,@Param('id',ParseIntPipe)id:number,@Body()b:UpdateExamgroupDto){const u=getSecurityAuditActorUserId(r);if(u===null)throw new ForbiddenException('AUTHORIZATION_CONTEXT_UNAVAILABLE');const p:string[]=[];if(b&&typeof b==='object'&&!Array.isArray(b)){if(['description','its_exam'].some(x=>Object.prototype.hasOwnProperty.call(b,x)))p.push('exam-catalog.update');if(Object.prototype.hasOwnProperty.call(b,'annulled'))p.push('exam-catalog.change-status')}if(!(await this.auth.hasAllPermissions(u,p)))throw new ForbiddenException('EXAM_CATALOG_PERMISSION_REQUIRED');return this.service.update(id,b,u)} }

@@ -1,63 +1,7 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Post,
-  Param,
-  ParseIntPipe,
-  Patch,
-  UseGuards,
-} from '@nestjs/common';
-import { ExamListsService } from './examlists.service';
-import { CreateExam_listDto } from './dto/create-exam_lists.dto';
-import { UpdateExam_listDto } from './dto/update-exam_lists.dto';
-import { JwtUserGuard } from '../users/jwt-user.guard';
-
-@Controller('examlists')
-export class ExamListsController {
-  constructor(private examListsService: ExamListsService) {}
-
-  @UseGuards(JwtUserGuard)
-  @Get(':id')
-  getExamList(@Param('id', ParseIntPipe) id: number) {
-    return this.examListsService.getExamList(id);
-  }
-
-  @UseGuards(JwtUserGuard)
-  @Get()
-  getExamLists() {
-    return this.examListsService.getExamLists();
-  }
-
-  @UseGuards(JwtUserGuard)
-  @Get('/group/:id')
-  getExamByGroup(@Param('id', ParseIntPipe) id: number) {
-    return this.examListsService.getExamByGroup(id);
-  }
-
-  @UseGuards(JwtUserGuard)
-  @Get('/search-description/:description')
-  getExamListByDescription(@Param('description') description: string) {
-    return this.examListsService.getExamListByDescription(description);
-  }
-
-  @UseGuards(JwtUserGuard)
-  @Get('/grouplist/:id')
-  getExamByGroupAnulled(@Param('id', ParseIntPipe) id: number) {
-    return this.examListsService.getExamByGroupAnulled(id);
-  }
-
-  @Post()
-  createExamList(@Body() newExam: CreateExam_listDto) {
-    return this.examListsService.createExamList(newExam);
-  }
-
-  @UseGuards(JwtUserGuard)
-  @Patch(':id')
-  updateExamList(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() exam: UpdateExam_listDto,
-  ) {
-    return this.examListsService.updateExamList(id, exam);
-  }
-}
+import { Body,Controller,ForbiddenException,Get,Param,Query,ParseIntPipe,Patch,Post,Req,UseGuards } from '@nestjs/common'; import { AuthorizationService } from '../authorization/authorization.service'; import { RequirePermissions } from '../authorization/decorators/require-permissions.decorator'; import { PermissionGuard } from '../authorization/guards/permission.guard'; import { getSecurityAuditActorUserId,SecurityAuthenticatedRequest } from '../audit/security-audit-context'; import { JwtUserGuard } from '../users/jwt-user.guard'; import { CreateExam_listDto } from './dto/create-exam_lists.dto'; import { UpdateExam_listDto } from './dto/update-exam_lists.dto'; import { ExamListsService } from './examlists.service';
+@Controller('examlists') export class ExamListsController { constructor(private readonly service:ExamListsService,private readonly auth:AuthorizationService){}
+@UseGuards(JwtUserGuard,PermissionGuard) @RequirePermissions('exam-catalog.read') @Get('search') search(@Query('q')q:string,@Query('limit')limit?:string){return this.service.search(q,limit)}
+@UseGuards(JwtUserGuard,PermissionGuard) @RequirePermissions('exam-catalog.read') @Get('group/:id') group(@Param('id',ParseIntPipe)id:number){return this.service.getByGroup(id)}
+@UseGuards(JwtUserGuard,PermissionGuard) @RequirePermissions('exam-catalog.read') @Get(':id') one(@Param('id',ParseIntPipe)id:number){return this.service.getOne(id)}
+@UseGuards(JwtUserGuard,PermissionGuard) @RequirePermissions('exam-catalog.create') @Post() create(@Req()r:SecurityAuthenticatedRequest,@Body()b:CreateExam_listDto){return this.service.create(b,getSecurityAuditActorUserId(r)??undefined)}
+@UseGuards(JwtUserGuard) @Patch('bulk') async bulk(@Req()r:SecurityAuthenticatedRequest,@Body()b:{ids?:unknown;changes?:unknown}){const u=getSecurityAuditActorUserId(r);if(u===null)throw new ForbiddenException('AUTHORIZATION_CONTEXT_UNAVAILABLE');const changes=b?.changes&&typeof b.changes==='object'&&!Array.isArray(b.changes)?b.changes as Record<string,unknown>:{};const p:string[]=[];if(Object.prototype.hasOwnProperty.call(changes,'special_test'))p.push('exam-catalog.update');if(Object.prototype.hasOwnProperty.call(changes,'annulled'))p.push('exam-catalog.change-status');if(p.length===0||!(await this.auth.hasAllPermissions(u,p)))throw new ForbiddenException('EXAM_CATALOG_PERMISSION_REQUIRED');return this.service.bulkUpdate(b?.ids,changes,u)}@UseGuards(JwtUserGuard) @Patch(':id') async update(@Req()r:SecurityAuthenticatedRequest,@Param('id',ParseIntPipe)id:number,@Body()b:UpdateExam_listDto){const u=getSecurityAuditActorUserId(r);if(u===null)throw new ForbiddenException('AUTHORIZATION_CONTEXT_UNAVAILABLE');const p:string[]=[];if(b&&typeof b==='object'&&!Array.isArray(b)){if(Object.keys(b).some(x=>x!=='annulled'))p.push('exam-catalog.update');if(Object.prototype.hasOwnProperty.call(b,'annulled'))p.push('exam-catalog.change-status')}if(!(await this.auth.hasAllPermissions(u,p)))throw new ForbiddenException('EXAM_CATALOG_PERMISSION_REQUIRED');return this.service.update(id,b,u)} }

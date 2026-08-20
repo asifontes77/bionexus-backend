@@ -1,6 +1,1 @@
-export class CreateExamgroupDto {
-  description: string;
-  active: boolean;
-  position: number;
-  its_exam: boolean;
-}
+export class CreateExamgroupDto { description: string; its_exam?: boolean; }
