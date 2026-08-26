@@ -44,6 +44,8 @@ export class Examlists {
 
   @Column({ type: 'json', nullable: true })
   format_vue: string;
+  @Column({ type: 'json', nullable: true })
+  format_grid: Record<string, unknown> | null;
 
   @Column({ type: 'decimal', precision: 18, scale: 2, default: () => '0.00' })
   cost1: number;
