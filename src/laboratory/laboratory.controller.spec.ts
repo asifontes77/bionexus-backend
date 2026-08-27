@@ -1,3 +1,4 @@
+import { BadRequestException } from '@nestjs/common';
 import { GUARDS_METADATA } from '@nestjs/common/constants';
 import { REQUIRED_PERMISSIONS_KEY } from '../authorization/decorators/require-permissions.decorator';
 import { PermissionGuard } from '../authorization/guards/permission.guard';
@@ -93,6 +94,7 @@ describe('LaboratoryController', () => {
 
     const file = {
       filename: 'logo_lab.png',
+      path: 'public/images/logo_lab.png',
     } as Express.Multer.File;
 
     await expect(controller.uploadFile(file)).resolves.toEqual({
@@ -103,6 +105,13 @@ describe('LaboratoryController', () => {
     expect(updateLaboratory).toHaveBeenCalledWith(1, {
       logo: 'logo_lab.png',
     });
+  });
+
+  it('rechaza una carga sin archivo', async () => {
+    await expect(controller.uploadFile()).rejects.toThrow(
+      new BadRequestException('LABORATORY_LOGO_REQUIRED'),
+    );
+    expect(updateLaboratory).not.toHaveBeenCalled();
   });
 
   it.each([

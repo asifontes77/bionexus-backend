@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -11,6 +12,8 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { unlink } from 'fs/promises';
+import { extname } from 'path';
 import { diskStorage } from 'multer';
 import { RequirePermissions } from '../authorization/decorators/require-permissions.decorator';
 import { PermissionGuard } from '../authorization/guards/permission.guard';
@@ -51,20 +54,36 @@ export class LaboratoryController {
   @Post('upload')
   @UseInterceptors(
     FileInterceptor('file', {
+      limits: { fileSize: 5 * 1024 * 1024 },
+      fileFilter: (_request, file, callback) => {
+        const extension = extname(file.originalname).toLowerCase();
+        const allowedMimeTypes = ['image/png', 'image/jpeg', 'image/webp'];
+        const allowedExtensions = ['.png', '.jpg', '.jpeg', '.webp'];
+        if (!allowedMimeTypes.includes(file.mimetype) || !allowedExtensions.includes(extension)) {
+          callback(new BadRequestException('LABORATORY_LOGO_TYPE_INVALID'), false);
+          return;
+        }
+        callback(null, true);
+      },
       storage: diskStorage({
         destination: './public/images',
-        filename: function (req, file, cb) {
-          cb(null, 'logo_lab.' + file.originalname.split('.')[1]);
+        filename: (_request, file, callback) => {
+          callback(null, `logo_lab${extname(file.originalname).toLowerCase()}`);
         },
       }),
     }),
   )
-  async uploadFile(@UploadedFile() file: Express.Multer.File) {
-    const id = 1;
-    const change = {
-      logo: file.filename,
-    };
-
-    return this.laboratoryService.updateLaboratory(id, change);
+  async uploadFile(@UploadedFile() file?: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException('LABORATORY_LOGO_REQUIRED');
+    }
+    try {
+      return await this.laboratoryService.updateLaboratory(1, {
+        logo: file.filename,
+      });
+    } catch (error) {
+      await unlink(file.path).catch(() => undefined);
+      throw error;
+    }
   }
 }
