@@ -1,5 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { GUARDS_METADATA } from '@nestjs/common/constants';
+import { SecurityAuthenticatedRequest } from '../audit/security-audit-context';
 import { REQUIRED_PERMISSIONS_KEY } from '../authorization/decorators/require-permissions.decorator';
 import { PermissionGuard } from '../authorization/guards/permission.guard';
 import { JwtUserGuard } from '../users/jwt-user.guard';
@@ -73,7 +74,7 @@ describe('LaboratoryController', () => {
     });
 
     await expect(
-      controller.updateLaboratory(1, {
+      controller.updateLaboratory(authenticatedRequest(5), 1, {
         name: 'Laboratorio actualizado',
       }),
     ).resolves.toEqual({
@@ -81,9 +82,11 @@ describe('LaboratoryController', () => {
       name: 'Laboratorio actualizado',
     });
 
-    expect(updateLaboratory).toHaveBeenCalledWith(1, {
-      name: 'Laboratorio actualizado',
-    });
+    expect(updateLaboratory).toHaveBeenCalledWith(
+      1,
+      { name: 'Laboratorio actualizado' },
+      5,
+    );
   });
 
   it('mantiene la actualizacion del logo', async () => {
@@ -97,18 +100,21 @@ describe('LaboratoryController', () => {
       path: 'public/images/logo_lab.png',
     } as Express.Multer.File;
 
-    await expect(controller.uploadFile(file)).resolves.toEqual({
+    await expect(controller.uploadFile(authenticatedRequest(7), file)).resolves.toEqual({
       id: 1,
       logo: 'logo_lab.png',
     });
 
-    expect(updateLaboratory).toHaveBeenCalledWith(1, {
-      logo: 'logo_lab.png',
-    });
+    expect(updateLaboratory).toHaveBeenCalledWith(
+      1,
+      { logo: 'logo_lab.png' },
+      7,
+      'laboratory.logo.updated',
+    );
   });
 
   it('rechaza una carga sin archivo', async () => {
-    await expect(controller.uploadFile()).rejects.toThrow(
+    await expect(controller.uploadFile(authenticatedRequest(7))).rejects.toThrow(
       new BadRequestException('LABORATORY_LOGO_REQUIRED'),
     );
     expect(updateLaboratory).not.toHaveBeenCalled();
@@ -125,6 +131,10 @@ describe('LaboratoryController', () => {
     expect(Reflect.getMetadata(REQUIRED_PERMISSIONS_KEY, method)).toEqual([permission]);
   });
 });
+
+function authenticatedRequest(userId: number): SecurityAuthenticatedRequest {
+  return { user: { userId, username: 'tester' } };
+}
 
 function controllerMethod(
   methodName:

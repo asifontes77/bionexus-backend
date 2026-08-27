@@ -1,6 +1,12 @@
-﻿import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+﻿import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  Optional,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, EntityManager, Repository } from 'typeorm';
+import { SecurityAuditService } from '../audit/security-audit.service';
 import { UpdateLaboratoryDto } from './dto/update-laboratorio.dto';
 import { Laboratory } from './laboratory.entity';
 
@@ -22,7 +28,9 @@ type PublicLaboratory = Omit<Laboratory, 'license' | 'sendEmail'> & {
 export class LaboratoryService {
   constructor(
     @InjectRepository(Laboratory)
-    private laboratoryRepository: Repository<Laboratory>,
+    private readonly laboratoryRepository: Repository<Laboratory>,
+    @Optional() private readonly dataSource?: DataSource,
+    @Optional() private readonly securityAuditService?: SecurityAuditService,
   ) {}
 
   async getLaboratory(id: number): Promise<Laboratory> {
@@ -58,25 +66,54 @@ export class LaboratoryService {
   async updateLaboratory(
     id: number,
     laboratory: UpdateLaboratoryDto,
+    actorUserId?: number,
+    action: 'laboratory.updated' | 'laboratory.logo.updated' = 'laboratory.updated',
   ): Promise<Laboratory> {
     this.validateId(id);
     this.validateUpdate(laboratory);
+    if (actorUserId === undefined) {
+      return this.updateWithRepository(this.laboratoryRepository, id, laboratory);
+    }
+    if (!this.dataSource) throw new Error('LABORATORY_TRANSACTION_UNAVAILABLE');
+    return this.dataSource.transaction(async (manager) => {
+      const repository = manager.getRepository(Laboratory);
+      const saved = await this.updateWithRepository(repository, id, laboratory);
+      await this.writeAudit(manager, actorUserId, action, saved.id, Object.keys(laboratory));
+      return saved;
+    });
+  }
 
-    const laboratoryFound = await this.laboratoryRepository.findOne({
-      where: {
-        id,
+  private async updateWithRepository(
+    repository: Repository<Laboratory>,
+    id: number,
+    laboratory: UpdateLaboratoryDto,
+  ): Promise<Laboratory> {
+    const laboratoryFound = await repository.findOne({ where: { id } });
+    if (!laboratoryFound) throw new NotFoundException('LABORATORY_NOT_FOUND');
+    const changes = this.preserveEmailPassword(laboratoryFound, laboratory);
+    return repository.save(Object.assign(laboratoryFound, changes));
+  }
+
+  private async writeAudit(
+    manager: EntityManager,
+    actorUserId: number,
+    action: 'laboratory.updated' | 'laboratory.logo.updated',
+    entityId: number,
+    changedFields: string[],
+  ): Promise<void> {
+    if (!this.securityAuditService) throw new Error('SECURITY_AUDIT_SERVICE_UNAVAILABLE');
+    await this.securityAuditService.write(manager, {
+      actorUserId,
+      action,
+      entityType: 'laboratory',
+      entityId,
+      summary: action === 'laboratory.logo.updated'
+        ? 'Logo del laboratorio actualizado'
+        : 'Configuracion del laboratorio actualizada',
+      metadata: {
+        changedFields: changedFields.filter((field) => field !== 'license'),
       },
     });
-
-    if (!laboratoryFound) {
-      throw new NotFoundException('LABORATORY_NOT_FOUND');
-    }
-
-    const changes = this.preserveEmailPassword(laboratoryFound, laboratory);
-
-    const updatedLaboratory = Object.assign(laboratoryFound, changes);
-
-    return this.laboratoryRepository.save(updatedLaboratory);
   }
 
   private validateId(id: number): void {

@@ -7,6 +7,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Req,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -15,6 +16,10 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { unlink } from 'fs/promises';
 import { extname } from 'path';
 import { diskStorage } from 'multer';
+import {
+  getSecurityAuditActorUserId,
+  SecurityAuthenticatedRequest,
+} from '../audit/security-audit-context';
 import { RequirePermissions } from '../authorization/decorators/require-permissions.decorator';
 import { PermissionGuard } from '../authorization/guards/permission.guard';
 import { JwtUserGuard } from '../users/jwt-user.guard';
@@ -36,10 +41,16 @@ export class LaboratoryController {
   @RequirePermissions('laboratory.update')
   @Patch(':id')
   updateLaboratory(
+    @Req() request: SecurityAuthenticatedRequest,
     @Param('id', ParseIntPipe) id: number,
     @Body() laboratory: UpdateLaboratoryDto,
   ) {
-    return this.laboratoryService.updateLaboratory(id, laboratory);
+    const actorUserId = getSecurityAuditActorUserId(request);
+    return this.laboratoryService.updateLaboratory(
+      id,
+      laboratory,
+      actorUserId ?? undefined,
+    );
   }
 
   @UseGuards(JwtUserGuard, PermissionGuard)
@@ -73,14 +84,21 @@ export class LaboratoryController {
       }),
     }),
   )
-  async uploadFile(@UploadedFile() file?: Express.Multer.File) {
+  async uploadFile(
+    @Req() request: SecurityAuthenticatedRequest,
+    @UploadedFile() file?: Express.Multer.File,
+  ) {
     if (!file) {
       throw new BadRequestException('LABORATORY_LOGO_REQUIRED');
     }
     try {
-      return await this.laboratoryService.updateLaboratory(1, {
-        logo: file.filename,
-      });
+      const actorUserId = getSecurityAuditActorUserId(request);
+      return await this.laboratoryService.updateLaboratory(
+        1,
+        { logo: file.filename },
+        actorUserId ?? undefined,
+        'laboratory.logo.updated',
+      );
     } catch (error) {
       await unlink(file.path).catch(() => undefined);
       throw error;

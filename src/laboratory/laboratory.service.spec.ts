@@ -178,4 +178,44 @@ describe('LaboratoryService', () => {
     expect(sendEmail.pass).toBe('new-secret-password');
     expect(save).toHaveBeenCalledTimes(1);
   });
+  it('audita la actualizacion dentro de la misma transaccion', async () => {
+    const laboratory = createLaboratory();
+    const transactionalRepository = {
+      findOne: jest.fn().mockResolvedValue(laboratory),
+      save: jest.fn(async (value) => value),
+    } as unknown as Repository<Laboratory>;
+    const manager = {
+      getRepository: jest.fn().mockReturnValue(transactionalRepository),
+    };
+    const dataSource = {
+      transaction: jest.fn(async (work) => work(manager)),
+    };
+    const securityAuditService = {
+      write: jest.fn().mockResolvedValue(undefined),
+    };
+    const auditedService = new LaboratoryService(
+      transactionalRepository,
+      dataSource as never,
+      securityAuditService as never,
+    );
+
+    await auditedService.updateLaboratory(
+      1,
+      { name: 'Laboratorio auditado' },
+      7,
+    );
+
+    expect(dataSource.transaction).toHaveBeenCalledTimes(1);
+    expect(securityAuditService.write).toHaveBeenCalledWith(
+      manager,
+      expect.objectContaining({
+        actorUserId: 7,
+        action: 'laboratory.updated',
+        entityType: 'laboratory',
+        entityId: 1,
+        metadata: { changedFields: ['name'] },
+      }),
+    );
+  });
+
 });
