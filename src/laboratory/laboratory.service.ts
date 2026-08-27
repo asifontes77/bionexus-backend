@@ -129,8 +129,64 @@ export class LaboratoryService {
     if (Object.keys(laboratory).length === 0) {
       throw new BadRequestException('LABORATORY_UPDATE_REQUIRED');
     }
-    if (Object.prototype.hasOwnProperty.call(laboratory, 'license')) {
+    const allowedFields = [
+      'name', 'business_name', 'address', 'rif', 'phone_1', 'phone_2',
+      'email', 'logo', 'print_invoice', 'print_sample_take', 'url',
+      'invoice_number', 'creditnote_number', 'voucher_number', 'mask_phone',
+      'voucher_format', 'rows_description_invoices', 'max_height_logo',
+      'max_width_logo', 'settingQR', 'sendEmail', 'head_html', 'body_html',
+      'page_html', 'maximum_rows_report', 'workshee_format', 'printer_type',
+      'printer_interface', 'receipt_format', 'rows_description_receipt',
+      'receipt_number', 'print_receipt',
+    ];
+    const fields = Object.keys(laboratory);
+    if (fields.includes('license')) {
       throw new BadRequestException('LABORATORY_LICENSE_READ_ONLY');
+    }
+    if (fields.some((field) => !allowedFields.includes(field))) {
+      throw new BadRequestException('LABORATORY_FIELD_UNKNOWN');
+    }
+    this.validateStringFields(laboratory);
+    this.validateBooleanFields(laboratory);
+    this.validateIntegerFields(laboratory);
+  }
+
+  private validateStringFields(body: UpdateLaboratoryDto): void {
+    const maximums: Record<string, number> = {
+      name: 50, business_name: 100, address: 200, rif: 20, phone_1: 20,
+      phone_2: 20, email: 100, logo: 100, url: 100, mask_phone: 20,
+      printer_type: 100, printer_interface: 100,
+    };
+    for (const [field, maximum] of Object.entries(maximums)) {
+      if (!Object.prototype.hasOwnProperty.call(body, field)) continue;
+      const value = body[field as keyof UpdateLaboratoryDto];
+      if (typeof value !== 'string' || value.length > maximum) {
+        throw new BadRequestException('LABORATORY_TEXT_INVALID');
+      }
+    }
+  }
+
+  private validateBooleanFields(body: UpdateLaboratoryDto): void {
+    for (const field of ['print_invoice', 'print_sample_take', 'print_receipt']) {
+      if (!Object.prototype.hasOwnProperty.call(body, field)) continue;
+      if (typeof body[field as keyof UpdateLaboratoryDto] !== 'boolean') {
+        throw new BadRequestException('LABORATORY_BOOLEAN_INVALID');
+      }
+    }
+  }
+
+  private validateIntegerFields(body: UpdateLaboratoryDto): void {
+    const fields = [
+      'invoice_number', 'creditnote_number', 'voucher_number',
+      'rows_description_invoices', 'max_height_logo', 'max_width_logo',
+      'maximum_rows_report', 'rows_description_receipt', 'receipt_number',
+    ];
+    for (const field of fields) {
+      if (!Object.prototype.hasOwnProperty.call(body, field)) continue;
+      const value = body[field as keyof UpdateLaboratoryDto];
+      if (!Number.isInteger(value) || Number(value) < 0) {
+        throw new BadRequestException('LABORATORY_INTEGER_INVALID');
+      }
     }
   }
 

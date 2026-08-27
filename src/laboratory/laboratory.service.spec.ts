@@ -128,6 +128,28 @@ describe('LaboratoryService', () => {
     expect(save).not.toHaveBeenCalled();
   });
 
+  it('rechaza campos desconocidos antes de consultar', async () => {
+    await expect(
+      service.updateLaboratory(1, { unknown: true } as never),
+    ).rejects.toThrow(new BadRequestException('LABORATORY_FIELD_UNKNOWN'));
+    expect(findOne).not.toHaveBeenCalled();
+  });
+
+  it('rechaza textos que exceden la longitud legacy', async () => {
+    await expect(service.updateLaboratory(1, { name: 'A'.repeat(51) })).rejects.toThrow(
+      new BadRequestException('LABORATORY_TEXT_INVALID'),
+    );
+  });
+
+  it('rechaza booleanos e enteros invalidos', async () => {
+    await expect(
+      service.updateLaboratory(1, { print_invoice: 1 as never }),
+    ).rejects.toThrow(new BadRequestException('LABORATORY_BOOLEAN_INVALID'));
+    await expect(
+      service.updateLaboratory(1, { receipt_number: -1 }),
+    ).rejects.toThrow(new BadRequestException('LABORATORY_INTEGER_INVALID'));
+  });
+
   it('conserva la clave SMTP cuando el cambio contiene una clave vacia', async () => {
     const laboratory = createLaboratory();
 
