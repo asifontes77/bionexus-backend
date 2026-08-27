@@ -43,8 +43,7 @@ export class Examlists {
   format: string;
 
   @Column({ type: 'json', nullable: true })
-  format_vue: string;
-  @Column({ type: 'json', nullable: true })
+@Column({ type: 'json', nullable: true })
   format_grid: Record<string, unknown> | null;
 
   @Column({ type: 'decimal', precision: 18, scale: 2, default: () => '0.00' })
