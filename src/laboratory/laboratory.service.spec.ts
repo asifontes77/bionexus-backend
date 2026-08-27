@@ -1,4 +1,4 @@
-﻿import { HttpException, HttpStatus } from '@nestjs/common';
+﻿import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { Laboratory } from './laboratory.entity';
 import { LaboratoryService } from './laboratory.service';
@@ -52,13 +52,18 @@ describe('LaboratoryService', () => {
     ).toBe('secret-password');
   });
 
-  it('devuelve not found cuando el laboratorio no existe', async () => {
+  it('lanza not found cuando el laboratorio no existe', async () => {
     findOne.mockResolvedValue(null);
+    await expect(service.getLaboratory(1)).rejects.toThrow(
+      new NotFoundException('LABORATORY_NOT_FOUND'),
+    );
+  });
 
-    const result = await service.getLaboratory(1);
-
-    expect(result).toBeInstanceOf(HttpException);
-    expect((result as HttpException).getStatus()).toBe(HttpStatus.NOT_FOUND);
+  it('rechaza identificadores invalidos antes de consultar', async () => {
+    await expect(service.getLaboratory(0)).rejects.toThrow(
+      new BadRequestException('LABORATORY_ID_INVALID'),
+    );
+    expect(findOne).not.toHaveBeenCalled();
   });
 
   it('retira la licencia y vacia la clave SMTP en la respuesta publica', async () => {
@@ -105,6 +110,22 @@ describe('LaboratoryService', () => {
     expect(find).toHaveBeenCalledWith({ take: 1 });
     expect(publicLaboratory.license).toBeUndefined();
     expect(publicLaboratory.sendEmail.pass).toBe('');
+  });
+
+  it('rechaza actualizaciones vacias antes de consultar', async () => {
+    await expect(service.updateLaboratory(1, {})).rejects.toThrow(
+      new BadRequestException('LABORATORY_UPDATE_REQUIRED'),
+    );
+    expect(findOne).not.toHaveBeenCalled();
+    expect(save).not.toHaveBeenCalled();
+  });
+
+  it('impide actualizar la licencia desde el contrato publico', async () => {
+    await expect(service.updateLaboratory(1, { license: 'new-license' })).rejects.toThrow(
+      new BadRequestException('LABORATORY_LICENSE_READ_ONLY'),
+    );
+    expect(findOne).not.toHaveBeenCalled();
+    expect(save).not.toHaveBeenCalled();
   });
 
   it('conserva la clave SMTP cuando el cambio contiene una clave vacia', async () => {

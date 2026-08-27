@@ -1,4 +1,4 @@
-﻿import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+﻿import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UpdateLaboratoryDto } from './dto/update-laboratorio.dto';
@@ -25,7 +25,9 @@ export class LaboratoryService {
     private laboratoryRepository: Repository<Laboratory>,
   ) {}
 
-  async getLaboratory(id: number) {
+  async getLaboratory(id: number): Promise<Laboratory> {
+    this.validateId(id);
+
     const laboratoryFound = await this.laboratoryRepository.findOne({
       where: {
         id,
@@ -33,23 +35,14 @@ export class LaboratoryService {
     });
 
     if (!laboratoryFound) {
-      return new HttpException(
-        'Laboratorio no encontrado',
-        HttpStatus.NOT_FOUND,
-      );
+      throw new NotFoundException('LABORATORY_NOT_FOUND');
     }
 
     return laboratoryFound;
   }
 
-  async getPublicLaboratory(id: number) {
-    const laboratoryResult = await this.getLaboratory(id);
-
-    if (laboratoryResult instanceof HttpException) {
-      return laboratoryResult;
-    }
-
-    return this.toPublicLaboratory(laboratoryResult);
+  async getPublicLaboratory(id: number): Promise<PublicLaboratory> {
+    return this.toPublicLaboratory(await this.getLaboratory(id));
   }
 
   async getPublicLaboratorySetting() {
@@ -62,7 +55,13 @@ export class LaboratoryService {
     );
   }
 
-  async updateLaboratory(id: number, laboratory: UpdateLaboratoryDto) {
+  async updateLaboratory(
+    id: number,
+    laboratory: UpdateLaboratoryDto,
+  ): Promise<Laboratory> {
+    this.validateId(id);
+    this.validateUpdate(laboratory);
+
     const laboratoryFound = await this.laboratoryRepository.findOne({
       where: {
         id,
@@ -70,10 +69,7 @@ export class LaboratoryService {
     });
 
     if (!laboratoryFound) {
-      return new HttpException(
-        'Laboratorio no encontrado',
-        HttpStatus.NOT_FOUND,
-      );
+      throw new NotFoundException('LABORATORY_NOT_FOUND');
     }
 
     const changes = this.preserveEmailPassword(laboratoryFound, laboratory);
@@ -81,6 +77,24 @@ export class LaboratoryService {
     const updatedLaboratory = Object.assign(laboratoryFound, changes);
 
     return this.laboratoryRepository.save(updatedLaboratory);
+  }
+
+  private validateId(id: number): void {
+    if (!Number.isInteger(id) || id <= 0) {
+      throw new BadRequestException('LABORATORY_ID_INVALID');
+    }
+  }
+
+  private validateUpdate(laboratory: UpdateLaboratoryDto): void {
+    if (!laboratory || typeof laboratory !== 'object' || Array.isArray(laboratory)) {
+      throw new BadRequestException('LABORATORY_UPDATE_REQUIRED');
+    }
+    if (Object.keys(laboratory).length === 0) {
+      throw new BadRequestException('LABORATORY_UPDATE_REQUIRED');
+    }
+    if (Object.prototype.hasOwnProperty.call(laboratory, 'license')) {
+      throw new BadRequestException('LABORATORY_LICENSE_READ_ONLY');
+    }
   }
 
   private toPublicLaboratory(laboratory: Laboratory): PublicLaboratory {
