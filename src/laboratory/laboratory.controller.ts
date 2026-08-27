@@ -12,6 +12,8 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
+import { RequirePermissions } from '../authorization/decorators/require-permissions.decorator';
+import { PermissionGuard } from '../authorization/guards/permission.guard';
 import { JwtUserGuard } from '../users/jwt-user.guard';
 import { UpdateLaboratoryDto } from './dto/update-laboratorio.dto';
 import { LaboratoryService } from './laboratory.service';
@@ -20,13 +22,15 @@ import { LaboratoryService } from './laboratory.service';
 export class LaboratoryController {
   constructor(private laboratoryService: LaboratoryService) {}
 
-  @UseGuards(JwtUserGuard)
+  @UseGuards(JwtUserGuard, PermissionGuard)
+  @RequirePermissions('laboratory.read')
   @Get(':id')
   getLaboratory(@Param('id', ParseIntPipe) id: number) {
     return this.laboratoryService.getPublicLaboratory(id);
   }
 
-  @UseGuards(JwtUserGuard)
+  @UseGuards(JwtUserGuard, PermissionGuard)
+  @RequirePermissions('laboratory.update')
   @Patch(':id')
   updateLaboratory(
     @Param('id', ParseIntPipe) id: number,
@@ -35,13 +39,15 @@ export class LaboratoryController {
     return this.laboratoryService.updateLaboratory(id, laboratory);
   }
 
-  @UseGuards(JwtUserGuard)
+  @UseGuards(JwtUserGuard, PermissionGuard)
+  @RequirePermissions('laboratory.read')
   @Get()
   getLaboratorySetting() {
     return this.laboratoryService.getPublicLaboratorySetting();
   }
 
-  @UseGuards(JwtUserGuard)
+  @UseGuards(JwtUserGuard, PermissionGuard)
+  @RequirePermissions('laboratory.upload-logo')
   @Post('upload')
   @UseInterceptors(
     FileInterceptor('file', {

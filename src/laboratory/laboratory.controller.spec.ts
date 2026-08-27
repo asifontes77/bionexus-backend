@@ -1,4 +1,6 @@
 import { GUARDS_METADATA } from '@nestjs/common/constants';
+import { REQUIRED_PERMISSIONS_KEY } from '../authorization/decorators/require-permissions.decorator';
+import { PermissionGuard } from '../authorization/guards/permission.guard';
 import { JwtUserGuard } from '../users/jwt-user.guard';
 import { LaboratoryController } from './laboratory.controller';
 import { LaboratoryService } from './laboratory.service';
@@ -104,14 +106,14 @@ describe('LaboratoryController', () => {
   });
 
   it.each([
-    ['getLaboratory', controllerMethod('getLaboratory')],
-    ['updateLaboratory', controllerMethod('updateLaboratory')],
-    ['getLaboratorySetting', controllerMethod('getLaboratorySetting')],
-    ['uploadFile', controllerMethod('uploadFile')],
-  ])('protege %s con JwtUserGuard', (_name, method) => {
-    const guards = Reflect.getMetadata(GUARDS_METADATA, method);
-
-    expect(guards).toContain(JwtUserGuard);
+    ['getLaboratory', 'laboratory.read'],
+    ['getLaboratorySetting', 'laboratory.read'],
+    ['updateLaboratory', 'laboratory.update'],
+    ['uploadFile', 'laboratory.upload-logo'],
+  ] as const)('protege %s con JWT, PermissionGuard y %s', (methodName, permission) => {
+    const method = controllerMethod(methodName);
+    expect(Reflect.getMetadata(GUARDS_METADATA, method)).toEqual([JwtUserGuard, PermissionGuard]);
+    expect(Reflect.getMetadata(REQUIRED_PERMISSIONS_KEY, method)).toEqual([permission]);
   });
 });
 
