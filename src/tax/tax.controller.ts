@@ -1,49 +1,71 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
-  Post,
   Param,
   ParseIntPipe,
-  Delete,
   Patch,
+  Post,
+  Req,
   UseGuards,
 } from '@nestjs/common';
-import { TaxService } from './tax.service';
+import {
+  getSecurityAuditActorUserId,
+  SecurityAuthenticatedRequest,
+} from '../audit/security-audit-context';
+import { RequirePermissions } from '../authorization/decorators/require-permissions.decorator';
+import { PermissionGuard } from '../authorization/guards/permission.guard';
+import { JwtUserGuard } from '../users/jwt-user.guard';
 import { CreateTaxDto } from './dto/create-tax.dto';
 import { UpdateTaxDto } from './dto/update-tax.dto';
-import { JwtUserGuard } from '../users/jwt-user.guard';
+import { TaxService } from './tax.service';
 
+@UseGuards(JwtUserGuard, PermissionGuard)
 @Controller('tax')
 export class TaxController {
-  constructor(private taxService: TaxService) {}
+  constructor(private readonly taxService: TaxService) {}
 
-  @UseGuards(JwtUserGuard)
+  @RequirePermissions('tax.read')
   @Get()
-  getTaxs() {
-    return this.taxService.getTaxs();
+  getTaxes() {
+    return this.taxService.getTaxes();
   }
 
-  @UseGuards(JwtUserGuard)
+  @RequirePermissions('tax.read')
   @Get(':id')
   getTax(@Param('id', ParseIntPipe) id: number) {
     return this.taxService.getTax(id);
   }
 
+  @RequirePermissions('tax.create')
   @Post()
-  createTax(@Body() newTax: CreateTaxDto) {
-    return this.taxService.createTax(newTax);
+  createTax(
+    @Req() request: SecurityAuthenticatedRequest,
+    @Body() body: CreateTaxDto,
+  ) {
+    const actorUserId = getSecurityAuditActorUserId(request);
+    return this.taxService.createTax(body, actorUserId ?? undefined);
   }
 
-  @UseGuards(JwtUserGuard)
+  @RequirePermissions('tax.update')
   @Patch(':id')
-  updateTax(@Param('id', ParseIntPipe) id: number, @Body() tax: UpdateTaxDto) {
-    return this.taxService.updateTax(id, tax);
+  updateTax(
+    @Req() request: SecurityAuthenticatedRequest,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: UpdateTaxDto,
+  ) {
+    const actorUserId = getSecurityAuditActorUserId(request);
+    return this.taxService.updateTax(id, body, actorUserId ?? undefined);
   }
 
-  @UseGuards(JwtUserGuard)
+  @RequirePermissions('tax.delete')
   @Delete(':id')
-  deleteTax(@Param('id', ParseIntPipe) id: number) {
-    return this.taxService.deleteTax(id);
+  deleteTax(
+    @Req() request: SecurityAuthenticatedRequest,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    const actorUserId = getSecurityAuditActorUserId(request);
+    return this.taxService.deleteTax(id, actorUserId ?? undefined);
   }
 }

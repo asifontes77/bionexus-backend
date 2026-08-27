@@ -1,58 +1,158 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  Optional,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Tax } from './tax.entity';
-import { Repository } from 'typeorm';
+import { DataSource, EntityManager, Repository } from 'typeorm';
+import { SecurityAuditService } from '../audit/security-audit.service';
 import { CreateTaxDto } from './dto/create-tax.dto';
 import { UpdateTaxDto } from './dto/update-tax.dto';
+import { Tax } from './tax.entity';
 
 @Injectable()
 export class TaxService {
-  constructor(@InjectRepository(Tax) private taxRepository: Repository<Tax>) {}
+  constructor(
+    @InjectRepository(Tax) private readonly taxRepository: Repository<Tax>,
+    @Optional() private readonly dataSource?: DataSource,
+    @Optional() private readonly securityAuditService?: SecurityAuditService,
+  ) {}
 
-  async getTaxs() {
-    return this.taxRepository.find();
+  getTaxes(): Promise<Tax[]> {
+    return this.taxRepository.find({ order: { description: 'ASC' } });
   }
 
-  async createTax(tax: CreateTaxDto) {
-    const newTax = this.taxRepository.create(tax);
-    return this.taxRepository.save(newTax);
+  async getTax(id: number): Promise<Tax> {
+    this.validateId(id);
+    const tax = await this.taxRepository.findOne({ where: { id } });
+    if (!tax) throw new NotFoundException('TAX_NOT_FOUND');
+    return tax;
   }
 
-  async getTax(id: number) {
-    const taxFound = this.taxRepository.findOne({
-      where: {
-        id,
-      },
+  async createTax(body: CreateTaxDto, actorUserId?: number): Promise<Tax> {
+    const values = this.normalizeCreate(body);
+    if (actorUserId === undefined) return this.taxRepository.save(this.taxRepository.create(values));
+    return this.runWrite(actorUserId, async (manager) => {
+      const repository = manager.getRepository(Tax);
+      const saved = await repository.save(repository.create(values));
+      await this.writeAudit(manager, actorUserId, 'tax.created', saved, values);
+      return saved;
     });
-    if (!taxFound) {
-      return new HttpException('Impuesto no encontrado', HttpStatus.NOT_FOUND);
-    }
-    return taxFound;
   }
 
-  async deleteTax(id: number) {
-    const routineFound = await this.taxRepository.findOne({
-      where: {
-        id,
-      },
+  async updateTax(id: number, body: UpdateTaxDto, actorUserId?: number): Promise<Tax> {
+    this.validateId(id);
+    const values = this.normalizeUpdate(body);
+    const update = async (repository: Repository<Tax>) => {
+      const tax = await repository.findOne({ where: { id } });
+      if (!tax) throw new NotFoundException('TAX_NOT_FOUND');
+      return repository.save(Object.assign(tax, values));
+    };
+    if (actorUserId === undefined) return update(this.taxRepository);
+    return this.runWrite(actorUserId, async (manager) => {
+      const saved = await update(manager.getRepository(Tax));
+      await this.writeAudit(manager, actorUserId, 'tax.updated', saved, values);
+      return saved;
     });
-    if (!routineFound) {
-      return new HttpException('Impuesto no encontrado', HttpStatus.NOT_FOUND);
-    }
-    await this.taxRepository.remove(routineFound);
-    return true;
   }
 
-  async updateTax(id: number, tazLists: UpdateTaxDto) {
-    const taxFound = await this.taxRepository.findOne({
-      where: {
-        id,
-      },
-    });
-    if (!taxFound) {
-      return new HttpException('Impuesto no encontrado', HttpStatus.NOT_FOUND);
+  async deleteTax(id: number, actorUserId?: number): Promise<{ id: number; deleted: true }> {
+    this.validateId(id);
+    const remove = async (repository: Repository<Tax>) => {
+      const tax = await repository.findOne({ where: { id } });
+      if (!tax) throw new NotFoundException('TAX_NOT_FOUND');
+      await repository.remove(tax);
+      return tax;
+    };
+    if (actorUserId === undefined) {
+      const deleted = await remove(this.taxRepository);
+      return { id: deleted.id, deleted: true };
     }
-    const updateTax = Object.assign(taxFound, tazLists);
-    return this.taxRepository.save(updateTax);
+    return this.runWrite(actorUserId, async (manager) => {
+      const deleted = await remove(manager.getRepository(Tax));
+      await this.writeAudit(manager, actorUserId, 'tax.deleted', deleted, {
+        description: deleted.description,
+        value: Number(deleted.value),
+      });
+      return { id: deleted.id, deleted: true as const };
+    });
+  }
+
+  private async runWrite<T>(actorUserId: number, action: (manager: EntityManager) => Promise<T>): Promise<T> {
+    if (!this.dataSource) throw new Error('TAX_TRANSACTION_UNAVAILABLE');
+    return this.dataSource.transaction(action);
+  }
+
+  private async writeAudit(
+    manager: EntityManager,
+    actorUserId: number,
+    action: 'tax.created' | 'tax.updated' | 'tax.deleted',
+    tax: Tax,
+    metadata: Record<string, unknown>,
+  ): Promise<void> {
+    if (!this.securityAuditService) throw new Error('SECURITY_AUDIT_SERVICE_UNAVAILABLE');
+    await this.securityAuditService.write(manager, {
+      actorUserId,
+      action,
+      entityType: 'tax',
+      entityId: tax.id,
+      summary: action === 'tax.created'
+        ? 'Impuesto creado'
+        : action === 'tax.deleted'
+          ? 'Impuesto eliminado'
+          : 'Impuesto actualizado',
+      metadata,
+    });
+  }
+
+  private normalizeCreate(body: CreateTaxDto): Partial<Tax> {
+    if (!body || typeof body !== 'object' || Array.isArray(body)) throw new BadRequestException('TAX_BODY_REQUIRED');
+    return {
+      description: this.normalizeDescription(body.description),
+      value: this.normalizeValue(body.value),
+      only_dollars: this.normalizeBoolean(body.only_dollars, false),
+      always_subtotal: this.normalizeBoolean(body.always_subtotal, false),
+      hide: this.normalizeBoolean(body.hide, false),
+    };
+  }
+
+  private normalizeUpdate(body: UpdateTaxDto): Partial<Tax> {
+    if (!body || typeof body !== 'object' || Array.isArray(body)) throw new BadRequestException('TAX_UPDATE_REQUIRED');
+    const allowed = ['description', 'value', 'only_dollars', 'always_subtotal', 'hide'];
+    const fields = Object.keys(body);
+    if (fields.length === 0) throw new BadRequestException('TAX_UPDATE_REQUIRED');
+    if (fields.some((field) => !allowed.includes(field))) throw new BadRequestException('TAX_FIELD_UNKNOWN');
+    const values: Partial<Tax> = {};
+    if (Object.prototype.hasOwnProperty.call(body, 'description')) values.description = this.normalizeDescription(body.description);
+    if (Object.prototype.hasOwnProperty.call(body, 'value')) values.value = this.normalizeValue(body.value);
+    for (const field of ['only_dollars', 'always_subtotal', 'hide'] as const) {
+      if (Object.prototype.hasOwnProperty.call(body, field)) values[field] = this.normalizeBoolean(body[field]);
+    }
+    return values;
+  }
+
+  private normalizeDescription(value: unknown): string {
+    if (typeof value !== 'string') throw new BadRequestException('TAX_DESCRIPTION_REQUIRED');
+    const normalized = value.trim();
+    if (normalized === '') throw new BadRequestException('TAX_DESCRIPTION_REQUIRED');
+    if (normalized.length > 20) throw new BadRequestException('TAX_DESCRIPTION_TOO_LONG');
+    return normalized;
+  }
+
+  private normalizeValue(value: unknown): number {
+    const number = Number(value);
+    if (!Number.isFinite(number) || number < 0 || number > 100) throw new BadRequestException('TAX_VALUE_INVALID');
+    return Math.round(number * 100) / 100;
+  }
+
+  private normalizeBoolean(value: unknown, fallback?: boolean): boolean {
+    if (value === undefined && fallback !== undefined) return fallback;
+    if (typeof value !== 'boolean') throw new BadRequestException('TAX_BOOLEAN_INVALID');
+    return value;
+  }
+
+  private validateId(id: number): void {
+    if (!Number.isInteger(id) || id <= 0) throw new BadRequestException('TAX_ID_INVALID');
   }
 }
