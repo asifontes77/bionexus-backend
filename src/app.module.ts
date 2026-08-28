@@ -1,4 +1,4 @@
-﻿import { Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SecurityModule } from './security/security.module';
 import { AuthorizationModule } from './authorization/authorization.module';
@@ -35,9 +35,11 @@ import { GroupHtItemsModule } from './group_ht_items/group_ht_items.module';
 import { join } from 'path';
 import { NestFactory } from '@nestjs/core';
 import { resolveDatabaseOptions } from './database/database.config';
+import { ApplicationSettingsModule } from './application-settings/application-settings.module';
 
 @Module({
   imports: [
+    ApplicationSettingsModule,
     ConfigModule.forRoot({
       isGlobal: true,
     }),
