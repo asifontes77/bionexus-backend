@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
   Optional,
@@ -59,26 +60,35 @@ export class TaxService {
 
   async deleteTax(id: number, actorUserId?: number): Promise<{ id: number; deleted: true }> {
     this.validateId(id);
-    const remove = async (repository: Repository<Tax>) => {
-      const tax = await repository.findOne({ where: { id } });
-      if (!tax) throw new NotFoundException('TAX_NOT_FOUND');
-      await repository.remove(tax);
-      return tax;
-    };
-    if (actorUserId === undefined) {
-      const deleted = await remove(this.taxRepository);
-      return { id: deleted.id, deleted: true };
-    }
+    if (actorUserId === undefined) throw new Error('TAX_DELETE_ACTOR_REQUIRED');
     return this.runWrite(actorUserId, async (manager) => {
-      const deleted = await remove(manager.getRepository(Tax));
-      await this.writeAudit(manager, actorUserId, 'tax.deleted', deleted, {
-        description: deleted.description,
-        value: Number(deleted.value),
+      const repository = manager.getRepository(Tax);
+      const tax = await repository
+        .createQueryBuilder('tax')
+        .setLock('pessimistic_write')
+        .where('tax.id = :id', { id })
+        .getOne();
+      if (!tax) throw new NotFoundException('TAX_NOT_FOUND');
+
+      const references = await manager.query(
+        'SELECT COUNT(*) AS referenceCount FROM exam_lists WHERE tax_id = ?',
+        [id],
+      ) as Array<{ referenceCount: string | number }>;
+      const referenceCount = Number(references[0]?.referenceCount ?? 0);
+      if (!Number.isInteger(referenceCount) || referenceCount < 0) {
+        throw new Error('TAX_REFERENCE_COUNT_INVALID');
+      }
+      if (referenceCount > 0) throw new ConflictException('TAX_IN_USE');
+
+      await repository.remove(tax);
+      await this.writeAudit(manager, actorUserId, 'tax.deleted', tax, {
+        description: tax.description,
+        value: Number(tax.value),
+        referenceCount,
       });
-      return { id: deleted.id, deleted: true as const };
+      return { id: tax.id, deleted: true as const };
     });
   }
-
   private async runWrite<T>(actorUserId: number, action: (manager: EntityManager) => Promise<T>): Promise<T> {
     if (!this.dataSource) throw new Error('TAX_TRANSACTION_UNAVAILABLE');
     return this.dataSource.transaction(action);
