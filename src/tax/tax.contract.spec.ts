@@ -11,7 +11,14 @@ describe('Tax hardened backend contract', () => {
   const createDto = source('src/tax/dto/create-tax.dto.ts');
   const updateDto = source('src/tax/dto/update-tax.dto.ts');
   const migration = source('src/database/migrations/20260827200000-TaxPermissions.ts');
+  const taxModule = source('src/tax/tax.module.ts');
 
+  it('provides PermissionGuard and audit dependencies in TaxModule', () => {
+    expect(taxModule).toContain("import { AuthorizationModule } from '../authorization/authorization.module';");
+    expect(taxModule).toContain("import { SecurityAuditModule } from '../audit/security-audit.module';");
+    expect(taxModule).toContain('AuthorizationModule,');
+    expect(taxModule).toContain('SecurityAuditModule,');
+  });
   it('protects every endpoint with the normalized authorization foundation', () => {
     expect(controller).toContain('@UseGuards(JwtUserGuard, PermissionGuard)');
     for (const permission of ['tax.read', 'tax.create', 'tax.update', 'tax.delete']) {
