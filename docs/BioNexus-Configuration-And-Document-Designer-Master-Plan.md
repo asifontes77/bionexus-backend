@@ -555,3 +555,17 @@ Estado inicial:
 - Preservacion de factura y comprobante legacy: APROBADA como requisito.
 
 FIN DEL PLAN MAESTRO
+## Actualizacion de bitacora - 28-08-2026
+
+- Fase: 0 - Documentacion y auditoria legacy.
+- Estado: APROBADA.
+- Evidencia: `report-20260828-225113.txt` y `report-20260828-225728.txt`.
+- Resultado: matriz funcional cerrada y menu objetivo definido.
+- Base de datos: no modificada.
+- Aplicaciones: no iniciadas ni detenidas.
+- Decisiones: preservar factura y comprobante actuales; solo tecnologia gratuita;
+  Vue Konva queda sujeto a prototipo; correlativos fuera del JSON documental.
+- Fase 1 - Reorganizacion del menu y rutas: LISTA PARA INICIAR.
+- Proximo paso seguro: crear `feature/configuration-navigation-reorganization` en
+  Frontend e implementar solo navegacion, rutas, breadcrumbs y contenedores, con
+  redirects temporales y sin cambios de Backend o base de datos.
