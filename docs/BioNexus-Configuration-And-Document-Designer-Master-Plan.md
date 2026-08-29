@@ -569,3 +569,50 @@ FIN DEL PLAN MAESTRO
 - Proximo paso seguro: crear `feature/configuration-navigation-reorganization` en
   Frontend e implementar solo navegacion, rutas, breadcrumbs y contenedores, con
   redirects temporales y sin cambios de Backend o base de datos.
+
+## Actualizacion de alcance - Menu modular y continuidad de breadcrumb
+
+- Fecha: 29-08-2026.
+- Decision visual: APROBADA.
+- Configuracion conserva ocho modulos de primer nivel: Catalogos, Laboratorio, Atencion al paciente, Toma de muestras, Facturacion, Documentos y plantillas, Sistema y Seguridad.
+- Las secciones internas se presentan en paginas modulares mediante tarjetas, no como tercer nivel del Sidebar.
+- La navegacion contextual se denomina breadcrumb o ruta de navegacion.
+- Regla obligatoria: al abrir una seccion interna, el breadcrumb debe conservar la jerarquia completa del modulo.
+- Ejemplo: Bio Nexus / Configuracion / Seguridad / Roles y permisos.
+- Los segmentos intermedios correspondientes a modulos deben permitir regresar a la pagina modular.
+- Esta arquitectura puede adaptarse visualmente en el futuro sin perder el agrupamiento funcional ni la jerarquia registrada.
+- Estado Fase 1: menu aprobado visualmente; continuidad de breadcrumb en correccion; sin commit ni publicacion.
+
+## Actualizacion de alcance - Breadcrumb global de Configuracion
+
+- La continuidad jerarquica del breadcrumb aplica a todas las vistas y secciones dentro de Configuracion, no solamente a Seguridad.
+- Toda vista interna debe conservar: Bio Nexus / Configuracion / Modulo / Vista.
+- Catalogos conserva la jerarquia para Lista de examenes, Formas parasitarias y Formas de pago.
+- Laboratorio conserva la jerarquia para Identidad y Comunicaciones.
+- Facturacion conserva la jerarquia para General e Impuestos.
+- Sistema conserva la jerarquia para Sesion y seguridad y sus secciones futuras.
+- Seguridad conserva la jerarquia para Roles y permisos y Usuarios y autorizacion.
+- Los segmentos de modulo son enlaces de retorno a su pagina modular.
+- Las rutas con una misma vista y distinta seccion consideran query.tab para resolver el breadcrumb correcto.
+
+## Actualización visual - Páginas modulares de Configuración
+
+- Se conserva únicamente el encabezado superior proporcionado por el layout autenticado.
+- Se elimina el encabezado hero repetido dentro de las páginas modulares.
+- Las tarjetas internas serán más compactas, sobrias y profesionales.
+- Los textos visibles de menú, encabezados, descripciones, tarjetas y breadcrumb deben usar ortografía española completa, incluidos acentos.
+- El contador de secciones permanece como indicador secundario compacto.
+- Esta decisión aplica a los ocho módulos de Configuración.
+## Cierre de Fase 1 - 29-08-2026
+
+- Estado: APROBADA visual y tecnicamente.
+- Commit funcional Frontend: c5e2f92486586bc85b0f63f3a6741ea3d6053f15.
+- Menu aprobado: ocho modulos dentro de Configuracion, sin tercer nivel en el Sidebar.
+- Paginas internas: tarjetas modulares compactas y responsive.
+- Breadcrumb: jerarquia completa y navegable en todas las vistas internas de Configuracion.
+- Ortografia visual y UTF-8: aprobados.
+- Backend y base de datos: sin cambios funcionales.
+- Vue Konva: no instalado en esta fase.
+- License Manager: permanece para el ultimo bloque.
+- Fase 2 - Laboratorio Identidad: LISTA PARA INICIAR.
+- Proximo paso: auditoria dirigida de Identidad contra TORO legacy antes de modificarla.
