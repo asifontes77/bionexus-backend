@@ -1,4 +1,4 @@
-import { mkdirSync } from 'node:fs';
+﻿import { mkdirSync } from 'node:fs';
 import { extname, join } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import {
@@ -65,6 +65,15 @@ export class UsersController {
     return this.usersService.getUserSession(userLogin);
   }
 
+  @UseGuards(JwtUserGuard)
+  @Post('/session/renew')
+  renewUserSession(@Req() request: SecurityAuthenticatedRequest) {
+    const userId = getSecurityAuditActorUserId(request);
+    if (userId === null) {
+      throw new BadRequestException('AUTHENTICATED_USER_REQUIRED');
+    }
+    return this.usersService.renewUserSession(userId);
+  }
   @UseGuards(JwtUserGuard, PermissionGuard)
   @RequirePermissions('security.users.create')
   @Post('/insert')

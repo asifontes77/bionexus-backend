@@ -859,6 +859,12 @@ async createRole(
       return sortedOverrides;
     });
   }
+  async getUserIdsByRole(roleId: number): Promise<number[]> {
+    if (!Number.isInteger(roleId) || roleId <= 0) return [];
+    const assignments = await this.userRolesRepository.find({ where: { roleId }, select: { userId: true } });
+    return Array.from(new Set(assignments.map((item) => item.userId).filter((id) => Number.isInteger(id) && id > 0)));
+  }
+
   private async writeAudit(
     manager: EntityManager,
     actorUserId: number | undefined,

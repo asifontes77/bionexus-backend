@@ -3,6 +3,7 @@ import {
   Controller,
   ForbiddenException,
   Get,
+  Optional,
   Param,
   ParseIntPipe,
   Patch,
@@ -12,6 +13,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthorizationService } from './authorization.service';
+import { AuthorizationEventsGateway } from './authorization-events.gateway';
 import { AuthorizationAdministrationService } from './authorization-administration.service';
 import { CreateSecurityRoleDto } from './dto/create-security-role.dto';
 import { ReplaceUserPermissionOverridesDto } from './dto/replace-user-permission-overrides.dto';
@@ -38,6 +40,8 @@ export class AuthorizationController {
   constructor(
     private readonly authorizationService: AuthorizationService,
     private readonly administrationService: AuthorizationAdministrationService,
+
+    @Optional() private readonly authorizationEventsGateway?: AuthorizationEventsGateway,
   ) {}
 
   @UseGuards(JwtUserGuard)
@@ -66,16 +70,11 @@ export class AuthorizationController {
     @Req() request?: SecurityAuthenticatedRequest,
   ) {
     const actorUserId = getSecurityAuditActorUserId(request);
-    return actorUserId === null
-      ? this.administrationService.replaceUserPermissionOverrides(
-          userId,
-          body,
-        )
-      : this.administrationService.replaceUserPermissionOverrides(
-          userId,
-          body,
-          actorUserId,
-        );
+    const result = actorUserId === null
+      ? await this.administrationService.replaceUserPermissionOverrides(userId, body)
+      : await this.administrationService.replaceUserPermissionOverrides(userId, body, actorUserId);
+    this.authorizationEventsGateway?.publishToUsers([userId]);
+    return result;
   }
   @UseGuards(JwtUserGuard, PermissionGuard)
   @RequirePermissions('security.users.assign-roles')
@@ -86,13 +85,11 @@ export class AuthorizationController {
     @Req() request?: SecurityAuthenticatedRequest,
   ) {
     const actorUserId = getSecurityAuditActorUserId(request);
-    return actorUserId === null
-      ? this.administrationService.replaceUserRoles(userId, body)
-      : this.administrationService.replaceUserRoles(
-          userId,
-          body,
-          actorUserId,
-        );
+    const result = actorUserId === null
+      ? await this.administrationService.replaceUserRoles(userId, body)
+      : await this.administrationService.replaceUserRoles(userId, body, actorUserId);
+    this.authorizationEventsGateway?.publishToUsers([userId]);
+    return result;
   }
   @UseGuards(JwtUserGuard, PermissionGuard)
   @RequirePermissions('security.users.read')
@@ -136,13 +133,11 @@ export class AuthorizationController {
     @Req() request?: SecurityAuthenticatedRequest,
   ) {
     const actorUserId = getSecurityAuditActorUserId(request);
-    return actorUserId === null
-      ? this.administrationService.replaceRolePermissions(roleId, body)
-      : this.administrationService.replaceRolePermissions(
-          roleId,
-          body,
-          actorUserId,
-        );
+    const result = actorUserId === null
+      ? await this.administrationService.replaceRolePermissions(roleId, body)
+      : await this.administrationService.replaceRolePermissions(roleId, body, actorUserId);
+    this.authorizationEventsGateway?.publishToUsers(await this.administrationService.getUserIdsByRole(roleId));
+    return result;
   }
   @UseGuards(JwtUserGuard, PermissionGuard)
   @RequirePermissions('security.roles.update')
@@ -153,13 +148,11 @@ export class AuthorizationController {
     @Req() request?: SecurityAuthenticatedRequest,
   ) {
     const actorUserId = getSecurityAuditActorUserId(request);
-    return actorUserId === null
-      ? this.administrationService.updateRole(roleId, body)
-      : this.administrationService.updateRole(
-          roleId,
-          body,
-          actorUserId,
-        );
+    const result = actorUserId === null
+      ? await this.administrationService.updateRole(roleId, body)
+      : await this.administrationService.updateRole(roleId, body, actorUserId);
+    this.authorizationEventsGateway?.publishToUsers(await this.administrationService.getUserIdsByRole(roleId));
+    return result;
   }
   @UseGuards(JwtUserGuard, PermissionGuard)
   @RequirePermissions('security.roles.create')

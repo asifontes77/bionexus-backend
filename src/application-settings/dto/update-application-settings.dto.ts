@@ -1,4 +1,7 @@
 export class UpdateApplicationSettingsDto {
+  session_timeout_minutes?: number;
+  inactivity_timeout_minutes?: number;
+  countdown_seconds?: number;
   voucher_format?: string;
   receipt_format?: string;
   head_html?: string;

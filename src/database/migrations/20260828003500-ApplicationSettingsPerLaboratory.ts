@@ -1,0 +1,9 @@
+import { MigrationInterface, QueryRunner } from 'typeorm';
+export class ApplicationSettingsPerLaboratory20260828003500 implements MigrationInterface {
+  name = 'ApplicationSettingsPerLaboratory20260828003500';
+  async up(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`CREATE TABLE application_settings (id int NOT NULL AUTO_INCREMENT,laboratory_id int NOT NULL,session_timeout_minutes int NOT NULL DEFAULT 30,inactivity_timeout_minutes int NOT NULL DEFAULT 20,countdown_seconds int NOT NULL DEFAULT 120,voucher_format longtext NOT NULL,receipt_format longtext NOT NULL,head_html longtext NOT NULL,body_html longtext NOT NULL,page_html longtext NOT NULL,maximum_rows_report int NOT NULL DEFAULT 38,workshee_format longtext NOT NULL,printer_type varchar(100) NOT NULL,printer_interface varchar(100) NOT NULL,UNIQUE KEY UQ_application_settings_laboratory (laboratory_id),PRIMARY KEY (id),CONSTRAINT FK_application_settings_laboratory FOREIGN KEY (laboratory_id) REFERENCES laboratory(id) ON DELETE RESTRICT ON UPDATE RESTRICT) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci`);
+    await queryRunner.query(`INSERT INTO application_settings (laboratory_id,session_timeout_minutes,inactivity_timeout_minutes,countdown_seconds,voucher_format,receipt_format,head_html,body_html,page_html,maximum_rows_report,workshee_format,printer_type,printer_interface) SELECT id,30,20,120,voucher_format,receipt_format,head_html,body_html,page_html,maximum_rows_report,workshee_format,printer_type,printer_interface FROM laboratory`);
+  }
+  async down(queryRunner: QueryRunner): Promise<void> { await queryRunner.query('DROP TABLE application_settings'); }
+}

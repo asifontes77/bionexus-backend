@@ -174,6 +174,18 @@ async createUser(
     return dataUser;
   }
 
+  async renewUserSession(userId: number) {
+    if (!Number.isInteger(userId) || userId <= 0) {
+      throw new HttpException('USER_ID_INVALID', HttpStatus.BAD_REQUEST);
+    }
+    const userFound = await this.usersRepository.findOne({ where: { id: userId } });
+    if (!userFound || userFound.hide_user) {
+      throw new HttpException('USER_NOT_FOUND', HttpStatus.NOT_FOUND);
+    }
+    const payload = { id: userFound.id, name: userFound.name };
+    const token = await this.jwtUserService.sign(payload);
+    return { user: toSafeUserResponse(userFound), token };
+  }
   async deleteUser(_id: number): Promise<never> {
     throw new MethodNotAllowedException('USER_PHYSICAL_DELETE_DISABLED');
   }
