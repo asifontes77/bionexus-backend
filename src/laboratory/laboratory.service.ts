@@ -1,4 +1,4 @@
-﻿import {
+import {
   BadRequestException,
   Injectable,
   NotFoundException,
@@ -149,6 +149,8 @@ export class LaboratoryService {
     this.validateStringFields(laboratory);
     this.validateBooleanFields(laboratory);
     this.validateIntegerFields(laboratory);
+    this.validateIdentityFields(laboratory);
+    this.validateQrSettings(laboratory.settingQR);
   }
 
   private validateStringFields(body: UpdateLaboratoryDto): void {
@@ -187,6 +189,75 @@ export class LaboratoryService {
       if (!Number.isInteger(value) || Number(value) < 0) {
         throw new BadRequestException('LABORATORY_INTEGER_INVALID');
       }
+      if (
+        (field === 'max_height_logo' || field === 'max_width_logo') &&
+        (Number(value) < 20 || Number(value) > 200)
+      ) {
+        throw new BadRequestException('LABORATORY_LOGO_DIMENSION_INVALID');
+      }
+    }
+  }
+
+  private validateIdentityFields(body: UpdateLaboratoryDto): void {
+    this.validatePattern(body, 'email', /^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'LABORATORY_EMAIL_INVALID');
+    this.validatePattern(body, 'url', /^https?:\/\/[^\s]+$/i, 'LABORATORY_URL_INVALID', true);
+    this.validatePattern(body, 'rif', /^[VEJGvejg]-?\d{7,9}-?\d$/, 'LABORATORY_RIF_INVALID');
+    this.validatePattern(body, 'phone_1', /^[+\d][\d\s()-]{5,19}$/, 'LABORATORY_PHONE_INVALID');
+    this.validatePattern(body, 'phone_2', /^[+\d][\d\s()-]{5,19}$/, 'LABORATORY_PHONE_INVALID', true);
+    if (Object.prototype.hasOwnProperty.call(body, 'mask_phone')) {
+      const mask = body.mask_phone;
+      if (typeof mask !== 'string' || mask.trim() === '' || !mask.includes('#')) {
+        throw new BadRequestException('LABORATORY_PHONE_MASK_INVALID');
+      }
+    }
+  }
+
+  private validatePattern(
+    body: UpdateLaboratoryDto,
+    field: keyof UpdateLaboratoryDto,
+    pattern: RegExp,
+    errorCode: string,
+    allowEmpty = false,
+  ): void {
+    if (!Object.prototype.hasOwnProperty.call(body, field)) return;
+    const value = body[field];
+    if (typeof value !== 'string') return;
+    const normalized = value.trim();
+    if (allowEmpty && normalized === '') return;
+    if (!pattern.test(normalized)) throw new BadRequestException(errorCode);
+  }
+
+  private validateQrSettings(value: unknown): void {
+    if (value === undefined) return;
+    if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+      throw new BadRequestException('LABORATORY_QR_INVALID');
+    }
+    const settings = value as Record<string, unknown>;
+    const allowed = ['activeQR', 'fn', 'email', 'phone', 'bioanalista', 'codigo'];
+    if (Object.keys(settings).some((field) => !allowed.includes(field))) {
+      throw new BadRequestException('LABORATORY_QR_FIELD_UNKNOWN');
+    }
+    if ('activeQR' in settings && typeof settings.activeQR !== 'boolean') {
+      throw new BadRequestException('LABORATORY_QR_ACTIVE_INVALID');
+    }
+    this.validateQrText(settings, 'fn', 100);
+    this.validateQrText(settings, 'email', 100);
+    this.validateQrText(settings, 'phone', 20);
+    this.validateQrText(settings, 'bioanalista', 100);
+    this.validateQrText(settings, 'codigo', 50);
+    if (typeof settings.email === 'string' && settings.email.trim() !== '' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(settings.email.trim())) {
+      throw new BadRequestException('LABORATORY_QR_EMAIL_INVALID');
+    }
+    if (typeof settings.phone === 'string' && settings.phone.trim() !== '' && !/^[+\d][\d\s()-]{5,19}$/.test(settings.phone.trim())) {
+      throw new BadRequestException('LABORATORY_QR_PHONE_INVALID');
+    }
+  }
+
+  private validateQrText(settings: Record<string, unknown>, field: string, maximum: number): void {
+    if (!(field in settings)) return;
+    const value = settings[field];
+    if (typeof value !== 'string' || value.length > maximum) {
+      throw new BadRequestException('LABORATORY_QR_TEXT_INVALID');
     }
   }
 

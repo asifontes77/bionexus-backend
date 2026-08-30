@@ -1,9 +1,0 @@
-*
-!.gitignore
-!.gitkeep
-!photos/
-!signatures/
-photos/*
-!photos/.gitkeep
-signatures/*
-!signatures/.gitkeep

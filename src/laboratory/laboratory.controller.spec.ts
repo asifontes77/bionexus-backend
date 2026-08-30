@@ -100,21 +100,21 @@ describe('LaboratoryController', () => {
       path: 'public/images/logo_lab.png',
     } as Express.Multer.File;
 
-    await expect(controller.uploadFile(authenticatedRequest(7), file)).resolves.toEqual({
+    await expect(controller.uploadFile(authenticatedRequest(7), 1, file)).resolves.toEqual({
       id: 1,
       logo: 'logo_lab.png',
     });
 
     expect(updateLaboratory).toHaveBeenCalledWith(
       1,
-      { logo: 'logo_lab.png' },
+      { logo: 'laboratories/1/identity/logo_lab.png' },
       7,
       'laboratory.logo.updated',
     );
   });
 
   it('rechaza una carga sin archivo', async () => {
-    await expect(controller.uploadFile(authenticatedRequest(7))).rejects.toThrow(
+    await expect(controller.uploadFile(authenticatedRequest(7), 1)).rejects.toThrow(
       new BadRequestException('LABORATORY_LOGO_REQUIRED'),
     );
     expect(updateLaboratory).not.toHaveBeenCalled();

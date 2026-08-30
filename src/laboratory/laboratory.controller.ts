@@ -13,8 +13,8 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { unlink } from 'fs/promises';
-import { extname } from 'path';
+import { mkdir, unlink } from 'fs/promises';
+import { extname, join } from 'path';
 import { diskStorage } from 'multer';
 import {
   getSecurityAuditActorUserId,
@@ -62,7 +62,7 @@ export class LaboratoryController {
 
   @UseGuards(JwtUserGuard, PermissionGuard)
   @RequirePermissions('laboratory.upload-logo')
-  @Post('upload')
+  @Post(':id/upload')
   @UseInterceptors(
     FileInterceptor('file', {
       limits: { fileSize: 5 * 1024 * 1024 },
@@ -77,7 +77,20 @@ export class LaboratoryController {
         callback(null, true);
       },
       storage: diskStorage({
-        destination: './public/images',
+        destination: async (request, _file, callback) => {
+          const laboratoryId = Number(request.params.id);
+          if (!Number.isInteger(laboratoryId) || laboratoryId <= 0) {
+            callback(new BadRequestException('LABORATORY_ID_INVALID'), '');
+            return;
+          }
+          const destination = join('public', 'laboratories', String(laboratoryId), 'identity');
+          try {
+            await mkdir(destination, { recursive: true });
+            callback(null, destination);
+          } catch (error) {
+            callback(error as Error, destination);
+          }
+        },
         filename: (_request, file, callback) => {
           callback(null, `logo_lab${extname(file.originalname).toLowerCase()}`);
         },
@@ -86,6 +99,7 @@ export class LaboratoryController {
   )
   async uploadFile(
     @Req() request: SecurityAuthenticatedRequest,
+    @Param('id', ParseIntPipe) id: number,
     @UploadedFile() file?: Express.Multer.File,
   ) {
     if (!file) {
@@ -94,8 +108,8 @@ export class LaboratoryController {
     try {
       const actorUserId = getSecurityAuditActorUserId(request);
       return await this.laboratoryService.updateLaboratory(
-        1,
-        { logo: file.filename },
+        id,
+        { logo: `laboratories/${id}/identity/${file.filename}` },
         actorUserId ?? undefined,
         'laboratory.logo.updated',
       );

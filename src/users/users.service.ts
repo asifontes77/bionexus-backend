@@ -1,4 +1,4 @@
-﻿import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './users.entity';
 import { DataSource, EntityManager, In, Repository, Not } from 'typeorm';
@@ -13,6 +13,7 @@ import { ForbiddenException, MethodNotAllowedException, Optional } from '@nestjs
 import { SecurityRole } from '../authorization/entities/security-role.entity';
 import { SecurityUserRole } from '../authorization/entities/security-user-role.entity';
 import { SecurityAuditService } from '../audit/security-audit.service';
+import { normalizeUserEmail } from './user-email';
 import {
   SafeUserResponse,
   toSafeUserResponse,
@@ -91,19 +92,21 @@ async createUser(
   }
 
   async verifyEmail(email: string) {
+    const normalizedEmail = normalizeUserEmail(email);
     const userFound = await this.usersRepository.findOne({
       where: {
-        email,
+        email: normalizedEmail,
       },
     });
     return userFound;
   }
 
   async verifyEmailId(id: number, email: string) {
+    const normalizedEmail = normalizeUserEmail(email);
     const userFound = await this.usersRepository.findOne({
       where: {
         id: Not(id),
-        email,
+        email: normalizedEmail,
       },
     });
     return userFound;
@@ -298,6 +301,10 @@ async updateUser(
       return new HttpException('Usuario no encontrado', HttpStatus.NOT_FOUND) as never;
     }
 
+    if (user.email !== undefined) {
+      user.email = normalizeUserEmail(user.email);
+    }
+
     if (
       user.user_name !== undefined &&
       user.user_name !== userFound.user_name
@@ -333,6 +340,7 @@ async updateUser(
     repository: Repository<User>,
     users: CreateUsersDto,
   ): Promise<any> {
+    users.email = normalizeUserEmail(users.email);
     const existingUserName = await repository.findOne({
       where: { user_name: users.user_name },
     });

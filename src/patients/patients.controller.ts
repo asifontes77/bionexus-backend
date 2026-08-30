@@ -264,9 +264,17 @@ export class PatientsController {
 
   @UseGuards(JwtUserGuard)
   @Post('pdf')
-  async generatePdf(@Body() body: { html: string }) {
-    const outputPath = 'public/pdf/output.pdf';
-    await this.patienService.generatePdfFromHtml(body.html, outputPath);
-    return true;
+  async generatePdf(
+    @Body() body: { html: string },
+    @Res() res: Response,
+  ) {
+    const pdfBuffer = await this.patienService.generatePdfFromHtmlOut(body.html);
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': 'attachment; filename="reporte-laboratorio.pdf"',
+      'Content-Length': pdfBuffer.length,
+      'Cache-Control': 'no-store',
+    });
+    res.send(pdfBuffer);
   }
 }

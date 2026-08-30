@@ -1,4 +1,4 @@
-﻿import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { Laboratory } from './laboratory.entity';
 import { LaboratoryService } from './laboratory.service';
@@ -148,6 +148,74 @@ describe('LaboratoryService', () => {
     await expect(
       service.updateLaboratory(1, { receipt_number: -1 }),
     ).rejects.toThrow(new BadRequestException('LABORATORY_INTEGER_INVALID'));
+  });
+
+  it.each([
+    [{ email: 'correo-invalido' }, 'LABORATORY_EMAIL_INVALID'],
+    [{ url: 'ftp://example.com' }, 'LABORATORY_URL_INVALID'],
+    [{ rif: '1234' }, 'LABORATORY_RIF_INVALID'],
+    [{ phone_1: 'abc' }, 'LABORATORY_PHONE_INVALID'],
+    [{ mask_phone: '+58 0000' }, 'LABORATORY_PHONE_MASK_INVALID'],
+    [{ max_height_logo: 19 }, 'LABORATORY_LOGO_DIMENSION_INVALID'],
+    [{ max_height_logo: 201 }, 'LABORATORY_LOGO_DIMENSION_INVALID'],
+    [{ max_width_logo: 19 }, 'LABORATORY_LOGO_DIMENSION_INVALID'],
+    [{ max_width_logo: 201 }, 'LABORATORY_LOGO_DIMENSION_INVALID'],
+  ] as const)('rechaza identidad semantica invalida %#', async (changes, errorCode) => {
+    await expect(service.updateLaboratory(1, changes)).rejects.toThrow(
+      new BadRequestException(errorCode),
+    );
+    expect(findOne).not.toHaveBeenCalled();
+    expect(save).not.toHaveBeenCalled();
+  });
+
+  it('acepta identidad valida y conserva el parche parcial', async () => {
+    const laboratory = createLaboratory();
+    findOne.mockResolvedValue(laboratory);
+    save.mockImplementation(async (value) => value);
+    const changes = {
+      email: 'contacto@bionexus.example',
+      url: 'https://bionexus.example',
+      rif: 'J-12345678-9',
+      phone_1: '+58 424 123 4567',
+      phone_2: '',
+      mask_phone: '+58 ### ### ####',
+      max_height_logo: 200,
+      max_width_logo: 200,
+    };
+    await expect(service.updateLaboratory(1, changes)).resolves.toEqual(
+      expect.objectContaining(changes),
+    );
+    expect(save).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([
+    [null, 'LABORATORY_QR_INVALID'],
+    [{ unknown: true }, 'LABORATORY_QR_FIELD_UNKNOWN'],
+    [{ activeQR: 'true' }, 'LABORATORY_QR_ACTIVE_INVALID'],
+    [{ fn: 'A'.repeat(101) }, 'LABORATORY_QR_TEXT_INVALID'],
+    [{ email: 'correo-invalido' }, 'LABORATORY_QR_EMAIL_INVALID'],
+    [{ phone: 'abc' }, 'LABORATORY_QR_PHONE_INVALID'],
+  ] as const)('rechaza configuracion QR invalida %#', async (settingQR, errorCode) => {
+    await expect(
+      service.updateLaboratory(1, { settingQR: settingQR as unknown as JSON }),
+    ).rejects.toThrow(new BadRequestException(errorCode));
+    expect(findOne).not.toHaveBeenCalled();
+  });
+
+  it('acepta la estructura QR legacy completa', async () => {
+    const laboratory = createLaboratory();
+    findOne.mockResolvedValue(laboratory);
+    save.mockImplementation(async (value) => value);
+    const settingQR = {
+      activeQR: true,
+      fn: 'Laboratorio Bio Nexus',
+      email: 'contacto@bionexus.example',
+      phone: '+58 424 123 4567',
+      bioanalista: 'Responsable',
+      codigo: 'MPPS-12345',
+    };
+    await service.updateLaboratory(1, { settingQR: settingQR as unknown as JSON });
+    expect(save).toHaveBeenCalledWith(expect.objectContaining({ settingQR }));
   });
 
   it('conserva la clave SMTP cuando el cambio contiene una clave vacia', async () => {

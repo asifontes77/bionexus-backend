@@ -1,8 +1,9 @@
-﻿import { mkdirSync } from 'node:fs';
+import { existsSync } from 'node:fs';
+import { mkdir, readdir, unlink, writeFile } from 'node:fs/promises';
 import { extname, join } from 'node:path';
-import { randomUUID } from 'node:crypto';
 import {
   BadRequestException,
+  HttpException,
   Body,
   Controller,
   Get,
@@ -25,7 +26,7 @@ import { JwtUserGuard } from './jwt-user.guard';
 import { RequirePermissions } from '../authorization/decorators/require-permissions.decorator';
 import { PermissionGuard } from '../authorization/guards/permission.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
+import { memoryStorage } from 'multer';
 import {
   getSecurityAuditActorUserId,
   SecurityAuthenticatedRequest,
@@ -136,35 +137,10 @@ export class UsersController {
 
   @UseGuards(JwtUserGuard, PermissionGuard)
   @RequirePermissions('security.users.update')
-  @Post('upload/:assetType')
+  @Post(':userId/upload/:assetType')
   @UseInterceptors(
     FileInterceptor('file', {
-      storage: diskStorage({
-        destination: (request, _file, callback) => {
-          const rawAssetType = request.params.assetType;
-          const assetType = Array.isArray(rawAssetType)
-            ? rawAssetType[0]
-            : rawAssetType;
-          if (!assetType || !['photos', 'signatures'].includes(assetType)) {
-            return callback(
-              new BadRequestException('USER_IMAGE_TYPE_INVALID'),
-              '',
-            );
-          }
-          const destination = join(
-            process.cwd(),
-            'public',
-            'images',
-            assetType,
-          );
-          mkdirSync(destination, { recursive: true });
-          callback(null, destination);
-        },
-        filename: (_request, file, callback) => {
-          const extension = extname(file.originalname).toLowerCase();
-          callback(null, `${randomUUID()}${extension}`);
-        },
-      }),
+      storage: memoryStorage(),
       fileFilter: (_request, file, callback) => {
         callback(
           null,
@@ -175,13 +151,52 @@ export class UsersController {
     }),
   )
   async uploadFile(
+    @Param('userId', ParseIntPipe) userId: number,
     @Param('assetType') assetType: string,
-    @UploadedFile() file: Express.Multer.File,
+    @Req() request: SecurityAuthenticatedRequest,
+    @UploadedFile() file?: Express.Multer.File,
   ) {
     if (!['photos', 'signatures'].includes(assetType)) {
       throw new BadRequestException('USER_IMAGE_TYPE_INVALID');
     }
     if (!file) throw new BadRequestException('USER_IMAGE_REQUIRED');
-    return { filename: `${assetType}/${file.filename}` };
+
+    const user = await this.usersService.getUser(userId);
+    if (user instanceof HttpException) throw user;
+
+    const laboratoryId = 1;
+    const extension = extname(file.originalname).toLowerCase();
+    const allowedExtensions = ['.png', '.jpg', '.jpeg', '.webp'];
+    if (!allowedExtensions.includes(extension)) {
+      throw new BadRequestException('USER_IMAGE_EXTENSION_INVALID');
+    }
+
+    const directory = join(
+      process.cwd(),
+      'public',
+      'laboratories',
+      String(laboratoryId),
+      'users',
+      assetType,
+    );
+    await mkdir(directory, { recursive: true });
+
+    const filename = `${userId}${extension}`;
+    const target = join(directory, filename);
+    const currentFiles = existsSync(directory) ? await readdir(directory) : [];
+    for (const currentFile of currentFiles) {
+      if (currentFile !== filename && currentFile.startsWith(`${userId}.`)) {
+        await unlink(join(directory, currentFile));
+      }
+    }
+    await writeFile(target, file.buffer);
+
+    const relativePath = `laboratories/${laboratoryId}/users/${assetType}/${filename}`;
+    const actorUserId = getSecurityAuditActorUserId(request);
+    const changes = assetType === 'photos'
+      ? { url_photo: relativePath }
+      : { url_signature: relativePath };
+    await this.usersService.updateUser(userId, changes, actorUserId ?? undefined);
+    return { filename: relativePath };
   }
 }
