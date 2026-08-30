@@ -14,6 +14,7 @@ import { SecurityRole } from '../authorization/entities/security-role.entity';
 import { SecurityUserRole } from '../authorization/entities/security-user-role.entity';
 import { SecurityAuditService } from '../audit/security-audit.service';
 import { normalizeUserEmail } from './user-email';
+import { ApplicationSettings } from '../application-settings/application-settings.entity';
 import {
   SafeUserResponse,
   toSafeUserResponse,
@@ -168,7 +169,7 @@ async createUser(
     }
 
     const payload = { id: userFound.id, name: userFound.name };
-    const token = await this.jwtUserService.sign(payload);
+    const token = await this.signSessionToken(payload);
 
     const dataUser = {
       user: toSafeUserResponse(userFound),
@@ -186,7 +187,7 @@ async createUser(
       throw new HttpException('USER_NOT_FOUND', HttpStatus.NOT_FOUND);
     }
     const payload = { id: userFound.id, name: userFound.name };
-    const token = await this.jwtUserService.sign(payload);
+    const token = await this.signSessionToken(payload);
     return { user: toSafeUserResponse(userFound), token };
   }
   async deleteUser(_id: number): Promise<never> {
@@ -239,6 +240,21 @@ async updateUser(
       }
       return result;
     });
+  }
+
+  private async signSessionToken(payload: { id: number; name: string }): Promise<string> {
+    let timeoutMinutes = 30;
+    if (this.dataSource) {
+      const settings = await this.dataSource.getRepository(ApplicationSettings).findOne({
+        where: { laboratory_id: 1 },
+        select: { session_timeout_minutes: true },
+      });
+      const configured = Number(settings?.session_timeout_minutes);
+      if (Number.isInteger(configured) && configured >= 5 && configured <= 1440) {
+        timeoutMinutes = configured;
+      }
+    }
+    return this.jwtUserService.sign(payload, { expiresIn: `${timeoutMinutes}m` });
   }
 
   private async assertCanHideUser(
