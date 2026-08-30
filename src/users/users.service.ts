@@ -161,11 +161,11 @@ async createUser(
     });
 
     if (!userFound) {
-      return new HttpException('USER_NOT_FOUND', HttpStatus.NOT_FOUND);
+      throw new HttpException('INVALID_CREDENTIALS', HttpStatus.UNAUTHORIZED);
     }
     const compare = await bcrypt.compareSync(password, userFound.password);
     if (!compare) {
-      return new HttpException('PASSWORD_INVALID', HttpStatus.NOT_FOUND);
+      throw new HttpException('INVALID_CREDENTIALS', HttpStatus.UNAUTHORIZED);
     }
 
     const payload = { id: userFound.id, name: userFound.name };

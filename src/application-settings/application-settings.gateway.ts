@@ -1,4 +1,4 @@
-import { Logger } from '@nestjs/common';
+import { BioNexusLogger } from '../observability/bio-nexus-logger';
 import { JwtService } from '@nestjs/jwt';
 import { OnGatewayConnection, OnGatewayDisconnect, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
@@ -13,7 +13,6 @@ export interface SessionPolicyPayload {
 @WebSocketGateway({ namespace: '/session-policy', cors: { origin: true, credentials: true } })
 export class ApplicationSettingsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() private server!: Server;
-  private readonly logger = new Logger(ApplicationSettingsGateway.name);
 
   constructor(private readonly jwtService: JwtService) {}
 
@@ -33,7 +32,7 @@ export class ApplicationSettingsGateway implements OnGatewayConnection, OnGatewa
   }
 
   handleDisconnect(client: Socket): void {
-    this.logger.debug(`Session policy socket disconnected: ${client.id}`);
+    BioNexusLogger.debug('Socket de politica de sesion desconectado', ApplicationSettingsGateway.name, { socketId: client.id });
   }
 
   publish(payload: SessionPolicyPayload, excludedSocketId?: string): void {

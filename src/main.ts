@@ -6,6 +6,7 @@ import { resolveBootstrapConfig } from './bootstrap/bootstrap.config';
 import { readFileSync } from 'fs';
 import { BioNexusExceptionFilter } from './observability/bio-nexus-exception.filter';
 import { BioNexusRequestLoggingInterceptor } from './observability/bio-nexus-request-logging.interceptor';
+import { BioNexusLogger } from './observability/bio-nexus-logger';
 
 async function bootstrap() {
   try {
@@ -42,8 +43,9 @@ async function bootstrap() {
   app.useGlobalFilters(new BioNexusExceptionFilter());
   app.useGlobalInterceptors(new BioNexusRequestLoggingInterceptor());
     await app.listen(config.port, config.host);
-  } catch {
-    console.error('Failed to start application.');
+    BioNexusLogger.success('Backend iniciado correctamente', 'Bootstrap', { host: config.host, port: config.port, https: Boolean(config.httpsOptions) });
+  } catch (error) {
+    BioNexusLogger.error(error, 'Bootstrap', { action: 'start' });
     process.exitCode = 1;
   }
 }
