@@ -1,4 +1,4 @@
-﻿jest.mock('puppeteer', () => ({ launch: jest.fn() }));
+jest.mock('puppeteer', () => ({ launch: jest.fn() }));
 jest.mock('node-thermal-printer', () => ({ ThermalPrinter: jest.fn() }));
 jest.mock('nodemailer', () => ({ createTransport: jest.fn() }));
 import { ConflictException } from '@nestjs/common';
@@ -29,8 +29,13 @@ describe('Patient results controlled email contract', () => {
     expect(source).toContain('printBackground: true');
     expect(source).toContain("attachments: [{ filename: `resultados-${patient.id}.pdf`, content: pdf");
     expect(source).toContain('this.dataSource.transaction');
-    expect(source).toContain("action: 'patient.results-email.sent'");
-    expect(source).toContain("metadata: { deliveryMethod: 'email' }");
+    expect(source).toContain('patient.results-email.resent');
+    expect(source).toContain("deliveryType = patient.email_status ? 'resend' : 'send'");
+    expect(source).toContain("deliveryType === 'resend' ? 'patient.results-email.resent' : 'patient.results-email.sent'");
+    expect(source).toContain("status: 'started'");
+    expect(source).toContain("attempt.status = 'success'");
+    expect(source).toContain("attempt.status = 'failed'");
+    expect(source).toContain("metadata: { deliveryMethod: 'email', deliveryType }");
     expect(source).not.toContain("metadata: { email:");
     expect(source).not.toContain("metadata: { resultHtml:");
   });

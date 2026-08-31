@@ -1,7 +1,9 @@
-﻿import { BadRequestException, ConflictException, HttpException, HttpStatus, Injectable, Optional } from '@nestjs/common';
+import { BadRequestException, ConflictException, HttpException, HttpStatus, Injectable, Optional } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Patient } from './patients.entity';
 import { DataSource, Repository } from 'typeorm';
+import { createHash } from 'crypto';
+import { PatientResultsEmailHistory } from './patient-results-email-history.entity';
 import { SecurityAuditService } from '../audit/security-audit.service';
 import { UpdatePatientsDto } from './dto/update-patients.dto';
 import { CreatePatientsDto } from './dto/create-patients.dto';
@@ -17,6 +19,7 @@ export class PatientsService {
     private laboratoryService: LaboratoryService,
     @Optional() private readonly dataSource?: DataSource,
     @Optional() private readonly securityAuditService?: SecurityAuditService,
+    @Optional() @InjectRepository(PatientResultsEmailHistory) private readonly resultsEmailHistoryRepository?: Repository<PatientResultsEmailHistory>,
   ) {}
   private readonly resultsEmailInProgress = new Set<number>();
 
@@ -302,12 +305,23 @@ export class PatientsService {
       if (!patient.email_sent) throw new BadRequestException('PATIENT_RESULTS_EMAIL_DISABLED');
       if (typeof patient.email !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(patient.email.trim())) throw new BadRequestException('PATIENT_RESULTS_EMAIL_ADDRESS_INVALID');
       if (!Array.isArray(patient.exams) || !patient.exams.some((exam) => Number(exam.approved_id) > 0)) throw new BadRequestException('PATIENT_RESULTS_EMAIL_NOT_APPROVED');
-      if (patient.email_status) throw new ConflictException('PATIENT_RESULTS_EMAIL_ALREADY_SENT');
-      const visibleText = resultHtml.replace(/<[^>]*>/g, ' ').replace(/&nbsp;/gi, ' ').trim();
-      if (visibleText.length < 20) throw new BadRequestException('PATIENT_RESULTS_EMAIL_CONTENT_EMPTY');
-      const pdf = await this.generatePdfFromHtmlOut(resultHtml);
-      if (!Buffer.isBuffer(pdf) || pdf.length < 1000) throw new BadRequestException('PATIENT_RESULTS_EMAIL_PDF_EMPTY');
-      await this.sendResultsEmailBuffer(patient, pdf);
+      if (!this.resultsEmailHistoryRepository) throw new Error('PATIENT_RESULTS_EMAIL_HISTORY_UNAVAILABLE');
+      const deliveryType = patient.email_status ? 'resend' : 'send';
+      const resultHtmlHash = createHash('sha256').update(resultHtml, 'utf8').digest('hex');
+      const attempt = await this.resultsEmailHistoryRepository.save(this.resultsEmailHistoryRepository.create({ patientId: id, requestedByUserId: actorUserId as number, completedByUserId: null, recipientEmail: patient.email.trim(), deliveryType, status: 'started', completedAt: null, errorCode: null, pdfSizeBytes: null, resultHtmlHash }));
+      try {
+        const visibleText = resultHtml.replace(/<[^>]*>/g, ' ').replace(/&nbsp;/gi, ' ').trim();
+        if (visibleText.length < 20) throw new BadRequestException('PATIENT_RESULTS_EMAIL_CONTENT_EMPTY');
+        const pdf = await this.generatePdfFromHtmlOut(resultHtml);
+        if (!Buffer.isBuffer(pdf) || pdf.length < 1000) throw new BadRequestException('PATIENT_RESULTS_EMAIL_PDF_EMPTY');
+        await this.sendResultsEmailBuffer(patient, pdf);
+        attempt.status = 'success'; attempt.completedAt = new Date(); attempt.completedByUserId = actorUserId as number; attempt.pdfSizeBytes = pdf.length;
+        await this.resultsEmailHistoryRepository.save(attempt);
+      } catch (error) {
+        attempt.status = 'failed'; attempt.completedAt = new Date(); attempt.errorCode = error instanceof Error ? error.message.slice(0, 120) : 'PATIENT_RESULTS_EMAIL_UNKNOWN_ERROR';
+        await this.resultsEmailHistoryRepository.save(attempt);
+        throw error;
+      }
       if (!this.dataSource || !this.securityAuditService) throw new Error('PATIENT_RESULTS_EMAIL_TRANSACTION_UNAVAILABLE');
       return this.dataSource.transaction(async (manager) => {
         const repository = manager.getRepository(Patient);
@@ -317,7 +331,7 @@ export class PatientsService {
         patient.receive = 'por correo';
         patient.email_status = true;
         const saved = await repository.save(patient);
-        await this.securityAuditService!.write(manager, { actorUserId: actorUserId as number, action: 'patient.results-email.sent', entityType: 'patient', entityId: id, summary: 'Resultados entregados por correo', metadata: { deliveryMethod: 'email' } });
+        await this.securityAuditService!.write(manager, { actorUserId: actorUserId as number, action: deliveryType === 'resend' ? 'patient.results-email.resent' : 'patient.results-email.sent', entityType: 'patient', entityId: id, summary: 'Resultados entregados por correo', metadata: { deliveryMethod: 'email', deliveryType } });
         return { id: saved.id, emailStatus: true, deliverDate: saved.deliver_date, deliveryId: saved.delivery_id, receive: saved.receive };
       });
     } finally { this.resultsEmailInProgress.delete(id); }
