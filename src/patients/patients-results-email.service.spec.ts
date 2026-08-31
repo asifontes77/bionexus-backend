@@ -32,11 +32,6 @@ describe('PatientsService results email candidates', () => {
     expect(repository.createQueryBuilder).not.toHaveBeenCalled();
   });
 
-  it('rechaza rangos mayores a 31 dias', async () => {
-    await expect(service.getPatientResultsEmailCandidates('2026-07-01', '2026-08-31')).rejects.toThrow(
-      new BadRequestException('PATIENT_RESULTS_EMAIL_DATE_RANGE_TOO_LARGE'),
-    );
-  });
   it('consulta solo pacientes habilitados con resultados aprobados y correo', async () => {
     getMany.mockResolvedValue([{ id: 1 }]);
     await expect(service.getPatientResultsEmailCandidates('2026-08-01', '2026-08-31')).resolves.toEqual([{ id: 1 }]);

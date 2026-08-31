@@ -1,4 +1,4 @@
-jest.mock('puppeteer', () => ({ launch: jest.fn() }));
+﻿jest.mock('puppeteer', () => ({ launch: jest.fn() }));
 jest.mock('node-thermal-printer', () => ({ ThermalPrinter: jest.fn() }));
 jest.mock('nodemailer', () => ({ createTransport: jest.fn() }));
 import { ConflictException } from '@nestjs/common';
@@ -23,6 +23,10 @@ describe('Patient results controlled email contract', () => {
     const source = require('fs').readFileSync(require('path').join(process.cwd(), 'src/patients/patients.service.ts'), 'utf8');
     expect(source).toContain('resultsEmailInProgress');
     expect(source).toContain('generatePdfFromHtmlOut(resultHtml)');
+    expect(source).toContain('PATIENT_RESULTS_EMAIL_CONTENT_EMPTY');
+    expect(source).toContain('PATIENT_RESULTS_EMAIL_PDF_EMPTY');
+    expect(source).toContain("waitUntil: 'load'");
+    expect(source).toContain('printBackground: true');
     expect(source).toContain("attachments: [{ filename: `resultados-${patient.id}.pdf`, content: pdf");
     expect(source).toContain('this.dataSource.transaction');
     expect(source).toContain("action: 'patient.results-email.sent'");

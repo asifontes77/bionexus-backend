@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, HttpException, HttpStatus, Injectable, Optional } from '@nestjs/common';
+﻿import { BadRequestException, ConflictException, HttpException, HttpStatus, Injectable, Optional } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Patient } from './patients.entity';
 import { DataSource, Repository } from 'typeorm';
@@ -57,7 +57,7 @@ export class PatientsService {
   async getPatientsDateOrder(admission: Date) {
     return this.patientRepository
       .createQueryBuilder('patient')
-      .leftJoinAndSelect('patient.exams', 'exam') // Selecciona automáticamente todos los campos de 'exam'
+      .leftJoinAndSelect('patient.exams', 'exam') // Selecciona automÃ¡ticamente todos los campos de 'exam'
       .leftJoinAndSelect('exam.examGroup', 'exam_group') // Selecciona todos los campos de 'examGroup'
       .where('patient.admission_date = :admission', { admission })
       .orderBy('patient.id', 'ASC')
@@ -264,9 +264,6 @@ export class PatientsService {
     if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime()) || from > to) {
       throw new BadRequestException('PATIENT_RESULTS_EMAIL_DATE_RANGE_INVALID');
     }
-    const maximumDate = new Date(from);
-    maximumDate.setUTCDate(maximumDate.getUTCDate() + 31);
-    if (to > maximumDate) throw new BadRequestException('PATIENT_RESULTS_EMAIL_DATE_RANGE_TOO_LARGE');
     return this.patientRepository
       .createQueryBuilder('patient')
       .innerJoin('patient.exams', 'exam')
@@ -306,7 +303,10 @@ export class PatientsService {
       if (typeof patient.email !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(patient.email.trim())) throw new BadRequestException('PATIENT_RESULTS_EMAIL_ADDRESS_INVALID');
       if (!Array.isArray(patient.exams) || !patient.exams.some((exam) => Number(exam.approved_id) > 0)) throw new BadRequestException('PATIENT_RESULTS_EMAIL_NOT_APPROVED');
       if (patient.email_status) throw new ConflictException('PATIENT_RESULTS_EMAIL_ALREADY_SENT');
+      const visibleText = resultHtml.replace(/<[^>]*>/g, ' ').replace(/&nbsp;/gi, ' ').trim();
+      if (visibleText.length < 20) throw new BadRequestException('PATIENT_RESULTS_EMAIL_CONTENT_EMPTY');
       const pdf = await this.generatePdfFromHtmlOut(resultHtml);
+      if (!Buffer.isBuffer(pdf) || pdf.length < 1000) throw new BadRequestException('PATIENT_RESULTS_EMAIL_PDF_EMPTY');
       await this.sendResultsEmailBuffer(patient, pdf);
       if (!this.dataSource || !this.securityAuditService) throw new Error('PATIENT_RESULTS_EMAIL_TRANSACTION_UNAVAILABLE');
       return this.dataSource.transaction(async (manager) => {
@@ -471,9 +471,9 @@ export class PatientsService {
 
     try {
       const page = await browser.newPage();
-      await page.setContent(html);
-
-      const pdfBuffer = await page.pdf({ format: 'letter' });
+      await page.setContent(html, { waitUntil: 'load' });
+      await page.emulateMediaType('screen');
+      const pdfBuffer = await page.pdf({ format: 'letter', printBackground: true, preferCSSPageSize: false });
 
       return Buffer.from(pdfBuffer);
     } finally {
@@ -505,7 +505,7 @@ export class PatientsService {
           row.sex ? 'masculino' : 'femanino'
         }`,
       );
-      printer.println(`Teléfono: ${row.phone}`);
+      printer.println(`TelÃ©fono: ${row.phone}`);
       printer.newLine();
       printer.println('OBSERVACION:');
       printer.println(row.observation);
