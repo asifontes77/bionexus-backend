@@ -90,7 +90,10 @@
          "**/*.(t|j)s"
       ],
       "coverageDirectory": "../coverage",
-      "testEnvironment": "node"
+      "testEnvironment": "node",
+      "moduleNameMapper": {
+         "^src/(.*)$": "<rootDir>/$1"
+      }
    },
    "proxy": "http://192.168.100.32:3000"
 }

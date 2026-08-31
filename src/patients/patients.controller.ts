@@ -5,6 +5,8 @@ import {
   Post,
   Param,
   ParseIntPipe,
+  Query,
+  Req,
   Patch,
   UseGuards,
   Injectable,
@@ -14,7 +16,11 @@ import { Patient } from './patients.entity';
 import { PatientsService } from './patients.service';
 import { UpdatePatientsDto } from './dto/update-patients.dto';
 import { CreatePatientsDto } from './dto/create-patients.dto';
+import { SendPatientResultsEmailDto } from './dto/send-patient-results-email.dto';
 import { JwtUserGuard } from '../users/jwt-user.guard';
+import { getSecurityAuditActorUserId, SecurityAuthenticatedRequest } from '../audit/security-audit-context';
+import { RequirePermissions } from '../authorization/decorators/require-permissions.decorator';
+import { PermissionGuard } from '../authorization/guards/permission.guard';
 import { Response } from 'express';
 
 @Controller('patients')
@@ -149,6 +155,27 @@ export class PatientsController {
     @Param('admissiondate') admissionDate: Date,
   ): Promise<Patient[]> {
     return this.patienService.getPatientsDateGroupResult(admissionDate);
+  }
+
+  @UseGuards(JwtUserGuard, PermissionGuard)
+  @RequirePermissions('patient-results-email.read')
+  @Get('/results-email')
+  getPatientResultsEmailCandidates(
+    @Query('date') date: string,
+  ) {
+    return this.patienService.getPatientResultsEmailCandidates(date);
+  }
+
+  @UseGuards(JwtUserGuard, PermissionGuard)
+  @RequirePermissions('patient-results-email.send')
+  @Post(':id/results-email')
+  sendPatientResultsEmail(
+    @Req() request: SecurityAuthenticatedRequest,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: SendPatientResultsEmailDto,
+  ) {
+    const actorUserId = getSecurityAuditActorUserId(request);
+    return this.patienService.sendPatientResultsEmail(id, body?.resultHtml, actorUserId ?? undefined);
   }
 
   @UseGuards(JwtUserGuard)

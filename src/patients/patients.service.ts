@@ -1,7 +1,8 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, HttpException, HttpStatus, Injectable, Optional } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Patient } from './patients.entity';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
+import { SecurityAuditService } from '../audit/security-audit.service';
 import { UpdatePatientsDto } from './dto/update-patients.dto';
 import { CreatePatientsDto } from './dto/create-patients.dto';
 import * as nodemailer from 'nodemailer';
@@ -14,7 +15,10 @@ export class PatientsService {
   constructor(
     @InjectRepository(Patient) private patientRepository: Repository<Patient>,
     private laboratoryService: LaboratoryService,
+    @Optional() private readonly dataSource?: DataSource,
+    @Optional() private readonly securityAuditService?: SecurityAuditService,
   ) {}
+  private readonly resultsEmailInProgress = new Set<number>();
 
   async createPatient(patients: CreatePatientsDto): Promise<any> {
     return this.patientRepository.save(patients);
@@ -248,6 +252,75 @@ export class PatientsService {
       .orderBy('patient.id', 'ASC')
       .addOrderBy('exams.position', 'ASC')
       .getMany();
+  }
+
+  async getPatientResultsEmailCandidates(date: string) {
+    if (typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      throw new BadRequestException('PATIENT_RESULTS_EMAIL_DATE_INVALID');
+    }
+    return this.patientRepository
+      .createQueryBuilder('patient')
+      .innerJoin('patient.exams', 'exam')
+      .select([
+        'patient.id',
+        'patient.patient_position',
+        'patient.admission_date',
+        'patient.admission_time',
+        'patient.name',
+        'patient.age',
+        'patient.month_year',
+        'patient.sex',
+        'patient.phone',
+        'patient.email',
+        'patient.email_status',
+      ])
+      .where('patient.admission_date = :date', { date })
+      .andWhere('patient.email_sent = 1')
+      .andWhere('exam.approved_id > 0')
+      .andWhere("TRIM(COALESCE(patient.email, '')) <> ''")
+      .distinct(true)
+      .orderBy('patient.id', 'ASC')
+      .getMany();
+  }
+
+  async sendPatientResultsEmail(id: number, resultHtml: string, actorUserId?: number) {
+    if (!Number.isInteger(id) || id <= 0) throw new BadRequestException('PATIENT_RESULTS_EMAIL_ID_INVALID');
+    if (typeof resultHtml !== 'string' || resultHtml.trim() === '') throw new BadRequestException('PATIENT_RESULTS_EMAIL_HTML_REQUIRED');
+    if (!Number.isInteger(actorUserId) || Number(actorUserId) <= 0) throw new BadRequestException('PATIENT_RESULTS_EMAIL_ACTOR_INVALID');
+    if (this.resultsEmailInProgress.has(id)) throw new ConflictException('PATIENT_RESULTS_EMAIL_IN_PROGRESS');
+    this.resultsEmailInProgress.add(id);
+    try {
+      const patient = await this.patientRepository.findOne({ where: { id }, relations: { exams: true } });
+      if (!patient) throw new BadRequestException('PATIENT_RESULTS_EMAIL_PATIENT_NOT_FOUND');
+      if (!patient.email_sent) throw new BadRequestException('PATIENT_RESULTS_EMAIL_DISABLED');
+      if (typeof patient.email !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(patient.email.trim())) throw new BadRequestException('PATIENT_RESULTS_EMAIL_ADDRESS_INVALID');
+      if (!Array.isArray(patient.exams) || !patient.exams.some((exam) => Number(exam.approved_id) > 0)) throw new BadRequestException('PATIENT_RESULTS_EMAIL_NOT_APPROVED');
+      if (patient.email_status) throw new ConflictException('PATIENT_RESULTS_EMAIL_ALREADY_SENT');
+      const pdf = await this.generatePdfFromHtmlOut(resultHtml);
+      await this.sendResultsEmailBuffer(patient, pdf);
+      if (!this.dataSource || !this.securityAuditService) throw new Error('PATIENT_RESULTS_EMAIL_TRANSACTION_UNAVAILABLE');
+      return this.dataSource.transaction(async (manager) => {
+        const repository = manager.getRepository(Patient);
+        patient.result_html = resultHtml;
+        patient.deliver_date = new Date();
+        patient.delivery_id = actorUserId as number;
+        patient.receive = 'por correo';
+        patient.email_status = true;
+        const saved = await repository.save(patient);
+        await this.securityAuditService!.write(manager, { actorUserId: actorUserId as number, action: 'patient.results-email.sent', entityType: 'patient', entityId: id, summary: 'Resultados entregados por correo', metadata: { deliveryMethod: 'email' } });
+        return { id: saved.id, emailStatus: true, deliverDate: saved.deliver_date, deliveryId: saved.delivery_id, receive: saved.receive };
+      });
+    } finally { this.resultsEmailInProgress.delete(id); }
+  }
+
+  private async sendResultsEmailBuffer(patient: Patient, pdf: Buffer): Promise<void> {
+    const laboratory = await this.laboratoryService.getLaboratory(1);
+    const settings = laboratory.sendEmail as unknown as { isGmail?: boolean; host?: string; port?: number; secure?: boolean; user?: string; pass?: string; from?: string };
+    if (!settings || !settings.user || !settings.pass || !settings.from) throw new BadRequestException('PATIENT_RESULTS_EMAIL_CONFIGURATION_INVALID');
+    const auth = { user: settings.user, pass: settings.pass };
+    const transport = settings.isGmail ? { service: 'Gmail', auth } : { host: settings.host, port: settings.port, secure: settings.secure, auth };
+    const transporter = nodemailer.createTransport(transport);
+    await transporter.sendMail({ from: settings.from, to: patient.email, subject: 'Resultados de examenes de laboratorio', html: `Adjunto se encuentran los resultados de laboratorio.<br><br>Ingreso: ${patient.admission_date}`, attachments: [{ filename: `resultados-${patient.id}.pdf`, content: pdf, contentType: 'application/pdf' }] });
   }
 
   async getPatientResultsDatesApproved(admission: Date) {

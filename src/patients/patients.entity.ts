@@ -1,4 +1,4 @@
-﻿import { Exam } from 'src/exams/exams.entity';
+import { Exam } from '../exams/exams.entity';
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 
 @Entity({ name: 'patients' })
