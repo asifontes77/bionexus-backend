@@ -168,6 +168,13 @@ export class PatientsController {
   }
 
   @UseGuards(JwtUserGuard, PermissionGuard)
+  @RequirePermissions('patient-results-email.read')
+  @Get('/results-email-history')
+  getPatientResultsEmailHistory(@Query('dateFrom') dateFrom: string, @Query('dateTo') dateTo: string) {
+    return this.patienService.getPatientResultsEmailHistory(dateFrom, dateTo);
+  }
+
+  @UseGuards(JwtUserGuard, PermissionGuard)
   @RequirePermissions('patient-results-email.send')
   @Post(':id/results-email')
   sendPatientResultsEmail(

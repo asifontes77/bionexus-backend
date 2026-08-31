@@ -293,6 +293,34 @@ export class PatientsService {
       .getMany();
   }
 
+  async getPatientResultsEmailHistory(dateFrom: string, dateTo: string) {
+    const isoDate = /^\d{4}-\d{2}-\d{2}$/;
+    if (!isoDate.test(dateFrom) || !isoDate.test(dateTo) || dateFrom > dateTo) throw new BadRequestException('PATIENT_RESULTS_EMAIL_DATE_RANGE_INVALID');
+    if (!this.resultsEmailHistoryRepository) throw new Error('PATIENT_RESULTS_EMAIL_HISTORY_UNAVAILABLE');
+    return this.resultsEmailHistoryRepository
+      .createQueryBuilder('history')
+      .innerJoin('patients', 'patient', 'patient.id = history.patient_id')
+      .innerJoin('users', 'requester', 'requester.id = history.requested_by_user_id')
+      .leftJoin('users', 'completer', 'completer.id = history.completed_by_user_id')
+      .select('history.id', 'id')
+      .addSelect('history.patient_id', 'patientId')
+      .addSelect('patient.patient_position', 'patientPosition')
+      .addSelect('patient.name', 'patientName')
+      .addSelect('history.recipient_email', 'recipientEmail')
+      .addSelect('history.delivery_type', 'deliveryType')
+      .addSelect('history.status', 'status')
+      .addSelect('history.requested_at', 'requestedAt')
+      .addSelect('history.completed_at', 'completedAt')
+      .addSelect('history.error_code', 'errorCode')
+      .addSelect('history.pdf_size_bytes', 'pdfSizeBytes')
+      .addSelect('requester.name', 'requestedByName')
+      .addSelect('completer.name', 'completedByName')
+      .where('DATE(history.requested_at) BETWEEN :dateFrom AND :dateTo', { dateFrom, dateTo })
+      .orderBy('history.requested_at', 'DESC')
+      .addOrderBy('history.id', 'DESC')
+      .getRawMany();
+  }
+
   async sendPatientResultsEmail(id: number, resultHtml: string, actorUserId?: number) {
     if (!Number.isInteger(id) || id <= 0) throw new BadRequestException('PATIENT_RESULTS_EMAIL_ID_INVALID');
     if (typeof resultHtml !== 'string' || resultHtml.trim() === '') throw new BadRequestException('PATIENT_RESULTS_EMAIL_HTML_REQUIRED');

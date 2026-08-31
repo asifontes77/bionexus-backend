@@ -38,5 +38,7 @@ describe('Patient results controlled email contract', () => {
     expect(source).toContain("metadata: { deliveryMethod: 'email', deliveryType }");
     expect(source).not.toContain("metadata: { email:");
     expect(source).not.toContain("metadata: { resultHtml:");
+    expect(source).toContain('getPatientResultsEmailHistory');
+    expect(source).toContain(".innerJoin('users', 'requester'");
   });
 });
