@@ -1,3 +1,5 @@
+import { LaboratoryEmailSettingsDto } from './test-laboratory-email.dto';
+
 export class UpdateLaboratoryDto {
   name?: string;
   business_name?: string;
@@ -19,7 +21,7 @@ export class UpdateLaboratoryDto {
   max_height_logo?: number;
   max_width_logo?: number;
   settingQR?: JSON;
-  sendEmail?: JSON;
+  sendEmail?: LaboratoryEmailSettingsDto;
   head_html?: string;
   body_html?: string;
   page_html?: string;

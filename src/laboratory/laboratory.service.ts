@@ -6,19 +6,13 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, EntityManager, Repository } from 'typeorm';
+import * as nodemailer from 'nodemailer';
 import { SecurityAuditService } from '../audit/security-audit.service';
 import { UpdateLaboratoryDto } from './dto/update-laboratorio.dto';
+import { CompleteLaboratoryEmailSettings, LaboratoryEmailSettingsDto } from './dto/test-laboratory-email.dto';
 import { Laboratory } from './laboratory.entity';
 
-type EmailSettings = {
-  isGmail?: boolean;
-  host?: string;
-  port?: number | null;
-  secure?: boolean;
-  user?: string;
-  pass?: string;
-  from?: string;
-};
+type EmailSettings = Partial<LaboratoryEmailSettingsDto>;
 
 type PublicLaboratory = Omit<Laboratory, 'license' | 'sendEmail'> & {
   sendEmail: EmailSettings | null;
@@ -63,6 +57,26 @@ export class LaboratoryService {
     );
   }
 
+  async testEmailConnection(
+    id: number,
+    incoming: LaboratoryEmailSettingsDto,
+    actorUserId?: number,
+  ): Promise<{ success: true; mode: 'gmail' | 'smtp' }> {
+    this.validateId(id);
+    const laboratory = await this.getLaboratory(id);
+    const settings = this.resolveEmailSettings(laboratory, incoming);
+    this.validateEmailSettings(settings, true);
+    const mode = settings.isGmail ? 'gmail' : 'smtp';
+    try {
+      const transporter = nodemailer.createTransport(this.createTransportOptions(settings));
+      await transporter.verify();
+      await this.writeEmailConnectionAudit(actorUserId, id, mode, true);
+      return { success: true, mode };
+    } catch {
+      await this.writeEmailConnectionAudit(actorUserId, id, mode, false);
+      throw new BadRequestException('LABORATORY_EMAIL_CONNECTION_FAILED');
+    }
+  }
   async updateLaboratory(
     id: number,
     laboratory: UpdateLaboratoryDto,
@@ -151,6 +165,7 @@ export class LaboratoryService {
     this.validateIntegerFields(laboratory);
     this.validateIdentityFields(laboratory);
     this.validateQrSettings(laboratory.settingQR);
+    if (laboratory.sendEmail !== undefined) this.validateEmailSettings(laboratory.sendEmail, false);
   }
 
   private validateStringFields(body: UpdateLaboratoryDto): void {
@@ -261,6 +276,49 @@ export class LaboratoryService {
     }
   }
 
+  private validateEmailSettings(value: unknown, requirePassword: boolean): asserts value is CompleteLaboratoryEmailSettings {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) throw new BadRequestException('LABORATORY_EMAIL_SETTINGS_INVALID');
+    const settings = value as unknown as Record<string, unknown>;
+    const allowed = ['isGmail', 'host', 'port', 'secure', 'user', 'pass', 'from'];
+    if (Object.keys(settings).some((field) => !allowed.includes(field))) throw new BadRequestException('LABORATORY_EMAIL_FIELD_UNKNOWN');
+    if (typeof settings.isGmail !== 'boolean') throw new BadRequestException('LABORATORY_EMAIL_MODE_INVALID');
+    if (typeof settings.user !== 'string' || settings.user.trim() === '') throw new BadRequestException('LABORATORY_EMAIL_USER_REQUIRED');
+    if (typeof settings.from !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(settings.from.trim())) throw new BadRequestException('LABORATORY_EMAIL_FROM_INVALID');
+    if (settings.pass !== undefined && typeof settings.pass !== 'string') throw new BadRequestException('LABORATORY_EMAIL_PASSWORD_INVALID');
+    if (requirePassword && String(settings.pass ?? '').trim() === '') throw new BadRequestException('LABORATORY_EMAIL_PASSWORD_REQUIRED');
+    if (!settings.isGmail) {
+      if (typeof settings.host !== 'string' || settings.host.trim() === '') throw new BadRequestException('LABORATORY_EMAIL_HOST_REQUIRED');
+      if (!Number.isInteger(settings.port) || Number(settings.port) < 1 || Number(settings.port) > 65535) throw new BadRequestException('LABORATORY_EMAIL_PORT_INVALID');
+      if (typeof settings.secure !== 'boolean') throw new BadRequestException('LABORATORY_EMAIL_SECURE_INVALID');
+    }
+  }
+  private resolveEmailSettings(laboratory: Laboratory, incoming: LaboratoryEmailSettingsDto): CompleteLaboratoryEmailSettings {
+    this.validateEmailSettings(incoming, false);
+    const current = this.parseEmailSettings(laboratory.sendEmail);
+    const pass = incoming.pass?.trim() ? incoming.pass : current.pass;
+    return { ...incoming, isGmail: incoming.isGmail as boolean, user: incoming.user as string, from: incoming.from as string, pass };
+  }
+  private createTransportOptions(settings: CompleteLaboratoryEmailSettings): Record<string, unknown> {
+    const auth = { user: settings.user.trim(), pass: settings.pass };
+    return settings.isGmail
+      ? { service: 'Gmail', auth }
+      : { host: settings.host?.trim(), port: settings.port, secure: settings.secure, auth };
+  }
+  private async writeEmailConnectionAudit(actorUserId: number | undefined, entityId: number, mode: 'gmail' | 'smtp', success: boolean): Promise<void> {
+    if (actorUserId === undefined) return;
+    if (!this.dataSource) throw new Error('LABORATORY_TRANSACTION_UNAVAILABLE');
+    await this.dataSource.transaction(async (manager) => {
+      if (!this.securityAuditService) throw new Error('SECURITY_AUDIT_SERVICE_UNAVAILABLE');
+      await this.securityAuditService.write(manager, {
+        actorUserId,
+        action: 'laboratory.email.connection-tested',
+        entityType: 'laboratory',
+        entityId,
+        summary: success ? 'Conexion de correo verificada' : 'Conexion de correo rechazada',
+        metadata: { mode, success },
+      });
+    });
+  }
   private toPublicLaboratory(laboratory: Laboratory): PublicLaboratory {
     const serialized = JSON.parse(JSON.stringify(laboratory)) as Omit<
       Laboratory,
@@ -307,7 +365,7 @@ export class LaboratoryService {
 
     return {
       ...changes,
-      sendEmail: incomingEmail as unknown as JSON,
+      sendEmail: incomingEmail,
     };
   }
 

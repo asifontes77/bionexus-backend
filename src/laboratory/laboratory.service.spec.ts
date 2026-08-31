@@ -231,7 +231,7 @@ describe('LaboratoryService', () => {
         user: 'new@example.com',
         pass: '',
         from: 'new@example.com',
-      } as unknown as JSON,
+      },
     });
 
     const updatedLaboratory = result as Laboratory;
@@ -257,7 +257,7 @@ describe('LaboratoryService', () => {
         user: 'new@example.com',
         pass: 'new-secret-password',
         from: 'new@example.com',
-      } as unknown as JSON,
+      },
     });
 
     const updatedLaboratory = result as Laboratory;
@@ -267,6 +267,22 @@ describe('LaboratoryService', () => {
 
     expect(sendEmail.pass).toBe('new-secret-password');
     expect(save).toHaveBeenCalledTimes(1);
+  });
+  it.each([
+    [{ isGmail: true, user: '', pass: 'secret', from: 'mail@example.com' }, 'LABORATORY_EMAIL_USER_REQUIRED'],
+    [{ isGmail: true, user: 'mail@example.com', pass: 'secret', from: 'invalid' }, 'LABORATORY_EMAIL_FROM_INVALID'],
+    [{ isGmail: false, host: '', port: 587, secure: false, user: 'mail@example.com', pass: 'secret', from: 'mail@example.com' }, 'LABORATORY_EMAIL_HOST_REQUIRED'],
+    [{ isGmail: false, host: 'smtp.example.com', port: 0, secure: false, user: 'mail@example.com', pass: 'secret', from: 'mail@example.com' }, 'LABORATORY_EMAIL_PORT_INVALID'],
+  ] as const)('rechaza configuracion de correo invalida %#', async (sendEmail, errorCode) => {
+    await expect(service.updateLaboratory(1, { sendEmail })).rejects.toThrow(new BadRequestException(errorCode));
+    expect(findOne).not.toHaveBeenCalled();
+  });
+  it('acepta configuracion Gmail valida y conserva la clave vacia', async () => {
+    const laboratory = createLaboratory();
+    findOne.mockResolvedValue(laboratory);
+    save.mockImplementation(async (value) => value);
+    await service.updateLaboratory(1, { sendEmail: { isGmail: true, user: 'new@example.com', pass: '', from: 'new@example.com' } });
+    expect(save).toHaveBeenCalledWith(expect.objectContaining({ sendEmail: expect.objectContaining({ pass: 'secret-password' }) }));
   });
   it('audita la actualizacion dentro de la misma transaccion', async () => {
     const laboratory = createLaboratory();

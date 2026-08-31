@@ -12,16 +12,19 @@ describe('LaboratoryController', () => {
   let getPublicLaboratory: jest.Mock;
   let getPublicLaboratorySetting: jest.Mock;
   let updateLaboratory: jest.Mock;
+  let testEmailConnection: jest.Mock;
 
   beforeEach(() => {
     getPublicLaboratory = jest.fn();
     getPublicLaboratorySetting = jest.fn();
     updateLaboratory = jest.fn();
+    testEmailConnection = jest.fn();
 
     const laboratoryService = {
       getPublicLaboratory,
       getPublicLaboratorySetting,
       updateLaboratory,
+      testEmailConnection,
     } as unknown as LaboratoryService;
 
     controller = new LaboratoryController(laboratoryService);
@@ -89,6 +92,19 @@ describe('LaboratoryController', () => {
     );
   });
 
+  it('prueba la conexion con actor y sin guardar', async () => {
+    testEmailConnection.mockResolvedValue({ success: true, mode: 'gmail' });
+    const sendEmail = { isGmail: true, user: 'mail@example.com', pass: '', from: 'mail@example.com' };
+    await expect(controller.testEmailConnection(authenticatedRequest(9), 1, { sendEmail })).resolves.toEqual({ success: true, mode: 'gmail' });
+    expect(testEmailConnection).toHaveBeenCalledWith(1, sendEmail, 9);
+    expect(updateLaboratory).not.toHaveBeenCalled();
+  });
+  it('rechaza una prueba sin configuracion', () => {
+    expect(() => controller.testEmailConnection(authenticatedRequest(9), 1, {} as never)).toThrow(
+      new BadRequestException('LABORATORY_EMAIL_SETTINGS_REQUIRED'),
+    );
+    expect(testEmailConnection).not.toHaveBeenCalled();
+  });
   it('mantiene la actualizacion del logo', async () => {
     updateLaboratory.mockResolvedValue({
       id: 1,
@@ -124,6 +140,7 @@ describe('LaboratoryController', () => {
     ['getLaboratory', 'laboratory.read'],
     ['getLaboratorySetting', 'laboratory.read'],
     ['updateLaboratory', 'laboratory.update'],
+    ['testEmailConnection', 'laboratory.update'],
     ['uploadFile', 'laboratory.upload-logo'],
   ] as const)('protege %s con JWT, PermissionGuard y %s', (methodName, permission) => {
     const method = controllerMethod(methodName);
@@ -141,6 +158,7 @@ function controllerMethod(
     | 'getLaboratory'
     | 'updateLaboratory'
     | 'getLaboratorySetting'
+    | 'testEmailConnection'
     | 'uploadFile',
 ) {
   return LaboratoryController.prototype[methodName];

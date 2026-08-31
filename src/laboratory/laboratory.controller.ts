@@ -24,6 +24,7 @@ import { RequirePermissions } from '../authorization/decorators/require-permissi
 import { PermissionGuard } from '../authorization/guards/permission.guard';
 import { JwtUserGuard } from '../users/jwt-user.guard';
 import { UpdateLaboratoryDto } from './dto/update-laboratorio.dto';
+import { TestLaboratoryEmailDto } from './dto/test-laboratory-email.dto';
 import { LaboratoryService } from './laboratory.service';
 
 @Controller('laboratory')
@@ -60,6 +61,20 @@ export class LaboratoryController {
     return this.laboratoryService.getPublicLaboratorySetting();
   }
 
+  @UseGuards(JwtUserGuard, PermissionGuard)
+  @RequirePermissions('laboratory.update')
+  @Post(':id/email/test-connection')
+  testEmailConnection(
+    @Req() request: SecurityAuthenticatedRequest,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: TestLaboratoryEmailDto,
+  ) {
+    if (!body || typeof body !== 'object' || !body.sendEmail) {
+      throw new BadRequestException('LABORATORY_EMAIL_SETTINGS_REQUIRED');
+    }
+    const actorUserId = getSecurityAuditActorUserId(request);
+    return this.laboratoryService.testEmailConnection(id, body.sendEmail, actorUserId ?? undefined);
+  }
   @UseGuards(JwtUserGuard, PermissionGuard)
   @RequirePermissions('laboratory.upload-logo')
   @Post(':id/upload')
