@@ -1,7 +1,7 @@
-﻿import { MigrationInterface, QueryRunner } from 'typeorm';
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class AuthorizationFoundation2026080700000 implements MigrationInterface {
-  name = 'AuthorizationFoundation2026080700000';
+export class AuthorizationFoundation1786060800000 implements MigrationInterface {
+  name = 'AuthorizationFoundation1786060800000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     const userCounts = (await queryRunner.query(`

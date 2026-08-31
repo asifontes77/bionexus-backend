@@ -1,7 +1,7 @@
 import { QueryRunner } from 'typeorm';
-import { AuthorizationFoundation2026080700000 } from '../migrations/2026080700000-AuthorizationFoundation';
+import { AuthorizationFoundation1786060800000 } from '../migrations/1786060800000-AuthorizationFoundation';
 
-describe('AuthorizationFoundation2026080700000 clean installation', () => {
+describe('AuthorizationFoundation1786060800000 clean installation', () => {
   it('allows an empty users table and creates the authorization catalog', async () => {
     const query = jest.fn().mockImplementation(async (sql: string) => {
       if (sql.includes('users_total'))
@@ -11,7 +11,7 @@ describe('AuthorizationFoundation2026080700000 clean installation', () => {
       return [];
     });
     await expect(
-      new AuthorizationFoundation2026080700000().up({
+      new AuthorizationFoundation1786060800000().up({
         query,
       } as unknown as QueryRunner),
     ).resolves.toBeUndefined();
@@ -25,7 +25,7 @@ describe('AuthorizationFoundation2026080700000 clean installation', () => {
       .fn()
       .mockResolvedValue([{ users_total: 2, administrators_total: 0 }]);
     await expect(
-      new AuthorizationFoundation2026080700000().up({
+      new AuthorizationFoundation1786060800000().up({
         query,
       } as unknown as QueryRunner),
     ).rejects.toThrow(
@@ -42,7 +42,7 @@ describe('AuthorizationFoundation2026080700000 clean installation', () => {
       return [];
     });
     await expect(
-      new AuthorizationFoundation2026080700000().up({
+      new AuthorizationFoundation1786060800000().up({
         query,
       } as unknown as QueryRunner),
     ).resolves.toBeUndefined();

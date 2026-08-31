@@ -1,9 +1,9 @@
-import { SecurityAuditLogs2026081300000 } from '../database/migrations/2026081300000-SecurityAuditLogs';
+import { SecurityAuditLogs1786579200000 } from '../database/migrations/1786579200000-SecurityAuditLogs';
 
-describe('SecurityAuditLogs2026081300000', () => {
+describe('SecurityAuditLogs1786579200000', () => {
   it('crea tabla, indices, FK y permite revertirla', async () => {
     const query = jest.fn();
-    const migration = new SecurityAuditLogs2026081300000();
+    const migration = new SecurityAuditLogs1786579200000();
 
     await migration.up({ query } as never);
 

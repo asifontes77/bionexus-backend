@@ -1,7 +1,7 @@
-﻿import { MigrationInterface, QueryRunner } from 'typeorm';
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class BioNexusUpdatedAtTriggers20260817104500 implements MigrationInterface {
-  name = 'BioNexusUpdatedAtTriggers20260817104500';
+export class BioNexusUpdatedAtTriggers1786963500000 implements MigrationInterface {
+  name = 'BioNexusUpdatedAtTriggers1786963500000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query('CREATE TRIGGER `cash_trigger` BEFORE UPDATE ON `cash_register` FOR EACH ROW SET NEW.updatedAt = CURRENT_TIMESTAMP');

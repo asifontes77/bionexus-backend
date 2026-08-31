@@ -10,7 +10,7 @@ describe('Tax hardened backend contract', () => {
   const service = source('src/tax/tax.service.ts');
   const createDto = source('src/tax/dto/create-tax.dto.ts');
   const updateDto = source('src/tax/dto/update-tax.dto.ts');
-  const migration = source('src/database/migrations/20260827200000-TaxPermissions.ts');
+  const migration = source('src/database/migrations/1787860800000-TaxPermissions.ts');
   const taxModule = source('src/tax/tax.module.ts');
 
   it('provides PermissionGuard and audit dependencies in TaxModule', () => {

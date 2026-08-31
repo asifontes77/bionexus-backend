@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
-export class ParasiticformsDescriptionUniqueness2026081613300 implements MigrationInterface {
-  name = 'ParasiticformsDescriptionUniqueness2026081613300';
+export class ParasiticformsDescriptionUniqueness1786887000000 implements MigrationInterface {
+  name = 'ParasiticformsDescriptionUniqueness1786887000000';
   public async up(queryRunner: QueryRunner): Promise<void> {
     const duplicates = await queryRunner.query(`SELECT LOWER(TRIM(description)) normalized_description, COUNT(*) total FROM parasiticforms GROUP BY LOWER(TRIM(description)) HAVING COUNT(*) > 1 OR normalized_description = ''`);
     if (duplicates.length > 0) throw new Error('PARASITICFORM_DESCRIPTION_NORMALIZATION_CONFLICT');

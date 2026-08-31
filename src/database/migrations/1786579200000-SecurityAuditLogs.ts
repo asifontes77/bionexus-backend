@@ -3,10 +3,10 @@ import {
   QueryRunner,
 } from 'typeorm';
 
-export class SecurityAuditLogs2026081300000
+export class SecurityAuditLogs1786579200000
   implements MigrationInterface
 {
-  name = 'SecurityAuditLogs2026081300000';
+  name = 'SecurityAuditLogs1786579200000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`

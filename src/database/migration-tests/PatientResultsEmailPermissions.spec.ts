@@ -1,7 +1,7 @@
 import { QueryRunner } from 'typeorm';
-import { PatientResultsEmailPermissions20260831004500 } from '../migrations/20260831004500-PatientResultsEmailPermissions';
+import { PatientResultsEmailPermissions1788137100000 } from '../migrations/1788137100000-PatientResultsEmailPermissions';
 
-describe('PatientResultsEmailPermissions20260831004500', () => {
+describe('PatientResultsEmailPermissions1788137100000', () => {
   let query: jest.Mock;
   let runner: QueryRunner;
 
@@ -11,7 +11,7 @@ describe('PatientResultsEmailPermissions20260831004500', () => {
   });
 
   it('registra los permisos de consulta y envio de forma idempotente', async () => {
-    await new PatientResultsEmailPermissions20260831004500().up(runner);
+    await new PatientResultsEmailPermissions1788137100000().up(runner);
     expect(query).toHaveBeenCalledTimes(2);
     const sql = query.mock.calls.map(([value]) => String(value)).join('\n');
     expect(sql).toContain('patient-results-email.read');
@@ -23,7 +23,7 @@ describe('PatientResultsEmailPermissions20260831004500', () => {
   });
 
   it('revierte primero las asignaciones y despues el catalogo', async () => {
-    await new PatientResultsEmailPermissions20260831004500().down(runner);
+    await new PatientResultsEmailPermissions1788137100000().down(runner);
     expect(query).toHaveBeenCalledTimes(2);
     expect(String(query.mock.calls[0][0])).toContain('DELETE assignment');
     expect(String(query.mock.calls[1][0])).toContain('DELETE FROM security_permissions');

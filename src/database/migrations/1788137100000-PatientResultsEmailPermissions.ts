@@ -1,17 +1,27 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class TypePaymentPermissions2026081400000 implements MigrationInterface {
-  name = 'TypePaymentPermissions2026081400000';
+export class PatientResultsEmailPermissions1788137100000 implements MigrationInterface {
+  name = 'PatientResultsEmailPermissions1788137100000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
       INSERT INTO security_permissions (
         code, name, description, module, is_active
       ) VALUES
-        ('typepayment.read', 'Consultar tipos de pago', 'Permite consultar tipos de pago', 'typepayment', 1),
-        ('typepayment.create', 'Crear tipos de pago', 'Permite crear tipos de pago', 'typepayment', 1),
-        ('typepayment.update', 'Actualizar tipos de pago', 'Permite editar tipos de pago', 'typepayment', 1),
-        ('typepayment.change-status', 'Cambiar estado de tipos de pago', 'Permite inactivar o reactivar tipos de pago', 'typepayment', 1)
+        (
+          'patient-results-email.read',
+          'Consultar entrega de resultados por correo',
+          'Permite consultar pacientes habilitados para entrega de resultados por correo',
+          'patient-results-email',
+          1
+        ),
+        (
+          'patient-results-email.send',
+          'Enviar resultados por correo',
+          'Permite enviar resultados aprobados por correo y registrar su trazabilidad',
+          'patient-results-email',
+          1
+        )
       ON DUPLICATE KEY UPDATE
         name = VALUES(name),
         description = VALUES(description),
@@ -24,11 +34,10 @@ export class TypePaymentPermissions2026081400000 implements MigrationInterface {
       FROM security_roles role
       CROSS JOIN security_permissions permission
       WHERE role.code = 'admin'
+        AND role.is_active = 1
         AND permission.code IN (
-          'typepayment.read',
-          'typepayment.create',
-          'typepayment.update',
-          'typepayment.change-status'
+          'patient-results-email.read',
+          'patient-results-email.send'
         )
     `);
   }
@@ -40,19 +49,15 @@ export class TypePaymentPermissions2026081400000 implements MigrationInterface {
       INNER JOIN security_permissions permission
         ON permission.id = assignment.permission_id
       WHERE permission.code IN (
-        'typepayment.read',
-        'typepayment.create',
-        'typepayment.update',
-        'typepayment.change-status'
+        'patient-results-email.read',
+        'patient-results-email.send'
       )
     `);
     await queryRunner.query(`
       DELETE FROM security_permissions
       WHERE code IN (
-        'typepayment.read',
-        'typepayment.create',
-        'typepayment.update',
-        'typepayment.change-status'
+        'patient-results-email.read',
+        'patient-results-email.send'
       )
     `);
   }

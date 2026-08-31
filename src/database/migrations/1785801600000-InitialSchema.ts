@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class InitialSchema2026080400000 implements MigrationInterface {
-  name = 'InitialSchema2026080400000';
+export class InitialSchema1785801600000 implements MigrationInterface {
+  name = 'InitialSchema1785801600000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query('SET FOREIGN_KEY_CHECKS = 0');

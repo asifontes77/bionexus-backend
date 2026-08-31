@@ -1,4 +1,4 @@
-﻿import { MigrationInterface, QueryRunner } from 'typeorm';
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
 type CountRow = {
   total: string | number;
@@ -13,8 +13,8 @@ type RelationDefinition = {
   foreignKeyName: string;
 };
 
-export class ExamCatalogRelations2026081100000 implements MigrationInterface {
-  name = 'ExamCatalogRelations2026081100000';
+export class ExamCatalogRelations1786406400000 implements MigrationInterface {
+  name = 'ExamCatalogRelations1786406400000';
 
   private readonly relations: RelationDefinition[] = [
     {

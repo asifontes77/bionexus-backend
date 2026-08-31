@@ -1,23 +1,23 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class LaboratoryPermissions20260827101500 implements MigrationInterface {
-  name = 'LaboratoryPermissions20260827101500';
+export class TypePaymentPermissions1786665600000 implements MigrationInterface {
+  name = 'TypePaymentPermissions1786665600000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
       INSERT INTO security_permissions (
         code, name, description, module, is_active
       ) VALUES
-        ('laboratory.read', 'Consultar configuracion de laboratorio', 'Permite consultar la configuracion del laboratorio', 'laboratory', 1),
-        ('laboratory.update', 'Actualizar configuracion de laboratorio', 'Permite actualizar la configuracion del laboratorio', 'laboratory', 1),
-        ('laboratory.upload-logo', 'Actualizar logo del laboratorio', 'Permite cargar o reemplazar el logo del laboratorio', 'laboratory', 1)
+        ('typepayment.read', 'Consultar tipos de pago', 'Permite consultar tipos de pago', 'typepayment', 1),
+        ('typepayment.create', 'Crear tipos de pago', 'Permite crear tipos de pago', 'typepayment', 1),
+        ('typepayment.update', 'Actualizar tipos de pago', 'Permite editar tipos de pago', 'typepayment', 1),
+        ('typepayment.change-status', 'Cambiar estado de tipos de pago', 'Permite inactivar o reactivar tipos de pago', 'typepayment', 1)
       ON DUPLICATE KEY UPDATE
         name = VALUES(name),
         description = VALUES(description),
         module = VALUES(module),
         is_active = 1
     `);
-
     await queryRunner.query(`
       INSERT IGNORE INTO security_role_permissions (role_id, permission_id)
       SELECT role.id, permission.id
@@ -25,9 +25,10 @@ export class LaboratoryPermissions20260827101500 implements MigrationInterface {
       CROSS JOIN security_permissions permission
       WHERE role.code = 'admin'
         AND permission.code IN (
-          'laboratory.read',
-          'laboratory.update',
-          'laboratory.upload-logo'
+          'typepayment.read',
+          'typepayment.create',
+          'typepayment.update',
+          'typepayment.change-status'
         )
     `);
   }
@@ -39,18 +40,19 @@ export class LaboratoryPermissions20260827101500 implements MigrationInterface {
       INNER JOIN security_permissions permission
         ON permission.id = assignment.permission_id
       WHERE permission.code IN (
-        'laboratory.read',
-        'laboratory.update',
-        'laboratory.upload-logo'
+        'typepayment.read',
+        'typepayment.create',
+        'typepayment.update',
+        'typepayment.change-status'
       )
     `);
-
     await queryRunner.query(`
       DELETE FROM security_permissions
       WHERE code IN (
-        'laboratory.read',
-        'laboratory.update',
-        'laboratory.upload-logo'
+        'typepayment.read',
+        'typepayment.create',
+        'typepayment.update',
+        'typepayment.change-status'
       )
     `);
   }

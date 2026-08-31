@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class RetireExamResultLegacyFormat20260826191500 implements MigrationInterface {
-  name = 'RetireExamResultLegacyFormat20260826191500';
+export class RetireExamResultLegacyFormat1787771700000 implements MigrationInterface {
+  name = 'RetireExamResultLegacyFormat1787771700000';
 
   async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query('ALTER TABLE exam_lists DROP COLUMN format_vue');

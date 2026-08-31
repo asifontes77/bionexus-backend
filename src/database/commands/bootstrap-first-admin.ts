@@ -1,4 +1,4 @@
-﻿import 'dotenv/config';
+import 'dotenv/config';
 import * as bcrypt from 'bcrypt';
 import { DataSource, EntityManager } from 'typeorm';
 import AppDataSource from '../data-source';
@@ -28,9 +28,9 @@ type CountRow = { total: string | number };
 type IdRow = { id: string | number };
 
 const requiredMigrations = [
-  'InitialSchema2026080400000',
-  'AuthorizationFoundation2026080700000',
-  'ExamCatalogRelations2026081100000',
+  'InitialSchema1785801600000',
+  'AuthorizationFoundation1786060800000',
+  'ExamCatalogRelations1786406400000',
 ];
 
 export function resolveFirstAdminInput(
