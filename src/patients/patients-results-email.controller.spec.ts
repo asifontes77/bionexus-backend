@@ -19,10 +19,10 @@ describe('PatientsController results email candidates', () => {
 
   beforeEach(() => jest.clearAllMocks());
 
-  it('delega la fecha al servicio', async () => {
+  it('delega el rango al servicio', async () => {
     getPatientResultsEmailCandidates.mockResolvedValue([{ id: 1 }]);
-    await expect(controller.getPatientResultsEmailCandidates('2026-08-31')).resolves.toEqual([{ id: 1 }]);
-    expect(getPatientResultsEmailCandidates).toHaveBeenCalledWith('2026-08-31');
+    await expect(controller.getPatientResultsEmailCandidates('2026-08-01', '2026-08-31')).resolves.toEqual([{ id: 1 }]);
+    expect(getPatientResultsEmailCandidates).toHaveBeenCalledWith('2026-08-01', '2026-08-31');
   });
 
   it('exige JWT, PermissionGuard y permiso de lectura', () => {

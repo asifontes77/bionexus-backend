@@ -254,10 +254,19 @@ export class PatientsService {
       .getMany();
   }
 
-  async getPatientResultsEmailCandidates(date: string) {
-    if (typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-      throw new BadRequestException('PATIENT_RESULTS_EMAIL_DATE_INVALID');
+  async getPatientResultsEmailCandidates(dateFrom: string, dateTo: string) {
+    const isoDate = /^\d{4}-\d{2}-\d{2}$/;
+    if (typeof dateFrom !== 'string' || typeof dateTo !== 'string' || !isoDate.test(dateFrom) || !isoDate.test(dateTo)) {
+      throw new BadRequestException('PATIENT_RESULTS_EMAIL_DATE_RANGE_INVALID');
     }
+    const from = new Date(`${dateFrom}T00:00:00.000Z`);
+    const to = new Date(`${dateTo}T00:00:00.000Z`);
+    if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime()) || from > to) {
+      throw new BadRequestException('PATIENT_RESULTS_EMAIL_DATE_RANGE_INVALID');
+    }
+    const maximumDate = new Date(from);
+    maximumDate.setUTCDate(maximumDate.getUTCDate() + 31);
+    if (to > maximumDate) throw new BadRequestException('PATIENT_RESULTS_EMAIL_DATE_RANGE_TOO_LARGE');
     return this.patientRepository
       .createQueryBuilder('patient')
       .innerJoin('patient.exams', 'exam')
@@ -274,12 +283,13 @@ export class PatientsService {
         'patient.email',
         'patient.email_status',
       ])
-      .where('patient.admission_date = :date', { date })
+      .where('patient.admission_date BETWEEN :dateFrom AND :dateTo', { dateFrom, dateTo })
       .andWhere('patient.email_sent = 1')
       .andWhere('exam.approved_id > 0')
       .andWhere("TRIM(COALESCE(patient.email, '')) <> ''")
       .distinct(true)
-      .orderBy('patient.id', 'ASC')
+      .orderBy('patient.admission_date', 'DESC')
+      .addOrderBy('patient.id', 'ASC')
       .getMany();
   }
 

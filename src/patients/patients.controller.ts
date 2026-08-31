@@ -161,9 +161,10 @@ export class PatientsController {
   @RequirePermissions('patient-results-email.read')
   @Get('/results-email')
   getPatientResultsEmailCandidates(
-    @Query('date') date: string,
+    @Query('dateFrom') dateFrom: string,
+    @Query('dateTo') dateTo: string,
   ) {
-    return this.patienService.getPatientResultsEmailCandidates(date);
+    return this.patienService.getPatientResultsEmailCandidates(dateFrom, dateTo);
   }
 
   @UseGuards(JwtUserGuard, PermissionGuard)

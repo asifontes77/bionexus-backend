@@ -15,7 +15,7 @@ describe('PatientsService results email candidates', () => {
   const getMany = jest.fn();
   const queryBuilder = {
     innerJoin: jest.fn(), select: jest.fn(), where: jest.fn(), andWhere: jest.fn(),
-    distinct: jest.fn(), orderBy: jest.fn(), getMany,
+    distinct: jest.fn(), orderBy: jest.fn(), addOrderBy: jest.fn(), getMany,
   };
   Object.values(queryBuilder).forEach((value) => {
     if (value !== getMany && typeof value === 'function') value.mockReturnValue(queryBuilder);
@@ -25,17 +25,23 @@ describe('PatientsService results email candidates', () => {
 
   beforeEach(() => jest.clearAllMocks());
 
-  it('rechaza fechas fuera de YYYY-MM-DD', async () => {
-    await expect(service.getPatientResultsEmailCandidates('31-08-2026')).rejects.toThrow(
-      new BadRequestException('PATIENT_RESULTS_EMAIL_DATE_INVALID'),
+  it('rechaza rangos invalidos', async () => {
+    await expect(service.getPatientResultsEmailCandidates('31-08-2026', '2026-08-31')).rejects.toThrow(
+      new BadRequestException('PATIENT_RESULTS_EMAIL_DATE_RANGE_INVALID'),
     );
     expect(repository.createQueryBuilder).not.toHaveBeenCalled();
   });
 
+  it('rechaza rangos mayores a 31 dias', async () => {
+    await expect(service.getPatientResultsEmailCandidates('2026-07-01', '2026-08-31')).rejects.toThrow(
+      new BadRequestException('PATIENT_RESULTS_EMAIL_DATE_RANGE_TOO_LARGE'),
+    );
+  });
   it('consulta solo pacientes habilitados con resultados aprobados y correo', async () => {
     getMany.mockResolvedValue([{ id: 1 }]);
-    await expect(service.getPatientResultsEmailCandidates('2026-08-31')).resolves.toEqual([{ id: 1 }]);
+    await expect(service.getPatientResultsEmailCandidates('2026-08-01', '2026-08-31')).resolves.toEqual([{ id: 1 }]);
     expect(repository.createQueryBuilder).toHaveBeenCalledWith('patient');
+    expect(queryBuilder.where).toHaveBeenCalledWith('patient.admission_date BETWEEN :dateFrom AND :dateTo', { dateFrom: '2026-08-01', dateTo: '2026-08-31' });
     expect(queryBuilder.andWhere).toHaveBeenCalledWith('patient.email_sent = 1');
     expect(queryBuilder.andWhere).toHaveBeenCalledWith('exam.approved_id > 0');
     expect(queryBuilder.andWhere).toHaveBeenCalledWith("TRIM(COALESCE(patient.email, '')) <> ''");
