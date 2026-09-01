@@ -1,4 +1,4 @@
-﻿import { readFileSync } from 'fs';
+import { readFileSync } from 'fs';
 import { join } from 'path';
 
 describe('Exam ordering backend contract', () => {
@@ -12,6 +12,11 @@ describe('Exam ordering backend contract', () => {
     const source = read('src/exam_lists/examlists.controller.ts');
     expect(source).toContain("@RequirePermissions('exam-catalog.update') @Patch('reorder')");
     expect(source).toContain('groupId?:unknown;ids?:unknown');
+  });
+  it('lee los examenes por posicion persistida', () => {
+    const source = read('src/exam_lists/examlists.service.ts');
+    expect(source).toContain("order:{position:'ASC',id:'ASC'}");
+    expect(source).not.toContain("order:{description:'ASC'}");
   });
   it('usa transacciones, bloqueo y posiciones consecutivas', () => {
     const groups = read('src/exam_group/examgroup.service.ts');
