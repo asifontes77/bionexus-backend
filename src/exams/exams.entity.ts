@@ -1,4 +1,4 @@
-﻿import {
+import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
@@ -8,7 +8,7 @@
 import { Patient } from 'src/patients/patients.entity';
 import { Examgroup } from 'src/exam_group/examgroup.entity';
 
-@Entity({ name: 'exams' })
+@Entity({ name: 'patient_exams' })
 export class Exam {
   @PrimaryGeneratedColumn()
   id: number;
@@ -16,7 +16,7 @@ export class Exam {
   @Column('int', { default: () => '0' })
   patientsId: number;
 
-  @Column('int', { default: () => '0' })
+  @Column('int', { name: 'exam_catalog_id', default: () => '0' })
   examlistsId: number;
 
   @Column('varchar', { length: 60 })

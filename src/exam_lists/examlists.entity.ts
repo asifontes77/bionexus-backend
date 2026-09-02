@@ -7,7 +7,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 
-@Entity({ name: 'exam_lists' })
+@Entity({ name: 'exam_catalog' })
 export class Examlists {
   @PrimaryGeneratedColumn()
   id: number;
