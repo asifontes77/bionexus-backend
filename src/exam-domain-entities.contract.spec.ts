@@ -12,7 +12,9 @@ describe('Normalized exam domain entity mappings', () => {
   it('maps the legacy property to exam_catalog_id without breaking the API shape', () => {
     const patientExam = read('src/exams/exams.entity.ts');
     expect(patientExam).toContain("name: 'exam_catalog_id'");
+    expect(patientExam).toContain('exam_catalog_id: number;');
     expect(patientExam).toContain('examlistsId: number;');
+    expect(patientExam).toContain('AfterLoad()');
   });
 
   it('registers the normalized routine item relation', () => {

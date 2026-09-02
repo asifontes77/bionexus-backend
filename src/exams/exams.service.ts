@@ -21,8 +21,9 @@ export class ExamsService {
     if (!patientFound)
       return new HttpException('paciente no registrado', HttpStatus.NOT_FOUND);
 
-    const newExam = this.examRepository.create(exams);
-    return this.examRepository.save(newExam);
+    const values = this.normalizeExamCatalogInput(exams, true);
+    const newExam = this.examRepository.create(values);
+    return this.toLegacyResponse(await this.examRepository.save(newExam));
   }
 
   async getExam(id: number) {
@@ -46,15 +47,16 @@ export class ExamsService {
     if (!examFound) {
       return new HttpException('exam no encontrado', HttpStatus.NOT_FOUND);
     }
-    const updateExam = Object.assign(examFound, exam);
-    return this.examRepository.save(updateExam);
+    const values = this.normalizeExamCatalogInput(exam, false);
+    const updateExam = Object.assign(examFound, values);
+    return this.toLegacyResponse(await this.examRepository.save(updateExam));
   }
 
   async getPatientsWithClient(clientIds: number[]): Promise<any> {
     return this.examRepository
       .createQueryBuilder('exam')
       .select('exam.description', 'description')
-      .addSelect('exam.examlistsId', 'exam_id')
+      .addSelect('exam.exam_catalog_id', 'exam_id')
       .addSelect('exam.tax_amount', 'tax_amount')
       .addSelect('SUM(exam.amount)', 'amount')
       .addSelect('SUM(exam.tax_total)', 'tax_total')
@@ -62,7 +64,7 @@ export class ExamsService {
       .where('exam.patientsId IN (:...clientIds)', { clientIds: clientIds })
       .groupBy('exam.description')
       .addGroupBy('exam.tax_amount')
-      .addGroupBy('exam.examlistsId')
+      .addGroupBy('exam.exam_catalog_id')
       .getRawMany();
   }
 
@@ -81,9 +83,25 @@ export class ExamsService {
         firstDate,
         lastDate,
       })
-      .andWhere('exam.examlistsId IN (:...examIds)', { examIds: examIds })
+      .andWhere('exam.exam_catalog_id IN (:...examIds)', { examIds: examIds })
       .getRawOne();
     return totales;
+  }
+
+  private normalizeExamCatalogInput<T extends { examlistsId?: number; exam_catalog_id?: number }>(value: T, required: boolean): Omit<T, 'examlistsId'> & { exam_catalog_id?: number } {
+    const legacy = value.examlistsId;
+    const canonical = value.exam_catalog_id;
+    if (legacy !== undefined && canonical !== undefined && Number(legacy) !== Number(canonical)) throw new HttpException('EXAM_CATALOG_ID_CONFLICT', HttpStatus.BAD_REQUEST);
+    const selected = canonical ?? legacy;
+    if (required && selected === undefined) throw new HttpException('EXAM_CATALOG_ID_REQUIRED', HttpStatus.BAD_REQUEST);
+    if (selected !== undefined && (!Number.isInteger(Number(selected)) || Number(selected) <= 0)) throw new HttpException('EXAM_CATALOG_ID_INVALID', HttpStatus.BAD_REQUEST);
+    const { examlistsId: _legacy, ...rest } = value;
+    return selected === undefined ? rest : { ...rest, exam_catalog_id: Number(selected) };
+  }
+
+  private toLegacyResponse(exam: Exam): Exam {
+    exam.examlistsId = exam.exam_catalog_id;
+    return exam;
   }
 
   async getPatientsWithClientTax(

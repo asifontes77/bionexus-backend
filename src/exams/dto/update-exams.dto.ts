@@ -1,6 +1,7 @@
-﻿export class UpdateExamsDto {
+export class UpdateExamsDto {
   patientsId?: number;
   examlistsId?: number;
+  exam_catalog_id?: number;
   date?: Date;
   group_id?: number;
   position?: number;

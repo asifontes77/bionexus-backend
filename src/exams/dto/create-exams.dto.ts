@@ -1,6 +1,7 @@
 export class CreateExamsDto {
   patientsId: number;
-  examlistsId: number;
+  examlistsId?: number;
+  exam_catalog_id?: number;
   date: Date;
   group_id: number;
   position: number;

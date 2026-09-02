@@ -14,9 +14,14 @@ describe('Normalized exam domain runtime contract', () => {
     const service = read('src/exams/exams.service.ts');
     const patients = read('src/patients/patients.service.ts');
     expect(entity).toContain("name: 'exam_catalog_id'");
+    expect(entity).toContain('exam_catalog_id: number;');
     expect(entity).toContain('examlistsId: number;');
-    expect(service).toContain('exam.examlistsId');
-    expect(patients).toContain('exam.examlistsId');
+    expect(service).toContain('exam.exam_catalog_id');
+    expect(service).not.toContain(".addSelect('exam.examlistsId'");
+    expect(service).not.toContain(".addGroupBy('exam.examlistsId'");
+    expect(service).not.toContain(".andWhere('exam.examlistsId IN");
+    expect(patients).toContain('exam.exam_catalog_id');
+    expect(patients).not.toContain(".andWhere('exam.examlistsId IN");
   });
 
   it('does not alter historical migrations or transitional HTTP routes', () => {

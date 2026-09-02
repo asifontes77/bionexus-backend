@@ -115,7 +115,7 @@ export class PatientsService {
         'patient.admission_date < DATE_ADD(:lastDate, INTERVAL 1 DAY)',
         { lastDate },
       )
-      .andWhere('exam.examlistsId IN (:...examIds)', { examIds })
+      .andWhere('exam.exam_catalog_id IN (:...examIds)', { examIds })
       .getMany();
   }
 

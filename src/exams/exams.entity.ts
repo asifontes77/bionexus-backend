@@ -2,6 +2,7 @@ import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
+  AfterLoad,
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
@@ -17,7 +18,14 @@ export class Exam {
   patientsId: number;
 
   @Column('int', { name: 'exam_catalog_id', default: () => '0' })
+  exam_catalog_id: number;
+
   examlistsId: number;
+
+  @AfterLoad()
+  syncLegacyExamCatalogId(): void {
+    this.examlistsId = this.exam_catalog_id;
+  }
 
   @Column('varchar', { length: 60 })
   description: string;
