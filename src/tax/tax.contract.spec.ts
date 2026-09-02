@@ -50,7 +50,7 @@ describe('Tax hardened backend contract', () => {
   it('blocks physical deletion when an exam references the tax', () => {
     expect(service).toContain("throw new ConflictException('TAX_IN_USE')");
     expect(service).toContain(".setLock('pessimistic_write')");
-    expect(service).toContain('SELECT COUNT(*) AS referenceCount FROM exam_lists WHERE tax_id = ?');
+    expect(service).toContain('SELECT COUNT(*) AS referenceCount FROM exam_catalog WHERE tax_id = ?');
     expect(service).toContain("throw new Error('TAX_DELETE_ACTOR_REQUIRED')");
     expect(service.indexOf("throw new ConflictException('TAX_IN_USE')"))
       .toBeLessThan(service.indexOf('await repository.remove(tax)'));

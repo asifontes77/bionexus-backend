@@ -71,7 +71,7 @@ export class TaxService {
       if (!tax) throw new NotFoundException('TAX_NOT_FOUND');
 
       const references = await manager.query(
-        'SELECT COUNT(*) AS referenceCount FROM exam_lists WHERE tax_id = ?',
+        'SELECT COUNT(*) AS referenceCount FROM exam_catalog WHERE tax_id = ?',
         [id],
       ) as Array<{ referenceCount: string | number }>;
       const referenceCount = Number(references[0]?.referenceCount ?? 0);
