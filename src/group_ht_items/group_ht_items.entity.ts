@@ -1,4 +1,5 @@
 import { Groupht } from 'src/group_ht/group_ht.entity';
+import { Examlists } from 'src/exam_lists/examlists.entity';
 import {
   Entity,
   Column,
@@ -20,6 +21,10 @@ export class Grouphtitems {
 
   @Column('varchar', { length: 60 })
   description: string;
+
+  @ManyToOne(() => Examlists, { onDelete: 'RESTRICT', onUpdate: 'RESTRICT' })
+  @JoinColumn({ name: 'examId' })
+  examCatalog: Examlists;
 
   @ManyToOne(() => Groupht, (groupht) => groupht.grouphtitems)
   @JoinColumn({ name: 'groupHtId' })

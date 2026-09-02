@@ -6,6 +6,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { Invoice } from 'src/invoice/invoice.entity';
+import { Examlists } from 'src/exam_lists/examlists.entity';
 @Entity({ name: 'invoice_items' })
 export class Invoiceitems {
   @PrimaryGeneratedColumn()
@@ -28,6 +29,10 @@ export class Invoiceitems {
 
   @Column({ type: 'decimal', precision: 18, scale: 2, default: () => '0.00' })
   total: number;
+
+  @ManyToOne(() => Examlists, { onDelete: 'RESTRICT', onUpdate: 'RESTRICT' })
+  @JoinColumn({ name: 'id_exams' })
+  examCatalog: Examlists;
 
   @ManyToOne(() => Invoice, (invoice) => invoice.invoiceitems)
   @JoinColumn({ name: 'id_invoice' })
