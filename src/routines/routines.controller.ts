@@ -1,58 +1,37 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Post,
-  Param,
-  ParseIntPipe,
-  Delete,
-  Patch,
-  UseGuards,
-} from '@nestjs/common';
-import { RoutinesService } from './routines.service';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, UseGuards } from '@nestjs/common';
+import { RequirePermissions } from '../authorization/decorators/require-permissions.decorator';
+import { PermissionGuard } from '../authorization/guards/permission.guard';
+import { JwtUserGuard } from '../users/jwt-user.guard';
 import { CreateRoutinesDto } from './dto/create-routines.dto';
 import { UpdateRoutinesDto } from './dto/update-routines.dto';
-import { JwtUserGuard } from '../users/jwt-user.guard';
+import { RoutinesService } from './routines.service';
 
+@UseGuards(JwtUserGuard, PermissionGuard)
 @Controller('routines')
 export class RoutinesController {
-  constructor(private routineService: RoutinesService) {}
+  constructor(private readonly routineService: RoutinesService) {}
 
-  @UseGuards(JwtUserGuard)
+  @RequirePermissions('routines.read')
   @Get()
-  getRoutinesList() {
-    return this.routineService.getRoutinesList();
-  }
+  getRoutinesList() { return this.routineService.getRoutinesList(); }
 
-  @UseGuards(JwtUserGuard)
+  @RequirePermissions('routines.read')
+  @Get('count/:description')
+  countWithLike(@Param('description') description: string) { return this.routineService.countWithLike(description); }
+
+  @RequirePermissions('routines.read')
   @Get(':id')
-  getRoutines(@Param('id', ParseIntPipe) id: number) {
-    return this.routineService.getRoutines(id);
-  }
+  getRoutines(@Param('id', ParseIntPipe) id: number) { return this.routineService.getRoutines(id); }
 
+  @RequirePermissions('routines.create')
   @Post()
-  createRoutines(@Body() newGroupHt: CreateRoutinesDto) {
-    return this.routineService.createRoutines(newGroupHt);
-  }
+  createRoutines(@Body() body: CreateRoutinesDto) { return this.routineService.createRoutines(body); }
 
-  @UseGuards(JwtUserGuard)
+  @RequirePermissions('routines.update')
   @Patch(':id')
-  updateRoutines(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() routine: UpdateRoutinesDto,
-  ) {
-    return this.routineService.updateRoutines(id, routine);
-  }
+  updateRoutines(@Param('id', ParseIntPipe) id: number, @Body() body: UpdateRoutinesDto) { return this.routineService.updateRoutines(id, body); }
 
-  @UseGuards(JwtUserGuard)
+  @RequirePermissions('routines.delete')
   @Delete(':id')
-  deleteGroupHt(@Param('id', ParseIntPipe) id: number) {
-    return this.routineService.deleteRoutines(id);
-  }
-
-  @UseGuards(JwtUserGuard)
-  @Get('/count/:description')
-  countWithLike(@Param('description') description: string) {
-    return this.routineService.countWithLike(description);
-  }
+  deleteRoutines(@Param('id', ParseIntPipe) id: number) { return this.routineService.deleteRoutines(id); }
 }
