@@ -1,4 +1,5 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import { getSecurityAuditActorUserId, SecurityAuthenticatedRequest } from '../audit/security-audit-context';
 import { RequirePermissions } from '../authorization/decorators/require-permissions.decorator';
 import { PermissionGuard } from '../authorization/guards/permission.guard';
 import { JwtUserGuard } from '../users/jwt-user.guard';
@@ -33,5 +34,7 @@ export class RoutinesController {
 
   @RequirePermissions('routines.delete')
   @Delete(':id')
-  deleteRoutines(@Param('id', ParseIntPipe) id: number) { return this.routineService.deleteRoutines(id); }
+  deleteRoutines(@Req() request: SecurityAuthenticatedRequest, @Param('id', ParseIntPipe) id: number) {
+    return this.routineService.deleteRoutines(id, getSecurityAuditActorUserId(request));
+  }
 }

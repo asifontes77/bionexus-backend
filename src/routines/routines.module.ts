@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { SecurityAuditService } from '../audit/security-audit.service';
 import { AuthorizationModule } from '../authorization/authorization.module';
 import { RoutinesController } from './routines.controller';
 import { RoutinesService } from './routines.service';
@@ -10,6 +11,6 @@ import { UsersModule } from 'src/users/users.module';
 @Module({
   imports: [AuthorizationModule, TypeOrmModule.forFeature([Routines, ExamRoutineItem]), UsersModule],
   controllers: [RoutinesController],
-  providers: [RoutinesService],
+  providers: [RoutinesService, SecurityAuditService],
 })
 export class RoutinesModule {}

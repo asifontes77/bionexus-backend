@@ -1,6 +1,7 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, EntityManager, In, Like, Repository } from 'typeorm';
+import { SecurityAuditService } from '../audit/security-audit.service';
 import { Examlists } from '../exam_lists/examlists.entity';
 import { CreateRoutinesDto } from './dto/create-routines.dto';
 import { UpdateRoutinesDto } from './dto/update-routines.dto';
@@ -16,6 +17,7 @@ export class RoutinesService {
     @InjectRepository(Routines) private readonly routinesRepository: Repository<Routines>,
     @InjectRepository(ExamRoutineItem) private readonly itemsRepository: Repository<ExamRoutineItem>,
     private readonly dataSource: DataSource,
+    @Optional() private readonly audit?: SecurityAuditService,
   ) {}
 
   async getRoutines(id: number) {
@@ -64,15 +66,28 @@ export class RoutinesService {
     });
   }
 
-  async deleteRoutines(id: number) {
+  async deleteRoutines(id: number, actorUserId: number | null) {
     this.validateId(id);
+    if (!Number.isInteger(actorUserId) || Number(actorUserId) <= 0) throw new BadRequestException('ROUTINE_DELETE_ACTOR_REQUIRED');
+    if (!this.audit) throw new Error('ROUTINE_DELETE_AUDIT_UNAVAILABLE');
     return this.dataSource.transaction(async (manager) => {
       const repository = manager.getRepository(Routines);
-      const routine = await repository.findOne({ where: { id } });
+      const routine = await repository.findOne({ where: { id }, relations: { items: true } });
       if (!routine) throw new NotFoundException('ROUTINE_NOT_FOUND');
+      const itemCount = Array.isArray(routine.items)
+        ? routine.items.length
+        : await manager.getRepository(ExamRoutineItem).count({ where: { routine_id: id } });
       await manager.getRepository(ExamRoutineItem).delete({ routine_id: id });
       await repository.remove(routine);
-      return true;
+      await this.audit.write(manager, {
+        actorUserId: Number(actorUserId),
+        action: 'routine.deleted',
+        entityType: 'exam_routine',
+        entityId: id,
+        summary: 'Rutina de examenes eliminada',
+        metadata: { description: routine.description, details: routine.details, itemCount },
+      });
+      return { deleted: true, id, itemCount };
     });
   }
 
