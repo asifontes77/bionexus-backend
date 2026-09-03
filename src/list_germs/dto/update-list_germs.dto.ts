@@ -1,4 +1,4 @@
-export class UpdateList_germsDto {
+export class UpdateListGermsDto {
   germen?: string;
   annulled?: boolean;
 }

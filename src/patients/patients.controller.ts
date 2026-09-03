@@ -1,4 +1,5 @@
 import {
+  HttpException,
   Body,
   Controller,
   Get,
@@ -239,7 +240,8 @@ export class PatientsController {
   async enviarCorreo(@Param('id', ParseIntPipe) id: number) {
     console.log('pacienteId: ', id);
     const rowTmp = await this.patienService.getPatient(id);
-    const row = JSON.parse(JSON.stringify(rowTmp));
+    const row = structuredClone(rowTmp);
+    if (row instanceof HttpException) throw row;
     console.log('paciente: ', row);
     const file = `${row.id}.pdf`;
     const outputPath = `public/pdf/${file}`;
@@ -268,7 +270,8 @@ export class PatientsController {
     @Res() res: Response,
   ) {
     const rowTmp = await this.patienService.getPatient(id);
-    const row = JSON.parse(JSON.stringify(rowTmp));
+    const row = structuredClone(rowTmp);
+    if (row instanceof HttpException) throw row;
 
     const pdfBuffer = await this.patienService.generatePdfFromHtmlOut(
       row.result_html,

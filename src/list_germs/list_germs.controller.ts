@@ -1,52 +1,110 @@
 import {
   Body,
   Controller,
+  ForbiddenException,
   Get,
   Param,
   ParseIntPipe,
   Patch,
   Post,
+  Req,
   UseGuards,
 } from '@nestjs/common';
+import { AuthorizationService } from '../authorization/authorization.service';
+import { RequirePermissions } from '../authorization/decorators/require-permissions.decorator';
+import { PermissionGuard } from '../authorization/guards/permission.guard';
+import { JwtUserGuard } from '../users/jwt-user.guard';
+import {
+  getSecurityAuditActorUserId,
+  SecurityAuthenticatedRequest,
+} from '../audit/security-audit-context';
+import { CreateListGermsDto } from './dto/create-list_germs.dto';
+import { UpdateListGermsDto } from './dto/update-list_germs.dto';
 import { ListGermsService } from './list_germs.service';
-import { JwtUserGuard } from 'src/users/jwt-user.guard';
-import { CreateList_germsDto } from './dto/create-list_germs.dto';
-import { UpdateList_germsDto } from './dto/update-list_germs.dto';
+
 
 @Controller('list-germs')
 export class ListGermsController {
-  constructor(private listGermsService: ListGermsService) {}
+  constructor(
+    private readonly list_germsService: ListGermsService,
+    private readonly authorizationService: AuthorizationService,
+  ) {}
 
-  @UseGuards(JwtUserGuard)
+  @UseGuards(JwtUserGuard, PermissionGuard)
+  @RequirePermissions('germs.read')
   @Get()
-  geListGerms() {
-    return this.listGermsService.geListGerms();
+  getListGermsLists() {
+    return this.list_germsService.getListGermsLists();
   }
 
-  @UseGuards(JwtUserGuard)
-  @Get('/list')
-  getListGermsOrder() {
-    return this.listGermsService.getListGermsOrder();
+  @UseGuards(JwtUserGuard, PermissionGuard)
+  @RequirePermissions('germs.read')
+  @Get('order')
+  getListGermsListsOrder() {
+    return this.list_germsService.getListGermsListsOrder();
   }
 
-  @UseGuards(JwtUserGuard)
+  @UseGuards(JwtUserGuard, PermissionGuard)
+  @RequirePermissions('germs.read')
   @Get(':id')
-  getGerm(@Param('id', ParseIntPipe) id: number) {
-    return this.listGermsService.getGerm(id);
+  getListGerms(@Param('id', ParseIntPipe) id: number) {
+    return this.list_germsService.getListGerms(id);
   }
 
-  @UseGuards(JwtUserGuard)
+  @UseGuards(JwtUserGuard, PermissionGuard)
+  @RequirePermissions('germs.create')
   @Post()
-  createGerm(@Body() newGerm: CreateList_germsDto) {
-    return this.listGermsService.createGerm(newGerm);
+  createListGerms(
+    @Req() request: SecurityAuthenticatedRequest,
+    @Body() body: CreateListGermsDto,
+  ) {
+    const actorUserId = getSecurityAuditActorUserId(request);
+    return this.list_germsService.createListGerms(
+      body,
+      actorUserId ?? undefined,
+    );
   }
 
   @UseGuards(JwtUserGuard)
   @Patch(':id')
-  updateGerm(
+  async updateListGerms(
+    @Req() request: SecurityAuthenticatedRequest,
     @Param('id', ParseIntPipe) id: number,
-    @Body() germ: UpdateList_germsDto,
+    @Body() body: UpdateListGermsDto,
   ) {
-    return this.listGermsService.updateGerm(id, germ);
+    const actorUserId = getSecurityAuditActorUserId(request);
+    if (actorUserId === null) {
+      throw new ForbiddenException('AUTHORIZATION_CONTEXT_UNAVAILABLE');
+    }
+    const userId = actorUserId;
+
+    const requiredPermissions: string[] = [];
+
+    if (body && typeof body === 'object' && !Array.isArray(body)) {
+      if (Object.prototype.hasOwnProperty.call(body, 'germen')) {
+        requiredPermissions.push('germs.update');
+      }
+
+      if (Object.prototype.hasOwnProperty.call(body, 'annulled')) {
+        requiredPermissions.push('germs.change-status');
+      }
+    }
+
+    if (requiredPermissions.length > 0) {
+      const authorized = await this.authorizationService.hasAllPermissions(
+        userId,
+        requiredPermissions,
+      );
+
+      if (!authorized) {
+        throw new ForbiddenException('GERM_PERMISSION_REQUIRED');
+      }
+    }
+
+    return this.list_germsService.updateListGerms(
+      id,
+      body,
+      actorUserId,
+    );
   }
 }

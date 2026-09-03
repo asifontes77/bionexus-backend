@@ -1,3 +1,3 @@
-export class CreateList_germsDto {
+export class CreateListGermsDto {
   germen: string;
 }

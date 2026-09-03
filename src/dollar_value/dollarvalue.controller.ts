@@ -21,7 +21,7 @@ export class DollarvalueController {
   @Get('/get/')
   async getDollarvalue() {
     const rowTmp = await this.dollarvalueService.getDollarvalue();
-    const row = JSON.parse(JSON.stringify(rowTmp))[0];
+    const row = structuredClone(rowTmp)[0];
     return row;
   }
 
