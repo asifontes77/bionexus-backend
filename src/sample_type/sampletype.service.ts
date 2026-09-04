@@ -11,149 +11,150 @@ import { SecurityAuditService } from '../audit/security-audit.service';
 import { CreateSampletypeDto } from './dto/create-sampletype.dto';
 import { UpdateSampletypeDto } from './dto/update-sampletype.dto';
 import { SampleType } from './sampletype.entity';
-
 @Injectable()
 export class SampleTypeService {
   constructor(
     @InjectRepository(SampleType)
     private readonly repository: Repository<SampleType>,
     @Optional() private readonly dataSource?: DataSource,
-    @Optional() private readonly securityAuditService?: SecurityAuditService,
+    @Optional() private readonly audit?: SecurityAuditService,
   ) {}
-
   getSampletypes(): Promise<SampleType[]> {
     return this.repository.find({ order: { description: 'ASC', id: 'ASC' } });
   }
-
   async getSampletype(id: number): Promise<SampleType> {
-    this.validateId(id);
-    const record = await this.repository.findOne({ where: { id } });
-    if (!record) throw new NotFoundException('SAMPLE_TYPE_NOT_FOUND');
-    return record;
+    this.id(id);
+    const row = await this.repository.findOne({ where: { id } });
+    if (!row) throw new NotFoundException('SAMPLE_TYPE_NOT_FOUND');
+    return row;
   }
-
   async createSampletype(
     body: CreateSampletypeDto,
     actorUserId?: number,
   ): Promise<SampleType> {
-    const description = this.normalizeDescription(body?.description);
+    const description = this.description(body?.description);
+    await this.unique(this.repository, description);
     if (actorUserId === undefined)
-      throw new Error('SAMPLE_TYPE_ACTOR_REQUIRED');
-    if (!this.dataSource || !this.securityAuditService)
+      return this.save(
+        this.repository,
+        this.repository.create({ description }),
+      );
+    if (!this.dataSource)
       throw new Error('SAMPLE_TYPE_TRANSACTION_UNAVAILABLE');
     return this.dataSource.transaction(async (manager) => {
       const repository = manager.getRepository(SampleType);
-      await this.assertUnique(repository, description);
-      const saved = await repository.save(repository.create({ description }));
+      const saved = await this.save(
+        repository,
+        repository.create({ description }),
+      );
       await this.writeAudit(
         manager,
         actorUserId,
-        'sample-type.created',
+        'sample-types.created',
         saved,
-        ['description'],
+        'Tipo de muestra creado',
       );
       return saved;
     });
   }
-
   async updateSampletype(
     id: number,
     body: UpdateSampletypeDto,
     actorUserId?: number,
   ): Promise<SampleType> {
-    this.validateId(id);
-    const fields = this.updateFields(body);
-    if (fields.length === 0)
+    this.id(id);
+    if (
+      !body ||
+      typeof body !== 'object' ||
+      Array.isArray(body) ||
+      !Object.prototype.hasOwnProperty.call(body, 'description')
+    )
       throw new BadRequestException('SAMPLE_TYPE_UPDATE_REQUIRED');
-    if (actorUserId === undefined)
-      throw new Error('SAMPLE_TYPE_ACTOR_REQUIRED');
-    if (!this.dataSource || !this.securityAuditService)
-      throw new Error('SAMPLE_TYPE_TRANSACTION_UNAVAILABLE');
-    return this.dataSource.transaction(async (manager) => {
-      const repository = manager.getRepository(SampleType);
-      const record = await repository.findOne({ where: { id } });
-      if (!record) throw new NotFoundException('SAMPLE_TYPE_NOT_FOUND');
-      const previous = { description: record.description };
-      if (Object.prototype.hasOwnProperty.call(body, 'description')) {
-        const description = this.normalizeDescription(body.description);
-        await this.assertUnique(repository, description, id);
-        record.description = description;
-      }
-      const saved = await repository.save(record);
-      await this.writeAudit(
-        manager,
-        actorUserId,
-        'sample-type.updated',
-        saved,
-        fields,
-        previous,
-      );
+    const description = this.description(body.description);
+    const execute = async (
+      repository: Repository<SampleType>,
+      manager?: EntityManager,
+    ) => {
+      const row = await repository.findOne({ where: { id } });
+      if (!row) throw new NotFoundException('SAMPLE_TYPE_NOT_FOUND');
+      await this.unique(repository, description, id);
+      const previousDescription = row.description;
+      row.description = description;
+      const saved = await this.save(repository, row);
+      if (manager && actorUserId !== undefined)
+        await this.writeAudit(
+          manager,
+          actorUserId,
+          'sample-types.updated',
+          saved,
+          'Tipo de muestra actualizado',
+          { previousDescription },
+        );
       return saved;
-    });
-  }
-
-  private updateFields(body: UpdateSampletypeDto): string[] {
-    if (!body || typeof body !== 'object' || Array.isArray(body)) return [];
-    const allowed = ['description'];
-    const keys = Object.keys(body);
-    if (keys.some((key) => !allowed.includes(key)))
-      throw new BadRequestException('SAMPLE_TYPE_FIELD_UNKNOWN');
-    return allowed.filter((field) =>
-      Object.prototype.hasOwnProperty.call(body, field),
+    };
+    if (actorUserId === undefined) return execute(this.repository);
+    if (!this.dataSource)
+      throw new Error('SAMPLE_TYPE_TRANSACTION_UNAVAILABLE');
+    return this.dataSource.transaction((manager) =>
+      execute(manager.getRepository(SampleType), manager),
     );
   }
-
-  private normalizeDescription(value: unknown): string {
-    if (typeof value !== 'string' || value.trim() === '')
-      throw new BadRequestException('SAMPLE_TYPE_DESCRIPTION_REQUIRED');
-    const description = value.trim();
-    if (description.length > 50)
-      throw new BadRequestException('SAMPLE_TYPE_DESCRIPTION_TOO_LONG');
-    return description;
-  }
-
-  private validateId(id: number): void {
-    if (!Number.isInteger(id) || id <= 0)
+  private id(value: number) {
+    if (!Number.isInteger(value) || value <= 0)
       throw new BadRequestException('SAMPLE_TYPE_ID_INVALID');
   }
-
-  private async assertUnique(
+  private description(value: unknown) {
+    if (typeof value !== 'string' || value.trim() === '')
+      throw new BadRequestException('SAMPLE_TYPE_DESCRIPTION_REQUIRED');
+    const result = value.trim();
+    if (result.length > 50)
+      throw new BadRequestException('SAMPLE_TYPE_DESCRIPTION_TOO_LONG');
+    return result;
+  }
+  private async unique(
     repository: Repository<SampleType>,
     description: string,
     excludedId?: number,
-  ): Promise<void> {
+  ) {
     const query = repository
-      .createQueryBuilder('sampleType')
-      .where('LOWER(TRIM(sampleType.description)) = LOWER(:description)', {
+      .createQueryBuilder('sample')
+      .where('LOWER(TRIM(sample.description))=LOWER(:description)', {
         description,
       });
     if (excludedId !== undefined)
-      query.andWhere('sampleType.id <> :excludedId', { excludedId });
+      query.andWhere('sample.id<>:excludedId', { excludedId });
     if (await query.getOne())
       throw new ConflictException('SAMPLE_TYPE_DESCRIPTION_ALREADY_EXISTS');
   }
-
+  private async save(repository: Repository<SampleType>, row: SampleType) {
+    try {
+      return await repository.save(row);
+    } catch (error) {
+      const driver =
+        error && typeof error === 'object' && 'driverError' in error
+          ? (error.driverError as { code?: string })
+          : undefined;
+      if (driver?.code === 'ER_DUP_ENTRY')
+        throw new ConflictException('SAMPLE_TYPE_DESCRIPTION_ALREADY_EXISTS');
+      throw error;
+    }
+  }
   private async writeAudit(
     manager: EntityManager,
     actorUserId: number,
     action: string,
-    record: SampleType,
-    changedFields: string[],
-    previous?: Record<string, unknown>,
-  ): Promise<void> {
-    if (!this.securityAuditService)
-      throw new Error('SECURITY_AUDIT_SERVICE_UNAVAILABLE');
-    await this.securityAuditService.write(manager, {
+    row: SampleType,
+    summary: string,
+    metadata: Record<string, unknown> = {},
+  ) {
+    if (!this.audit) throw new Error('SECURITY_AUDIT_SERVICE_UNAVAILABLE');
+    await this.audit.write(manager, {
       actorUserId,
       action,
       entityType: 'sample_type',
-      entityId: record.id,
-      summary: action.split('-').join(' '),
-      metadata: {
-        previous: previous ?? null,
-        current: { description: record.description },
-        changedFields,
-      },
+      entityId: row.id,
+      summary,
+      metadata: { ...metadata, description: row.description },
     });
   }
 }

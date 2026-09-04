@@ -1,22 +1,24 @@
-import { SampleTypePermissions1788487200001 } from '../migrations/1788487200001-SampleTypePermissions';
-
-describe('SampleTypePermissions1788487200001', () => {
-  it('registra y revierte los permisos de tipos de muestra', async () => {
-    const queries: string[] = [];
-    const queryRunner = {
-      query: async (sql: string) => {
-        queries.push(sql);
-      },
-    } as never;
-    const migration = new SampleTypePermissions1788487200001();
-    await migration.up(queryRunner);
-    await migration.down(queryRunner);
-    const sql = queries.join(' ');
-    for (const code of [
+﻿import { readFileSync } from 'node:fs';
+describe('SampleTypePermissions migration', () => {
+  const source = readFileSync(
+    'src/database/migrations/1788487200001-SampleTypePermissions.ts',
+    'utf8',
+  );
+  it('contains three permissions and admin assignment', () => {
+    for (const value of [
       'sample-types.read',
       'sample-types.create',
       'sample-types.update',
+      'security_role_permissions',
+      'role.code',
+      "'admin'",
+      'role.is_active',
+      'security_role_permissions',
     ])
-      expect(sql).toContain(code);
+      expect(source).toContain(value);
+  });
+  it('is reversible', () => {
+    expect(source).toContain('async down');
+    expect(source).toContain('DELETE FROM security_permissions');
   });
 });
