@@ -1,5 +1,6 @@
 export class CreateGroup_ht_itemsDto {
-  gruopHtId: number;
+  groupHtId?: number;
+  gruopHtId?: number;
   examId: number;
   description: string;
 }
