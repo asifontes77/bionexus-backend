@@ -1,65 +1,25 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { special_test_items } from './special_test_items.entity';
-import { Repository } from 'typeorm';
+import { DataSource, EntityManager, Not, Repository } from 'typeorm';
+import { SecurityAuditService } from '../audit/security-audit.service';
+import { Examlists } from '../exam_lists/examlists.entity';
+import { special_test_lab } from '../special_test_lab/special_test_lab.entity';
 import { CreateSpecialTestItemsDto } from './dto/create-special_test_itms.dto';
 import { updateSpecialTestItemsDto } from './dto/update-special_test_itms.dto';
+import { special_test_items } from './special_test_items.entity';
 
 @Injectable()
 export class SpecialTestItemsService {
-  constructor(
-    @InjectRepository(special_test_items)
-    private specialTestItemsRepository: Repository<special_test_items>,
-  ) {}
-
-  async createSpecialTestItems(test: CreateSpecialTestItemsDto): Promise<any> {
-    return this.specialTestItemsRepository.save(test);
-  }
-
-  async getSpecialTestItemsList() {
-    return this.specialTestItemsRepository.find();
-  }
-
-  async getSpecialTestItems(id: number) {
-    const itemsFound = await this.specialTestItemsRepository.findOne({
-      where: {
-        id,
-      },
-    });
-    if (!itemsFound) {
-      return new HttpException(
-        'Item de laboratorio no encontrado',
-        HttpStatus.NOT_FOUND,
-      );
-    }
-    return itemsFound;
-  }
-
-  async updateSpecialTestItems(
-    id: number,
-    laboratory: updateSpecialTestItemsDto,
-  ) {
-    const itemsFound = await this.specialTestItemsRepository.findOne({
-      where: {
-        id,
-      },
-    });
-    if (!itemsFound) {
-      return new HttpException(
-        'Item de laboratorio no encontrado',
-        HttpStatus.NOT_FOUND,
-      );
-    }
-    const updateLaboratorio = Object.assign(itemsFound, laboratory);
-    return this.specialTestItemsRepository.save(updateLaboratorio);
-  }
-
-  async deleteTestItems(id: number) {
-    const result = await this.specialTestItemsRepository.delete({ id });
-    if (result.affected === 0) {
-      return new HttpException('Grupo no encontrado', HttpStatus.NOT_FOUND);
-    }
-
-    return result;
-  }
+  constructor(@InjectRepository(special_test_items) private readonly repository: Repository<special_test_items>, private readonly dataSource?: DataSource, private readonly audit?: SecurityAuditService) {}
+  getSpecialTestItemsList() { return this.repository.find({ order: { description: 'ASC' } }); }
+  async getSpecialTestItems(id: number) { this.assertId(id, 'SPECIAL_TEST_ITEM_ID_INVALID'); const found = await this.repository.findOne({ where: { id } }); if (!found) throw new NotFoundException('SPECIAL_TEST_ITEM_NOT_FOUND'); return found; }
+  async createSpecialTestItems(input: CreateSpecialTestItemsDto, actorUserId?: number) { const values = this.normalize(input, true); return this.write(actorUserId, async (manager) => { const repository = manager ? manager.getRepository(special_test_items) : this.repository; if (manager) await this.assertReferences(manager, values.specialTestLabId!, values.exam_list_Id!); await this.assertUnique(repository, values.specialTestLabId!, values.exam_list_Id!); const saved = await repository.save(repository.create(values)); if (manager) await this.writeAudit(manager, actorUserId!, 'special-test-items.created', saved.id, { specialTestLabId: saved.specialTestLabId, examListId: saved.exam_list_Id }); return saved; }); }
+  async updateSpecialTestItems(id: number, input: updateSpecialTestItemsDto, actorUserId?: number) { this.assertId(id, 'SPECIAL_TEST_ITEM_ID_INVALID'); const changes = this.normalize(input, false); return this.write(actorUserId, async (manager) => { const repository = manager ? manager.getRepository(special_test_items) : this.repository; const found = await repository.findOne({ where: { id } }); if (!found) throw new NotFoundException('SPECIAL_TEST_ITEM_NOT_FOUND'); const labId = changes.specialTestLabId ?? found.specialTestLabId; const examId = changes.exam_list_Id ?? found.exam_list_Id; if (manager) await this.assertReferences(manager, labId, examId); await this.assertUnique(repository, labId, examId, id); Object.assign(found, changes); const saved = await repository.save(found); if (manager) await this.writeAudit(manager, actorUserId!, 'special-test-items.updated', saved.id, { changedFields: Object.keys(changes) }); return saved; }); }
+  async deleteTestItems(id: number, actorUserId?: number) { this.assertId(id, 'SPECIAL_TEST_ITEM_ID_INVALID'); return this.write(actorUserId, async (manager) => { const repository = manager ? manager.getRepository(special_test_items) : this.repository; const found = await repository.findOne({ where: { id } }); if (!found) throw new NotFoundException('SPECIAL_TEST_ITEM_NOT_FOUND'); await repository.remove(found); if (manager) await this.writeAudit(manager, actorUserId!, 'special-test-items.deleted', id, { specialTestLabId: found.specialTestLabId, examListId: found.exam_list_Id }); return { deleted: true, id }; }); }
+  private normalize(input: CreateSpecialTestItemsDto | updateSpecialTestItemsDto, create: boolean): Partial<special_test_items> { if (!input || typeof input !== 'object' || Array.isArray(input)) throw new BadRequestException('SPECIAL_TEST_ITEM_PAYLOAD_REQUIRED'); const allowed = ['specialTestLabId', 'exam_list_Id', 'description']; if (Object.keys(input).some((key) => !allowed.includes(key))) throw new BadRequestException('SPECIAL_TEST_ITEM_FIELD_UNKNOWN'); const out: Partial<special_test_items> = {}; const has = (field: string) => Object.prototype.hasOwnProperty.call(input, field) && (input as Record<string, unknown>)[field] !== undefined; for (const field of ['specialTestLabId', 'exam_list_Id'] as const) { if (create || has(field)) { const value = input[field]; this.assertId(value, field === 'specialTestLabId' ? 'SPECIAL_TEST_LAB_ID_INVALID' : 'SPECIAL_TEST_EXAM_ID_INVALID'); out[field] = value; } } if (create || has('description')) { if (typeof input.description !== 'string' || !input.description.trim()) throw new BadRequestException('SPECIAL_TEST_ITEM_DESCRIPTION_REQUIRED'); out.description = input.description.trim(); if (out.description.length > 60) throw new BadRequestException('SPECIAL_TEST_ITEM_DESCRIPTION_TOO_LONG'); } if (!create && !Object.keys(out).length) throw new BadRequestException('SPECIAL_TEST_ITEM_UPDATE_REQUIRED'); return out; }
+  private assertId(value: unknown, code: string): asserts value is number { if (!Number.isInteger(value) || Number(value) <= 0) throw new BadRequestException(code); }
+  private async assertReferences(manager: EntityManager, labId: number, examId: number) { if (!await manager.getRepository(special_test_lab).findOne({ where: { id: labId } })) throw new BadRequestException('SPECIAL_TEST_LAB_NOT_FOUND'); if (!await manager.getRepository(Examlists).findOne({ where: { id: examId } })) throw new BadRequestException('SPECIAL_TEST_EXAM_NOT_FOUND'); }
+  private async assertUnique(repository: Repository<special_test_items>, labId: number, examId: number, id?: number) { if (await repository.findOne({ where: { specialTestLabId: labId, exam_list_Id: examId, ...(id ? { id: Not(id) } : {}) } })) throw new ConflictException('SPECIAL_TEST_ITEM_ALREADY_EXISTS'); }
+  private write<T>(actorUserId: number | undefined, action: (manager?: EntityManager) => Promise<T>) { if (actorUserId === undefined) return action(); this.assertId(actorUserId, 'SPECIAL_TEST_ITEM_ACTOR_REQUIRED'); if (!this.dataSource || !this.audit) throw new Error('SPECIAL_TEST_ITEM_AUDIT_UNAVAILABLE'); return this.dataSource.transaction((manager) => action(manager)); }
+  private writeAudit(manager: EntityManager, actorUserId: number, action: string, entityId: number, metadata: Record<string, unknown>) { return this.audit!.write(manager, { actorUserId, action, entityType: 'special_test_item', entityId, summary: 'Item de prueba especial actualizado', metadata }); }
 }

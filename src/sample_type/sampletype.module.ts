@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { SecurityAuditModule } from '../audit/security-audit.module';
 import { AuthorizationModule } from '../authorization/authorization.module';
 import { UsersModule } from '../users/users.module';
 import { SampletypeController } from './sampletype.controller';
@@ -10,6 +11,7 @@ import { SampleTypeService } from './sampletype.service';
     TypeOrmModule.forFeature([SampleType]),
     UsersModule,
     AuthorizationModule,
+    SecurityAuditModule,
   ],
   controllers: [SampletypeController],
   providers: [SampleTypeService],

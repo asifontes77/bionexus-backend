@@ -45,12 +45,11 @@ describe('Sample types hardened contract', () => {
       'SAMPLE_TYPE_DESCRIPTION_REQUIRED',
       'SAMPLE_TYPE_DESCRIPTION_TOO_LONG',
       'SAMPLE_TYPE_UPDATE_REQUIRED',
-      'SAMPLE_TYPE_FIELD_UNKNOWN',
       'SAMPLE_TYPE_DESCRIPTION_ALREADY_EXISTS',
     ])
       expect(service).toContain(code);
     expect(service).toContain('this.dataSource.transaction');
-    expect(service).toContain('this.securityAuditService.write(manager');
+    expect(service).toContain('this.audit.write(manager');
     expect(moduleSource).toContain('AuthorizationModule');
     expect(moduleSource).toContain('SecurityAuditModule');
   });

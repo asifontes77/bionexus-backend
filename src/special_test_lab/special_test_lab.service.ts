@@ -1,62 +1,87 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { special_test_lab } from './special_test_lab.entity';
-import { Repository } from 'typeorm';
+import { DataSource, EntityManager, Not, Repository } from 'typeorm';
+import { SecurityAuditService } from '../audit/security-audit.service';
 import { CreateSpecialTestLabDto } from './dto/create-special_test_lab.dto';
 import { UpdateSpecialTestLabDto } from './dto/update-special_test_lab.dto';
+import { special_test_lab } from './special_test_lab.entity';
 
 @Injectable()
 export class SpecialTestLabService {
-  constructor(
-    @InjectRepository(special_test_lab)
-    private specialTestLabRepository: Repository<special_test_lab>,
-  ) {}
+  constructor(@InjectRepository(special_test_lab) private readonly repository: Repository<special_test_lab>, private readonly dataSource?: DataSource, private readonly audit?: SecurityAuditService) {}
 
-  async createSpecialTestLab(
-    laboratory: CreateSpecialTestLabDto,
-  ): Promise<any> {
-    return this.specialTestLabRepository.save(laboratory);
-  }
-
-  async getSpecialTestLabList() {
-    return this.specialTestLabRepository.find({
-      relations: {
-        specialTestItems: true,
-      }, // Carga la relación OneToMany
-    });
-  }
+  getSpecialTestLabList() { return this.repository.find({ relations: { specialTestItems: true }, order: { description: 'ASC' } }); }
 
   async getSpecialTestLab(id: number) {
-    const laboratoryFound = await this.specialTestLabRepository.findOne({
-      where: {
-        id,
-      },
-      relations: {
-        specialTestItems: true,
-      },
-    });
-    if (!laboratoryFound) {
-      return new HttpException(
-        'Laboratorio no encontrado',
-        HttpStatus.NOT_FOUND,
-      );
-    }
-    return laboratoryFound;
+    this.assertId(id);
+    const record = await this.repository.findOne({ where: { id }, relations: { specialTestItems: true } });
+    if (!record) throw new NotFoundException('SPECIAL_TEST_NOT_FOUND');
+    return record;
   }
 
-  async updateSpecialTestLab(id: number, laboratory: UpdateSpecialTestLabDto) {
-    const laboratoryFound = await this.specialTestLabRepository.findOne({
-      where: {
-        id,
-      },
+  async createSpecialTestLab(input: CreateSpecialTestLabDto, actorUserId?: number) {
+    const values = this.normalizeCreate(input);
+    return this.write(actorUserId, async (manager) => {
+      const repository = manager ? manager.getRepository(special_test_lab) : this.repository;
+      await this.assertUnique(repository, values.description);
+      const saved = await repository.save(repository.create({ ...values, annulled: false }));
+      if (manager) await this.writeAudit(manager, actorUserId!, 'special-tests.created', saved.id, { changedFields: Object.keys(values) });
+      return saved;
     });
-    if (!laboratoryFound) {
-      return new HttpException(
-        'Laboratorio no encontrado',
-        HttpStatus.NOT_FOUND,
-      );
-    }
-    const updateLaboratorio = Object.assign(laboratoryFound, laboratory);
-    return this.specialTestLabRepository.save(updateLaboratorio);
   }
+
+  async updateSpecialTestLab(id: number, input: UpdateSpecialTestLabDto, actorUserId?: number) {
+    this.assertId(id);
+    const changes = this.normalizeUpdate(input);
+    return this.write(actorUserId, async (manager) => {
+      const repository = manager ? manager.getRepository(special_test_lab) : this.repository;
+      const record = await repository.findOne({ where: { id } });
+      if (!record) throw new NotFoundException('SPECIAL_TEST_NOT_FOUND');
+      if (changes.description !== undefined) await this.assertUnique(repository, changes.description, id);
+      const previousAnnulled = Boolean(record.annulled);
+      Object.assign(record, changes);
+      const saved = await repository.save(record);
+      if (manager) {
+        const action = changes.annulled === undefined || changes.annulled === previousAnnulled ? 'special-tests.updated' : changes.annulled ? 'special-tests.deactivated' : 'special-tests.activated';
+        await this.writeAudit(manager, actorUserId!, action, saved.id, { changedFields: Object.keys(changes), previousAnnulled });
+      }
+      return saved;
+    });
+  }
+
+  private normalizeCreate(input: CreateSpecialTestLabDto) {
+    this.assertObject(input);
+    this.assertKnown(input, ['description', 'address', 'phone_1', 'phone_2', 'email']);
+    return {
+      description: this.text(input.description, 60, 'DESCRIPTION', true),
+      address: this.text(input.address, 255, 'ADDRESS', false),
+      phone_1: this.phone(input.phone_1, 'PHONE_1'),
+      phone_2: this.phone(input.phone_2, 'PHONE_2'),
+      email: this.email(input.email),
+    };
+  }
+
+  private normalizeUpdate(input: UpdateSpecialTestLabDto): Partial<special_test_lab> {
+    this.assertObject(input); this.assertKnown(input, ['description', 'address', 'phone_1', 'phone_2', 'email', 'annulled']);
+    const out: Partial<special_test_lab> = {};
+    const has = (field: string) => Object.prototype.hasOwnProperty.call(input, field) && (input as Record<string, unknown>)[field] !== undefined;
+    if (has('description')) out.description = this.text(input.description, 60, 'DESCRIPTION', true);
+    if (has('address')) out.address = this.text(input.address, 255, 'ADDRESS', false);
+    if (has('phone_1')) out.phone_1 = this.phone(input.phone_1, 'PHONE_1');
+    if (has('phone_2')) out.phone_2 = this.phone(input.phone_2, 'PHONE_2');
+    if (has('email')) out.email = this.email(input.email);
+    if (has('annulled')) { if (typeof input.annulled !== 'boolean') throw new BadRequestException('SPECIAL_TEST_ANNULLED_INVALID'); out.annulled = input.annulled; }
+    if (!Object.keys(out).length) throw new BadRequestException('SPECIAL_TEST_UPDATE_REQUIRED');
+    return out;
+  }
+
+  private assertObject(value: unknown) { if (!value || typeof value !== 'object' || Array.isArray(value)) throw new BadRequestException('SPECIAL_TEST_PAYLOAD_REQUIRED'); }
+  private assertKnown(value: object, allowed: string[]) { if (Object.keys(value).some((key) => !allowed.includes(key))) throw new BadRequestException('SPECIAL_TEST_FIELD_UNKNOWN'); }
+  private text(value: unknown, max: number, field: string, required: boolean) { if (typeof value !== 'string' || (required && !value.trim())) throw new BadRequestException(`SPECIAL_TEST_${field}_REQUIRED`); const result = value.trim(); if (result.length > max) throw new BadRequestException(`SPECIAL_TEST_${field}_TOO_LONG`); return result; }
+  private phone(value: unknown, field: string) { const result = this.text(value, 30, field, false); if (result && !/^[+0-9() .-]+$/.test(result)) throw new BadRequestException(`SPECIAL_TEST_${field}_INVALID`); return result; }
+  private email(value: unknown) { const result = this.text(value, 100, 'EMAIL', false).toLowerCase(); if (result && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(result)) throw new BadRequestException('SPECIAL_TEST_EMAIL_INVALID'); return result; }
+  private assertId(id: number) { if (!Number.isInteger(id) || id <= 0) throw new BadRequestException('SPECIAL_TEST_ID_INVALID'); }
+  private async assertUnique(repository: Repository<special_test_lab>, description: string, id?: number) { const existing = await repository.findOne({ where: { description, ...(id ? { id: Not(id) } : {}) } }); if (existing) throw new ConflictException('SPECIAL_TEST_DESCRIPTION_ALREADY_EXISTS'); }
+  private write<T>(actorUserId: number | undefined, action: (manager?: EntityManager) => Promise<T>) { if (actorUserId === undefined) return action(); if (!Number.isInteger(actorUserId) || actorUserId <= 0) throw new BadRequestException('SPECIAL_TEST_ACTOR_REQUIRED'); if (!this.dataSource || !this.audit) throw new Error('SPECIAL_TEST_AUDIT_UNAVAILABLE'); return this.dataSource.transaction((manager) => action(manager)); }
+  private writeAudit(manager: EntityManager, actorUserId: number, action: string, entityId: number, metadata: Record<string, unknown>) { return this.audit!.write(manager, { actorUserId, action, entityType: 'special_test_lab', entityId, summary: 'Prueba especial actualizada', metadata }); }
 }
