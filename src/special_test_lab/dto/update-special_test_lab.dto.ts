@@ -1,5 +1,6 @@
-export class UpdateSpecialTestLabDto {
+﻿export class UpdateSpecialTestLabDto {
   description?: string;
+  details?: string;
   address?: string;
   phone_1?: string;
   phone_2?: string;
