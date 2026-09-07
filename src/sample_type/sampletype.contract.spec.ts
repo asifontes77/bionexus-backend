@@ -20,7 +20,7 @@ describe('Sample types hardened contract', () => {
       root,
       'database',
       'migrations',
-      process.env.SAMPLE_TYPE_MIGRATION_FILE || '__missing__',
+      process.env.SAMPLE_TYPE_MIGRATION_FILE || '1788487200001-SampleTypePermissions.ts',
     ),
     'utf8',
   );
