@@ -210,6 +210,21 @@ export class PatientsController {
   }
 
   @UseGuards(JwtUserGuard)
+
+
+  @Get('/search')
+
+
+  searchPatients(@Query('q') query: string, @Query('limit') limit?: string) {
+
+
+    return this.patienService.searchPatients(query, Number(limit));
+
+
+  }
+
+
+  @UseGuards(JwtUserGuard)
   @Get('/ci/:ci')
   getPatientsCI(@Param('ci') ci: string) {
     return this.patienService.getPatientsCI(ci);

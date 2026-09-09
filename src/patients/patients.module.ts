@@ -4,11 +4,12 @@ import { PatientsController } from './patients.controller';
 import { PatientsService } from './patients.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Patient } from './patients.entity';
+import { PatientProfile } from './patient-profile.entity';
 import { PatientResultsEmailHistory } from './patient-results-email-history.entity';
 import { LaboratoryModule } from 'src/laboratory/laboratory.module';
 
 @Module({
-  imports: [AuthorizationModule, TypeOrmModule.forFeature([Patient, PatientResultsEmailHistory]), LaboratoryModule],
+  imports: [AuthorizationModule, TypeOrmModule.forFeature([Patient, PatientProfile, PatientResultsEmailHistory]), LaboratoryModule],
   controllers: [PatientsController],
   providers: [PatientsService],
   exports: [PatientsService],
