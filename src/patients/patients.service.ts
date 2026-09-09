@@ -1,6 +1,7 @@
 import { BadRequestException, ConflictException, HttpException, HttpStatus, Injectable, Optional } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Patient } from './patients.entity';
+import { PatientProfile } from './patient-profile.entity';
 import { DataSource, Repository } from 'typeorm';
 import { createHash } from 'crypto';
 import { PatientResultsEmailHistory } from './patient-results-email-history.entity';
@@ -16,6 +17,7 @@ import { ThermalPrinter } from 'node-thermal-printer';
 export class PatientsService {
   constructor(
     @InjectRepository(Patient) private patientRepository: Repository<Patient>,
+    @InjectRepository(PatientProfile) private patientProfileRepository: Repository<PatientProfile>,
     private laboratoryService: LaboratoryService,
     @Optional() private readonly dataSource?: DataSource,
     @Optional() private readonly securityAuditService?: SecurityAuditService,
@@ -405,6 +407,42 @@ export class PatientsService {
     });
   }
 
+  async searchPatients(query: string, requestedLimit = 12) {
+    const term = String(query ?? '').trim();
+    if (term.length < 2) return [];
+
+    const limit = Number.isInteger(requestedLimit)
+      ? Math.min(Math.max(requestedLimit, 1), 20)
+      : 12;
+    const normalizedDocument = term.replace(/\D/g, '');
+    const search = this.patientProfileRepository
+      .createQueryBuilder('profile')
+      .select([
+        'profile.id',
+        'profile.name',
+        'profile.verification_code',
+        'profile.document_number',
+        'profile.birth_date',
+        'profile.sex',
+        'profile.phone',
+        'profile.email',
+        'profile.address',
+        'profile.identity_review_required',
+      ])
+      .where('profile.name LIKE :name', { name: `%${term}%` });
+
+    if (normalizedDocument.length > 0) {
+      search.orWhere('profile.normalized_document LIKE :document', {
+        document: `%${normalizedDocument}%`,
+      });
+    }
+
+    return search
+      .orderBy('profile.name', 'ASC')
+      .addOrderBy('profile.id', 'ASC')
+      .limit(limit)
+      .getMany();
+  }
   async getPatientsCI(ci: string) {
     const patientFound = this.patientRepository.findOne({
       where: {

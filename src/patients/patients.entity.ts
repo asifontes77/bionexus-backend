@@ -1,11 +1,17 @@
 import { Exam } from '../exams/exams.entity';
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import { Entity, Column, JoinColumn, ManyToOne, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import { PatientProfile } from './patient-profile.entity';
 
-@Entity({ name: 'patients' })
+@Entity({ name: 'patient_admissions' })
 export class Patient {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column('int')
+  patient_profile_id: number;
+  @ManyToOne(() => PatientProfile, (profile) => profile.admissions, { onDelete: 'RESTRICT', onUpdate: 'RESTRICT' })
+  @JoinColumn({ name: 'patient_profile_id' })
+  patientProfile: PatientProfile;
   @Column('int', { default: () => '0' })
   patient_position: number;
 
