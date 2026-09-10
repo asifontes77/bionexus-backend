@@ -1,4 +1,11 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+﻿import {
+  Entity,
+  Column,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { Tariff } from '../tariffs/tariff.entity';
 
 @Entity({ name: 'client' })
 export class Client {
@@ -31,6 +38,17 @@ export class Client {
 
   @Column({ type: 'smallint', default: 1 })
   tariff: number;
+
+  @Column('int', { name: 'tariff_id', nullable: true, default: null })
+  tariff_id: number | null;
+
+  @ManyToOne(() => Tariff, {
+    nullable: true,
+    onDelete: 'RESTRICT',
+    onUpdate: 'RESTRICT',
+  })
+  @JoinColumn({ name: 'tariff_id' })
+  tariffRelation: Tariff | null;
 
   @Column('tinyint', { default: 1 })
   credit: boolean;
