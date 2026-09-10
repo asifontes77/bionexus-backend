@@ -36,10 +36,12 @@ import { join } from 'path';
 import { NestFactory } from '@nestjs/core';
 import { resolveDatabaseOptions } from './database/database.config';
 import { ApplicationSettingsModule } from './application-settings/application-settings.module';
+import { TariffsModule } from './tariffs/tariffs.module';
 
 @Module({
   imports: [
     ApplicationSettingsModule,
+    TariffsModule,
     ConfigModule.forRoot({
       isGlobal: true,
     }),
