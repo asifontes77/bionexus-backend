@@ -54,6 +54,9 @@ export class Patient {
   @Column('int', { default: () => '0' })
   client_id: number;
 
+  @Column('int', { name: 'tariff_id', nullable: true, default: null })
+  tariff_id: number | null;
+
   @Column('tinyint', { default: () => '0' })
   process: boolean;
 

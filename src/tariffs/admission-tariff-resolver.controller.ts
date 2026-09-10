@@ -11,9 +11,10 @@ export class AdmissionTariffResolverController {
 
   @RequirePermissions('tariffs.read')
   @Get('resolve')
-  resolve(@Query('clientId', ParseIntPipe) clientId: number, @Query('examCatalogIds') rawIds?: string) {
+  resolve(@Query('clientId', ParseIntPipe) clientId: number, @Query('tariffId') rawTariffId?: string, @Query('examCatalogIds') rawIds?: string) {
+    const tariffId = rawTariffId === undefined || rawTariffId === '' ? undefined : Number(rawTariffId);
     const examCatalogIds = rawIds ? rawIds.split(',').filter(Boolean).map(Number) : [];
-    return this.service.resolve(clientId, examCatalogIds);
+    return this.service.resolve(clientId, tariffId, examCatalogIds);
   }
 }
 

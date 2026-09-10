@@ -14,7 +14,7 @@ describe('AdmissionTariffResolverService', () => {
 
   it('usa la tarifa predeterminada activa para Ambulatorio reservado', async () => {
     (tariffRepository.find as jest.Mock).mockResolvedValue([{ id: 9, code: 'PUBLIC', name: 'Publica', currencyCode: 'USD' }]);
-    await expect(service.resolve(1)).resolves.toMatchObject({ clientId: 1, ambulatory: true, tariff: { id: 9 } });
+    await expect(service.resolve(1, undefined)).resolves.toMatchObject({ clientId: 1, ambulatory: true, tariff: { id: 9 } });
     expect(clientRepository.findOne).not.toHaveBeenCalled();
   });
 
@@ -22,15 +22,22 @@ describe('AdmissionTariffResolverService', () => {
     (clientRepository.findOne as jest.Mock).mockResolvedValue({ id: 3, tariff_id: 7 });
     (tariffRepository.findOne as jest.Mock).mockResolvedValue({ id: 7, code: 'CORP', name: 'Corporativa', currencyCode: 'USD' });
     (priceRepository.find as jest.Mock).mockResolvedValue([{ examCatalogId: 10, tariffId: 7, price: 12.5, isActive: true }]);
-    await expect(service.resolve(3, [10])).resolves.toMatchObject({ tariff: { id: 7 }, prices: [{ examCatalogId: 10, price: 12.5 }] });
+    await expect(service.resolve(3, undefined, [10])).resolves.toMatchObject({ tariff: { id: 7 }, prices: [{ examCatalogId: 10, price: 12.5 }] });
+  });
+
+  it('permite una tarifa activa explicita independiente del referido', async () => {
+    (tariffRepository.findOne as jest.Mock).mockResolvedValue({ id: 8, code: 'ESPECIAL', name: 'Especial', currencyCode: 'USD', isActive: true });
+    (priceRepository.find as jest.Mock).mockResolvedValue([{ examCatalogId: 10, tariffId: 8, price: 22, isActive: true }]);
+    await expect(service.resolve(3, 8, [10])).resolves.toMatchObject({ tariff: { id: 8 }, prices: [{ examCatalogId: 10, price: 22 }] });
+    expect(clientRepository.findOne).not.toHaveBeenCalled();
   });
 
   it('rechaza ambiguedad y precio ausente', async () => {
     (tariffRepository.find as jest.Mock).mockResolvedValue([{ id: 1 }, { id: 2 }]);
-    await expect(service.resolve(1)).rejects.toThrow('ADMISSION_TARIFF_DEFAULT_AMBIGUOUS');
+    await expect(service.resolve(1, undefined)).rejects.toThrow('ADMISSION_TARIFF_DEFAULT_AMBIGUOUS');
     (clientRepository.findOne as jest.Mock).mockResolvedValue({ id: 3, tariff_id: 7 });
     (tariffRepository.findOne as jest.Mock).mockResolvedValue({ id: 7, isActive: true });
     (priceRepository.find as jest.Mock).mockResolvedValue([]);
-    await expect(service.resolve(3, [10])).rejects.toThrow('ADMISSION_TARIFF_EXAM_PRICE_NOT_FOUND');
+    await expect(service.resolve(3, undefined, [10])).rejects.toThrow('ADMISSION_TARIFF_EXAM_PRICE_NOT_FOUND');
   });
 });

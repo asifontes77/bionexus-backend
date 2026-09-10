@@ -15,11 +15,11 @@ export class AdmissionTariffResolverService {
     @InjectRepository(ExamTariffPrice) private readonly priceRepository: Repository<ExamTariffPrice>,
   ) {}
 
-  async resolve(clientId: number, examCatalogIds: number[] = []) {
+  async resolve(clientId: number, tariffId?: number, examCatalogIds: number[] = []) {
     if (!Number.isInteger(clientId) || clientId <= 0) throw new BadRequestException('ADMISSION_TARIFF_CLIENT_ID_INVALID');
-    const tariff = clientId === AdmissionTariffResolverService.AMBULATORY_CLIENT_ID
-      ? await this.getSingleDefaultTariff()
-      : await this.getClientTariff(clientId);
+    const tariff = tariffId === undefined
+      ? (clientId === AdmissionTariffResolverService.AMBULATORY_CLIENT_ID ? await this.getSingleDefaultTariff() : await this.getClientTariff(clientId))
+      : await this.getExplicitTariff(tariffId);
     const ids = this.normalizeExamIds(examCatalogIds);
     const prices = ids.length === 0 ? [] : await this.priceRepository.find({ where: { tariffId: tariff.id, examCatalogId: In(ids), isActive: true } });
     if (prices.length !== ids.length) throw new NotFoundException('ADMISSION_TARIFF_EXAM_PRICE_NOT_FOUND');
@@ -37,6 +37,13 @@ export class AdmissionTariffResolverService {
     if (defaults.length === 0) throw new NotFoundException('ADMISSION_TARIFF_DEFAULT_NOT_FOUND');
     if (defaults.length > 1) throw new BadRequestException('ADMISSION_TARIFF_DEFAULT_AMBIGUOUS');
     return defaults[0];
+  }
+
+  private async getExplicitTariff(tariffId: number): Promise<Tariff> {
+    if (!Number.isInteger(tariffId) || tariffId <= 0) throw new BadRequestException('ADMISSION_TARIFF_ID_INVALID');
+    const tariff = await this.tariffRepository.findOne({ where: { id: tariffId, isActive: true } });
+    if (!tariff) throw new NotFoundException('ADMISSION_TARIFF_INACTIVE_OR_NOT_FOUND');
+    return tariff;
   }
 
   private async getClientTariff(clientId: number): Promise<Tariff> {

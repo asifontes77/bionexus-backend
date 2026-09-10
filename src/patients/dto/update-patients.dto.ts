@@ -13,6 +13,7 @@
   urgent?: boolean;
   user_id_canceled?: number;
   client_id?: number;
+  tariff_id?: number;
   process?: boolean;
 
   birth_date?: Date;
