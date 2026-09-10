@@ -1,4 +1,4 @@
-export class UpdateApplicationSettingsDto {
+﻿export class UpdateApplicationSettingsDto {
   session_timeout_minutes?: number;
   inactivity_timeout_minutes?: number;
   countdown_seconds?: number;
@@ -9,6 +9,9 @@ export class UpdateApplicationSettingsDto {
   currency_code?: string;
   currency_symbol?: string;
   currency_symbol_position?: string;
+  financial_primary_currency?: string;
+  base_currency_symbol?: string;
+  base_currency_symbol_position?: string;
   monetary_decimals?: number;
   first_day_of_week?: string;
   decimal_separator?: string;

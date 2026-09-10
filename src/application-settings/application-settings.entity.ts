@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+﻿import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Laboratory } from '../laboratory/laboratory.entity';
 
 @Entity({ name: 'application_settings' })
@@ -17,6 +17,9 @@ export class ApplicationSettings {
   @Column({ type: 'varchar', length: 3, default: 'VES' }) currency_code: string;
   @Column({ type: 'varchar', length: 12, default: 'Bs.' }) currency_symbol: string;
   @Column({ type: 'varchar', length: 8, default: 'before' }) currency_symbol_position: string;
+  @Column({ type: 'varchar', length: 3, default: 'VES' }) financial_primary_currency: string;
+  @Column({ type: 'varchar', length: 12, default: 'USD' }) base_currency_symbol: string;
+  @Column({ type: 'varchar', length: 8, default: 'before' }) base_currency_symbol_position: string;
   @Column({ type: 'int', default: 2 }) monetary_decimals: number;
   @Column({ type: 'varchar', length: 8, default: 'monday' }) first_day_of_week: string;
   @Column({ type: 'varchar', length: 1, default: ',' }) decimal_separator: string;
