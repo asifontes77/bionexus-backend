@@ -37,11 +37,13 @@ import { NestFactory } from '@nestjs/core';
 import { resolveDatabaseOptions } from './database/database.config';
 import { ApplicationSettingsModule } from './application-settings/application-settings.module';
 import { TariffsModule } from './tariffs/tariffs.module';
+import { PatientAdmissionCloseModule } from './patient-admission-close/patient-admission-close.module';
 
 @Module({
   imports: [
     ApplicationSettingsModule,
     TariffsModule,
+    PatientAdmissionCloseModule,
     ConfigModule.forRoot({
       isGlobal: true,
     }),

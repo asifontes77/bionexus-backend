@@ -1,0 +1,11 @@
+import { PatientAdmissionCloseCatalogResolver } from './patient-admission-close-catalog.resolver';
+describe('PatientAdmissionCloseCatalogResolver',()=>{
+ const resolver=new PatientAdmissionCloseCatalogResolver();
+ const input=()=>({clientId:1,tariffId:2,patient:{name:'Paciente',age:30,ageUnit:'Años',sex:false,sample:'Tomada aquí'},exams:[{examCatalogId:7,quantity:1}],payments:[{typePaymentId:3,amount:10,currency:'BASE' as const,description1:'REF',description2:''}]});
+ function manager(options:any={}){const values:any={Client:options.client??{id:1,tariff_id:null},Tariff:options.tariff??{id:2,isActive:true},Examlists:options.exams??[{id:7,description:'Hemograma',group_id:1,position:1,tax_id:1}],ExamTariffPrice:options.prices??[{examCatalogId:7,tariffId:2,price:10,isActive:true}],Tax:options.taxes??[{id:1,description:'IVA',value:16}],TypePayment:options.types??[{id:3,annulled:false,only_dollars:false,description_1:'Referencia',description_2:''}]};return{getRepository:(entity:any)=>({findOne:jest.fn(async()=>values[entity.name]),find:jest.fn(async()=>values[entity.name])})} as never;}
+ it('resuelve precio impuesto y forma activa',async()=>expect(resolver.resolve(manager(),input() as never)).resolves.toMatchObject({exams:[{unitPrice:10,taxRate:16}],payments:[{typePaymentId:3}]}));
+ it('rechaza precio faltante',async()=>expect(resolver.resolve(manager({prices:[]}),input() as never)).rejects.toThrow('PATIENT_ADMISSION_CLOSE_PRICE_NOT_FOUND'));
+ it('rechaza forma inactiva',async()=>expect(resolver.resolve(manager({types:[{id:3,annulled:true,only_dollars:false,description_1:'',description_2:''}]}),input() as never)).rejects.toThrow('PATIENT_ADMISSION_CLOSE_PAYMENT_TYPE_INACTIVE'));
+ it('exige moneda base para only_dollars',async()=>{const value=input();value.payments[0].currency='LOCAL' as never;await expect(resolver.resolve(manager({types:[{id:3,annulled:false,only_dollars:true,description_1:'',description_2:''}]}),value as never)).rejects.toThrow('PATIENT_ADMISSION_CLOSE_PAYMENT_BASE_REQUIRED');});
+ it('exige referencias configuradas',async()=>{const value=input();value.payments[0].description1='';await expect(resolver.resolve(manager(),value as never)).rejects.toThrow('PATIENT_ADMISSION_CLOSE_PAYMENT_REFERENCE_1_REQUIRED');});
+});

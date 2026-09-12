@@ -21,7 +21,7 @@ describe('PatientsService results email candidates', () => {
     if (value !== getMany && typeof value === 'function') value.mockReturnValue(queryBuilder);
   });
   const repository = { createQueryBuilder: jest.fn().mockReturnValue(queryBuilder) } as unknown as Repository<Patient>;
-  const service = new PatientsService(repository, {} as never);
+  const service = new PatientsService(repository, {} as never, {} as never);
 
   beforeEach(() => jest.clearAllMocks());
 

@@ -19,7 +19,8 @@ type TariffWriteAction =
   | 'tariff.updated'
   | 'tariff.activated'
   | 'tariff.deactivated'
-  | 'tariff.default-set';
+  | 'tariff.default-set'
+  | 'tariffs.reordered';
 
 @Injectable()
 export class TariffsService {
@@ -139,6 +140,49 @@ export class TariffsService {
       return saved;
     });
   }
+  async reorder(idsValue: unknown, actorUserId?: number) {
+    const ids = this.normalizeOrderIds(idsValue);
+    return this.runWrite(actorUserId, async (manager) => {
+      const repository = manager.getRepository(Tariff);
+      const rows = await repository
+        .createQueryBuilder('tariff')
+        .setLock('pessimistic_write')
+        .orderBy('tariff.position', 'ASC')
+        .addOrderBy('tariff.id', 'ASC')
+        .getMany();
+      const current = rows.map((row) => row.id);
+      if (
+        ids.length !== current.length ||
+        ids.some((id) => !current.includes(id))
+      )
+        throw new BadRequestException('TARIFF_REORDER_SCOPE_INVALID');
+      if (ids.every((id, index) => id === current[index]))
+        return { updated: 0, ids };
+      const byId = new Map(rows.map((row) => [row.id, row]));
+      const temporaryPositionBase =
+        Math.max(0, ...rows.map((row) => Number(row.position) || 0)) +
+        rows.length +
+        1;
+      for (let index = 0; index < ids.length; index++) {
+        const row = byId.get(ids[index]);
+        if (!row) throw new BadRequestException('TARIFF_REORDER_SCOPE_INVALID');
+        row.position = temporaryPositionBase + index;
+        await repository.save(row);
+      }
+      for (let index = 0; index < ids.length; index++) {
+        const row = byId.get(ids[index]);
+        if (!row) throw new BadRequestException('TARIFF_REORDER_SCOPE_INVALID');
+        row.position = index + 1;
+        await repository.save(row);
+      }
+      await this.writeAudit(manager, actorUserId, 'tariffs.reordered', rows[0], {
+        before: current,
+        after: ids,
+      });
+      return { updated: ids.length, ids };
+    });
+  }
+
 
   async changeStatus(
     id: number,
@@ -318,6 +362,18 @@ export class TariffsService {
       throw new BadRequestException('TARIFF_DESCRIPTION_TOO_LONG');
     return description === '' ? null : description;
   }
+  private normalizeOrderIds(value: unknown): number[] {
+    if (!Array.isArray(value) || value.length === 0 || value.length > 500)
+      throw new BadRequestException('TARIFF_REORDER_IDS_INVALID');
+    const ids = value.map(Number);
+    if (
+      ids.some((id) => !Number.isInteger(id) || id <= 0) ||
+      new Set(ids).size !== ids.length
+    )
+      throw new BadRequestException('TARIFF_REORDER_IDS_INVALID');
+    return ids;
+  }
+
 
   private normalizePosition(value: unknown): number {
     const position = Number(value);

@@ -37,6 +37,18 @@ export class TariffsController {
   getActive() {
     return this.service.getActive();
   }
+  @RequirePermissions('tariffs.update')
+  @Patch('reorder')
+  reorder(
+    @Req() request: SecurityAuthenticatedRequest,
+    @Body() body: { ids?: unknown },
+  ) {
+    return this.service.reorder(
+      body?.ids,
+      getSecurityAuditActorUserId(request) ?? undefined,
+    );
+  }
+
 
   @RequirePermissions('tariffs.read')
   @Get(':id')
