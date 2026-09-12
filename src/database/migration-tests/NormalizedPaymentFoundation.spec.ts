@@ -83,4 +83,3 @@ describe('Normalized payment foundation migration', () => {
     expect(source.split('WHERE @restore_legacy_payment_catalog=1').length - 1).toBe(5);
   });
 });
-

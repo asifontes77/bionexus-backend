@@ -195,12 +195,3 @@ export class NormalizedPaymentFoundation1789257600000 implements MigrationInterf
       await queryRunner.query(`DROP TABLE currencies`);
   }
 }
-
-
-
-
-
-
-
-
-
