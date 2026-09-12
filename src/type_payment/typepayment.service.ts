@@ -1,221 +1,33 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-  Optional,
-} from '@nestjs/common';
+﻿import { BadRequestException, Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, EntityManager, Repository } from 'typeorm';
+import { DataSource, EntityManager, In, Not, Repository } from 'typeorm';
 import { SecurityAuditService } from '../audit/security-audit.service';
 import { CreateTypepaymantDto } from './dto/create-typepayment.dto';
 import { UpdateTypepaymantDto } from './dto/update-typepayment.dto';
+import { Currency } from './currency.entity';
+import { PaymentMethodCurrency } from './payment-method-currency.entity';
 import { TypePayment } from './typepayment.entity';
 
 @Injectable()
 export class TypePaymentService {
-  constructor(
-    @InjectRepository(TypePayment)
-    private readonly typePaymentRepository: Repository<TypePayment>,
-    @Optional() private readonly dataSource?: DataSource,
-    @Optional() private readonly securityAuditService?: SecurityAuditService,
-  ) {}
-
-  async getTypepayments(): Promise<TypePayment[]> {
-    return this.typePaymentRepository.find({
-      order: { description: 'ASC' },
-    });
-  }
-
-  async getTypepayment(id: number): Promise<TypePayment> {
-    this.validateId(id);
-    const record = await this.typePaymentRepository.findOne({ where: { id } });
-    if (!record) throw new NotFoundException('TYPEPAYMENT_NOT_FOUND');
-    return record;
-  }
-
-  async createTypepayment(
-    body: CreateTypepaymantDto,
-    actorUserId?: number,
-  ): Promise<TypePayment> {
-    const normalized = this.normalizeCreate(body);
-    if (actorUserId === undefined) {
-      await this.ensureDescriptionIsUnique(this.typePaymentRepository, normalized.description);
-      const record = this.typePaymentRepository.create(normalized);
-      return this.typePaymentRepository.save(record);
-    }
-    if (!this.dataSource) throw new Error('TYPEPAYMENT_TRANSACTION_UNAVAILABLE');
-    return this.dataSource.transaction(async (manager) => {
-      const repository = manager.getRepository(TypePayment);
-      await this.ensureDescriptionIsUnique(repository, normalized.description);
-      const saved = await repository.save(repository.create(normalized));
-      await this.writeAudit(manager, actorUserId, {
-        action: 'typepayment.created',
-        entityId: saved.id,
-        summary: 'Tipo de pago creado',
-        metadata: this.auditMetadata(saved, ['description', 'description_1', 'description_2', 'only_dollars']),
-      });
-      return saved;
-    });
-  }
-
-  async updateTypepayment(
-    id: number,
-    body: UpdateTypepaymantDto,
-    actorUserId?: number,
-  ): Promise<TypePayment> {
-    this.validateId(id);
-    const changedFields = this.getChangedFields(body);
-    if (changedFields.length === 0) {
-      throw new BadRequestException('TYPEPAYMENT_UPDATE_REQUIRED');
-    }
-    if (actorUserId === undefined) {
-      if (Object.prototype.hasOwnProperty.call(body, 'description')) {
-        const normalizedDescription = this.normalizeRequiredText(body.description, 'TYPEPAYMENT_DESCRIPTION_REQUIRED');
-        await this.ensureDescriptionIsUnique(this.typePaymentRepository, normalizedDescription, id);
-      }
-      return this.updateWithRepository(this.typePaymentRepository, id, body);
-    }
-    if (!this.dataSource) throw new Error('TYPEPAYMENT_TRANSACTION_UNAVAILABLE');
-    return this.dataSource.transaction(async (manager) => {
-      const repository = manager.getRepository(TypePayment);
-      const existing = await repository.findOne({ where: { id } });
-      if (!existing) throw new NotFoundException('TYPEPAYMENT_NOT_FOUND');
-      if (Object.prototype.hasOwnProperty.call(body, 'description')) {
-        const normalizedDescription = this.normalizeRequiredText(body.description, 'TYPEPAYMENT_DESCRIPTION_REQUIRED');
-        await this.ensureDescriptionIsUnique(repository, normalizedDescription, id);
-      }
-      const previous = this.auditMetadata(existing, changedFields);
-      const previousAnnulled = Boolean(existing.annulled);
-      const saved = await this.updateWithRepository(repository, id, body, existing);
-      const currentAnnulled = Boolean(saved.annulled);
-      const action = changedFields.includes('annulled') && previousAnnulled !== currentAnnulled
-        ? currentAnnulled
-          ? 'typepayment.deactivated'
-          : 'typepayment.activated'
-        : 'typepayment.updated';
-      const summary = action === 'typepayment.deactivated'
-        ? 'Tipo de pago inactivado'
-        : action === 'typepayment.activated'
-          ? 'Tipo de pago activado'
-          : 'Tipo de pago actualizado';
-      await this.writeAudit(manager, actorUserId, {
-        action,
-        entityId: saved.id,
-        summary,
-        metadata: {
-          previous,
-          current: this.auditMetadata(saved, changedFields),
-          changedFields,
-        },
-      });
-      return saved;
-    });
-  }
-
-  private async updateWithRepository(
-    repository: Repository<TypePayment>,
-    id: number,
-    body: UpdateTypepaymantDto,
-    existing?: TypePayment,
-  ): Promise<TypePayment> {
-    const record = existing ?? await repository.findOne({ where: { id } });
-    if (!record) throw new NotFoundException('TYPEPAYMENT_NOT_FOUND');
-    if (Object.prototype.hasOwnProperty.call(body, 'description')) {
-      record.description = this.normalizeRequiredText(body.description, 'TYPEPAYMENT_DESCRIPTION_REQUIRED');
-    }
-    if (Object.prototype.hasOwnProperty.call(body, 'description_1')) {
-      record.description_1 = this.normalizeOptionalText(body.description_1);
-    }
-    if (Object.prototype.hasOwnProperty.call(body, 'description_2')) {
-      record.description_2 = this.normalizeOptionalText(body.description_2);
-    }
-    if (Object.prototype.hasOwnProperty.call(body, 'only_dollars')) {
-      record.only_dollars = this.normalizeBoolean(body.only_dollars, 'TYPEPAYMENT_ONLY_DOLLARS_INVALID');
-    }
-    if (Object.prototype.hasOwnProperty.call(body, 'annulled')) {
-      record.annulled = this.normalizeBoolean(body.annulled, 'TYPEPAYMENT_ANNULLED_INVALID');
-    }
-    return repository.save(record);
-  }
-  private async ensureDescriptionIsUnique(
-    repository: Repository<TypePayment>,
-    description: string,
-    excludedId?: number,
-  ): Promise<void> {
-    const normalizedDescription = description.trim().toLocaleLowerCase();
-    const records = await repository.find({ select: { id: true, description: true } });
-    const duplicate = (records ?? []).some((record) =>
-      record.id !== excludedId &&
-      String(record.description ?? '').trim().toLocaleLowerCase() === normalizedDescription,
-    );
-    if (duplicate) {
-      throw new BadRequestException('TYPEPAYMENT_DESCRIPTION_ALREADY_EXISTS');
-    }
-  }
-
-
-  private normalizeCreate(body: CreateTypepaymantDto): Partial<TypePayment> {
-    return {
-      description: this.normalizeRequiredText(body?.description, 'TYPEPAYMENT_DESCRIPTION_REQUIRED'),
-      description_1: this.normalizeOptionalText(body?.description_1),
-      description_2: this.normalizeOptionalText(body?.description_2),
-      only_dollars: body?.only_dollars === undefined
-        ? false
-        : this.normalizeBoolean(body.only_dollars, 'TYPEPAYMENT_ONLY_DOLLARS_INVALID'),
-      annulled: false,
-    };
-  }
-
-  private getChangedFields(body: UpdateTypepaymantDto): string[] {
-    if (!body || typeof body !== 'object' || Array.isArray(body)) return [];
-    return ['description', 'description_1', 'description_2', 'only_dollars', 'annulled'].filter(
-      (field) => Object.prototype.hasOwnProperty.call(body, field),
-    );
-  }
-
-  private normalizeRequiredText(value: unknown, error: string): string {
-    if (typeof value !== 'string' || value.trim() === '') throw new BadRequestException(error);
-    if (value.trim().length > 50) throw new BadRequestException('TYPEPAYMENT_TEXT_TOO_LONG');
-    return value.trim();
-  }
-
-  private normalizeOptionalText(value: unknown): string {
-    if (value === undefined || value === null) return '';
-    if (typeof value !== 'string') throw new BadRequestException('TYPEPAYMENT_TEXT_INVALID');
-    if (value.trim().length > 50) throw new BadRequestException('TYPEPAYMENT_TEXT_TOO_LONG');
-    return value.trim();
-  }
-
-  private normalizeBoolean(value: unknown, error: string): boolean {
-    if (typeof value !== 'boolean') throw new BadRequestException(error);
-    return value;
-  }
-
-  private validateId(id: number): void {
-    if (!Number.isInteger(id) || id <= 0) throw new BadRequestException('TYPEPAYMENT_ID_INVALID');
-  }
-
-  private auditMetadata(record: TypePayment, fields: string[]): Record<string, unknown> {
-    const metadata: Record<string, unknown> = {};
-    for (const field of fields) metadata[field] = record[field as keyof TypePayment];
-    return metadata;
-  }
-
-  private async writeAudit(
-    manager: EntityManager,
-    actorUserId: number,
-    input: {
-      action: string;
-      entityId: number;
-      summary: string;
-      metadata: Record<string, unknown>;
-    },
-  ): Promise<void> {
-    if (!this.securityAuditService) throw new Error('SECURITY_AUDIT_SERVICE_UNAVAILABLE');
-    await this.securityAuditService.write(manager, {
-      actorUserId,
-      entityType: 'type_payment',
-      ...input,
-    });
-  }
+  constructor(@InjectRepository(TypePayment) private readonly repository: Repository<TypePayment>, @Optional() private readonly dataSource?: DataSource, @Optional() private readonly audit?: SecurityAuditService) {}
+  getTypepayments() { return this.repository.find({ relations: { currencies: { currency: true }, fields: true }, order: { displayOrder: 'ASC', description: 'ASC' } }); }
+  async getTypepayment(id: number) { this.validateId(id); const record=await this.repository.findOne({ where:{id}, relations:{currencies:{currency:true},fields:true} }); if(!record)throw new NotFoundException('TYPEPAYMENT_NOT_FOUND'); return record; }
+  async createTypepayment(body: CreateTypepaymantDto, actorUserId?: number) { const input=this.normalizeCreate(body); if(actorUserId===undefined)return this.createWithManager(this.repository.manager,input); if(!this.dataSource)throw new Error('TYPEPAYMENT_TRANSACTION_UNAVAILABLE'); return this.dataSource.transaction((manager)=>this.createWithManager(manager,input,actorUserId)); }
+  async updateTypepayment(id:number, body:UpdateTypepaymantDto, actorUserId?:number) { this.validateId(id); const fields=this.changedFields(body); if(fields.length===0)throw new BadRequestException('TYPEPAYMENT_UPDATE_REQUIRED'); if(actorUserId===undefined)return this.updateWithManager(this.repository.manager,id,body); if(!this.dataSource)throw new Error('TYPEPAYMENT_TRANSACTION_UNAVAILABLE'); return this.dataSource.transaction((manager)=>this.updateWithManager(manager,id,body,actorUserId)); }
+  private async createWithManager(manager:EntityManager,input:ReturnType<TypePaymentService['normalizeCreate']>,actorUserId?:number){ const repository=manager.getRepository(TypePayment); await this.ensureUnique(repository,input.code,input.description); const currencies=await this.resolveCurrencies(manager,input.currencyIds,input.defaultCurrencyId); const saved=await repository.save(repository.create({code:input.code,description:input.description,displayOrder:input.displayOrder,annulled:false})); await this.replaceCurrencies(manager,saved.id,currencies,input.defaultCurrencyId); if(actorUserId!==undefined)await this.writeAudit(manager,actorUserId,'typepayment.created',saved.id,'Tipo de pago creado',{code:saved.code,description:saved.description,currencyIds:input.currencyIds,defaultCurrencyId:input.defaultCurrencyId}); return this.getWithManager(manager,saved.id); }
+  private async updateWithManager(manager:EntityManager,id:number,body:UpdateTypepaymantDto,actorUserId?:number){ const repository=manager.getRepository(TypePayment); const record=await repository.findOne({where:{id}}); if(!record)throw new NotFoundException('TYPEPAYMENT_NOT_FOUND'); const previous={code:record.code,description:record.description,displayOrder:record.displayOrder,annulled:Boolean(record.annulled)}; if(body.code!==undefined)record.code=this.code(body.code); if(body.description!==undefined)record.description=this.text(body.description,'TYPEPAYMENT_DESCRIPTION_REQUIRED'); if(body.displayOrder!==undefined)record.displayOrder=this.order(body.displayOrder); if(body.annulled!==undefined)record.annulled=this.boolean(body.annulled,'TYPEPAYMENT_ANNULLED_INVALID'); await this.ensureUnique(repository,record.code,record.description,id); await repository.save(record); if(body.currencyIds!==undefined||body.defaultCurrencyId!==undefined){const current=await manager.getRepository(PaymentMethodCurrency).find({where:{paymentMethodId:id}});const ids=body.currencyIds??current.map(item=>item.currencyId);const defaultId=body.defaultCurrencyId??current.find(item=>Boolean(item.isDefault))?.currencyId;if(defaultId===undefined)throw new BadRequestException('TYPEPAYMENT_DEFAULT_CURRENCY_REQUIRED');const currencies=await this.resolveCurrencies(manager,ids,defaultId);await this.replaceCurrencies(manager,id,currencies,defaultId);} if(actorUserId!==undefined){const action=body.annulled!==undefined&&previous.annulled!==Boolean(record.annulled)?record.annulled?'typepayment.deactivated':'typepayment.activated':'typepayment.updated';await this.writeAudit(manager,actorUserId,action,id,action==='typepayment.updated'?'Tipo de pago actualizado':record.annulled?'Tipo de pago inactivado':'Tipo de pago activado',{previous,current:{code:record.code,description:record.description,displayOrder:record.displayOrder,annulled:Boolean(record.annulled)}});} return this.getWithManager(manager,id); }
+  private async getWithManager(manager:EntityManager,id:number){return manager.getRepository(TypePayment).findOneOrFail({where:{id},relations:{currencies:{currency:true},fields:true}});}
+  private async resolveCurrencies(manager:EntityManager,ids:number[],defaultId:number){if(!Array.isArray(ids)||ids.length===0)throw new BadRequestException('TYPEPAYMENT_CURRENCIES_REQUIRED');const unique=[...new Set(ids.map(value=>this.id(value,'TYPEPAYMENT_CURRENCY_INVALID')))];if(!unique.includes(this.id(defaultId,'TYPEPAYMENT_DEFAULT_CURRENCY_INVALID')))throw new BadRequestException('TYPEPAYMENT_DEFAULT_CURRENCY_INVALID');const rows=await manager.getRepository(Currency).find({where:{id:In(unique),isActive:true}});if(rows.length!==unique.length)throw new BadRequestException('TYPEPAYMENT_CURRENCY_NOT_AVAILABLE');return unique;}
+  private async replaceCurrencies(manager:EntityManager,paymentMethodId:number,ids:number[],defaultId:number){const repository=manager.getRepository(PaymentMethodCurrency);await repository.delete({paymentMethodId});await repository.save(ids.map((currencyId,index)=>repository.create({paymentMethodId,currencyId,isDefault:currencyId===defaultId,isActive:true,displayOrder:(index+1)*10})));}
+  private async ensureUnique(repository:Repository<TypePayment>,code:string,description:string,excludedId?:number){const where=excludedId?{id:Not(excludedId)}:{};const records=await repository.find({where,select:{id:true,code:true,description:true}});if(records.some(row=>row.code.toLowerCase()===code.toLowerCase()))throw new BadRequestException('TYPEPAYMENT_CODE_ALREADY_EXISTS');if(records.some(row=>row.description.trim().toLowerCase()===description.trim().toLowerCase()))throw new BadRequestException('TYPEPAYMENT_DESCRIPTION_ALREADY_EXISTS');}
+  private normalizeCreate(body:CreateTypepaymantDto){return{code:this.code(body?.code),description:this.text(body?.description,'TYPEPAYMENT_DESCRIPTION_REQUIRED'),displayOrder:this.order(body?.displayOrder??0),currencyIds:body?.currencyIds,defaultCurrencyId:body?.defaultCurrencyId};}
+  private changedFields(body:UpdateTypepaymantDto){if(!body||typeof body!=='object'||Array.isArray(body))return[];return['code','description','displayOrder','annulled','currencyIds','defaultCurrencyId'].filter(field=>Object.prototype.hasOwnProperty.call(body,field));}
+  private code(value:unknown){const code=this.text(value,'TYPEPAYMENT_CODE_REQUIRED').toLowerCase();if(!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(code)||code.length>50)throw new BadRequestException('TYPEPAYMENT_CODE_INVALID');return code;}
+  private text(value:unknown,error:string){if(typeof value!=='string'||value.trim()==='')throw new BadRequestException(error);if(value.trim().length>100)throw new BadRequestException('TYPEPAYMENT_TEXT_TOO_LONG');return value.trim();}
+  private order(value:unknown){const order=Number(value);if(!Number.isInteger(order)||order<0)throw new BadRequestException('TYPEPAYMENT_DISPLAY_ORDER_INVALID');return order;}
+  private boolean(value:unknown,error:string){if(typeof value!=='boolean')throw new BadRequestException(error);return value;}
+  private id(value:unknown,error:string){const id=Number(value);if(!Number.isInteger(id)||id<=0)throw new BadRequestException(error);return id;}
+  private validateId(id:number){this.id(id,'TYPEPAYMENT_ID_INVALID');}
+  private async writeAudit(manager:EntityManager,actorUserId:number,action:string,entityId:number,summary:string,metadata:Record<string,unknown>){if(!this.audit)throw new Error('SECURITY_AUDIT_SERVICE_UNAVAILABLE');await this.audit.write(manager,{actorUserId,action,entityType:'type_payment',entityId,summary,metadata});}
 }

@@ -1,7 +1,8 @@
-export class UpdateTypepaymantDto {
+﻿export class UpdateTypepaymantDto {
+  code?: string;
   description?: string;
-  description_1?: string;
-  description_2?: string;
+  displayOrder?: number;
   annulled?: boolean;
-  only_dollars?: boolean;
+  currencyIds?: number[];
+  defaultCurrencyId?: number;
 }

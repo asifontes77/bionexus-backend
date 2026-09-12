@@ -1,110 +1,14 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { Repository } from 'typeorm';
-import { TypePayment } from './typepayment.entity';
+﻿import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { TypePaymentService } from './typepayment.service';
 
-describe('TypePaymentService', () => {
-  let find: jest.Mock;
-  let findOne: jest.Mock;
-  let create: jest.Mock;
-  let save: jest.Mock;
-  let service: TypePaymentService;
-
-  beforeEach(() => {
-    find = jest.fn();
-    findOne = jest.fn();
-    create = jest.fn((value) => value);
-    save = jest.fn(async (value) => value);
-    service = new TypePaymentService({ find, findOne, create, save } as unknown as Repository<TypePayment>);
-  });
-
-  it('lista ordenado por descripcion', async () => {
-    find.mockResolvedValue([]);
-    await service.getTypepayments();
-    expect(find).toHaveBeenCalledWith({ order: { description: 'ASC' } });
-  });
-
-  it('rechaza id invalido', async () => {
-    await expect(service.getTypepayment(0)).rejects.toBeInstanceOf(BadRequestException);
-    expect(findOne).not.toHaveBeenCalled();
-  });
-
-  it('rechaza registro inexistente', async () => {
-    findOne.mockResolvedValue(null);
-    await expect(service.getTypepayment(8)).rejects.toBeInstanceOf(NotFoundException);
-  });
-
-  it('normaliza create y fuerza estado activo', async () => {
-    await service.createTypepayment({
-      description: '  Tarjeta  ',
-      description_1: ' Banco ',
-      description_2: '  ',
-      only_dollars: false,
-    });
-    expect(create).toHaveBeenCalledWith({
-      description: 'Tarjeta',
-      description_1: 'Banco',
-      description_2: '',
-      only_dollars: false,
-      annulled: false,
-    });
-  });
-
-  it('rechaza create con descripcion principal duplicada sin distinguir espacios ni mayusculas', async () => {
-    find.mockResolvedValue([{ id: 7, description: ' Efectivo ' }]);
-    await expect(service.createTypepayment({ description: 'efectivo' }))
-      .rejects.toMatchObject({ response: { message: 'TYPEPAYMENT_DESCRIPTION_ALREADY_EXISTS' } });
-    expect(save).not.toHaveBeenCalled();
-  });
-
-  it('rechaza create sin descripcion', async () => {
-    await expect(service.createTypepayment({ description: ' ' }))
-      .rejects.toMatchObject({ response: { message: 'TYPEPAYMENT_DESCRIPTION_REQUIRED' } });
-  });
-
-  it('actualiza campos selectivos', async () => {
-    const record = payment();
-    findOne.mockResolvedValue(record);
-    await service.updateTypepayment(1, { description_1: ' Referencia ', only_dollars: true });
-    expect(record.description_1).toBe('Referencia');
-    expect(record.only_dollars).toBe(true);
-    expect(record.description).toBe('Efectivo');
-  });
-
-  it('rechaza update con descripcion principal duplicada y excluye el mismo id', async () => {
-    find.mockResolvedValue([{ id: 1, description: 'Actual' }, { id: 2, description: ' Tarjeta ' }]);
-    await expect(service.updateTypepayment(1, { description: 'tarjeta' }))
-      .rejects.toMatchObject({ response: { message: 'TYPEPAYMENT_DESCRIPTION_ALREADY_EXISTS' } });
-    expect(save).not.toHaveBeenCalled();
-  });
-
-  it('permite conservar la misma descripcion del registro actual', async () => {
-    const record = payment();
-    find.mockResolvedValue([{ id: 1, description: ' Efectivo ' }]);
-    findOne.mockResolvedValue(record);
-    await service.updateTypepayment(1, { description: 'efectivo' });
-    expect(record.description).toBe('efectivo');
-  });
-
-  it('rechaza payload vacio', async () => {
-    await expect(service.updateTypepayment(1, {}))
-      .rejects.toMatchObject({ response: { message: 'TYPEPAYMENT_UPDATE_REQUIRED' } });
-  });
-
-  it('rechaza booleanos invalidos', async () => {
-    findOne.mockResolvedValue(payment());
-    await expect(service.updateTypepayment(1, { annulled: 1 as unknown as boolean }))
-      .rejects.toMatchObject({ response: { message: 'TYPEPAYMENT_ANNULLED_INVALID' } });
-  });
-
-  function payment(): TypePayment {
-    return {
-      id: 1,
-      description: 'Efectivo',
-      description_1: '',
-      description_2: '',
-      annulled: false,
-      only_dollars: false,
-    };
-  }
+describe('TypePaymentService normalized',()=>{
+  const manager:any={getRepository:jest.fn()};
+  const repository:any={manager,find:jest.fn(),findOne:jest.fn()};
+  let service:TypePaymentService;
+  beforeEach(()=>{jest.clearAllMocks();service=new TypePaymentService(repository);});
+  it('lista relaciones normalizadas por orden',async()=>{repository.find.mockResolvedValue([]);await service.getTypepayments();expect(repository.find).toHaveBeenCalledWith({relations:{currencies:{currency:true},fields:true},order:{displayOrder:'ASC',description:'ASC'}});});
+  it('rechaza id invalido',async()=>{await expect(service.getTypepayment(0)).rejects.toBeInstanceOf(BadRequestException);});
+  it('rechaza registro inexistente',async()=>{repository.findOne.mockResolvedValue(null);await expect(service.getTypepayment(8)).rejects.toBeInstanceOf(NotFoundException);});
+  it('consulta detalle con monedas y campos',async()=>{repository.findOne.mockResolvedValue({id:1});await service.getTypepayment(1);expect(repository.findOne).toHaveBeenCalledWith({where:{id:1},relations:{currencies:{currency:true},fields:true}});});
+  it('rechaza update vacio',async()=>{await expect(service.updateTypepayment(1,{})).rejects.toMatchObject({response:{message:'TYPEPAYMENT_UPDATE_REQUIRED'}});});
 });

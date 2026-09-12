@@ -1,6 +1,7 @@
-export class CreateTypepaymantDto {
+﻿export class CreateTypepaymantDto {
+  code: string;
   description: string;
-  description_1?: string;
-  description_2?: string;
-  only_dollars?: boolean;
+  displayOrder?: number;
+  currencyIds: number[];
+  defaultCurrencyId: number;
 }
