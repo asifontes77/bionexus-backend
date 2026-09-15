@@ -1,4 +1,4 @@
-import {
+﻿import {
   BadRequestException,
   Injectable,
   NotFoundException,
@@ -217,8 +217,8 @@ export class LaboratoryService {
     this.validatePattern(body, 'email', /^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'LABORATORY_EMAIL_INVALID');
     this.validatePattern(body, 'url', /^https?:\/\/[^\s]+$/i, 'LABORATORY_URL_INVALID', true);
     this.validatePattern(body, 'rif', /^[VEJGvejg]-?\d{7,9}-?\d$/, 'LABORATORY_RIF_INVALID');
-    this.validatePattern(body, 'phone_1', /^[+\d][\d\s()-]{5,19}$/, 'LABORATORY_PHONE_INVALID');
-    this.validatePattern(body, 'phone_2', /^[+\d][\d\s()-]{5,19}$/, 'LABORATORY_PHONE_INVALID', true);
+    this.validatePattern(body, 'phone_1', /^(?:\+?\d{1,3}|\(\+?\d{1,3}\))[\d\s()-]{5,19}$/, 'LABORATORY_PHONE_INVALID');
+    this.validatePattern(body, 'phone_2', /^(?:\+?\d{1,3}|\(\+?\d{1,3}\))[\d\s()-]{5,19}$/, 'LABORATORY_PHONE_INVALID', true);
     if (Object.prototype.hasOwnProperty.call(body, 'mask_phone')) {
       const mask = body.mask_phone;
       if (typeof mask !== 'string' || mask.trim() === '' || !mask.includes('#')) {
@@ -263,7 +263,7 @@ export class LaboratoryService {
     if (typeof settings.email === 'string' && settings.email.trim() !== '' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(settings.email.trim())) {
       throw new BadRequestException('LABORATORY_QR_EMAIL_INVALID');
     }
-    if (typeof settings.phone === 'string' && settings.phone.trim() !== '' && !/^[+\d][\d\s()-]{5,19}$/.test(settings.phone.trim())) {
+    if (typeof settings.phone === 'string' && settings.phone.trim() !== '' && !/^(?:\+?\d{1,3}|\(\+?\d{1,3}\))[\d\s()-]{5,19}$/.test(settings.phone.trim())) {
       throw new BadRequestException('LABORATORY_QR_PHONE_INVALID');
     }
   }
