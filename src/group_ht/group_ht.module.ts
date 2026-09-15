@@ -1,13 +1,9 @@
-import { Module } from '@nestjs/common';
-import { GroupHtController } from './group_ht.controller';
-import { GroupHtService } from './group_ht.service';
+﻿import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthorizationModule } from '../authorization/authorization.module';
+import { GroupHtController } from './group_ht.controller';
 import { Groupht } from './group_ht.entity';
-import { UsersModule } from 'src/users/users.module';
+import { GroupHtService } from './group_ht.service';
 
-@Module({
-  imports: [TypeOrmModule.forFeature([Groupht]), UsersModule],
-  controllers: [GroupHtController],
-  providers: [GroupHtService],
-})
+@Module({ imports: [AuthorizationModule, TypeOrmModule.forFeature([Groupht])], controllers: [GroupHtController], providers: [GroupHtService] })
 export class GroupHtModule {}

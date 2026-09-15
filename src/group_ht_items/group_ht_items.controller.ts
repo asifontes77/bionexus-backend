@@ -1,45 +1,29 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Post,
-  Param,
-  ParseIntPipe,
-  Delete,
-  Patch,
-  UseGuards,
-} from '@nestjs/common';
-import { GroupHtItemsService } from './group_h_itemst.service';
+﻿import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, UseGuards } from '@nestjs/common';
+import { RequirePermissions } from '../authorization/decorators/require-permissions.decorator';
+import { PermissionGuard } from '../authorization/guards/permission.guard';
+import { JwtUserGuard } from '../users/jwt-user.guard';
 import { CreateGroup_ht_itemsDto } from './dto/create-group_ht_items.dto';
 import { UpdateGroup_ht_itemsDto } from './dto/update-group_ht_items.dto';
-import { JwtUserGuard } from '../users/jwt-user.guard';
+import { GroupHtItemsService } from './group_h_itemst.service';
 
 @Controller('groupHtItems')
+@UseGuards(JwtUserGuard, PermissionGuard)
 export class GroupHtItemsController {
-  constructor(private groupHtService: GroupHtItemsService) {}
+  constructor(private readonly service: GroupHtItemsService) {}
 
-  @UseGuards(JwtUserGuard)
+  @RequirePermissions('worksheet-group-items.read')
   @Get(':id')
-  getGroupItemsHt(@Param('id', ParseIntPipe) id: number) {
-    return this.groupHtService.getGroupItemsHt(id);
-  }
+  getGroupItemsHt(@Param('id', ParseIntPipe) id: number) { return this.service.getGroupItemsHt(id); }
 
+  @RequirePermissions('worksheet-group-items.create')
   @Post()
-  createGroupItemsHt(@Body() newGroupHt: CreateGroup_ht_itemsDto) {
-    return this.groupHtService.createGroupItemsHt(newGroupHt);
-  }
+  createGroupItemsHt(@Body() body: CreateGroup_ht_itemsDto) { return this.service.createGroupItemsHt(body); }
 
-  @UseGuards(JwtUserGuard)
+  @RequirePermissions('worksheet-group-items.update')
   @Patch(':id')
-  updateGroupItemsHt(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() groupHt: UpdateGroup_ht_itemsDto,
-  ) {
-    return this.groupHtService.updateGroupItemsHt(id, groupHt);
-  }
+  updateGroupItemsHt(@Param('id', ParseIntPipe) id: number, @Body() body: UpdateGroup_ht_itemsDto) { return this.service.updateGroupItemsHt(id, body); }
 
+  @RequirePermissions('worksheet-group-items.delete')
   @Delete(':id')
-  deleteGroupItems(@Param('id', ParseIntPipe) id: number) {
-    return this.groupHtService.deleteGroupItems(id);
-  }
+  deleteGroupItems(@Param('id', ParseIntPipe) id: number) { return this.service.deleteGroupItems(id); }
 }
