@@ -1,4 +1,4 @@
-import { Global, Module } from '@nestjs/common';
+﻿import { Global, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from '../users/jwt.strategy';
@@ -19,7 +19,6 @@ import { JwtStrategy } from '../users/jwt.strategy';
 
         return {
           secret,
-          signOptions: { expiresIn: '20h' },
         };
       },
     }),
