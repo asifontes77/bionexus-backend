@@ -15,5 +15,7 @@ describe("Germs hardened backend contract", () => {
   });
   it("audita altas cambios y estados", () => {
     for (const action of ["germ.created","germ.updated","germ.activated","germ.deactivated"]) expect(service).toContain(action);
+    for (const summary of ['Germen creado','Germen actualizado','Germen activado','Germen inactivado']) expect(service).toContain(summary);
+    expect(service).not.toContain('Forma parasitaria');
   });
 });

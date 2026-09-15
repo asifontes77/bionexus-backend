@@ -85,7 +85,7 @@ export class ListGermsService {
       await this.writeAudit(manager, actorUserId, {
         action: 'germ.created',
         entityId: saved.id,
-        summary: 'Forma parasitaria creada',
+        summary: 'Germen creado',
         metadata: {
           germen: saved.germen,
           annulled: saved.annulled,
@@ -154,10 +154,10 @@ export class ListGermsService {
           : 'germ.activated'
         : 'germ.updated';
       const summary = action === 'germ.deactivated'
-        ? 'Forma parasitaria inactivada'
+        ? 'Germen inactivado'
         : action === 'germ.activated'
-          ? 'Forma parasitaria activada'
-          : 'Forma parasitaria actualizada';
+          ? 'Germen activado'
+          : 'Germen actualizado';
 
       await this.writeAudit(manager, actorUserId, {
         action,
