@@ -5,6 +5,8 @@ import { AuthorizationModule } from '../authorization/authorization.module';
 import { UsersModule } from '../users/users.module';
 import { Bank } from './bank.entity';
 import { Currency } from './currency.entity';
+import { CurrencyController } from './currency.controller';
+import { CurrencyService } from './currency.service';
 import { PaymentMethodCurrency } from './payment-method-currency.entity';
 import { PaymentMethodField } from './payment-method-field.entity';
 import { typepaymentController } from './typepayment.controller';
@@ -13,8 +15,8 @@ import { TypePaymentService } from './typepayment.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([TypePayment, Currency, Bank, PaymentMethodCurrency, PaymentMethodField]), UsersModule, AuthorizationModule, SecurityAuditModule],
-  controllers: [typepaymentController],
-  providers: [TypePaymentService],
-  exports: [TypePaymentService, TypeOrmModule],
+  controllers: [typepaymentController, CurrencyController],
+  providers: [TypePaymentService, CurrencyService],
+  exports: [TypePaymentService, CurrencyService, TypeOrmModule],
 })
 export class TypePaymentModule {}

@@ -17,11 +17,13 @@ export class typepaymentController {
   getTypepayments() { return this.typepaymentService.getTypepayments(); }
   @UseGuards(JwtUserGuard, PermissionGuard) @RequirePermissions('typepayment.create') @Post()
   createTypepayment(@Req() request: SecurityAuthenticatedRequest, @Body() body: CreateTypepaymantDto) { return this.typepaymentService.createTypepayment(body, getSecurityAuditActorUserId(request) ?? undefined); }
+  @UseGuards(JwtUserGuard, PermissionGuard) @RequirePermissions('typepayment.update') @Patch('reorder')
+  reorder(@Req() request: SecurityAuthenticatedRequest, @Body() body: { ids?: unknown }) { return this.typepaymentService.reorder(body?.ids, getSecurityAuditActorUserId(request) ?? undefined); }
   @UseGuards(JwtUserGuard) @Patch(':id')
   async updateTypepayment(@Req() request: SecurityAuthenticatedRequest, @Param('id', ParseIntPipe) id: number, @Body() body: UpdateTypepaymantDto) {
     const actorUserId = getSecurityAuditActorUserId(request);
     if (actorUserId === null) throw new ForbiddenException('AUTHORIZATION_CONTEXT_UNAVAILABLE');
-    const contentFields = ['code', 'description', 'displayOrder', 'currencyIds', 'defaultCurrencyId'];
+    const contentFields = ['code', 'description', 'displayOrder', 'currencyIds', 'defaultCurrencyId', 'fields'];
     const requiredPermissions: string[] = [];
     if (body && typeof body === 'object' && !Array.isArray(body) && contentFields.some((field) => Object.prototype.hasOwnProperty.call(body, field))) requiredPermissions.push('typepayment.update');
     if (body && Object.prototype.hasOwnProperty.call(body, 'annulled')) requiredPermissions.push('typepayment.change-status');

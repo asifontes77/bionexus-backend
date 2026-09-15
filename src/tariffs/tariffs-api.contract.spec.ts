@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+﻿import { readFileSync } from 'node:fs';
 const read = (path: string) => readFileSync(path, 'utf8');
 
 describe('Tariffs canonical API contract', () => {
@@ -22,7 +22,7 @@ describe('Tariffs canonical API contract', () => {
   });
 
   it('mantiene USD, tarifas ilimitadas y estadisticas de precios', () => {
-    expect(service).toContain("currencyCode: 'USD'");
+    expect(service).toContain('baseCurrencyId');expect(service).toContain('currencyId: await this.baseCurrencyId(manager)');
     expect(service).toContain('configuredPriceCount');
     expect(service).not.toContain('cost1');
     expect(service).not.toContain('cost6');

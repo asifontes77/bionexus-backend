@@ -1,8 +1,9 @@
-import { Module } from '@nestjs/common';
+﻿import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SecurityAuditModule } from '../audit/security-audit.module';
 import { AuthorizationModule } from '../authorization/authorization.module';
 import { Client } from '../client/client.entity';
+import { Currency } from '../type_payment/currency.entity';
 import { Examlists } from '../exam_lists/examlists.entity';
 import { AdmissionTariffResolverController } from './admission-tariff-resolver.controller';
 import { AdmissionTariffResolverService } from './admission-tariff-resolver.service';
@@ -15,7 +16,7 @@ import { TariffsService } from './tariffs.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Tariff, ExamTariffPrice, Examlists, Client]),
+    TypeOrmModule.forFeature([Tariff, ExamTariffPrice, Examlists, Client, Currency]),
     AuthorizationModule,
     SecurityAuditModule,
   ],

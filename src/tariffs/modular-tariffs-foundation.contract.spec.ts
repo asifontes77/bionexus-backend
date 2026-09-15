@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+﻿import { readFileSync } from 'node:fs';
 
 const read = (path: string) => readFileSync(path, 'utf8');
 
@@ -30,7 +30,7 @@ describe('Modular tariffs foundation contract', () => {
   });
 
   it('keeps USD as price currency and uses restrictive relations', () => {
-    expect(tariff).toContain("default: 'USD'");
+    expect(tariff).toContain("name: 'currency_id'");expect(tariff).toContain('currency: Currency');
     expect(price).toContain("onDelete: 'RESTRICT'");
     expect(price).toContain("onUpdate: 'RESTRICT'");
     expect(client).toContain("name: 'tariff_id'");

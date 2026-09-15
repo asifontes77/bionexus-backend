@@ -6,13 +6,7 @@
   time_zone?: string;
   date_format?: string;
   hour_cycle?: string;
-  currency_code?: string;
-  currency_symbol?: string;
-  currency_symbol_position?: string;
-  financial_primary_currency?: string;
-  base_currency_symbol?: string;
-  base_currency_symbol_position?: string;
-  monetary_decimals?: number;
+  financial_primary_currency_id?: number;
   first_day_of_week?: string;
   decimal_separator?: string;
   voucher_format?: string;

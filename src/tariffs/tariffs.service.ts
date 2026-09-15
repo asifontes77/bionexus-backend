@@ -1,4 +1,4 @@
-import {
+﻿import {
   BadRequestException,
   ConflictException,
   Injectable,
@@ -8,6 +8,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { SecurityAuditService } from '../audit/security-audit.service';
+import { Currency } from '../type_payment/currency.entity';
 import { ChangeTariffStatusDto } from './dto/change-tariff-status.dto';
 import { CreateTariffDto } from './dto/create-tariff.dto';
 import { UpdateTariffDto } from './dto/update-tariff.dto';
@@ -35,6 +36,7 @@ export class TariffsService {
 
   async getAll() {
     const tariffs = await this.tariffRepository.find({
+      relations: { currency: true },
       order: { position: 'ASC', id: 'ASC' },
     });
     const counts = await this.priceRepository
@@ -67,7 +69,7 @@ export class TariffsService {
 
   async getOne(id: number): Promise<Tariff & { configuredPriceCount: number }> {
     this.validateId(id);
-    const tariff = await this.tariffRepository.findOne({ where: { id } });
+    const tariff = await this.tariffRepository.findOne({ where: { id }, relations: { currency: true } });
     if (!tariff) throw new NotFoundException('TARIFF_NOT_FOUND');
     const configuredPriceCount = await this.priceRepository.count({
       where: { tariffId: id },
@@ -90,7 +92,7 @@ export class TariffsService {
         repository.create({
           ...values,
           position,
-          currencyCode: 'USD',
+          currencyId: await this.baseCurrencyId(manager),
           isDefault: false,
           isActive: true,
         }),
@@ -253,6 +255,11 @@ export class TariffsService {
     });
   }
 
+  private async baseCurrencyId(manager: EntityManager): Promise<number> {
+    const currency = await manager.getRepository(Currency).findOne({ where: { isBase: true, isActive: true } });
+    if (!currency) throw new BadRequestException('TARIFF_BASE_CURRENCY_NOT_FOUND');
+    return currency.id;
+  }
   private async runWrite<T>(
     actorUserId: number | undefined,
     action: (manager: EntityManager) => Promise<T>,
@@ -289,7 +296,8 @@ export class TariffsService {
       metadata: {
         code: tariff.code,
         name: tariff.name,
-        currencyCode: tariff.currencyCode,
+        currencyId: tariff.currencyId,
+        currencyCode: tariff.currency?.code,
         ...metadata,
       },
     });

@@ -1,4 +1,4 @@
-import {
+﻿import {
   BadRequestException,
   Injectable,
   NotFoundException,
@@ -49,7 +49,7 @@ export class ExamTariffPricesService {
         tariffId: tariff.id,
         tariffCode: tariff.code,
         tariffName: tariff.name,
-        currencyCode: tariff.currencyCode,
+        currencyCode: tariff.currency?.code ?? '',
         tariffActive: Boolean(tariff.isActive),
         price: Number(byTariff.get(tariff.id)?.price ?? 0),
         isActive: Boolean(byTariff.get(tariff.id)?.isActive ?? true),
@@ -161,7 +161,7 @@ export class ExamTariffPricesService {
         tariffId: tariff.id,
         tariffCode: tariff.code,
         tariffName: tariff.name,
-        currencyCode: tariff.currencyCode,
+        currencyCode: tariff.currency?.code ?? '',
         tariffActive: Boolean(tariff.isActive),
         price: Number(byTariff.get(tariff.id)?.price ?? 0),
         isActive: Boolean(byTariff.get(tariff.id)?.isActive ?? true),

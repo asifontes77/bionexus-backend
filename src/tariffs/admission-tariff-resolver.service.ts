@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+﻿import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { Client } from '../client/client.entity';
@@ -27,7 +27,7 @@ export class AdmissionTariffResolverService {
     return {
       clientId,
       ambulatory: clientId === AdmissionTariffResolverService.AMBULATORY_CLIENT_ID,
-      tariff: { id: tariff.id, code: tariff.code, name: tariff.name, currencyCode: tariff.currencyCode },
+      tariff: { id: tariff.id, code: tariff.code, name: tariff.name, currencyCode: tariff.currency?.code ?? '' },
       prices: ids.map(examCatalogId => ({ examCatalogId, price: byExam.get(examCatalogId) as number })),
     };
   }

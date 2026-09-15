@@ -1,6 +1,6 @@
 ﻿import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Laboratory } from '../laboratory/laboratory.entity';
-
+import { Currency } from '../type_payment/currency.entity';
 @Entity({ name: 'application_settings' })
 export class ApplicationSettings {
   @PrimaryGeneratedColumn() id: number;
@@ -14,13 +14,9 @@ export class ApplicationSettings {
   @Column({ type: 'varchar', length: 64, default: 'America/Caracas' }) time_zone: string;
   @Column({ type: 'varchar', length: 16, default: 'dd/MM/yyyy' }) date_format: string;
   @Column({ type: 'varchar', length: 8, default: 'h12' }) hour_cycle: string;
-  @Column({ type: 'varchar', length: 3, default: 'VES' }) currency_code: string;
-  @Column({ type: 'varchar', length: 12, default: 'Bs.' }) currency_symbol: string;
-  @Column({ type: 'varchar', length: 8, default: 'before' }) currency_symbol_position: string;
-  @Column({ type: 'varchar', length: 3, default: 'VES' }) financial_primary_currency: string;
-  @Column({ type: 'varchar', length: 12, default: 'USD' }) base_currency_symbol: string;
-  @Column({ type: 'varchar', length: 8, default: 'before' }) base_currency_symbol_position: string;
-  @Column({ type: 'int', default: 2 }) monetary_decimals: number;
+  @Column({ type: 'int', name: 'financial_primary_currency_id' }) financial_primary_currency_id: number;
+  @ManyToOne(() => Currency, { onDelete: 'RESTRICT', onUpdate: 'RESTRICT' })
+  @JoinColumn({ name: 'financial_primary_currency_id' }) financialPrimaryCurrency: Currency;
   @Column({ type: 'varchar', length: 8, default: 'monday' }) first_day_of_week: string;
   @Column({ type: 'varchar', length: 1, default: ',' }) decimal_separator: string;
   @Column({ type: 'longtext' }) voucher_format: string;
