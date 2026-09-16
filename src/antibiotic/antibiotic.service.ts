@@ -66,7 +66,7 @@ export class AntibioticService {
       await this.ensureUnique(repository, description, id);
       record.description = description;
     }
-    if (Object.prototype.hasOwnProperty.call(body, 'siglas')) record.siglas = this.text(body.siglas, 10, 'ANTIBIOTIC_INITIALS_REQUIRED', 'ANTIBIOTIC_INITIALS_TOO_LONG');
+    if (Object.prototype.hasOwnProperty.call(body, 'siglas')) record.siglas = this.optionalText(body.siglas, 10, 'ANTIBIOTIC_INITIALS_TOO_LONG');
     if (Object.prototype.hasOwnProperty.call(body, 'annulled')) {
       if (typeof body.annulled !== 'boolean') throw new BadRequestException('ANTIBIOTIC_ANNULLED_INVALID');
       record.annulled = body.annulled;
@@ -76,7 +76,7 @@ export class AntibioticService {
 
   private normalizeCreate(body: CreateAntibioticDto): Partial<Antibiotic> {
     if (!body || typeof body !== 'object' || Array.isArray(body)) throw new BadRequestException('ANTIBIOTIC_BODY_REQUIRED');
-    return { description: this.text(body.description, 50, 'ANTIBIOTIC_DESCRIPTION_REQUIRED', 'ANTIBIOTIC_DESCRIPTION_TOO_LONG'), siglas: this.text(body.siglas, 10, 'ANTIBIOTIC_INITIALS_REQUIRED', 'ANTIBIOTIC_INITIALS_TOO_LONG'), annulled: false };
+    return { description: this.text(body.description, 50, 'ANTIBIOTIC_DESCRIPTION_REQUIRED', 'ANTIBIOTIC_DESCRIPTION_TOO_LONG'), siglas: this.optionalText(body.siglas, 10, 'ANTIBIOTIC_INITIALS_TOO_LONG'), annulled: false };
   }
 
   private changedFields(body: UpdateAntibioticDto): string[] {
@@ -94,6 +94,13 @@ export class AntibioticService {
     return normalized;
   }
 
+  private optionalText(value: unknown, maximum: number, tooLong: string): string {
+    if (value === undefined || value === null) return '';
+    if (typeof value !== 'string') throw new BadRequestException(tooLong);
+    const normalized = value.trim().toUpperCase();
+    if (normalized.length > maximum) throw new BadRequestException(tooLong);
+    return normalized;
+  }
   private validateId(id: number): void { if (!Number.isInteger(id) || id <= 0) throw new BadRequestException('ANTIBIOTIC_ID_INVALID'); }
 
   private async ensureUnique(repository: Repository<Antibiotic>, description: string, excludedId?: number): Promise<void> {

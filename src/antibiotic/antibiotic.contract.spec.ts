@@ -15,7 +15,7 @@ describe('Antibiotic hardened backend contract', () => {
     expect(service).toContain("order: { description: 'ASC' }");
   });
   it('valida, normaliza, actualiza selectivamente y audita', () => {
-    for (const code of ['ANTIBIOTIC_DESCRIPTION_REQUIRED','ANTIBIOTIC_INITIALS_REQUIRED','ANTIBIOTIC_UPDATE_REQUIRED','ANTIBIOTIC_FIELD_UNKNOWN','ANTIBIOTIC_ANNULLED_INVALID']) expect(service).toContain(code);
+    for (const code of ['ANTIBIOTIC_DESCRIPTION_REQUIRED','ANTIBIOTIC_INITIALS_TOO_LONG','ANTIBIOTIC_UPDATE_REQUIRED','ANTIBIOTIC_FIELD_UNKNOWN','ANTIBIOTIC_ANNULLED_INVALID']) expect(service).toContain(code);
     expect(service).toContain('.toUpperCase()');
     expect(service).toContain('Object.prototype.hasOwnProperty.call');
     for (const action of ['antibiotic.created','antibiotic.updated','antibiotic.activated','antibiotic.deactivated']) expect(service).toContain(action);
