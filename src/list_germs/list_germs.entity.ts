@@ -5,7 +5,7 @@ export class listGerms {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column('varchar', { length: 50, nullable: true })
+  @Column('varchar', { length: 50, nullable: false })
   germen: string;
 
   @Column('tinyint', { default: () => '0' })

@@ -5,10 +5,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { listGerms } from './list_germs.entity';
 
 
-import { UsersModule } from '../users/users.module';
 import { AuthorizationModule } from '../authorization/authorization.module';
+import { SecurityAuditModule } from '../audit/security-audit.module';
 @Module({
-  imports: [TypeOrmModule.forFeature([listGerms]), AuthorizationModule],
+  imports: [TypeOrmModule.forFeature([listGerms]), AuthorizationModule, SecurityAuditModule],
   controllers: [ListGermsController],
   providers: [ListGermsService],
 })
