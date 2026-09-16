@@ -58,37 +58,6 @@ export class TaxService {
     });
   }
 
-  async deleteTax(id: number, actorUserId?: number): Promise<{ id: number; deleted: true }> {
-    this.validateId(id);
-    if (actorUserId === undefined) throw new Error('TAX_DELETE_ACTOR_REQUIRED');
-    return this.runWrite(actorUserId, async (manager) => {
-      const repository = manager.getRepository(Tax);
-      const tax = await repository
-        .createQueryBuilder('tax')
-        .setLock('pessimistic_write')
-        .where('tax.id = :id', { id })
-        .getOne();
-      if (!tax) throw new NotFoundException('TAX_NOT_FOUND');
-
-      const references = await manager.query(
-        'SELECT COUNT(*) AS referenceCount FROM exam_catalog WHERE tax_id = ?',
-        [id],
-      ) as Array<{ referenceCount: string | number }>;
-      const referenceCount = Number(references[0]?.referenceCount ?? 0);
-      if (!Number.isInteger(referenceCount) || referenceCount < 0) {
-        throw new Error('TAX_REFERENCE_COUNT_INVALID');
-      }
-      if (referenceCount > 0) throw new ConflictException('TAX_IN_USE');
-
-      await repository.remove(tax);
-      await this.writeAudit(manager, actorUserId, 'tax.deleted', tax, {
-        description: tax.description,
-        value: Number(tax.value),
-        referenceCount,
-      });
-      return { id: tax.id, deleted: true as const };
-    });
-  }
   private async runWrite<T>(actorUserId: number, action: (manager: EntityManager) => Promise<T>): Promise<T> {
     if (!this.dataSource) throw new Error('TAX_TRANSACTION_UNAVAILABLE');
     return this.dataSource.transaction(action);
@@ -97,7 +66,7 @@ export class TaxService {
   private async writeAudit(
     manager: EntityManager,
     actorUserId: number,
-    action: 'tax.created' | 'tax.updated' | 'tax.deleted',
+    action: 'tax.created' | 'tax.updated',
     tax: Tax,
     metadata: Record<string, unknown>,
   ): Promise<void> {
@@ -109,9 +78,7 @@ export class TaxService {
       entityId: tax.id,
       summary: action === 'tax.created'
         ? 'Impuesto creado'
-        : action === 'tax.deleted'
-          ? 'Impuesto eliminado'
-          : 'Impuesto actualizado',
+        : 'Impuesto actualizado',
       metadata,
     });
   }

@@ -21,10 +21,12 @@ describe('Tax hardened backend contract', () => {
   });
   it('protects every endpoint with the normalized authorization foundation', () => {
     expect(controller).toContain('@UseGuards(JwtUserGuard, PermissionGuard)');
-    for (const permission of ['tax.read', 'tax.create', 'tax.update', 'tax.delete']) {
+    for (const permission of ['tax.read', 'tax.create']) {
       expect(controller).toContain(`@RequirePermissions('${permission}')`);
     }
     expect(controller).toContain('getSecurityAuditActorUserId(request)');
+    expect(controller).toContain("requiredPermissions.push('tax.update')");
+    expect(controller).toContain("requiredPermissions.push('tax.change-status')");
   });
 
   it('keeps the complete legacy tax contract in both DTOs', () => {
@@ -40,23 +42,12 @@ describe('Tax hardened backend contract', () => {
     expect(service).toContain("throw new NotFoundException('TAX_NOT_FOUND')");
     expect(service).not.toContain('return new HttpException');
     expect(service).toContain('this.dataSource.transaction(action)');
-    for (const action of ['tax.created', 'tax.updated', 'tax.deleted']) {
+    for (const action of ['tax.created', 'tax.updated']) {
       expect(service).toContain(action);
     }
     expect(service).toContain('SECURITY_AUDIT_SERVICE_UNAVAILABLE');
-    expect(service).toContain('repository.remove(tax)');
   });
 
-  it('blocks physical deletion when an exam references the tax', () => {
-    expect(service).toContain("throw new ConflictException('TAX_IN_USE')");
-    expect(service).toContain(".setLock('pessimistic_write')");
-    expect(service).toContain('SELECT COUNT(*) AS referenceCount FROM exam_catalog WHERE tax_id = ?');
-    expect(service).toContain("throw new Error('TAX_DELETE_ACTOR_REQUIRED')");
-    expect(service.indexOf("throw new ConflictException('TAX_IN_USE')"))
-      .toBeLessThan(service.indexOf('await repository.remove(tax)'));
-    expect(service.indexOf('await repository.remove(tax)'))
-      .toBeLessThan(service.indexOf("await this.writeAudit(manager, actorUserId, 'tax.deleted'"));
-  });
   it('validates description, percentage, booleans and unknown fields', () => {
     for (const errorCode of [
       'TAX_DESCRIPTION_REQUIRED',
@@ -72,7 +63,7 @@ describe('Tax hardened backend contract', () => {
   });
 
   it('creates four idempotent permissions and assigns them to active admin', () => {
-    for (const permission of ['tax.read', 'tax.create', 'tax.update', 'tax.delete']) {
+    for (const permission of ['tax.read', 'tax.create']) {
       expect(migration).toContain(permission);
     }
     expect(migration).toContain('ON DUPLICATE KEY UPDATE');

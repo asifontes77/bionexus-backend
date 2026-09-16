@@ -1,7 +1,7 @@
 import {
   Body,
   Controller,
-  Delete,
+  ForbiddenException,
   Get,
   Param,
   ParseIntPipe,
@@ -14,6 +14,7 @@ import {
   getSecurityAuditActorUserId,
   SecurityAuthenticatedRequest,
 } from '../audit/security-audit-context';
+import { AuthorizationService } from '../authorization/authorization.service';
 import { RequirePermissions } from '../authorization/decorators/require-permissions.decorator';
 import { PermissionGuard } from '../authorization/guards/permission.guard';
 import { JwtUserGuard } from '../users/jwt-user.guard';
@@ -24,7 +25,10 @@ import { TaxService } from './tax.service';
 @UseGuards(JwtUserGuard, PermissionGuard)
 @Controller('tax')
 export class TaxController {
-  constructor(private readonly taxService: TaxService) {}
+  constructor(
+    private readonly taxService: TaxService,
+    private readonly authorizationService: AuthorizationService,
+  ) {}
 
   @RequirePermissions('tax.read')
   @Get()
@@ -48,24 +52,23 @@ export class TaxController {
     return this.taxService.createTax(body, actorUserId ?? undefined);
   }
 
-  @RequirePermissions('tax.update')
   @Patch(':id')
-  updateTax(
+  async updateTax(
     @Req() request: SecurityAuthenticatedRequest,
     @Param('id', ParseIntPipe) id: number,
     @Body() body: UpdateTaxDto,
   ) {
     const actorUserId = getSecurityAuditActorUserId(request);
-    return this.taxService.updateTax(id, body, actorUserId ?? undefined);
+    if (actorUserId === null) throw new ForbiddenException('AUTHORIZATION_CONTEXT_UNAVAILABLE');
+    const requiredPermissions: string[] = [];
+    if (body && typeof body === 'object' && !Array.isArray(body)) {
+      if (['description', 'value', 'only_dollars', 'always_subtotal'].some((field) => Object.prototype.hasOwnProperty.call(body, field))) requiredPermissions.push('tax.update');
+      if (Object.prototype.hasOwnProperty.call(body, 'hide')) requiredPermissions.push('tax.change-status');
+    }
+    if (requiredPermissions.length > 0 && !(await this.authorizationService.hasAllPermissions(actorUserId, requiredPermissions))) {
+      throw new ForbiddenException('TAX_PERMISSION_REQUIRED');
+    }
+    return this.taxService.updateTax(id, body, actorUserId);
   }
 
-  @RequirePermissions('tax.delete')
-  @Delete(':id')
-  deleteTax(
-    @Req() request: SecurityAuthenticatedRequest,
-    @Param('id', ParseIntPipe) id: number,
-  ) {
-    const actorUserId = getSecurityAuditActorUserId(request);
-    return this.taxService.deleteTax(id, actorUserId ?? undefined);
-  }
 }

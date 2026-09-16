@@ -10,7 +10,7 @@ export class TaxPermissions1787860800000 implements MigrationInterface {
         ('tax.read', 'Consultar impuestos', 'Permite consultar la configuracion de impuestos', 'tax', 1),
         ('tax.create', 'Crear impuestos', 'Permite crear impuestos', 'tax', 1),
         ('tax.update', 'Actualizar impuestos', 'Permite actualizar impuestos', 'tax', 1),
-        ('tax.delete', 'Eliminar impuestos', 'Permite eliminar impuestos', 'tax', 1)
+        ('tax.change-status', 'Cambiar estado de impuestos', 'Permite ocultar o mostrar impuestos', 'tax', 1)
       ON DUPLICATE KEY UPDATE
         name = VALUES(name),
         description = VALUES(description),
@@ -24,7 +24,7 @@ export class TaxPermissions1787860800000 implements MigrationInterface {
       CROSS JOIN security_permissions permission
       WHERE role.code = 'admin'
         AND role.is_active = 1
-        AND permission.code IN ('tax.read', 'tax.create', 'tax.update', 'tax.delete')
+        AND permission.code IN ('tax.read', 'tax.create', 'tax.update', 'tax.change-status')
     `);
   }
 
@@ -33,11 +33,11 @@ export class TaxPermissions1787860800000 implements MigrationInterface {
       DELETE assignment
       FROM security_role_permissions assignment
       INNER JOIN security_permissions permission ON permission.id = assignment.permission_id
-      WHERE permission.code IN ('tax.read', 'tax.create', 'tax.update', 'tax.delete')
+      WHERE permission.code IN ('tax.read', 'tax.create', 'tax.update', 'tax.change-status')
     `);
     await queryRunner.query(`
       DELETE FROM security_permissions
-      WHERE code IN ('tax.read', 'tax.create', 'tax.update', 'tax.delete')
+      WHERE code IN ('tax.read', 'tax.create', 'tax.update', 'tax.change-status')
     `);
   }
 }
