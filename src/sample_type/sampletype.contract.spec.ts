@@ -30,14 +30,15 @@ describe('Sample types hardened contract', () => {
       'sample-types.read',
       'sample-types.create',
       'sample-types.update',
+      'sample-types.change-status',
     ])
       expect(controller + migrations).toContain(code);
   });
 
-  it('conserva el contrato legacy y no agrega estado o eliminacion fisica', () => {
+  it('conserva descripcion y agrega estado sin eliminacion fisica', () => {
     expect(controller).toContain("@Controller('Sampletype')");
     expect(controller).not.toContain('@Delete');
-    expect(service).not.toContain('annulled');
+    expect(service).toContain('annulled');
   });
 
   it('valida, evita duplicados y audita dentro de transaccion', () => {
