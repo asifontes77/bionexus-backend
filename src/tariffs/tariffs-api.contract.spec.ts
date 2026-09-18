@@ -1,4 +1,4 @@
-﻿import { readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 const read = (path: string) => readFileSync(path, 'utf8');
 
 describe('Tariffs canonical API contract', () => {
@@ -14,8 +14,6 @@ describe('Tariffs canonical API contract', () => {
       'tariffs.read',
       'tariffs.create',
       'tariffs.update',
-      'tariffs.change-status',
-      'tariffs.set-default',
     ])
       expect(controller + migration).toContain(code);
     expect(controller).toContain("@Controller('tariffs')");

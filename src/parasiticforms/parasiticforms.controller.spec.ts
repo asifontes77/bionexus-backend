@@ -170,7 +170,7 @@ describe('ParasiticformsController', () => {
       ).resolves.toBe(record);
 
       expect(authorizationService.hasAllPermissions).toHaveBeenCalledWith(5, [
-        'parasiticforms.change-status',
+        'parasiticforms.update',
       ]);
     });
 
@@ -194,8 +194,7 @@ describe('ParasiticformsController', () => {
 
       expect(authorizationService.hasAllPermissions).toHaveBeenCalledWith(9, [
         'parasiticforms.update',
-        'parasiticforms.change-status',
-      ]);
+        ]);
 
       expect(service.updateParasiticforms).toHaveBeenCalledWith(1, payload, expect.any(Number));
     });

@@ -1,4 +1,4 @@
-﻿import { Body, Controller, ForbiddenException, Get, Param, ParseIntPipe, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, ForbiddenException, Get, Param, ParseIntPipe, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { getSecurityAuditActorUserId, SecurityAuthenticatedRequest } from '../audit/security-audit-context';
 import { AuthorizationService } from '../authorization/authorization.service';
 import { RequirePermissions } from '../authorization/decorators/require-permissions.decorator';
@@ -37,7 +37,7 @@ export class SpecialtestlabController {
     const permissions: string[] = [];
     const has = (field: string) => Object.prototype.hasOwnProperty.call(body, field) && (body as Record<string, unknown>)[field] !== undefined;
     if (['description', 'details', 'address', 'phone_1', 'phone_2', 'email'].some(has)) permissions.push('special-tests.update');
-    if (has('annulled')) permissions.push('special-tests.change-status');
+    if (has('annulled')) permissions.push('special-tests.update');
     if (permissions.length && !(await this.authorization.hasAllPermissions(actorUserId, permissions))) throw new ForbiddenException('SPECIAL_TEST_PERMISSION_REQUIRED');
     return this.service.updateSpecialTestLab(id, body, actorUserId);
   }

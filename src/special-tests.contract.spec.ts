@@ -9,7 +9,7 @@ describe('Special tests hardened backend contract', () => {
   it('preserva rutas y aplica permisos normalizados', () => {
     expect(labController).toContain("@Controller('specialtestlab')");
     expect(itemController).toContain("@Controller('specialtestItems')");
-    for (const code of ['special-tests.read','special-tests.create','special-tests.update','special-tests.change-status','special-test-items.read','special-test-items.create','special-test-items.update','special-test-items.delete']) expect(labController + itemController + migration).toContain(code);
+    for (const code of ['special-tests.read','special-tests.create','special-tests.update']) expect(labController + itemController + migration).toContain(code);
   });
   it('usa errores controlados, actualizacion selectiva y validacion de referencias', () => {
     for (const code of ['SPECIAL_TEST_NOT_FOUND','SPECIAL_TEST_UPDATE_REQUIRED','SPECIAL_TEST_FIELD_UNKNOWN','SPECIAL_TEST_DESCRIPTION_ALREADY_EXISTS']) expect(labService).toContain(code);

@@ -7,11 +7,11 @@ describe('Tax safe status contract', () => {
     expect(controller).not.toContain('@Delete');
     expect(controller).not.toContain("@RequirePermissions('tax.delete')");
     expect(controller).toContain("requiredPermissions.push('tax.update')");
-    expect(controller).toContain("requiredPermissions.push('tax.change-status')");
+    expect(controller).not.toContain('tax.change-status');
     expect(controller).toContain('authorizationService.hasAllPermissions');
     expect(service).not.toContain('repository.remove');
     expect(service).not.toContain('tax.deleted');
-    expect(migration).toContain('tax.change-status');
+    expect(migration).toContain('tax.update');
     expect(migration).not.toContain('tax.delete');
   });
 });

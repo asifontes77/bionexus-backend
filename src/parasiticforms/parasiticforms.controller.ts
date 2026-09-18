@@ -86,7 +86,7 @@ export class ParasiticformsController {
       }
 
       if (Object.prototype.hasOwnProperty.call(body, 'annulled')) {
-        requiredPermissions.push('parasiticforms.change-status');
+        if (!requiredPermissions.includes('parasiticforms.update')) requiredPermissions.push('parasiticforms.update');
       }
     }
 

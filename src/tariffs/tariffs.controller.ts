@@ -82,7 +82,7 @@ export class TariffsController {
     );
   }
 
-  @RequirePermissions('tariffs.change-status')
+  @RequirePermissions('tariffs.update')
   @Patch(':id/status')
   changeStatus(
     @Req() request: SecurityAuthenticatedRequest,
@@ -96,7 +96,7 @@ export class TariffsController {
     );
   }
 
-  @RequirePermissions('tariffs.set-default')
+  @RequirePermissions('tariffs.update')
   @Post(':id/default')
   setDefault(
     @Req() request: SecurityAuthenticatedRequest,

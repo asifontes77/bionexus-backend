@@ -26,7 +26,7 @@ describe('Tax hardened backend contract', () => {
     }
     expect(controller).toContain('getSecurityAuditActorUserId(request)');
     expect(controller).toContain("requiredPermissions.push('tax.update')");
-    expect(controller).toContain("requiredPermissions.push('tax.change-status')");
+    expect(controller).toContain("requiredPermissions.push('tax.update')");
   });
 
   it('keeps the complete legacy tax contract in both DTOs', () => {

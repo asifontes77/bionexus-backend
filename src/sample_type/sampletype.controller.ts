@@ -70,7 +70,7 @@ export class SampletypeController {
     if (Object.prototype.hasOwnProperty.call(body, 'description'))
       permissions.push('sample-types.update');
     if (Object.prototype.hasOwnProperty.call(body, 'annulled'))
-      permissions.push('sample-types.change-status');
+      permissions.push('sample-types.update');
     if (
       permissions.length === 0 ||
       !(await this.authorizationService.hasAllPermissions(actorUserId, permissions))

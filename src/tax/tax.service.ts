@@ -52,7 +52,19 @@ export class TaxService {
     };
     if (actorUserId === undefined) return update(this.taxRepository);
     return this.runWrite(actorUserId, async (manager) => {
-      const saved = await update(manager.getRepository(Tax));
+      const repository = manager.getRepository(Tax);
+      const tax = await repository.findOne({ where: { id } });
+      if (!tax) throw new NotFoundException('TAX_NOT_FOUND');
+      if (values.hide === true && tax.hide !== true) {
+        const references = await manager.query(
+          'SELECT COUNT(*) AS referenceCount FROM exam_catalog WHERE tax_id = ?',
+          [id],
+        ) as Array<{ referenceCount: string | number }>;
+        if (Number(references[0]?.referenceCount ?? 0) > 0) {
+          throw new ConflictException('TAX_IN_USE');
+        }
+      }
+      const saved = await update(repository);
       await this.writeAudit(manager, actorUserId, 'tax.updated', saved, values);
       return saved;
     });

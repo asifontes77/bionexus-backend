@@ -11,14 +11,14 @@ import { SpecialTestItemsService } from './special_test_items.service';
 @UseGuards(JwtUserGuard, PermissionGuard)
 export class SpecialtestItemsController {
   constructor(private readonly service: SpecialTestItemsService) {}
-  @RequirePermissions('special-test-items.create') @Post()
+  @RequirePermissions('special-tests.update') @Post()
   createSpecialTestItems(@Req() request: SecurityAuthenticatedRequest, @Body() body: CreateSpecialTestItemsDto) { return this.service.createSpecialTestItems(body, getSecurityAuditActorUserId(request) ?? undefined); }
-  @RequirePermissions('special-test-items.read') @Get()
+  @RequirePermissions('special-tests.read') @Get()
   getSpecialTestItemsList() { return this.service.getSpecialTestItemsList(); }
-  @RequirePermissions('special-test-items.read') @Get(':id')
+  @RequirePermissions('special-tests.read') @Get(':id')
   getSpecialTestItems(@Param('id', ParseIntPipe) id: number) { return this.service.getSpecialTestItems(id); }
-  @RequirePermissions('special-test-items.update') @Patch(':id')
+  @RequirePermissions('special-tests.update') @Patch(':id')
   updateSpecialTestItems(@Req() request: SecurityAuthenticatedRequest, @Param('id', ParseIntPipe) id: number, @Body() body: updateSpecialTestItemsDto) { return this.service.updateSpecialTestItems(id, body, getSecurityAuditActorUserId(request) ?? undefined); }
-  @RequirePermissions('special-test-items.delete') @Delete(':id')
+  @RequirePermissions('special-tests.update') @Delete(':id')
   deleteTestItems(@Req() request: SecurityAuthenticatedRequest, @Param('id', ParseIntPipe) id: number) { return this.service.deleteTestItems(id, getSecurityAuditActorUserId(request) ?? undefined); }
 }

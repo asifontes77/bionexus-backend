@@ -1,4 +1,4 @@
-﻿import { readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 describe('Worksheet groups hardened contracts', () => {
@@ -10,16 +10,16 @@ describe('Worksheet groups hardened contracts', () => {
   const createItemDto = readFileSync(join(root, '../group_ht_items/dto/create-group_ht_items.dto.ts'), 'utf8');
 
   it('protege todos los endpoints con permisos granulares', () => {
-    for (const permission of ['worksheet-groups.read', 'worksheet-groups.create', 'worksheet-groups.update', 'worksheet-groups.change-status', 'worksheet-groups.delete']) expect(groupController).toContain(permission);
-    for (const permission of ['worksheet-group-items.read', 'worksheet-group-items.create', 'worksheet-group-items.update', 'worksheet-group-items.delete']) expect(itemController).toContain(permission);
+    for (const permission of ['worksheet-groups.read', 'worksheet-groups.create', 'worksheet-groups.update']) expect(groupController).toContain(permission);
+    for (const permission of ['worksheet-groups.read', 'worksheet-groups.update']) expect(itemController).toContain(permission);
   });
 
   it('separa dinamicamente update y change-status en el PATCH', () => {
     expect(groupController).toContain('AuthorizationService');
     expect(groupController).toContain("requiredPermissions.push('worksheet-groups.update')");
-    expect(groupController).toContain("requiredPermissions.push('worksheet-groups.change-status')");
+    expect(groupController).not.toContain('worksheet-groups.change-status');
     expect(groupController).toContain('hasAllPermissions(actorUserId, requiredPermissions)');
-    expect(groupController).not.toContain("@RequirePermissions('worksheet-groups.update', 'worksheet-groups.change-status')");
+    expect(groupController).not.toContain('worksheet-groups.change-status');
   });
 
   it('corrige el contrato groupHtId', () => {

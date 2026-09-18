@@ -63,7 +63,7 @@ export class TaxController {
     const requiredPermissions: string[] = [];
     if (body && typeof body === 'object' && !Array.isArray(body)) {
       if (['description', 'value', 'only_dollars', 'always_subtotal'].some((field) => Object.prototype.hasOwnProperty.call(body, field))) requiredPermissions.push('tax.update');
-      if (Object.prototype.hasOwnProperty.call(body, 'hide')) requiredPermissions.push('tax.change-status');
+      if (Object.prototype.hasOwnProperty.call(body, 'hide')) requiredPermissions.push('tax.update');
     }
     if (requiredPermissions.length > 0 && !(await this.authorizationService.hasAllPermissions(actorUserId, requiredPermissions))) {
       throw new ForbiddenException('TAX_PERMISSION_REQUIRED');

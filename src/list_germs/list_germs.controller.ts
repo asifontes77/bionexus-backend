@@ -86,7 +86,7 @@ export class ListGermsController {
       }
 
       if (Object.prototype.hasOwnProperty.call(body, 'annulled')) {
-        requiredPermissions.push('germs.change-status');
+        requiredPermissions.push('germs.update');
       }
     }
 

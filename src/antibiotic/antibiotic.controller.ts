@@ -42,7 +42,7 @@ export class AntibioticController {
     const requiredPermissions: string[] = [];
     if (body && typeof body === 'object' && !Array.isArray(body)) {
       if (['description', 'siglas'].some((field) => Object.prototype.hasOwnProperty.call(body, field))) requiredPermissions.push('antibiotic.update');
-      if (Object.prototype.hasOwnProperty.call(body, 'annulled')) requiredPermissions.push('antibiotic.change-status');
+      if (Object.prototype.hasOwnProperty.call(body, 'annulled')) requiredPermissions.push('antibiotic.update');
     }
     if (requiredPermissions.length > 0 && !(await this.authorizationService.hasAllPermissions(actorUserId, requiredPermissions))) {
       throw new ForbiddenException('ANTIBIOTIC_PERMISSION_REQUIRED');

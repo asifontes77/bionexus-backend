@@ -6,7 +6,7 @@ describe('Antibiotic hardened backend contract', () => {
   const module = source('src/antibiotic/antibiotic.module.ts');
   const migration = source('src/database/migrations/1788400800000-AntibioticPermissions.ts');
   it('preserva rutas y aplica permisos normalizados', () => {
-    for (const code of ['antibiotic.read','antibiotic.create','antibiotic.update','antibiotic.change-status']) expect(controller + migration).toContain(code);
+    for (const code of ['antibiotic.read','antibiotic.create','antibiotic.update']) expect(controller + migration).toContain(code);
     expect(controller).toContain("@Get('order')");
     expect(controller).toContain('AuthorizationService');
   });

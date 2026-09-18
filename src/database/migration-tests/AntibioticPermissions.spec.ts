@@ -5,7 +5,7 @@ describe('AntibioticPermissions1788400800000', () => {
     const query = jest.fn().mockResolvedValue(undefined);
     await new AntibioticPermissions1788400800000().up({ query } as unknown as QueryRunner);
     const sql = query.mock.calls.map(([value]) => String(value)).join('\n');
-    for (const code of ['antibiotic.read','antibiotic.create','antibiotic.update','antibiotic.change-status']) expect(sql).toContain(code);
+    for (const code of ['antibiotic.read','antibiotic.create','antibiotic.update']) expect(sql).toContain(code);
     expect(sql).toContain("role.code='admin'");
     expect(sql).toContain('role.is_active=1');
   });

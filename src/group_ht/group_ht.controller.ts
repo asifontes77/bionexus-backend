@@ -1,4 +1,4 @@
-﻿import { Body, Controller, Delete, ForbiddenException, Get, Param, ParseIntPipe, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, ForbiddenException, Get, Param, ParseIntPipe, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { SecurityAuthenticatedRequest } from '../audit/security-audit-context';
 import { AuthorizationService } from '../authorization/authorization.service';
 import { RequirePermissions } from '../authorization/decorators/require-permissions.decorator';
@@ -45,7 +45,7 @@ export class GroupHtController {
     const requiredPermissions: string[] = [];
     if (body && typeof body === 'object' && !Array.isArray(body)) {
       if (['description', 'details'].some((field) => Object.prototype.hasOwnProperty.call(body, field))) requiredPermissions.push('worksheet-groups.update');
-      if (Object.prototype.hasOwnProperty.call(body, 'annulled')) requiredPermissions.push('worksheet-groups.change-status');
+      if (Object.prototype.hasOwnProperty.call(body, 'annulled')) requiredPermissions.push('worksheet-groups.update');
     }
     if (requiredPermissions.length > 0 && !(await this.authorizationService.hasAllPermissions(actorUserId, requiredPermissions))) {
       throw new ForbiddenException('WORKSHEET_GROUP_PERMISSION_REQUIRED');
@@ -53,7 +53,7 @@ export class GroupHtController {
     return this.groupHtService.updateGroupHt(id, body);
   }
 
-  @RequirePermissions('worksheet-groups.delete')
+  @RequirePermissions('worksheet-groups.update')
   @Delete(':id')
   deleteGroupHt(@Param('id', ParseIntPipe) id: number) { return this.groupHtService.deleteGroupHt(id); }
 }

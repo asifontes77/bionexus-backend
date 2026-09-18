@@ -6,7 +6,7 @@ describe("Germs hardened backend contract", () => {
   const migration = read("src/database/migrations/1788487200000-GermPermissions.ts");
   it("preserva la ruta publica y separa permisos", () => {
     expect(controller).toContain("@Controller('list-germs')");
-    for (const code of ["germs.read","germs.create","germs.update","germs.change-status"]) expect(controller + migration).toContain(code);
+    for (const code of ["germs.read","germs.create","germs.update"]) expect(controller + migration).toContain(code);
   });
   it("preserva historial sin eliminacion fisica", () => {
     expect(controller).not.toContain("@Delete");

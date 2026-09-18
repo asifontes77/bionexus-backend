@@ -1,4 +1,4 @@
-﻿import { Body, Controller, ForbiddenException, Get, Param, ParseIntPipe, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, ForbiddenException, Get, Param, ParseIntPipe, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthorizationService } from '../authorization/authorization.service';
 import { RequirePermissions } from '../authorization/decorators/require-permissions.decorator';
 import { PermissionGuard } from '../authorization/guards/permission.guard';
@@ -26,8 +26,9 @@ export class typepaymentController {
     const contentFields = ['code', 'description', 'displayOrder', 'currencyIds', 'defaultCurrencyId', 'fields'];
     const requiredPermissions: string[] = [];
     if (body && typeof body === 'object' && !Array.isArray(body) && contentFields.some((field) => Object.prototype.hasOwnProperty.call(body, field))) requiredPermissions.push('typepayment.update');
-    if (body && Object.prototype.hasOwnProperty.call(body, 'annulled')) requiredPermissions.push('typepayment.change-status');
-    if (requiredPermissions.length > 0 && !await this.authorizationService.hasAllPermissions(actorUserId, requiredPermissions)) throw new ForbiddenException('TYPEPAYMENT_PERMISSION_REQUIRED');
+    if (body && Object.prototype.hasOwnProperty.call(body, 'annulled')) requiredPermissions.push('typepayment.update');
+    const uniquePermissions = [...new Set(requiredPermissions)];
+    if (uniquePermissions.length > 0 && !await this.authorizationService.hasAllPermissions(actorUserId, uniquePermissions)) throw new ForbiddenException('TYPEPAYMENT_PERMISSION_REQUIRED');
     return this.typepaymentService.updateTypepayment(id, body, actorUserId);
   }
 }

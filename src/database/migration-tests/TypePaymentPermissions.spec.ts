@@ -8,7 +8,6 @@ describe('TypePaymentPermissions1786665600000', () => {
     expect(sql).toContain('typepayment.read');
     expect(sql).toContain('typepayment.create');
     expect(sql).toContain('typepayment.update');
-    expect(sql).toContain('typepayment.change-status');
     expect(sql).toContain("role.code = 'admin'");
   });
 

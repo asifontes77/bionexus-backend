@@ -1,4 +1,4 @@
-﻿import { GUARDS_METADATA } from '@nestjs/common/constants';
+import { GUARDS_METADATA } from '@nestjs/common/constants';
 import { REQUIRED_PERMISSIONS_KEY } from '../authorization/decorators/require-permissions.decorator';
 import { PermissionGuard } from '../authorization/guards/permission.guard';
 import { JwtUserGuard } from '../users/jwt-user.guard';
@@ -11,8 +11,8 @@ describe('TariffsController authorization', () => {
     ['getOne', 'tariffs.read'],
     ['create', 'tariffs.create'],
     ['update', 'tariffs.update'],
-    ['changeStatus', 'tariffs.change-status'],
-    ['setDefault', 'tariffs.set-default'],
+    ['changeStatus', 'tariffs.update'],
+    ['setDefault', 'tariffs.update'],
   ] as const)('protege %s con %s', (method, permission) => {
     expect(
       Reflect.getMetadata(

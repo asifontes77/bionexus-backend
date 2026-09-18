@@ -12,8 +12,6 @@ describe('TariffPermissions1789002000000', () => {
       'tariffs.read',
       'tariffs.create',
       'tariffs.update',
-      'tariffs.change-status',
-      'tariffs.set-default',
     ])
       expect(sql).toContain(code);
     expect(sql).toContain('ON DUPLICATE KEY UPDATE');

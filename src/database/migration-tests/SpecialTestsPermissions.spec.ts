@@ -6,7 +6,7 @@ describe('SpecialTestsPermissions1788573600000', () => {
     await new SpecialTestsPermissions1788573600000().up({ query } as unknown as QueryRunner);
     const sql = query.mock.calls.map(([value]) => String(value)).join('\n');
     expect(query).toHaveBeenCalledTimes(2);
-    for (const code of ['special-tests.read','special-tests.create','special-tests.update','special-tests.change-status','special-test-items.read','special-test-items.create','special-test-items.update','special-test-items.delete']) expect(sql).toContain(code);
+    for (const code of ['special-tests.read','special-tests.create','special-tests.update']) expect(sql).toContain(code);
     expect(sql).toContain("role.code='admin'");
     expect(sql).toContain('role.is_active=1');
   });

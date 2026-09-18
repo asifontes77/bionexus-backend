@@ -30,8 +30,7 @@ describe('Sample types hardened contract', () => {
       'sample-types.read',
       'sample-types.create',
       'sample-types.update',
-      'sample-types.change-status',
-    ])
+      ])
       expect(controller + migrations).toContain(code);
   });
 

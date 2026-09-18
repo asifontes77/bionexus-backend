@@ -1,4 +1,4 @@
-﻿import { Body,Controller,Get,Param,ParseIntPipe,Patch,Post,Req,UseGuards } from '@nestjs/common';
+import { Body,Controller,Get,Param,ParseIntPipe,Patch,Post,Req,UseGuards } from '@nestjs/common';
 import { getSecurityAuditActorUserId,SecurityAuthenticatedRequest } from '../audit/security-audit-context';
 import { RequirePermissions } from '../authorization/decorators/require-permissions.decorator';
 import { PermissionGuard } from '../authorization/guards/permission.guard';
@@ -15,5 +15,5 @@ export class CurrencyController {
   @RequirePermissions('currencies.read') @Get(':id') getOne(@Param('id',ParseIntPipe)id:number){return this.service.getOne(id);}
   @RequirePermissions('currencies.create') @Post() create(@Req()request:SecurityAuthenticatedRequest,@Body()body:CreateCurrencyDto){return this.service.create(body,getSecurityAuditActorUserId(request)??undefined);}
   @RequirePermissions('currencies.update') @Patch(':id') update(@Req()request:SecurityAuthenticatedRequest,@Param('id',ParseIntPipe)id:number,@Body()body:UpdateCurrencyDto){return this.service.update(id,body,getSecurityAuditActorUserId(request)??undefined);}
-  @RequirePermissions('currencies.change-status') @Patch(':id/status') changeStatus(@Req()request:SecurityAuthenticatedRequest,@Param('id',ParseIntPipe)id:number,@Body()body:ChangeCurrencyStatusDto){return this.service.changeStatus(id,body,getSecurityAuditActorUserId(request)??undefined);}
+  @RequirePermissions('currencies.update') @Patch(':id/status') changeStatus(@Req()request:SecurityAuthenticatedRequest,@Param('id',ParseIntPipe)id:number,@Body()body:ChangeCurrencyStatusDto){return this.service.changeStatus(id,body,getSecurityAuditActorUserId(request)??undefined);}
 }
