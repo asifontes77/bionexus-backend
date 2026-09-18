@@ -8,12 +8,14 @@ describe('BioNexusBaselineCandidate', () => {
     expect(__dirname.replace(/\\/g, '/')).not.toMatch(/\/database\/migrations$/);
   });
 
-  it('delega al QueryRunner el SQL aprobado sin transformarlo', async () => {
+  it('ejecuta secuencialmente el SQL aprobado con el runner controlado', async () => {
     const query = jest.fn().mockResolvedValue(undefined);
     const sql = readFileSync(join(__dirname, 'BioNexusBaseline.sql'), 'utf8');
     await new BioNexusBaselineCandidate().up({ query } as never);
-    expect(query).toHaveBeenCalledTimes(1);
-    expect(query).toHaveBeenCalledWith(sql);
+    expect(query.mock.calls.length).toBeGreaterThan(45);
+    expect(query.mock.calls.some(([value]) => /CREATE TABLE `users`/.test(String(value)))).toBe(true);
+    expect(query.mock.calls.some(([value]) => /CREATE.*TRIGGER/i.test(String(value)))).toBe(true);
+    expect(query.mock.calls.every(([value]) => !/^\s*DELIMITER/i.test(String(value)))).toBe(true);
   });
 
   it('bloquea un down destructivo no aprobado', async () => {
