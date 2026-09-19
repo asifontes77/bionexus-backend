@@ -1,27 +1,18 @@
-import { readdirSync, readFileSync } from 'fs';
-import { join } from 'path';
+import { readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 describe('Migration timestamp order', () => {
-  const directory = join(process.cwd(), 'src/database/migrations');
-  const files = readdirSync(directory).filter((file) => file.endsWith('.ts')).sort();
+  const directory = join(__dirname, '../migrations');
+  const files = readdirSync(directory)
+    .filter((file) => /^\d+-.*\.ts$/.test(file))
+    .sort();
 
-  it('usa exclusivamente timestamps JavaScript de 13 digitos', () => {
-    expect(files.length).toBeGreaterThan(0);
-    for (const file of files) expect(file).toMatch(/^\d{13}-/);
+  it('mantiene exclusivamente el baseline inicial', () => {
+    expect(files).toEqual(['1790366400000-BioNexusBaseline.ts']);
   });
 
-  it('mantiene orden ascendente y ejecuta InitialSchema antes de los triggers', () => {
-    const timestamps = files.map((file) => Number(file.slice(0, 13)));
-    expect(timestamps).toEqual([...timestamps].sort((a, b) => a - b));
-    expect(files.findIndex((file) => file.includes('InitialSchema')))
-      .toBeLessThan(files.findIndex((file) => file.includes('updated-at-triggers')));
-  });
-
-  it('alinea el sufijo de cada clase con su archivo', () => {
-    for (const file of files) {
-      const timestamp = file.slice(0, 13);
-      const source = readFileSync(join(directory, file), 'utf8');
-      expect(source).toMatch(new RegExp(`export\\s+class\\s+\\w+${timestamp}\\s+implements\\s+MigrationInterface`));
-    }
+  it('alinea el sufijo de la clase con su archivo', () => {
+    const source = readFileSync(join(directory, files[0]), 'utf8');
+    expect(source).toContain('BioNexusBaseline1790366400000');
   });
 });

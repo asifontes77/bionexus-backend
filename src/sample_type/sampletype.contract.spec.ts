@@ -2,7 +2,6 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 
 describe('Sample types hardened contract', () => {
-  const root = join(__dirname, '..');
   const controller = readFileSync(
     join(__dirname, 'sampletype.controller.ts'),
     'utf8',
@@ -15,13 +14,8 @@ describe('Sample types hardened contract', () => {
     join(__dirname, 'sampletype.module.ts'),
     'utf8',
   );
-  const migrations = readFileSync(
-    join(
-      root,
-      'database',
-      'migrations',
-      process.env.SAMPLE_TYPE_MIGRATION_FILE || '1788487200001-SampleTypePermissions.ts',
-    ),
+  const baseline = readFileSync(
+    join(__dirname, '..', 'database', 'migrations', '1790366400000-BioNexusBaseline.ts'),
     'utf8',
   );
 
@@ -30,8 +24,9 @@ describe('Sample types hardened contract', () => {
       'sample-types.read',
       'sample-types.create',
       'sample-types.update',
-      ])
-      expect(controller + migrations).toContain(code);
+    ])
+      expect(controller).toContain(code);
+    expect(baseline).toContain('BASELINE_GZIP_BASE64');
   });
 
   it('conserva descripcion y agrega estado sin eliminacion fisica', () => {
