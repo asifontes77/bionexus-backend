@@ -9,7 +9,7 @@ export class BioNexusBaseline1790366400000 implements MigrationInterface {
 
   async up(queryRunner: QueryRunner): Promise<void> {
     const existingTables = (await queryRunner.query(
-      "SELECT COUNT(*) AS tableCount FROM information_schema.tables WHERE table_schema = DATABASE() AND table_type = 'BASE TABLE'",
+      "SELECT COUNT(*) AS tableCount FROM information_schema.tables WHERE table_schema = DATABASE() AND table_type = 'BASE TABLE' AND table_name <> 'migrations'",
     )) as Array<{ tableCount: string | number }>;
     if (Number(existingTables[0]?.tableCount ?? 0) > 0) {
       throw new Error('BIONEXUS_BASELINE_REQUIRES_EMPTY_DATABASE');
