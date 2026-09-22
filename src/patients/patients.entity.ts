@@ -33,7 +33,7 @@ export class Patient {
   @Column({ type: 'smallint' })
   age: number;
 
-  @Column('varchar', { length: 5, default: 'aÃ±os' })
+  @Column('varchar', { length: 5, default: 'años' })
   month_year: string;
 
   @Column('tinyint', { default: () => '0', nullable: true })

@@ -62,7 +62,7 @@ export class PatientsService {
   async getPatientsDateOrder(admission: Date) {
     return this.patientRepository
       .createQueryBuilder('patient')
-      .leftJoinAndSelect('patient.exams', 'exam') // Selecciona automÃ¡ticamente todos los campos de 'exam'
+      .leftJoinAndSelect('patient.exams', 'exam') // Selecciona automáticamente todos los campos de 'exam'
       .leftJoinAndSelect('exam.examGroup', 'exam_group') // Selecciona todos los campos de 'examGroup'
       .where('patient.admission_date = :admission', { admission })
       .orderBy('patient.id', 'ASC')
@@ -585,7 +585,7 @@ export class PatientsService {
           row.sex ? 'masculino' : 'femanino'
         }`,
       );
-      printer.println(`TelÃ©fono: ${row.phone}`);
+      printer.println(`Teléfono: ${row.phone}`);
       printer.newLine();
       printer.println('OBSERVACION:');
       printer.println(row.observation);
