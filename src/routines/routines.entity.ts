@@ -15,6 +15,8 @@ export class Routines {
   @Column('varchar', { length: 200 })
   details: string;
 
+  @Column({ name: 'is_active', type: 'boolean', default: true })
+  isActive: boolean;
   @OneToMany(() => ExamRoutineItem, (item) => item.routine)
   items: ExamRoutineItem[];
 }

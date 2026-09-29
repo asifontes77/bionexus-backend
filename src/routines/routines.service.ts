@@ -1,8 +1,9 @@
-import { BadRequestException, Injectable, NotFoundException, Optional } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, EntityManager, In, Like, Repository } from 'typeorm';
+import { DataSource, EntityManager, In, Like, QueryFailedError, Repository } from 'typeorm';
 import { SecurityAuditService } from '../audit/security-audit.service';
 import { Examlists } from '../exam_lists/examlists.entity';
+import { ChangeRoutineStatusDto } from './dto/change-routine-status.dto';
 import { CreateRoutinesDto } from './dto/create-routines.dto';
 import { UpdateRoutinesDto } from './dto/update-routines.dto';
 import { ExamRoutineItem } from './exam-routine-item.entity';
@@ -36,36 +37,73 @@ export class RoutinesService {
     const exams = this.parseRegisteredExams(dto?.registered_exams, true);
     const description = this.validateText(dto?.description, 50, 'ROUTINE_DESCRIPTION_REQUIRED');
     const details = this.validateText(dto?.details, 200, 'ROUTINE_DETAILS_REQUIRED', true);
-    return this.dataSource.transaction(async (manager) => {
-      await this.validateCatalogs(manager, exams);
-      const routine = await manager.getRepository(Routines).save(manager.getRepository(Routines).create({ description, details, registered_exams: this.legacyJson(exams) as unknown as string }));
-      await this.replaceItems(manager, routine.id, exams);
-      return this.getProjected(manager, routine.id);
-    });
+    await this.ensureDescriptionAvailable(this.routinesRepository, description);
+    try {
+      return await this.dataSource.transaction(async (manager) => {
+        await this.validateCatalogs(manager, exams);
+        const repository = manager.getRepository(Routines);
+        const routine = await repository.save(repository.create({ description, details, registered_exams: this.legacyJson(exams) as unknown as string }));
+        await this.replaceItems(manager, routine.id, exams);
+        return this.getProjected(manager, routine.id);
+      });
+    } catch (error) {
+      if (this.isDescriptionDuplicate(error)) throw new ConflictException('ROUTINE_DESCRIPTION_ALREADY_EXISTS');
+      throw error;
+    }
   }
-
   async updateRoutines(id: number, dto: UpdateRoutinesDto) {
     this.validateId(id);
     if (!dto || typeof dto !== 'object' || Array.isArray(dto) || Object.keys(dto).length === 0) throw new BadRequestException('ROUTINE_UPDATE_REQUIRED');
+    try {
+      return await this.dataSource.transaction(async (manager) => {
+        const repository = manager.getRepository(Routines);
+        const routine = await repository.findOne({ where: { id } });
+        if (!routine) throw new NotFoundException('ROUTINE_NOT_FOUND');
+        if (Object.prototype.hasOwnProperty.call(dto, 'description')) {
+          const description = this.validateText(dto.description, 50, 'ROUTINE_DESCRIPTION_REQUIRED');
+          await this.ensureDescriptionAvailable(repository, description, id);
+          routine.description = description;
+        }
+        if (Object.prototype.hasOwnProperty.call(dto, 'details')) routine.details = this.validateText(dto.details, 200, 'ROUTINE_DETAILS_REQUIRED', true);
+        if (Object.prototype.hasOwnProperty.call(dto, 'registered_exams')) {
+          const exams = this.parseRegisteredExams(dto.registered_exams, true);
+          await this.validateCatalogs(manager, exams);
+          routine.registered_exams = this.legacyJson(exams) as unknown as string;
+          await repository.save(routine);
+          await this.replaceItems(manager, id, exams);
+        } else {
+          await repository.save(routine);
+        }
+        return this.getProjected(manager, id);
+      });
+    } catch (error) {
+      if (this.isDescriptionDuplicate(error)) throw new ConflictException('ROUTINE_DESCRIPTION_ALREADY_EXISTS');
+      throw error;
+    }
+  }
+  async changeStatus(id: number, dto: ChangeRoutineStatusDto, actorUserId: number | null) {
+    this.validateId(id);
+    if (!dto || typeof dto !== 'object' || typeof dto.isActive !== 'boolean') throw new BadRequestException('ROUTINE_STATUS_INVALID');
+    if (!Number.isInteger(actorUserId) || Number(actorUserId) <= 0) throw new BadRequestException('ROUTINE_STATUS_ACTOR_REQUIRED');
+    if (!this.audit) throw new Error('ROUTINE_STATUS_AUDIT_UNAVAILABLE');
     return this.dataSource.transaction(async (manager) => {
       const repository = manager.getRepository(Routines);
-      const routine = await repository.findOne({ where: { id } });
+      const routine = await repository.createQueryBuilder('routine').setLock('pessimistic_write').where('routine.id = :id', { id }).getOne();
       if (!routine) throw new NotFoundException('ROUTINE_NOT_FOUND');
-      if (Object.prototype.hasOwnProperty.call(dto, 'description')) routine.description = this.validateText(dto.description, 50, 'ROUTINE_DESCRIPTION_REQUIRED');
-      if (Object.prototype.hasOwnProperty.call(dto, 'details')) routine.details = this.validateText(dto.details, 200, 'ROUTINE_DETAILS_REQUIRED', true);
-      if (Object.prototype.hasOwnProperty.call(dto, 'registered_exams')) {
-        const exams = this.parseRegisteredExams(dto.registered_exams, true);
-        await this.validateCatalogs(manager, exams);
-        routine.registered_exams = this.legacyJson(exams) as unknown as string;
-        await repository.save(routine);
-        await this.replaceItems(manager, id, exams);
-      } else {
-        await repository.save(routine);
-      }
+      if (routine.isActive === dto.isActive) return this.getProjected(manager, id);
+      routine.isActive = dto.isActive;
+      await repository.save(routine);
+      await this.audit.write(manager, {
+        actorUserId: Number(actorUserId),
+        action: dto.isActive ? 'routine.activated' : 'routine.deactivated',
+        entityType: 'exam_routine',
+        entityId: id,
+        summary: dto.isActive ? 'Rutina de examenes activada' : 'Rutina de examenes inactivada',
+        metadata: { description: routine.description, isActive: dto.isActive },
+      });
       return this.getProjected(manager, id);
     });
   }
-
   async deleteRoutines(id: number, actorUserId: number | null) {
     this.validateId(id);
     if (!Number.isInteger(actorUserId) || Number(actorUserId) <= 0) throw new BadRequestException('ROUTINE_DELETE_ACTOR_REQUIRED');
@@ -152,6 +190,19 @@ export class RoutinesService {
     return exams.map((item) => item.activePresent ? { examId: item.examId, active: item.active } : { examId: item.examId });
   }
 
+  private async ensureDescriptionAvailable(repository: Repository<Routines>, description: string, excludedId?: number) {
+    const query = repository.createQueryBuilder('routine')
+      .where('UPPER(TRIM(routine.description)) = UPPER(TRIM(:description))', { description });
+    if (excludedId) query.andWhere('routine.id != :excludedId', { excludedId });
+    if (await query.getCount()) throw new ConflictException('ROUTINE_DESCRIPTION_ALREADY_EXISTS');
+  }
+  private isDescriptionDuplicate(error: unknown) {
+    const driverError = error instanceof QueryFailedError
+      ? (error as QueryFailedError & { driverError?: { code?: string; errno?: number; message?: string } }).driverError
+      : undefined;
+    return driverError?.code === 'ER_DUP_ENTRY'
+      && (driverError?.errno === 1062 || String(driverError?.message ?? '').includes('UX_exam_routines_description'));
+  }
   private validateId(id: number) {
     if (!Number.isInteger(id) || id <= 0) throw new BadRequestException('ROUTINE_ID_INVALID');
   }

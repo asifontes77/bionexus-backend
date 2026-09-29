@@ -9,7 +9,7 @@ describe('RoutinesController authorization', () => {
   const controller = new RoutinesController({} as RoutinesService);
   it.each([
     ['getRoutinesList', 'routines.read'], ['getRoutines', 'routines.read'], ['countWithLike', 'routines.read'],
-    ['createRoutines', 'routines.create'], ['updateRoutines', 'routines.update'], ['deleteRoutines', 'routines.delete'],
+    ['createRoutines', 'routines.create'], ['updateRoutines', 'routines.update'], ['changeStatus', 'routines.update'], ['deleteRoutines', 'routines.delete'],
   ] as const)('protege %s con JWT, PermissionGuard y %s', (methodName, permission) => {
     const method = RoutinesController.prototype[methodName];
     expect(Reflect.getMetadata(GUARDS_METADATA, RoutinesController)).toEqual([JwtUserGuard, PermissionGuard]);

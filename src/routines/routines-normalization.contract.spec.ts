@@ -3,7 +3,7 @@ const service = readFileSync('src/routines/routines.service.ts', 'utf8');
 const createDto = readFileSync('src/routines/dto/create-routines.dto.ts', 'utf8');
 describe('Normalized routines service contract', () => {
   it('uses transactions and normalized items for every write', () => {
-    expect(service.match(/dataSource\.transaction/g)?.length).toBe(3);
+    expect(service.match(/dataSource\.transaction/g)?.length).toBe(4);
     expect(service).toContain('replaceItems(manager, routine.id, exams)');
     expect(service).toContain('replaceItems(manager, id, exams)');
     expect(service).toContain("delete({ routine_id: id })");

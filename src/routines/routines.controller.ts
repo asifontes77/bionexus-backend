@@ -3,6 +3,7 @@ import { getSecurityAuditActorUserId, SecurityAuthenticatedRequest } from '../au
 import { RequirePermissions } from '../authorization/decorators/require-permissions.decorator';
 import { PermissionGuard } from '../authorization/guards/permission.guard';
 import { JwtUserGuard } from '../users/jwt-user.guard';
+import { ChangeRoutineStatusDto } from './dto/change-routine-status.dto';
 import { CreateRoutinesDto } from './dto/create-routines.dto';
 import { UpdateRoutinesDto } from './dto/update-routines.dto';
 import { RoutinesService } from './routines.service';
@@ -32,6 +33,11 @@ export class RoutinesController {
   @Patch(':id')
   updateRoutines(@Param('id', ParseIntPipe) id: number, @Body() body: UpdateRoutinesDto) { return this.routineService.updateRoutines(id, body); }
 
+  @RequirePermissions('routines.update')
+  @Patch(':id/status')
+  changeStatus(@Req() request: SecurityAuthenticatedRequest, @Param('id', ParseIntPipe) id: number, @Body() body: ChangeRoutineStatusDto) {
+    return this.routineService.changeStatus(id, body, getSecurityAuditActorUserId(request));
+  }
   @RequirePermissions('routines.delete')
   @Delete(':id')
   deleteRoutines(@Req() request: SecurityAuthenticatedRequest, @Param('id', ParseIntPipe) id: number) {
