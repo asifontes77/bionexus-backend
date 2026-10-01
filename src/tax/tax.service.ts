@@ -33,9 +33,13 @@ export class TaxService {
 
   async createTax(body: CreateTaxDto, actorUserId?: number): Promise<Tax> {
     const values = this.normalizeCreate(body);
-    if (actorUserId === undefined) return this.taxRepository.save(this.taxRepository.create(values));
+    if (actorUserId === undefined) {
+      await this.assertDescriptionAvailable(this.taxRepository, values.description as string);
+      return this.taxRepository.save(this.taxRepository.create(values));
+    }
     return this.runWrite(actorUserId, async (manager) => {
       const repository = manager.getRepository(Tax);
+      await this.assertDescriptionAvailable(repository, values.description as string);
       const saved = await repository.save(repository.create(values));
       await this.writeAudit(manager, actorUserId, 'tax.created', saved, values);
       return saved;
@@ -48,6 +52,7 @@ export class TaxService {
     const update = async (repository: Repository<Tax>) => {
       const tax = await repository.findOne({ where: { id } });
       if (!tax) throw new NotFoundException('TAX_NOT_FOUND');
+      if (values.description !== undefined) await this.assertDescriptionAvailable(repository, values.description, id);
       return repository.save(Object.assign(tax, values));
     };
     if (actorUserId === undefined) return update(this.taxRepository);
@@ -95,6 +100,12 @@ export class TaxService {
     });
   }
 
+  private async assertDescriptionAvailable(repository: Repository<Tax>, description: string, excludedId?: number): Promise<void> {
+    const query = repository.createQueryBuilder('tax')
+      .where('LOWER(TRIM(tax.description)) = LOWER(:description)', { description: description.trim() });
+    if (excludedId !== undefined) query.andWhere('tax.id <> :excludedId', { excludedId });
+    if (await query.getExists()) throw new ConflictException('TAX_DESCRIPTION_ALREADY_EXISTS');
+  }
   private normalizeCreate(body: CreateTaxDto): Partial<Tax> {
     if (!body || typeof body !== 'object' || Array.isArray(body)) throw new BadRequestException('TAX_BODY_REQUIRED');
     return {
