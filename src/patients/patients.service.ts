@@ -301,7 +301,7 @@ export class PatientsService {
     if (!this.resultsEmailHistoryRepository) throw new Error('PATIENT_RESULTS_EMAIL_HISTORY_UNAVAILABLE');
     return this.resultsEmailHistoryRepository
       .createQueryBuilder('history')
-      .innerJoin('patients', 'patient', 'patient.id = history.patient_id')
+      .innerJoin('patient_admissions', 'patient', 'patient.id = history.patient_id')
       .innerJoin('users', 'requester', 'requester.id = history.requested_by_user_id')
       .leftJoin('users', 'completer', 'completer.id = history.completed_by_user_id')
       .select('history.id', 'id')
