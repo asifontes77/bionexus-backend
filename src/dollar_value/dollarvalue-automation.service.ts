@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { SecurityAuditService } from '../audit/security-audit.service';
@@ -9,12 +9,21 @@ import { Dollarvalue } from './dollarvalue.entity';
 
 @Injectable()
 export class DollarvalueAutomationService implements OnModuleInit, OnModuleDestroy {
+  private readonly logger = new Logger(DollarvalueAutomationService.name);
   private timer?: NodeJS.Timeout;
   private running = false;
   private lastScheduledDate: string | null = null;
   constructor(@InjectRepository(DollarvalueAutomation) private readonly configRepo: Repository<DollarvalueAutomation>, @InjectRepository(DollarvalueAutomationRun) private readonly runRepo: Repository<DollarvalueAutomationRun>, private readonly dataSource: DataSource, private readonly source: DollarvalueSourceService, private readonly audit: SecurityAuditService) {}
-  onModuleInit(): void { this.timer = setInterval(() => void this.tick(), 60000); this.timer.unref(); void this.tick(); }
-  onModuleDestroy(): void { if (this.timer) clearInterval(this.timer); }
+  onModuleInit(): void {
+    this.logger.log('DollarValue scheduler initializing. IntervalMs=60000');
+    this.timer = setInterval(() => void this.tick(), 60000);
+    this.timer.unref();
+    void this.tick();
+  }
+  onModuleDestroy(): void {
+    this.logger.log('DollarValue scheduler stopping.');
+    if (this.timer) clearInterval(this.timer);
+  }
   async getConfig(): Promise<DollarvalueAutomation> { return this.ensureConfig(); }
   async updateConfig(body: Record<string, unknown>, actorUserId: number): Promise<DollarvalueAutomation> {
     if (!Number.isInteger(actorUserId) || actorUserId <= 0) throw new BadRequestException('DOLLAR_AUTOMATION_ACTOR_REQUIRED');
@@ -22,16 +31,49 @@ export class DollarvalueAutomationService implements OnModuleInit, OnModuleDestr
     const config = await this.ensureConfig();
     if (body.enabled !== undefined && typeof body.enabled !== 'boolean') throw new BadRequestException('DOLLAR_AUTOMATION_ENABLED_INVALID');
     if (body.run_time !== undefined && (typeof body.run_time !== 'string' || !/^([01]\d|2[0-3]):[0-5]\d$/.test(body.run_time))) throw new BadRequestException('DOLLAR_AUTOMATION_TIME_INVALID');
-    Object.assign(config, body); return this.configRepo.save(config);
+    const previousEnabled = config.enabled;
+    const previousRunTime = config.run_time;
+    Object.assign(config, body);
+    const scheduleChanged = previousEnabled !== config.enabled || previousRunTime !== config.run_time;
+    if (scheduleChanged) {
+      config.last_scheduled_date = null;
+      this.lastScheduledDate = null;
+      this.logger.log(`[CONFIGURATION]` + `\n    Caller: DollarValueScheduler` + `\n    Mensaje: Programacion automatica actualizada` + `\n    Habilitado: ${config.enabled}` + `\n    Hora: ${config.run_time}` + `\n    Zona horaria: ${config.time_zone}` + `\n    Control diario reiniciado: true`);
+    }
+    const saved = await this.configRepo.save(config);
+    if (scheduleChanged) void this.tick();
+    return saved;
   }
   async executeNow(actorUserId: number): Promise<Record<string, unknown>> { if (!Number.isInteger(actorUserId) || actorUserId <= 0) throw new BadRequestException('DOLLAR_AUTOMATION_ACTOR_REQUIRED'); return this.execute(actorUserId); }
   private async tick(): Promise<void> {
-    const config = await this.ensureConfig(); if (!config.enabled || this.running) return;
-    const parts = new Intl.DateTimeFormat('en-CA', { timeZone: config.time_zone, weekday: 'short', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(new Date());
-    const get = (type: string) => parts.find((x) => x.type === type)?.value ?? '';
-    const day = get('year') + '-' + get('month') + '-' + get('day'), weekday = get('weekday'), time = get('hour') + ':' + get('minute');
-    if (['Sat', 'Sun'].includes(weekday) || time !== config.run_time || this.lastScheduledDate === day) return;
-    this.lastScheduledDate = day; await this.execute(null);
+    const config = await this.ensureConfig();
+    if (!config.enabled) {
+      return;
+    }
+    if (this.running) {
+      this.logger.warn('DollarValue scheduler tick skipped. Reason=BUSY');
+      return;
+    }
+    const parts = new Intl.DateTimeFormat('en-CA', { timeZone: config.time_zone, weekday: 'short', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false, hourCycle: 'h23' }).formatToParts(new Date());
+    const get = (type: string) => parts.find((part) => part.type === type)?.value ?? '';
+    const day = get('year') + '-' + get('month') + '-' + get('day');
+    const weekday = get('weekday');
+    const time = get('hour') + ':' + get('minute');
+    if (['Sat', 'Sun'].includes(weekday)) {
+      return;
+    }
+    if (time < config.run_time) {
+      return;
+    }
+    if (config.last_scheduled_date === day) {
+      return;
+    }
+    this.logger.log(`[START]` + `\n    Caller: DollarValueScheduler` + `\n    Mensaje: Ejecucion automatica iniciada` + `\n    Fecha: ${day}` + `\n    Hora actual: ${time}` + `\n    Hora programada: ${config.run_time}`);
+    config.last_scheduled_date = day;
+    await this.configRepo.save(config);
+    this.lastScheduledDate = day;
+    const result = await this.execute(null);
+    this.logger.log(`[SUCCESS]` + `\n    Caller: DollarValueScheduler` + `\n    Mensaje: Ejecucion automatica finalizada` + `\n    Estado: ${String(result.status ?? 'UNKNOWN')}` + `\n    Fecha: ${day}`);
   }
   private async execute(actorUserId: number | null): Promise<Record<string, unknown>> {
     if (this.running) return { status: 'BUSY' }; this.running = true;
@@ -42,13 +84,23 @@ export class DollarvalueAutomationService implements OnModuleInit, OnModuleDestr
       const result = await this.dataSource.transaction(async (manager) => {
         const repository = manager.getRepository(Dollarvalue); const previous = await repository.findOne({ where: {}, order: { id: 'DESC' } });
         if (previous && Number(previous.value) === fetched.value) return { status: 'UNCHANGED', record: previous };
-        const saved = await repository.save(repository.create({ value: fetched.value, date: new Date(fetched.effectiveDate + 'T12:00:00-04:00') }));
+        const saved = await repository.save(repository.create({ value: fetched.value, date: fetched.effectiveDate, registeredAt: new Date(), source: fetched.source, updateMethod: 'AUTOMATIC' }));
         if (actorUserId) await this.audit.write(manager, { actorUserId, action: 'dollar-value.automatic-published', entityType: 'dollar-value', entityId: saved.id, summary: 'Valor del dolar actualizado automaticamente', metadata: { source: fetched.source, effectiveDate: fetched.effectiveDate, previousValue: previous?.value ?? null, currentValue: saved.value } });
         return { status: 'INSERTED', record: saved };
       });
-      Object.assign(run, { finished_at: new Date(), status: result.status, source: fetched.source, value: fetched.value, effective_date: fetched.effectiveDate });
-      Object.assign(config, { last_finished_at: run.finished_at, last_status: run.status, last_source: fetched.source, last_error: null }); await this.runRepo.save(run); await this.configRepo.save(config);
-      return { status: result.status, source: fetched.source, value: fetched.value, effectiveDate: fetched.effectiveDate, record: result.record };
+      const finishedAt = new Date();
+      if (result.status === 'UNCHANGED') {
+        await this.runRepo.remove(run);
+        Object.assign(config, { last_finished_at: finishedAt, last_status: 'UNCHANGED', last_source: fetched.source, last_error: null });
+        await this.configRepo.save(config);
+        this.logger.log(`[SUCCESS]` + `\n    Caller: DollarValueScheduler` + `\n    Mensaje: Verificacion automatica finalizada sin cambios` + `\n    Estado: UNCHANGED` + `\n    Fuente: ${fetched.source}` + `\n    Valor: ${fetched.value}` + `\n    Fecha efectiva: ${fetched.effectiveDate}`);
+        return { status: 'UNCHANGED', source: fetched.source, value: fetched.value, effectiveDate: fetched.effectiveDate, record: result.record };
+      }
+      Object.assign(run, { finished_at: finishedAt, status: 'INSERTED', source: fetched.source, value: fetched.value, effective_date: fetched.effectiveDate });
+      Object.assign(config, { last_finished_at: finishedAt, last_status: 'INSERTED', last_source: fetched.source, last_error: null });
+      await this.runRepo.save(run);
+      await this.configRepo.save(config);
+      return { status: 'INSERTED', source: fetched.source, value: fetched.value, effectiveDate: fetched.effectiveDate, record: result.record };
     } catch (error) {
       const message = error instanceof Error ? error.message.slice(0, 500) : 'DOLLAR_AUTOMATION_FAILED'; Object.assign(run, { finished_at: new Date(), status: 'FAILED', error: message }); Object.assign(config, { last_finished_at: run.finished_at, last_status: 'FAILED', last_error: message }); await this.runRepo.save(run); await this.configRepo.save(config); return { status: 'FAILED', error: message };
     } finally { this.running = false; }

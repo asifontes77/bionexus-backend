@@ -31,7 +31,7 @@ export class DollarvalueService {
     return this.dataSource.transaction(async (manager) => {
       const repository = manager.getRepository(Dollarvalue);
       const previous = await repository.findOne({ where: {}, order: { id: 'DESC' } });
-      const saved = await repository.save(repository.create({ value, date: new Date() }));
+      const saved = await repository.save(repository.create({ value, date: this.caracasDate(), registeredAt: new Date(), source: 'UNKNOWN', updateMethod: 'MANUAL' }));
       await this.writeAudit(manager, actorUserId, previous, saved);
       return saved;
     });
@@ -47,6 +47,12 @@ export class DollarvalueService {
     return rounded;
   }
 
+  private caracasDate(): string {
+    const parts = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Caracas', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date());
+    const get = (type: string) => parts.find((part) => part.type === type)?.value ?? '';
+    return get('year') + '-' + get('month') + '-' + get('day');
+  }
+
   private async writeAudit(manager: EntityManager, actorUserId: number, previous: Dollarvalue | null, current: Dollarvalue): Promise<void> {
     await this.audit.write(manager, {
       actorUserId,
@@ -56,9 +62,11 @@ export class DollarvalueService {
       summary: 'Valor del dolar publicado',
       metadata: {
         previousValue: previous?.value ?? null,
-        previousDate: previous?.date?.toISOString?.() ?? null,
+        previousDate: previous?.date ?? null,
         currentValue: current.value,
-        currentDate: current.date.toISOString(),
+        currentDate: current.date,
+        source: current.source,
+        updateMethod: current.updateMethod,
       },
     });
   }

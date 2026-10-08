@@ -13,4 +13,7 @@ export class DollarvalueAutomation {
   @Column({ type: 'varchar', length: 20, nullable: true }) last_status: string | null;
   @Column({ type: 'varchar', length: 40, nullable: true }) last_source: string | null;
   @Column({ type: 'varchar', length: 500, nullable: true }) last_error: string | null;
+
+  @Column({ name: 'last_scheduled_date', type: 'date', nullable: true })
+  last_scheduled_date: string | null;
 }

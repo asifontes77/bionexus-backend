@@ -7,7 +7,7 @@ import {
   Optional,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, EntityManager, In, Not, Repository } from 'typeorm';
+import { Raw, DataSource, EntityManager, In, Not, Repository } from 'typeorm';
 import { CreateSecurityRoleDto } from './dto/create-security-role.dto';
 import { ReplaceUserPermissionOverridesDto } from './dto/replace-user-permission-overrides.dto';
 import { UpdateSecurityRoleDto } from './dto/update-security-role.dto';
@@ -924,12 +924,14 @@ async createRole(
     }
 
     if (hasName) {
-      role.name = this.normalizeRequiredText(
+      const name = this.normalizeRequiredText(
         dto.name as string,
         'ROLE_NAME_REQUIRED',
         100,
         'ROLE_NAME_TOO_LONG',
       );
+      await this.ensureRoleNameAvailable(repository, name, roleId);
+      role.name = name;
     }
     if (hasDescription) {
       role.description = this.normalizeOptionalText(
@@ -948,7 +950,7 @@ async createRole(
       role.isActive = dto.isActive;
     }
 
-    return repository.save(role);
+    return this.saveRole(repository, role);
   }
 
   private async createRoleWithRepository(
@@ -975,6 +977,7 @@ async createRole(
     if (existingRole) {
       throw new ConflictException('ROLE_CODE_ALREADY_EXISTS');
     }
+    await this.ensureRoleNameAvailable(repository, name);
 
     const role = repository.create({
       code,
@@ -983,10 +986,40 @@ async createRole(
       isSystem: false,
       isActive: true,
     });
-    return repository.save(role);
+    return this.saveRole(repository, role);
   }
 
-  private getRoleChangedFields(dto: UpdateSecurityRoleDto): string[] {
+  private async ensureRoleNameAvailable(
+    repository: Repository<SecurityRole>,
+    name: string,
+    excludedId?: number,
+  ): Promise<void> {
+    const normalizedName = name.trim().toLocaleLowerCase();
+    const existingRole = await repository.findOne({
+      where: { name: Raw((alias) => `LOWER(TRIM(${alias})) = :normalizedName`, { normalizedName }) },
+      select: { id: true },
+    });
+    if (existingRole && existingRole.id !== excludedId) {
+      throw new ConflictException('ROLE_NAME_ALREADY_EXISTS');
+    }
+  }
+  private async saveRole(
+    repository: Repository<SecurityRole>,
+    role: SecurityRole,
+  ): Promise<SecurityRole> {
+    try {
+      return await repository.save(role);
+    } catch (error) {
+      const driverError = error && typeof error === 'object' && 'driverError' in error
+        ? (error as { driverError?: { code?: string; errno?: number; sqlMessage?: string } }).driverError
+        : undefined;
+      const duplicate = driverError?.code === 'ER_DUP_ENTRY' || driverError?.errno === 1062;
+      if (duplicate && String(driverError?.sqlMessage ?? '').includes('UX_security_roles_name_normalized')) {
+        throw new ConflictException('ROLE_NAME_ALREADY_EXISTS');
+      }
+      throw error;
+    }
+  }  private getRoleChangedFields(dto: UpdateSecurityRoleDto): string[] {
     return ['name', 'description', 'isActive'].filter(
       (field) => dto[field as keyof UpdateSecurityRoleDto] !== undefined,
     );
