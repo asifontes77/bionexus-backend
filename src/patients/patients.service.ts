@@ -565,7 +565,7 @@ export class PatientsService {
     const patientFound = await this.getPatient(id);
     const laboratoryFound = await this.laboratoryService.getLaboratory(1);
     const laboratory = JSON.parse(JSON.stringify(laboratoryFound));
-    if (patientFound && laboratory.printer_interface.legth !== 0) {
+    if (patientFound && laboratory.printer_interface.length !== 0) {
       const row = JSON.parse(JSON.stringify(patientFound));
       const rowE = row.exams;
 
