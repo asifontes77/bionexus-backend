@@ -1,7 +1,8 @@
-﻿import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { DeepPartial, EntityManager } from 'typeorm';
 import { SecurityAuditService } from '../audit/security-audit.service';
 import { Exam } from '../exams/exams.entity';
+import { Laboratory } from '../laboratory/laboratory.entity';
 import { PatientProfile } from '../patients/patient-profile.entity';
 import { Patient } from '../patients/patients.entity';
 import { Waypay } from '../way_pay/waypay.entity';
@@ -10,7 +11,17 @@ import { PaymentItemFieldValue } from '../way_pay_items/payment-item-field-value
 @Injectable()
 export class PatientAdmissionCloseRepository {
   constructor(private readonly audit: SecurityAuditService) {}
-  async persist(manager: EntityManager, rows: any) {
+  async allocateReceiptNumber(manager: EntityManager): Promise<number> {
+    const repository=manager.getRepository(Laboratory);
+    const laboratory=await repository.createQueryBuilder('laboratory').setLock('pessimistic_write').orderBy('laboratory.id','ASC').getOne();
+    if(!laboratory)throw new Error('PATIENT_ADMISSION_CLOSE_LABORATORY_REQUIRED');
+    const current=Number(laboratory.receipt_number);
+    if(!Number.isInteger(current)||current<0)throw new Error('PATIENT_ADMISSION_CLOSE_RECEIPT_NUMBER_INVALID');
+    const receiptNumber=current+1;
+    laboratory.receipt_number=receiptNumber;
+    await repository.save(laboratory);
+    return receiptNumber;
+  }  async persist(manager: EntityManager, rows: any) {
     const profileRepository=manager.getRepository(PatientProfile);
     const admissionRepository=manager.getRepository(Patient);
     const examRepository=manager.getRepository(Exam);
@@ -33,6 +44,6 @@ export class PatientAdmissionCloseRepository {
     const valueEntities=payments.flatMap((payment,index)=>(rows.wayPayItems[index].fieldValues??[]).map((value:any)=>valueRepository.create({...value,paymentItemId:payment.id} as DeepPartial<PaymentItemFieldValue>)));
     if(valueEntities.length>0)await valueRepository.save(valueEntities);
     await this.audit.write(manager,{...rows.audit,entityId:admission.id});
-    return{profileId:profile.id,admissionId:admission.id,patientPosition:admission.patient_position,examIds:exams.map((row:Exam)=>row.id),wayPayId:wayPay.id,paymentIds:payments.map((row:Waypayitems)=>row.id),totals:{subtotal:Number(admission.subtotal),taxTotal:Number(admission.iva_total),total:Number(admission.total),paid:Number(admission.total_canceled)}};
+    return{profileId:profile.id,admissionId:admission.id,receiptNumber:admission.receipt_number,patientPosition:admission.patient_position,examIds:exams.map((row:Exam)=>row.id),wayPayId:wayPay.id,paymentIds:payments.map((row:Waypayitems)=>row.id),totals:{subtotal:Number(admission.subtotal),taxTotal:Number(admission.iva_total),total:Number(admission.total),paid:Number(admission.total_canceled)}};
   }
 }

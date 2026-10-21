@@ -27,6 +27,9 @@ export class Patient {
   @Column('varchar', { length: 10 })
   document_number: string;
 
+  @Column('int')
+  receipt_number: number;
+
   @Column({ type: 'char', length: 1 })
   verification_code: string;
 

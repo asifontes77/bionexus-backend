@@ -38,14 +38,14 @@ import { resolveDatabaseOptions } from './database/database.config';
 import { ApplicationSettingsModule } from './application-settings/application-settings.module';
 import { TariffsModule } from './tariffs/tariffs.module';
 import { PatientAdmissionCloseModule } from './patient-admission-close/patient-admission-close.module';
-import { DocumentVersionsModule } from './document-versions/document-versions.module';
+import { DocumentDefinitionsModule } from './document-definitions/document-definitions.module';
 
 @Module({
   imports: [
     ApplicationSettingsModule,
     TariffsModule,
     PatientAdmissionCloseModule,
-    DocumentVersionsModule,
+    DocumentDefinitionsModule,
     ConfigModule.forRoot({
       isGlobal: true,
     }),

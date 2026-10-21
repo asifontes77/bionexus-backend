@@ -1,10 +1,11 @@
-﻿import { Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthorizationModule } from '../authorization/authorization.module';
 import { Dollarvalue } from '../dollar_value/dollarvalue.entity';
 import { Exam } from '../exams/exams.entity';
 import { Examlists } from '../exam_lists/examlists.entity';
 import { PatientProfile } from '../patients/patient-profile.entity';
+import { Laboratory } from '../laboratory/laboratory.entity';
 import { Patient } from '../patients/patients.entity';
 import { Client } from '../client/client.entity';
 import { Tax } from '../tax/tax.entity';
@@ -24,5 +25,5 @@ import { PatientAdmissionCloseRepository } from './patient-admission-close.repos
 import { PatientAdmissionCloseService } from './patient-admission-close.service';
 import { PatientAdmissionCloseTransaction } from './patient-admission-close.transaction';
 import { PatientAdmissionCloseValidator } from './patient-admission-close.validator';
-@Module({imports:[AuthorizationModule,TypeOrmModule.forFeature([Dollarvalue,Exam,Examlists,PatientProfile,Patient,Client,Tax,ExamTariffPrice,Tariff,TypePayment,Currency,Waypay,Waypayitems,PaymentItemFieldValue])],controllers:[PatientAdmissionCloseController],providers:[PatientAdmissionCloseValidator,PatientAdmissionCloseTransaction,PatientAdmissionCloseCatalogResolver,PatientAdmissionCloseCalculator,PatientAdmissionCloseAssembler,PatientAdmissionCloseRepository,PatientAdmissionCloseRateResolver,PatientAdmissionCloseService]})
+@Module({imports:[AuthorizationModule,TypeOrmModule.forFeature([Dollarvalue,Exam,Examlists,PatientProfile,Patient,Laboratory,Client,Tax,ExamTariffPrice,Tariff,TypePayment,Currency,Waypay,Waypayitems,PaymentItemFieldValue])],controllers:[PatientAdmissionCloseController],providers:[PatientAdmissionCloseValidator,PatientAdmissionCloseTransaction,PatientAdmissionCloseCatalogResolver,PatientAdmissionCloseCalculator,PatientAdmissionCloseAssembler,PatientAdmissionCloseRepository,PatientAdmissionCloseRateResolver,PatientAdmissionCloseService]})
 export class PatientAdmissionCloseModule {}

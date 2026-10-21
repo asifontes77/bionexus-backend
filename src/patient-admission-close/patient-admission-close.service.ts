@@ -21,6 +21,9 @@ export class PatientAdmissionCloseService {
       const calculatedPayments=this.calculator.calculatePayments(resolved.payments,exchangeRate);
       const totals=this.calculator.summarize(calculatedExams,calculatedPayments);
       const rows=this.assembler.build(normalized,resolved,calculatedExams,calculatedPayments,totals,actorUserId);
+      const receiptNumber=await this.repository.allocateReceiptNumber(manager);
+      rows.admission.receipt_number=receiptNumber;
+      rows.audit.metadata={...rows.audit.metadata,receiptNumber};
       return this.repository.persist(manager,rows);
     });
   }

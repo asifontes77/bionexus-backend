@@ -144,16 +144,8 @@ async createUser(
 
   async getUserSession(userLogin: LoginUserDto) {
     const { user_name, password } = userLogin;
-    const laboratoryFound = await this.laboratoryService.getLaboratory(1);
-    const row = JSON.parse(JSON.stringify(laboratoryFound));
-    const license = await this.LicenseService.validateLicenseKey(
-      row.rif,
-      row.business_name,
-      row.license,
-    );
-    if (!license) {
-      return new HttpException('INVALID_LICENSE_KEY', HttpStatus.FORBIDDEN);
-    }
+    // License Manager remains intentionally outside the current Bio Nexus scope.
+    // Authentication must not be blocked until that final project phase is implemented.
     const userFound = await this.usersRepository.findOne({
       where: {
         user_name,
