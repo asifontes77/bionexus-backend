@@ -6,6 +6,6 @@ describe('Routine description uniqueness',()=>{
  const payload=/const BASELINE_GZIP_BASE64 = '([^']+)'/.exec(baseline)?.[1] ?? '';
  const schema=gunzipSync(Buffer.from(payload,'base64')).toString('utf8');
  it('validates create and update',()=>{ expect(service).toContain('ensureDescriptionAvailable'); expect(service).toContain('ROUTINE_DESCRIPTION_ALREADY_EXISTS'); expect(service).toContain('excludedId'); });
- it('maps concurrent duplicates',()=>{ expect(service).toContain('ER_DUP_ENTRY'); expect(service).toContain('UX_exam_routines_description'); });
- it('consolidates persistence protection in the baseline',()=>{ expect(schema).toContain('description_normalized'); expect(schema).toContain('UX_exam_routines_description'); expect(schema).toContain('UPPER(TRIM'); expect(schema).toContain('is_active'); });
+ it('maps concurrent duplicates',()=>{ expect(service).toContain(`driverError?.code === '23505'`); expect(service).toContain('UX_exam_routines_description'); });
+ it('consolidates persistence protection in the baseline',()=>{ expect(schema).toContain('upper(btrim((description)::text))'); expect(schema).toContain('UX_exam_routines_description'); expect(schema).toContain('CREATE UNIQUE INDEX "UX_exam_routines_description"'); expect(schema).toContain('is_active'); });
 });

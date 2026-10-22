@@ -8,7 +8,7 @@ export class Dollarvalue {
   @Column({ type: 'date' })
   date: string;
 
-  @Column({ name: 'registered_at', type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
+  @Column({ name: 'registered_at', type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   registeredAt: Date;
 
   @Column({ type: 'decimal', precision: 18, scale: 2, default: () => '0.00' })

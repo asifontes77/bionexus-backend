@@ -21,11 +21,11 @@ describe('Patient admission receipt number contract',()=>{
     const encoded=migration.match(/const BASELINE_GZIP_BASE64 = '([^']+)'/)?.[1];
     expect(encoded).toBeTruthy();
     const sql=gunzipSync(Buffer.from(encoded!,'base64')).toString('utf8');
-    const start=sql.indexOf('CREATE TABLE `patient_admissions`');
+    const start=sql.indexOf('CREATE TABLE public.patient_admissions');
     const end=sql.indexOf(';',start);
     const table=sql.slice(start,end+1);
-    expect(table).toMatch(/`receipt_number` int NOT NULL/);
-    expect(table).not.toMatch(/`receipt_number` int DEFAULT NULL/);
+    expect(table).toMatch(/receipt_number integer NOT NULL/);
+    expect(table).not.toMatch(/receipt_number integer DEFAULT NULL/);
   });
 
   it('asigna en backend y devuelve el mismo numero persistido',()=>{

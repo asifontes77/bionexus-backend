@@ -8,12 +8,12 @@ export class License {
   @Column('varchar', { length: 255 })
   licenseKey: string;
 
-  @Column('tinyint')
+  @Column('boolean')
   isActive: boolean;
 
-  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
+  @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 
-  @Column({ type: 'datetime', nullable: true })
+  @Column({ type: 'timestamptz', nullable: true })
   expiresAt: Date;
 }

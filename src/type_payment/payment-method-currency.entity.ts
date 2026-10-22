@@ -1,4 +1,4 @@
-﻿import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
 import { Currency } from './currency.entity';
 import { TypePayment } from './typepayment.entity';
 
@@ -6,8 +6,8 @@ import { TypePayment } from './typepayment.entity';
 export class PaymentMethodCurrency {
   @PrimaryColumn('int', { name: 'payment_method_id' }) paymentMethodId: number;
   @PrimaryColumn('int', { name: 'currency_id' }) currencyId: number;
-  @Column('tinyint', { name: 'is_default', default: 0 }) isDefault: boolean;
-  @Column('tinyint', { name: 'is_active', default: 1 }) isActive: boolean;
+  @Column('boolean', { name: 'is_default', default: false }) isDefault: boolean;
+  @Column('boolean', { name: 'is_active', default: true }) isActive: boolean;
   @Column('int', { name: 'display_order', default: 0 }) displayOrder: number;
   @ManyToOne(() => TypePayment, (method) => method.currencies, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'payment_method_id' }) paymentMethod: TypePayment;

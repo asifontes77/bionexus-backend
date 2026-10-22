@@ -1,8 +1,9 @@
-﻿import {
+import {
   Column,
   Entity,
   Index,
   PrimaryColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 
 export enum SecurityPermissionEffect {
@@ -28,22 +29,19 @@ export class SecurityUserPermissionOverride {
 
   @Column({
     type: 'enum',
-    enum: SecurityPermissionEffect,
-  })
+    enum: SecurityPermissionEffect })
   effect: SecurityPermissionEffect;
 
   @Column({
     name: 'created_at',
-    type: 'datetime',
-    default: () => 'CURRENT_TIMESTAMP',
-  })
+    type: 'timestamptz',
+    default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 
-  @Column({
+  @UpdateDateColumn({
     name: 'updated_at',
-    type: 'datetime',
-    default: () => 'CURRENT_TIMESTAMP',
-    onUpdate: 'CURRENT_TIMESTAMP',
+    type: 'timestamptz',
+    default: () => 'CURRENT_TIMESTAMP'
   })
   updatedAt: Date;
 }

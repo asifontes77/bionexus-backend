@@ -1,4 +1,5 @@
-import { Groupht } from 'src/group_ht/group_ht.entity';
+import {
+  Groupht } from 'src/group_ht/group_ht.entity';
 import { Examlists } from 'src/exam_lists/examlists.entity';
 import {
   Entity,

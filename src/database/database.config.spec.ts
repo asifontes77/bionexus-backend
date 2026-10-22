@@ -1,6 +1,6 @@
 import { resolveDatabaseOptions, DatabaseEnvironment } from './database.config';
-type MysqlConnectionOptions = {
-  type: 'mysql';
+type PostgresConnectionOptions = {
+  type: 'postgres';
   host: string;
   port: number;
   username: string;
@@ -26,8 +26,8 @@ describe('Configuración de Base de Datos', () => {
     const options = resolveDatabaseOptions(
       baseEnvironment,
       '/app/src',
-    ) as MysqlConnectionOptions;
-    expect(options.type).toBe('mysql');
+    ) as PostgresConnectionOptions;
+    expect(options.type).toBe('postgres');
     expect(options.host).toBe('localhost');
     expect(options.port).toBe(3306);
     expect(options.username).toBe('test_user');
@@ -42,7 +42,7 @@ describe('Configuración de Base de Datos', () => {
       const options = resolveDatabaseOptions(
         baseEnvironment,
         '/app/src',
-      ) as MysqlConnectionOptions;
+      ) as PostgresConnectionOptions;
       const entities = options.entities as string[];
       const migrations = options.migrations as string[];
       expect(entities[0]).toContain('**/*.entity.{ts,js}');
@@ -53,7 +53,7 @@ describe('Configuración de Base de Datos', () => {
       const options = resolveDatabaseOptions(
         baseEnvironment,
         join('/app/src', 'database'),
-      ) as MysqlConnectionOptions;
+      ) as PostgresConnectionOptions;
       const entities = options.entities as string[];
       const migrations = options.migrations as string[];
 
@@ -108,7 +108,7 @@ describe('Configuración de Base de Datos', () => {
     const options = resolveDatabaseOptions(
       env,
       '/app/src',
-    ) as MysqlConnectionOptions;
+    ) as PostgresConnectionOptions;
     expect(options.password).toBe(' secret value ');
   });
 

@@ -16,15 +16,15 @@ describe('Security role name uniqueness in the single baseline', () => {
   });
 
   it('maps concurrent duplicate errors', () => {
-    expect(service).toContain('ER_DUP_ENTRY');
-    expect(service).toContain('1062');
+    expect(service).toContain(`driverError?.code === '23505'`);
+    expect(service).toContain(`driverError?.constraint === 'UX_security_roles_name_normalized'`);
     expect(service).toContain('UX_security_roles_name_normalized');
   });
 
   it('keeps the physical protection inside the only baseline migration', () => {
     expect(payload).toBeDefined();
-    expect(sql).toContain('`name_normalized` varchar(100)');
-    expect(sql).toContain('GENERATED ALWAYS AS (lower(trim(`name`))) STORED');
+    expect(sql).toContain('lower(btrim((name)::text))');
+    expect(sql).toContain('CREATE UNIQUE INDEX "UX_security_roles_name_normalized"');
     expect(sql).toContain('UX_security_roles_name_normalized');
     const migrations = readdirSync('src/database/migrations').filter((name) => name.endsWith('.ts'));
     expect(migrations).toEqual(['1790366400000-BioNexusBaseline.ts']);

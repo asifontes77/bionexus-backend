@@ -17,12 +17,12 @@ describe('Exam catalog abbreviation uniqueness',()=>{
     expect(service).toContain("Object.prototype.hasOwnProperty.call(b,'abbreviation')");
   });
   it('converts concurrent unique index errors to a controlled conflict',()=>{
-    expect(service).toContain("driver?.code==='ER_DUP_ENTRY'");
-    expect(service).toContain("driver?.errno===1062");
+    expect(service).toContain("driver?.code==='23505'");
+    expect(service).toContain("driver?.constraint==='UX_exam_catalog_group_abbreviation'");
     expect(service).toContain("UX_exam_catalog_group_abbreviation");
   });
   it('protects persistence in the single installation baseline',()=>{
-    expect(migration).toContain('abbreviation_normalized');
+    expect(migration).toContain('upper(btrim((abbreviation)::text))');
     expect(migration).toContain('UX_exam_catalog_group_abbreviation');
   });
 });

@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { UpdateDateColumn, Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 @Entity({ name: 'users' })
 export class User {
   @PrimaryGeneratedColumn()
@@ -36,16 +36,16 @@ export class User {
   @Column('varchar', { length: 100, nullable: true, unique: true })
   email: string;
 
-  @Column('int', { default: () => '0', nullable: true })
+  @Column('int', { default: 0, nullable: true })
   key_recover: number;
 
-  @Column('tinyint', { default: () => '0', nullable: true })
+  @Column('boolean', { default: false, nullable: true })
   request_password: boolean;
 
-  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
+  @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 
-  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
+  @UpdateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   updatedAt: Date;
 
   @Column('varchar', { length: 100, default: 'user' })
@@ -54,6 +54,6 @@ export class User {
   @Column('varchar', { length: 500, nullable: true })
   passwordSignature: string;
 
-  @Column('tinyint', { default: () => '0', nullable: false })
+  @Column('boolean', { default: false, nullable: false })
   hide_user: boolean;
 }

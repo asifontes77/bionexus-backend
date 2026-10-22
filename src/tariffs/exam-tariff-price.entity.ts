@@ -1,10 +1,11 @@
-﻿import {
+import {
   Column,
   Entity,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
   Unique,
+  UpdateDateColumn,
 } from 'typeorm';
 import { Examlists } from '../exam_lists/examlists.entity';
 import { Tariff } from './tariff.entity';
@@ -24,21 +25,19 @@ export class ExamTariffPrice {
   @Column({ type: 'decimal', precision: 18, scale: 2 })
   price: number;
 
-  @Column('tinyint', { name: 'is_active', default: 1 })
+  @Column('boolean', { name: 'is_active', default: true })
   isActive: boolean;
 
   @Column({
     name: 'created_at',
-    type: 'datetime',
-    default: () => 'CURRENT_TIMESTAMP',
-  })
+    type: 'timestamptz',
+    default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 
-  @Column({
+  @UpdateDateColumn({
     name: 'updated_at',
-    type: 'datetime',
-    default: () => 'CURRENT_TIMESTAMP',
-    onUpdate: 'CURRENT_TIMESTAMP',
+    type: 'timestamptz',
+    default: () => 'CURRENT_TIMESTAMP'
   })
   updatedAt: Date;
 

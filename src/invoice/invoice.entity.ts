@@ -1,24 +1,29 @@
-import { Invoiceitems } from 'src/invoice_items/invoiceitems.entity';
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import {
+  Invoiceitems } from 'src/invoice_items/invoiceitems.entity';
+import { Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  OneToMany,
+} from 'typeorm';
 
 @Entity({ name: 'invoice' })
 export class Invoice {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column('int', { default: () => '0' })
+  @Column('int', { default: 0 })
   no_invoice: number;
 
-  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
+  @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   date: Date;
 
   @Column('varchar', { length: 30, default: 'Factura' })
   document_type: string;
 
-  @Column('int', { default: () => '0' })
+  @Column('int', { default: 0 })
   id_patients: number;
 
-  @Column('int', { default: () => '0' })
+  @Column('int', { default: 0 })
   id_client: number;
 
   @Column('varchar', { length: 100 })
@@ -30,7 +35,7 @@ export class Invoice {
   @Column('varchar', { length: 250 })
   address: string;
 
-  @Column('int', { default: () => '0' })
+  @Column('int', { default: 0 })
   id_users: number;
 
   @Column({ type: 'decimal', precision: 18, scale: 2, default: () => '0.00' })
@@ -51,10 +56,10 @@ export class Invoice {
   @Column({ type: 'decimal', precision: 18, scale: 2, default: () => '0.00' })
   tax_base: number;
 
-  @Column('tinyint', { default: () => '0' })
+  @Column('boolean', { default: false })
   deleted: boolean;
 
-  @Column('tinyint', { default: 1 })
+  @Column('boolean', { default: true })
   paying: boolean;
 
   @Column({ type: 'decimal', precision: 18, scale: 2, default: () => '0.00' })

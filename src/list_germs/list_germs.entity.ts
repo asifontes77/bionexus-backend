@@ -8,6 +8,6 @@ export class listGerms {
   @Column('varchar', { length: 50, nullable: false })
   germen: string;
 
-  @Column('tinyint', { default: () => '0' })
+  @Column('boolean', { default: false })
   annulled: boolean;
 }

@@ -5,6 +5,7 @@ import {
   AfterLoad,
   ManyToOne,
   JoinColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { Patient } from 'src/patients/patients.entity';
 import { Examgroup } from 'src/exam_group/examgroup.entity';
@@ -30,7 +31,7 @@ export class Exam {
   @Column('varchar', { length: 60 })
   description: string;
 
-  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
+  @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   date: Date;
 
   @Column('int', { default: () => '0' })
@@ -75,10 +76,10 @@ export class Exam {
   @Column({ type: 'smallint', default: () => '0' })
   email_status: number;
 
-  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
+  @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 
-  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
+  @UpdateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   updatedAt: Date;
 
   @ManyToOne(() => Patient, (patient) => patient.exams)

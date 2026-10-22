@@ -1,5 +1,13 @@
-import { Exam } from '../exams/exams.entity';
-import { Entity, Column, JoinColumn, ManyToOne, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import {
+  Exam } from '../exams/exams.entity';
+import { Entity,
+  Column,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  OneToMany,
+  UpdateDateColumn,
+} from 'typeorm';
 import { PatientProfile } from './patient-profile.entity';
 
 @Entity({ name: 'patient_admissions' })
@@ -12,7 +20,7 @@ export class Patient {
   @ManyToOne(() => PatientProfile, (profile) => profile.admissions, { onDelete: 'RESTRICT', onUpdate: 'RESTRICT' })
   @JoinColumn({ name: 'patient_profile_id' })
   patientProfile: PatientProfile;
-  @Column('int', { default: () => '0' })
+  @Column('int', { default: 0 })
   patient_position: number;
 
   @Column({ type: 'date' })
@@ -39,10 +47,10 @@ export class Patient {
   @Column('varchar', { length: 5, default: 'años' })
   month_year: string;
 
-  @Column('tinyint', { default: () => '0', nullable: true })
+  @Column('boolean', { default: false, nullable: true })
   sex: boolean;
 
-  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
+  @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   birth_date: Date;
 
   @Column('varchar', { length: 20, nullable: true })
@@ -51,28 +59,28 @@ export class Patient {
   @Column('varchar', { length: 60 })
   suggested: string;
 
-  @Column('tinyint', { default: () => '0', nullable: true })
+  @Column('boolean', { default: false, nullable: true })
   urgent: boolean;
 
-  @Column('int', { default: () => '0' })
+  @Column('int', { default: 0 })
   client_id: number;
 
   @Column('int', { name: 'tariff_id', nullable: true, default: null })
   tariff_id: number | null;
 
-  @Column('tinyint', { default: () => '0' })
+  @Column('boolean', { default: false })
   process: boolean;
 
   @Column('varchar', { length: 100, nullable: true })
   observation: string;
 
-  @Column('tinyint', { default: () => '0' })
+  @Column('boolean', { default: false })
   approved: boolean;
 
-  @Column('tinyint', { default: () => '0', nullable: true })
+  @Column('boolean', { default: false, nullable: true })
   canceled: boolean;
 
-  @Column({ type: 'datetime', nullable: true })
+  @Column({ type: 'timestamptz', nullable: true })
   cancellation_date: Date;
 
   @Column({ type: 'json', nullable: true })
@@ -111,7 +119,7 @@ export class Patient {
   @Column({ type: 'decimal', precision: 18, scale: 2, default: () => '0.00' })
   dollar_price: number;
 
-  @Column({ type: 'datetime', nullable: true })
+  @Column({ type: 'timestamptz', nullable: true })
   dollar_price_date: Date;
 
   @Column('varchar', { length: 100, nullable: true })
@@ -129,10 +137,10 @@ export class Patient {
   @Column('varchar', { length: 100, nullable: true, default: '' })
   creditnote: string;
 
-  @Column({ type: 'datetime', nullable: true })
+  @Column({ type: 'timestamptz', nullable: true })
   invoice_date: Date;
 
-  @Column({ type: 'datetime', nullable: true })
+  @Column({ type: 'timestamptz', nullable: true })
   deliver_date: Date;
 
   @Column('int', { nullable: true, default: null })
@@ -150,25 +158,25 @@ export class Patient {
   @Column('varchar', { length: 100, nullable: true })
   email: string;
 
-  @Column('tinyint', { default: () => '0' })
+  @Column('boolean', { default: false })
   email_sent: boolean;
 
-  @Column('tinyint', { default: () => '0' })
+  @Column('boolean', { default: false })
   email_status: boolean;
 
-  @Column('int', { default: () => '0' })
+  @Column('int', { default: 0 })
   user_id: number;
 
-  @Column('int', { default: () => '0' })
+  @Column('int', { default: 0 })
   user_id_canceled: number;
 
-  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
+  @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 
-  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
+  @UpdateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   updatedAt: Date;
 
-  @Column({ type: 'longtext', nullable: true })
+  @Column({ type: 'text', nullable: true })
   result_html: string;
 
   @OneToMany(() => Exam, (exam) => exam.patients)

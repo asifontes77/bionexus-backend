@@ -1,4 +1,4 @@
-import { Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
+import { UpdateDateColumn, Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity({ name: 'document_drafts' })
 @Index('UQ_document_drafts_document', ['documentId'], { unique: true })
@@ -9,6 +9,6 @@ export class DocumentDraft {
   @Column({ name: 'document_json', type: 'json' }) documentJson!: Record<string, unknown>;
   @Column({ name: 'created_by_user_id', type: 'int' }) createdByUserId!: number;
   @Column({ name: 'updated_by_user_id', type: 'int' }) updatedByUserId!: number;
-  @Column({ name: 'created_at', type: 'datetime', precision: 6, default: () => 'CURRENT_TIMESTAMP(6)' }) createdAt!: Date;
-  @Column({ name: 'updated_at', type: 'datetime', precision: 6, default: () => 'CURRENT_TIMESTAMP(6)', onUpdate: 'CURRENT_TIMESTAMP(6)' }) updatedAt!: Date;
+  @Column({ name: 'created_at', type: 'timestamptz', precision: 6, default: () => 'CURRENT_TIMESTAMP' }) createdAt!: Date;
+  @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz', precision: 6, default: () => 'CURRENT_TIMESTAMP'}) updatedAt!: Date;
 }

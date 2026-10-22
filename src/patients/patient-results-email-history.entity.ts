@@ -8,7 +8,7 @@ export type PatientResultsEmailDeliveryType = 'send' | 'resend';
 @Index('IX_patient_results_email_history_requester_requested', ['requestedByUserId', 'requestedAt'])
 @Index('IX_patient_results_email_history_status_requested', ['status', 'requestedAt'])
 export class PatientResultsEmailHistory {
-  @PrimaryGeneratedColumn({ type: 'bigint', unsigned: true })
+  @PrimaryGeneratedColumn({ type: 'bigint' })
   id!: string;
 
   @Column({ name: 'patient_id', type: 'int' })
@@ -29,16 +29,16 @@ export class PatientResultsEmailHistory {
   @Column({ type: 'varchar', length: 12 })
   status!: PatientResultsEmailDeliveryStatus;
 
-  @CreateDateColumn({ name: 'requested_at', type: 'datetime', precision: 6 })
+  @CreateDateColumn({ name: 'requested_at', type: 'timestamptz', precision: 6 })
   requestedAt!: Date;
 
-  @Column({ name: 'completed_at', type: 'datetime', precision: 6, nullable: true })
+  @Column({ name: 'completed_at', type: 'timestamptz', precision: 6, nullable: true })
   completedAt!: Date | null;
 
   @Column({ name: 'error_code', type: 'varchar', length: 120, nullable: true })
   errorCode!: string | null;
 
-  @Column({ name: 'pdf_size_bytes', type: 'int', unsigned: true, nullable: true })
+  @Column({ name: 'pdf_size_bytes', type: 'int', nullable: true })
   pdfSizeBytes!: number | null;
 
   @Column({ name: 'result_html_hash', type: 'char', length: 64 })

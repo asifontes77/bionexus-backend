@@ -7,6 +7,6 @@ export class SampleType {
 
   @Column('varchar', { length: 50, nullable: true })
   description: string;
-  @Column('tinyint', { default: 0 })
+  @Column('boolean', { default: false })
   annulled: boolean;
 }

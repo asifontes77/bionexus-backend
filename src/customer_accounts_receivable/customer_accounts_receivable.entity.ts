@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { UpdateDateColumn, Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity({ name: 'customer_accounts_receivable' })
 export class Customeraccountsreceivable {
@@ -23,12 +23,12 @@ export class Customeraccountsreceivable {
   @Column('int', { default: () => '0' })
   user_id_canceled: number;
 
-  @Column({ type: 'datetime', nullable: true })
+  @Column({ type: 'timestamptz', nullable: true })
   date_canceled: Date;
 
-  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
+  @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 
-  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
+  @UpdateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   updatedAt: Date;
 }

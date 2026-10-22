@@ -1,4 +1,4 @@
-import { Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
+import { UpdateDateColumn, Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
 
 /** Defines a configurable document owned by a laboratory. */
 @Entity({ name: 'document_definitions' })
@@ -16,13 +16,13 @@ export class DocumentDefinition {
   /** Optional user-facing description. */
   @Column({ type: 'varchar', length: 250, nullable: true }) description!: string | null;
   /** Indicates whether the document is selected for operational use. */
-  @Column({ name: 'is_active', type: 'tinyint', default: 0 }) isActive!: boolean;
+  @Column({ name: 'is_active', type: 'boolean', default: false }) isActive!: boolean;
   /** User that created the definition. */
   @Column({ name: 'created_by_user_id', type: 'int' }) createdByUserId!: number;
   /** User that last updated the definition. */
   @Column({ name: 'updated_by_user_id', type: 'int' }) updatedByUserId!: number;
   /** Creation timestamp. */
-  @Column({ name: 'created_at', type: 'datetime', precision: 6, default: () => 'CURRENT_TIMESTAMP(6)' }) createdAt!: Date;
+  @Column({ name: 'created_at', type: 'timestamptz', precision: 6, default: () => 'CURRENT_TIMESTAMP' }) createdAt!: Date;
   /** Last update timestamp. */
-  @Column({ name: 'updated_at', type: 'datetime', precision: 6, default: () => 'CURRENT_TIMESTAMP(6)', onUpdate: 'CURRENT_TIMESTAMP(6)' }) updatedAt!: Date;
+  @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz', precision: 6, default: () => 'CURRENT_TIMESTAMP'}) updatedAt!: Date;
 }

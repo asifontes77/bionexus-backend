@@ -57,7 +57,7 @@ export function resolveDatabaseOptions(
   const srcDir = resolveSrcDirectory(baseDirectory);
 
   return {
-    type: 'mysql',
+    type: 'postgres',
     host,
     port,
     username,

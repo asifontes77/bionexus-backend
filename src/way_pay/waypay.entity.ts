@@ -15,13 +15,13 @@ export class Waypay {
   @Column('int')
   id_client: number;
 
-  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
+  @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   date: Date;
 
-  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
+  @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   date_patients: Date;
 
-  @Column('tinyint', { default: () => '0' })
+  @Column('boolean', { default: false })
   annulment: boolean;
 
   @OneToMany(() => Waypayitems, (waypayitems) => waypayitems.waypays)

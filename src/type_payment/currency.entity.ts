@@ -1,4 +1,4 @@
-﻿import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { PaymentMethodCurrency } from './payment-method-currency.entity';
 
 @Entity({ name: 'currencies' })
@@ -8,10 +8,10 @@ export class Currency {
   @Column('varchar', { length: 80 }) name: string;
   @Column('varchar', { length: 12 }) symbol: string;
   @Column('varchar', { name: 'symbol_position', length: 8, default: 'before' }) symbolPosition: 'before' | 'after';
-  @Column('tinyint', { name: 'decimal_places', unsigned: true, default: 2 }) decimalPlaces: number;
-  @Column('tinyint', { name: 'is_local', default: 0 }) isLocal: boolean;
-  @Column('tinyint', { name: 'is_base', default: 0 }) isBase: boolean;
-  @Column('tinyint', { name: 'is_active', default: 1 }) isActive: boolean;
+  @Column('smallint', { name: 'decimal_places', default: 2 }) decimalPlaces: number;
+  @Column('boolean', { name: 'is_local', default: false }) isLocal: boolean;
+  @Column('boolean', { name: 'is_base', default: false }) isBase: boolean;
+  @Column('boolean', { name: 'is_active', default: true }) isActive: boolean;
   @Column('int', { name: 'display_order', default: 0 }) displayOrder: number;
   @OneToMany(() => PaymentMethodCurrency, (item) => item.currency) paymentMethods: PaymentMethodCurrency[];
 }

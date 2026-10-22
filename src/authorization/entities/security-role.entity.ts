@@ -1,8 +1,9 @@
-﻿import {
+import {
   Column,
   Entity,
   Index,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 
 @Entity({ name: 'security_roles' })
@@ -21,24 +22,22 @@ export class SecurityRole {
   @Column('varchar', { length: 250, nullable: true })
   description: string | null;
 
-  @Column('tinyint', { name: 'is_system', default: 0 })
+  @Column('boolean', { name: 'is_system', default: false })
   isSystem: boolean;
 
-  @Column('tinyint', { name: 'is_active', default: 1 })
+  @Column('boolean', { name: 'is_active', default: true })
   isActive: boolean;
 
   @Column({
     name: 'created_at',
-    type: 'datetime',
-    default: () => 'CURRENT_TIMESTAMP',
-  })
+    type: 'timestamptz',
+    default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 
-  @Column({
+  @UpdateDateColumn({
     name: 'updated_at',
-    type: 'datetime',
-    default: () => 'CURRENT_TIMESTAMP',
-    onUpdate: 'CURRENT_TIMESTAMP',
+    type: 'timestamptz',
+    default: () => 'CURRENT_TIMESTAMP'
   })
   updatedAt: Date;
 }

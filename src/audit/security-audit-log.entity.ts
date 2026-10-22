@@ -22,12 +22,12 @@ import {
   'occurredAt',
 ])
 export class SecurityAuditLog {
-  @PrimaryGeneratedColumn({ type: 'bigint', unsigned: true })
+  @PrimaryGeneratedColumn({ type: 'bigint' })
   id!: string;
 
   @CreateDateColumn({
     name: 'occurred_at',
-    type: 'datetime',
+    type: 'timestamptz',
     precision: 6,
   })
   occurredAt!: Date;

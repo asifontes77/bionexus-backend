@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { UpdateDateColumn, Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Examlists } from '../exam_lists/examlists.entity';
 import { Routines } from './routines.entity';
 
@@ -16,16 +16,16 @@ export class ExamRoutineItem {
   @Column('int')
   position: number;
 
-  @Column('tinyint', { default: 1 })
+  @Column('boolean', { default: true })
   is_active: boolean;
 
-  @Column('tinyint', { default: 0 })
+  @Column('boolean', { default: false })
   legacy_active_present: boolean;
 
-  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
+  @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 
-  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
+  @UpdateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   updatedAt: Date;
 
   @ManyToOne(() => Routines, (routine) => routine.items, { onDelete: 'RESTRICT', onUpdate: 'RESTRICT' })

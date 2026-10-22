@@ -22,7 +22,7 @@ export class special_test_lab {
   @Column('varchar', { length: 100 })
   email: string;
 
-  @Column('tinyint', { default: () => '0', nullable: true })
+  @Column('boolean', { default: false, nullable: true })
   annulled: boolean;
 
   // Relación OneToMany

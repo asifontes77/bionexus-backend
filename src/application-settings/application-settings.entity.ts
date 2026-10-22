@@ -1,4 +1,4 @@
-﻿import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Laboratory } from '../laboratory/laboratory.entity';
 import { Currency } from '../type_payment/currency.entity';
 @Entity({ name: 'application_settings' })
@@ -19,13 +19,13 @@ export class ApplicationSettings {
   @JoinColumn({ name: 'financial_primary_currency_id' }) financialPrimaryCurrency: Currency;
   @Column({ type: 'varchar', length: 8, default: 'monday' }) first_day_of_week: string;
   @Column({ type: 'varchar', length: 1, default: ',' }) decimal_separator: string;
-  @Column({ type: 'longtext' }) voucher_format: string;
-  @Column({ type: 'longtext' }) receipt_format: string;
-  @Column({ type: 'longtext' }) head_html: string;
-  @Column({ type: 'longtext' }) body_html: string;
-  @Column({ type: 'longtext' }) page_html: string;
+  @Column({ type: 'text' }) voucher_format: string;
+  @Column({ type: 'text' }) receipt_format: string;
+  @Column({ type: 'text' }) head_html: string;
+  @Column({ type: 'text' }) body_html: string;
+  @Column({ type: 'text' }) page_html: string;
   @Column({ type: 'int', default: 38 }) maximum_rows_report: number;
-  @Column({ type: 'longtext' }) workshee_format: string;
+  @Column({ type: 'text' }) workshee_format: string;
   @Column({ type: 'varchar', length: 100 }) printer_type: string;
   @Column({ type: 'varchar', length: 100 }) printer_interface: string;
 }

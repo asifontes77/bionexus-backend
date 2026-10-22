@@ -1,4 +1,4 @@
-﻿import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Currency } from '../type_payment/currency.entity';
 import { TypePayment } from '../type_payment/typepayment.entity';
 import { Waypay } from '../way_pay/waypay.entity';
@@ -14,8 +14,8 @@ export class Waypayitems {
   @Column('decimal', { name: 'base_amount', precision: 18, scale: 2 }) baseAmount: number;
   @Column('decimal', { name: 'local_equivalent_amount', precision: 18, scale: 2 }) localEquivalentAmount: number;
   @Column('decimal', { name: 'exchange_rate', precision: 18, scale: 6, nullable: true }) exchangeRate: number | null;
-  @Column('tinyint', { name: 'exchange_rate_decimal_places', unsigned: true, nullable: true }) exchangeRateDecimalPlaces: number | null;
-  @Column('datetime', { name: 'exchange_rate_date', nullable: true }) exchangeRateDate: Date | null;
+  @Column('smallint', { name: 'exchange_rate_decimal_places', nullable: true }) exchangeRateDecimalPlaces: number | null;
+  @Column('timestamptz', { name: 'exchange_rate_date', nullable: true }) exchangeRateDate: Date | null;
   @ManyToOne(() => Waypay, (waypay) => waypay.waypayitems) @JoinColumn({ name: 'id_way_pay' }) waypays: Waypay;
   @ManyToOne(() => TypePayment, { onDelete: 'RESTRICT' }) @JoinColumn({ name: 'id_type_payment' }) paymentMethod: TypePayment;
   @ManyToOne(() => Currency, { onDelete: 'RESTRICT' }) @JoinColumn({ name: 'currency_id' }) currency: Currency;

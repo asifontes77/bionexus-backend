@@ -8,6 +8,6 @@ export class Parasiticforms {
   @Column('varchar', { length: 50, unique: true })
   description: string;
 
-  @Column('tinyint', { default: () => '0' })
+  @Column('boolean', { default: false })
   annulled: boolean;
 }

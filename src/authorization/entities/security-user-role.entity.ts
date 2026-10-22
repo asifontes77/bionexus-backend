@@ -1,4 +1,4 @@
-﻿import {
+import {
   Column,
   Entity,
   Index,
@@ -16,7 +16,7 @@ export class SecurityUserRole {
 
   @Column({
     name: 'created_at',
-    type: 'datetime',
+    type: 'timestamptz',
     default: () => 'CURRENT_TIMESTAMP',
   })
   createdAt: Date;

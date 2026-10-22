@@ -1011,10 +1011,10 @@ async createRole(
       return await repository.save(role);
     } catch (error) {
       const driverError = error && typeof error === 'object' && 'driverError' in error
-        ? (error as { driverError?: { code?: string; errno?: number; sqlMessage?: string } }).driverError
+        ? (error as { driverError?: { code?: string; constraint?: string } }).driverError
         : undefined;
-      const duplicate = driverError?.code === 'ER_DUP_ENTRY' || driverError?.errno === 1062;
-      if (duplicate && String(driverError?.sqlMessage ?? '').includes('UX_security_roles_name_normalized')) {
+      const duplicate = driverError?.code === '23505';
+      if (duplicate && driverError?.constraint === 'UX_security_roles_name_normalized') {
         throw new ConflictException('ROLE_NAME_ALREADY_EXISTS');
       }
       throw error;

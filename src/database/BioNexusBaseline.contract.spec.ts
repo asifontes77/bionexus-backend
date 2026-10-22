@@ -22,7 +22,7 @@ describe('BioNexusBaseline migration contract', () => {
     expect(migration).toContain('BioNexusBaseline1790366400000');
     expect(migration).toContain('BIONEXUS_BASELINE_REQUIRES_EMPTY_DATABASE');
     expect(migration).toContain('BIONEXUS_BASELINE_DOWN_NOT_AVAILABLE');
-    expect(sql).toContain('CREATE TABLE `users`');
-    expect(sql).toContain('INSERT INTO `security_permissions`');
+    expect(sql).toContain('CREATE TABLE public.users');
+    expect(sql).toContain('INSERT INTO public.security_permissions');
   });
 });

@@ -1,10 +1,10 @@
-﻿import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity({ name: 'dollar_value_automation_runs' })
 export class DollarvalueAutomationRun {
   @PrimaryGeneratedColumn() id: number;
-  @Column({ type: 'datetime' }) started_at: Date;
-  @Column({ type: 'datetime', nullable: true }) finished_at: Date | null;
+  @Column({ type: 'timestamptz' }) started_at: Date;
+  @Column({ type: 'timestamptz', nullable: true }) finished_at: Date | null;
   @Column({ type: 'varchar', length: 20 }) status: string;
   @Column({ type: 'varchar', length: 40, nullable: true }) source: string | null;
   @Column({ type: 'decimal', precision: 18, scale: 2, nullable: true }) value: number | null;

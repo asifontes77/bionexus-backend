@@ -1,10 +1,12 @@
-import { Examgroup } from 'src/exam_group/examgroup.entity';
+import {
+  Examgroup } from 'src/exam_group/examgroup.entity';
 import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
   ManyToOne,
   JoinColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 
 @Entity({ name: 'exam_catalog' })
@@ -12,10 +14,10 @@ export class Examlists {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column('int', { default: () => '0' })
+  @Column('int', { default: 0 })
   group_id: number;
 
-  @Column('int', { default: () => '0' })
+  @Column('int', { default: 0 })
   position: number;
 
   @Column('varchar', { length: 60 })
@@ -24,26 +26,25 @@ export class Examlists {
   @Column({ type: 'smallint', default: 1 })
   size: number;
 
-  @Column('tinyint', { default: () => '0' })
+  @Column('boolean', { default: false })
   annulled: boolean;
 
   @Column('varchar', { length: 10 })
   abbreviation: string;
 
-  @Column('tinyint', { default: () => '0' })
+  @Column('boolean', { default: false })
   special_test: boolean;
 
-  @Column({ type: 'longtext', nullable: true })
+  @Column({ type: 'text', nullable: true })
   work_sheet: string;
 
-  @Column('int', { default: () => '0' })
+  @Column('int', { default: 0 })
   tax_id: number;
 
-  @Column({ type: 'longtext', nullable: true })
+  @Column({ type: 'text', nullable: true })
   format: string;
 
   @Column({ type: 'json', nullable: true })
-@Column({ type: 'json', nullable: true })
   format_grid: Record<string, unknown> | null;
 
   @Column({ type: 'decimal', precision: 18, scale: 2, default: () => '0.00' })
@@ -64,10 +65,10 @@ export class Examlists {
   @Column({ type: 'decimal', precision: 18, scale: 2, default: () => '0.00' })
   cost6: number;
 
-  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
+  @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 
-  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
+  @UpdateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   updatedAt: Date;
 
   @ManyToOne(() => Examgroup, (examgroup) => examgroup.examlists)

@@ -198,10 +198,10 @@ export class RoutinesService {
   }
   private isDescriptionDuplicate(error: unknown) {
     const driverError = error instanceof QueryFailedError
-      ? (error as QueryFailedError & { driverError?: { code?: string; errno?: number; message?: string } }).driverError
+      ? (error as QueryFailedError & { driverError?: { code?: string; constraint?: string } }).driverError
       : undefined;
-    return driverError?.code === 'ER_DUP_ENTRY'
-      && (driverError?.errno === 1062 || String(driverError?.message ?? '').includes('UX_exam_routines_description'));
+    return driverError?.code === '23505'
+      && driverError?.constraint === 'UX_exam_routines_description';
   }
   private validateId(id: number) {
     if (!Number.isInteger(id) || id <= 0) throw new BadRequestException('ROUTINE_ID_INVALID');

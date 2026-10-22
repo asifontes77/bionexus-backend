@@ -1,4 +1,4 @@
-﻿import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { TypePayment } from './typepayment.entity';
 
 export type PaymentFieldType = 'text' | 'number' | 'date' | 'phone' | 'reference' | 'select' | 'bank' | 'boolean';
@@ -10,7 +10,7 @@ export class PaymentMethodField {
   @Column('varchar', { length: 50 }) code: string;
   @Column('varchar', { length: 100 }) label: string;
   @Column('varchar', { name: 'field_type', length: 30 }) fieldType: PaymentFieldType;
-  @Column('tinyint', { name: 'is_required', default: 0 }) isRequired: boolean;
+  @Column('boolean', { name: 'is_required', default: false }) isRequired: boolean;
   @Column('int', { name: 'display_order', default: 0 }) displayOrder: number;
   @Column('int', { name: 'min_length', nullable: true }) minLength: number | null;
   @Column('int', { name: 'max_length', nullable: true }) maxLength: number | null;
@@ -18,7 +18,7 @@ export class PaymentMethodField {
   @Column('varchar', { name: 'validation_pattern', length: 255, nullable: true }) validationPattern: string | null;
   @Column('varchar', { name: 'help_text', length: 255, nullable: true }) helpText: string | null;
   @Column('varchar', { name: 'catalog_source', length: 30, nullable: true }) catalogSource: string | null;
-  @Column('tinyint', { name: 'is_active', default: 1 }) isActive: boolean;
+  @Column('boolean', { name: 'is_active', default: true }) isActive: boolean;
   @ManyToOne(() => TypePayment, (method) => method.fields, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'payment_method_id' }) paymentMethod: TypePayment;
 }

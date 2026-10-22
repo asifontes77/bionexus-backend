@@ -1,4 +1,4 @@
-﻿import {
+import {
   Entity,
   Column,
   JoinColumn,
@@ -30,10 +30,10 @@ export class Client {
   @Column('varchar', { length: 20, nullable: true })
   rif: string;
 
-  @Column('tinyint', { default: () => '0' })
+  @Column('boolean', { default: false })
   Print_invoice: boolean;
 
-  @Column('tinyint', { default: () => '0' })
+  @Column('boolean', { default: false })
   hide_client: boolean;
 
   @Column({ type: 'smallint', default: 1 })
@@ -50,9 +50,9 @@ export class Client {
   @JoinColumn({ name: 'tariff_id' })
   tariffRelation: Tariff | null;
 
-  @Column('tinyint', { default: 1 })
+  @Column('boolean', { default: true })
   credit: boolean;
 
-  @Column('tinyint', { default: () => '0' })
+  @Column('boolean', { default: false })
   charge_dollars: boolean;
 }
