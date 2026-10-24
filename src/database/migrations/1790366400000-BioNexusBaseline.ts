@@ -129,6 +129,198 @@ export class BioNexusBaseline1790366400000 implements MigrationInterface {
         ADD CONSTRAINT "UQ_payment_method_currencies_laboratory_method_currency"
         UNIQUE ("laboratory_id", "payment_method_id", "currency_id");
     `);
+
+    // BIO_NEXUS_DATABASE_NORMALIZATION_FINAL
+    await queryRunner.query(`
+      ALTER TABLE "antibiotic" ADD COLUMN "laboratory_id" integer;
+      UPDATE "antibiotic" SET "laboratory_id" = 1 WHERE "laboratory_id" IS NULL;
+      ALTER TABLE "antibiotic" ALTER COLUMN "laboratory_id" SET NOT NULL;
+      ALTER TABLE "antibiotic" ADD CONSTRAINT "FK_antibiotic_laboratory" FOREIGN KEY ("laboratory_id") REFERENCES "laboratory"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+
+      ALTER TABLE "banks" ADD COLUMN "laboratory_id" integer;
+      UPDATE "banks" SET "laboratory_id" = 1 WHERE "laboratory_id" IS NULL;
+      ALTER TABLE "banks" ALTER COLUMN "laboratory_id" SET NOT NULL;
+      ALTER TABLE "banks" ADD CONSTRAINT "FK_banks_laboratory" FOREIGN KEY ("laboratory_id") REFERENCES "laboratory"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+
+      ALTER TABLE "client" ADD COLUMN "laboratory_id" integer;
+      UPDATE "client" SET "laboratory_id" = 1 WHERE "laboratory_id" IS NULL;
+      ALTER TABLE "client" ALTER COLUMN "laboratory_id" SET NOT NULL;
+      ALTER TABLE "client" ADD CONSTRAINT "FK_client_laboratory" FOREIGN KEY ("laboratory_id") REFERENCES "laboratory"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+
+      ALTER TABLE "currencies" ADD COLUMN "laboratory_id" integer;
+      UPDATE "currencies" SET "laboratory_id" = 1 WHERE "laboratory_id" IS NULL;
+      ALTER TABLE "currencies" ALTER COLUMN "laboratory_id" SET NOT NULL;
+      ALTER TABLE "currencies" ADD CONSTRAINT "FK_currencies_laboratory" FOREIGN KEY ("laboratory_id") REFERENCES "laboratory"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+
+      ALTER TABLE "document_drafts" ADD COLUMN "laboratory_id" integer;
+      UPDATE "document_drafts" SET "laboratory_id" = 1 WHERE "laboratory_id" IS NULL;
+      ALTER TABLE "document_drafts" ALTER COLUMN "laboratory_id" SET NOT NULL;
+      ALTER TABLE "document_drafts" ADD CONSTRAINT "FK_document_drafts_laboratory" FOREIGN KEY ("laboratory_id") REFERENCES "laboratory"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+
+      ALTER TABLE "dollar_value" ADD COLUMN "laboratory_id" integer;
+      UPDATE "dollar_value" SET "laboratory_id" = 1 WHERE "laboratory_id" IS NULL;
+      ALTER TABLE "dollar_value" ALTER COLUMN "laboratory_id" SET NOT NULL;
+      ALTER TABLE "dollar_value" ADD CONSTRAINT "FK_dollar_value_laboratory" FOREIGN KEY ("laboratory_id") REFERENCES "laboratory"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+
+      ALTER TABLE "dollar_value_automation" ADD COLUMN "laboratory_id" integer;
+      UPDATE "dollar_value_automation" SET "laboratory_id" = 1 WHERE "laboratory_id" IS NULL;
+      ALTER TABLE "dollar_value_automation" ALTER COLUMN "laboratory_id" SET NOT NULL;
+      ALTER TABLE "dollar_value_automation" ADD CONSTRAINT "FK_dollar_value_automation_laboratory" FOREIGN KEY ("laboratory_id") REFERENCES "laboratory"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+
+      ALTER TABLE "dollar_value_automation_runs" ADD COLUMN "laboratory_id" integer;
+      UPDATE "dollar_value_automation_runs" SET "laboratory_id" = 1 WHERE "laboratory_id" IS NULL;
+      ALTER TABLE "dollar_value_automation_runs" ALTER COLUMN "laboratory_id" SET NOT NULL;
+      ALTER TABLE "dollar_value_automation_runs" ADD CONSTRAINT "FK_dollar_value_automation_runs_laboratory" FOREIGN KEY ("laboratory_id") REFERENCES "laboratory"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+
+      ALTER TABLE "exam_catalog" ADD COLUMN "laboratory_id" integer;
+      UPDATE "exam_catalog" SET "laboratory_id" = 1 WHERE "laboratory_id" IS NULL;
+      ALTER TABLE "exam_catalog" ALTER COLUMN "laboratory_id" SET NOT NULL;
+      ALTER TABLE "exam_catalog" ADD CONSTRAINT "FK_exam_catalog_laboratory" FOREIGN KEY ("laboratory_id") REFERENCES "laboratory"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+
+      ALTER TABLE "exam_group" ADD COLUMN "laboratory_id" integer;
+      UPDATE "exam_group" SET "laboratory_id" = 1 WHERE "laboratory_id" IS NULL;
+      ALTER TABLE "exam_group" ALTER COLUMN "laboratory_id" SET NOT NULL;
+      ALTER TABLE "exam_group" ADD CONSTRAINT "FK_exam_group_laboratory" FOREIGN KEY ("laboratory_id") REFERENCES "laboratory"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+
+      ALTER TABLE "exam_routine_items" ADD COLUMN "laboratory_id" integer;
+      UPDATE "exam_routine_items" SET "laboratory_id" = 1 WHERE "laboratory_id" IS NULL;
+      ALTER TABLE "exam_routine_items" ALTER COLUMN "laboratory_id" SET NOT NULL;
+      ALTER TABLE "exam_routine_items" ADD CONSTRAINT "FK_exam_routine_items_laboratory" FOREIGN KEY ("laboratory_id") REFERENCES "laboratory"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+
+      ALTER TABLE "exam_routines" ADD COLUMN "laboratory_id" integer;
+      UPDATE "exam_routines" SET "laboratory_id" = 1 WHERE "laboratory_id" IS NULL;
+      ALTER TABLE "exam_routines" ALTER COLUMN "laboratory_id" SET NOT NULL;
+      ALTER TABLE "exam_routines" ADD CONSTRAINT "FK_exam_routines_laboratory" FOREIGN KEY ("laboratory_id") REFERENCES "laboratory"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+
+      ALTER TABLE "exam_tariff_prices" ADD COLUMN "laboratory_id" integer;
+      UPDATE "exam_tariff_prices" SET "laboratory_id" = 1 WHERE "laboratory_id" IS NULL;
+      ALTER TABLE "exam_tariff_prices" ALTER COLUMN "laboratory_id" SET NOT NULL;
+      ALTER TABLE "exam_tariff_prices" ADD CONSTRAINT "FK_exam_tariff_prices_laboratory" FOREIGN KEY ("laboratory_id") REFERENCES "laboratory"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+
+      ALTER TABLE "group_ht" ADD COLUMN "laboratory_id" integer;
+      UPDATE "group_ht" SET "laboratory_id" = 1 WHERE "laboratory_id" IS NULL;
+      ALTER TABLE "group_ht" ALTER COLUMN "laboratory_id" SET NOT NULL;
+      ALTER TABLE "group_ht" ADD CONSTRAINT "FK_group_ht_laboratory" FOREIGN KEY ("laboratory_id") REFERENCES "laboratory"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+
+      ALTER TABLE "group_ht_items" ADD COLUMN "laboratory_id" integer;
+      UPDATE "group_ht_items" SET "laboratory_id" = 1 WHERE "laboratory_id" IS NULL;
+      ALTER TABLE "group_ht_items" ALTER COLUMN "laboratory_id" SET NOT NULL;
+      ALTER TABLE "group_ht_items" ADD CONSTRAINT "FK_group_ht_items_laboratory" FOREIGN KEY ("laboratory_id") REFERENCES "laboratory"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+
+      ALTER TABLE "list_germs" ADD COLUMN "laboratory_id" integer;
+      UPDATE "list_germs" SET "laboratory_id" = 1 WHERE "laboratory_id" IS NULL;
+      ALTER TABLE "list_germs" ALTER COLUMN "laboratory_id" SET NOT NULL;
+      ALTER TABLE "list_germs" ADD CONSTRAINT "FK_list_germs_laboratory" FOREIGN KEY ("laboratory_id") REFERENCES "laboratory"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+
+      ALTER TABLE "parasiticforms" ADD COLUMN "laboratory_id" integer;
+      UPDATE "parasiticforms" SET "laboratory_id" = 1 WHERE "laboratory_id" IS NULL;
+      ALTER TABLE "parasiticforms" ALTER COLUMN "laboratory_id" SET NOT NULL;
+      ALTER TABLE "parasiticforms" ADD CONSTRAINT "FK_parasiticforms_laboratory" FOREIGN KEY ("laboratory_id") REFERENCES "laboratory"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+
+      ALTER TABLE "sample_type" ADD COLUMN "laboratory_id" integer;
+      UPDATE "sample_type" SET "laboratory_id" = 1 WHERE "laboratory_id" IS NULL;
+      ALTER TABLE "sample_type" ALTER COLUMN "laboratory_id" SET NOT NULL;
+      ALTER TABLE "sample_type" ADD CONSTRAINT "FK_sample_type_laboratory" FOREIGN KEY ("laboratory_id") REFERENCES "laboratory"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+
+      ALTER TABLE "security_audit_logs" ADD COLUMN "laboratory_id" integer;
+      UPDATE "security_audit_logs" SET "laboratory_id" = 1 WHERE "laboratory_id" IS NULL;
+      ALTER TABLE "security_audit_logs" ALTER COLUMN "laboratory_id" SET NOT NULL;
+      ALTER TABLE "security_audit_logs" ADD CONSTRAINT "FK_security_audit_logs_laboratory" FOREIGN KEY ("laboratory_id") REFERENCES "laboratory"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+
+      ALTER TABLE "security_role_permissions" ADD COLUMN "laboratory_id" integer;
+      UPDATE "security_role_permissions" SET "laboratory_id" = 1 WHERE "laboratory_id" IS NULL;
+      ALTER TABLE "security_role_permissions" ALTER COLUMN "laboratory_id" SET NOT NULL;
+      ALTER TABLE "security_role_permissions" ADD CONSTRAINT "FK_security_role_permissions_laboratory" FOREIGN KEY ("laboratory_id") REFERENCES "laboratory"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+
+      ALTER TABLE "security_roles" ADD COLUMN "laboratory_id" integer;
+      UPDATE "security_roles" SET "laboratory_id" = 1 WHERE "laboratory_id" IS NULL;
+      ALTER TABLE "security_roles" ALTER COLUMN "laboratory_id" SET NOT NULL;
+      ALTER TABLE "security_roles" ADD CONSTRAINT "FK_security_roles_laboratory" FOREIGN KEY ("laboratory_id") REFERENCES "laboratory"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+
+      ALTER TABLE "security_user_permission_overrides" ADD COLUMN "laboratory_id" integer;
+      UPDATE "security_user_permission_overrides" SET "laboratory_id" = 1 WHERE "laboratory_id" IS NULL;
+      ALTER TABLE "security_user_permission_overrides" ALTER COLUMN "laboratory_id" SET NOT NULL;
+      ALTER TABLE "security_user_permission_overrides" ADD CONSTRAINT "FK_security_user_permission_overrides_laboratory" FOREIGN KEY ("laboratory_id") REFERENCES "laboratory"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+
+      ALTER TABLE "security_user_roles" ADD COLUMN "laboratory_id" integer;
+      UPDATE "security_user_roles" SET "laboratory_id" = 1 WHERE "laboratory_id" IS NULL;
+      ALTER TABLE "security_user_roles" ALTER COLUMN "laboratory_id" SET NOT NULL;
+      ALTER TABLE "security_user_roles" ADD CONSTRAINT "FK_security_user_roles_laboratory" FOREIGN KEY ("laboratory_id") REFERENCES "laboratory"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+
+      ALTER TABLE "special_test_items" ADD COLUMN "laboratory_id" integer;
+      UPDATE "special_test_items" SET "laboratory_id" = 1 WHERE "laboratory_id" IS NULL;
+      ALTER TABLE "special_test_items" ALTER COLUMN "laboratory_id" SET NOT NULL;
+      ALTER TABLE "special_test_items" ADD CONSTRAINT "FK_special_test_items_laboratory" FOREIGN KEY ("laboratory_id") REFERENCES "laboratory"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+
+      ALTER TABLE "special_test_lab" ADD COLUMN "laboratory_id" integer;
+      UPDATE "special_test_lab" SET "laboratory_id" = 1 WHERE "laboratory_id" IS NULL;
+      ALTER TABLE "special_test_lab" ALTER COLUMN "laboratory_id" SET NOT NULL;
+      ALTER TABLE "special_test_lab" ADD CONSTRAINT "FK_special_test_lab_laboratory" FOREIGN KEY ("laboratory_id") REFERENCES "laboratory"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+
+      ALTER TABLE "tariffs" ADD COLUMN "laboratory_id" integer;
+      UPDATE "tariffs" SET "laboratory_id" = 1 WHERE "laboratory_id" IS NULL;
+      ALTER TABLE "tariffs" ALTER COLUMN "laboratory_id" SET NOT NULL;
+      ALTER TABLE "tariffs" ADD CONSTRAINT "FK_tariffs_laboratory" FOREIGN KEY ("laboratory_id") REFERENCES "laboratory"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+
+      ALTER TABLE "tax" ADD COLUMN "laboratory_id" integer;
+      UPDATE "tax" SET "laboratory_id" = 1 WHERE "laboratory_id" IS NULL;
+      ALTER TABLE "tax" ALTER COLUMN "laboratory_id" SET NOT NULL;
+      ALTER TABLE "tax" ADD CONSTRAINT "FK_tax_laboratory" FOREIGN KEY ("laboratory_id") REFERENCES "laboratory"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+
+      ALTER TABLE "users" ADD COLUMN "laboratory_id" integer;
+      UPDATE "users" SET "laboratory_id" = 1 WHERE "laboratory_id" IS NULL;
+      ALTER TABLE "users" ALTER COLUMN "laboratory_id" SET NOT NULL;
+      ALTER TABLE "users" ADD CONSTRAINT "FK_users_laboratory" FOREIGN KEY ("laboratory_id") REFERENCES "laboratory"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+
+      ALTER TABLE "way_pay" ADD COLUMN "laboratory_id" integer;
+      UPDATE "way_pay" SET "laboratory_id" = 1 WHERE "laboratory_id" IS NULL;
+      ALTER TABLE "way_pay" ALTER COLUMN "laboratory_id" SET NOT NULL;
+      ALTER TABLE "way_pay" ADD CONSTRAINT "FK_way_pay_laboratory" FOREIGN KEY ("laboratory_id") REFERENCES "laboratory"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+
+      ALTER TABLE "way_pay_items" ADD COLUMN "laboratory_id" integer;
+      UPDATE "way_pay_items" SET "laboratory_id" = 1 WHERE "laboratory_id" IS NULL;
+      ALTER TABLE "way_pay_items" ALTER COLUMN "laboratory_id" SET NOT NULL;
+      ALTER TABLE "way_pay_items" ADD CONSTRAINT "FK_way_pay_items_laboratory" FOREIGN KEY ("laboratory_id") REFERENCES "laboratory"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+
+      ALTER TABLE "document_definitions" ADD CONSTRAINT "FK_document_definitions_laboratory_id" FOREIGN KEY ("laboratory_id") REFERENCES "laboratory"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+      ALTER TABLE "document_definitions" ADD CONSTRAINT "FK_document_definitions_created_by_user_id" FOREIGN KEY ("created_by_user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+      ALTER TABLE "document_definitions" ADD CONSTRAINT "FK_document_definitions_updated_by_user_id" FOREIGN KEY ("updated_by_user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+      ALTER TABLE "document_drafts" ADD CONSTRAINT "FK_document_drafts_document_id" FOREIGN KEY ("document_id") REFERENCES "document_definitions"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+      ALTER TABLE "document_drafts" ADD CONSTRAINT "FK_document_drafts_created_by_user_id" FOREIGN KEY ("created_by_user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+      ALTER TABLE "document_drafts" ADD CONSTRAINT "FK_document_drafts_updated_by_user_id" FOREIGN KEY ("updated_by_user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+      ALTER TABLE "dollar_value_automation_runs" ADD CONSTRAINT "FK_dollar_value_automation_runs_requested_by_user_id" FOREIGN KEY ("requested_by_user_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE NO ACTION;
+      ALTER TABLE "exam_catalog" ADD CONSTRAINT "FK_exam_catalog_tax_id" FOREIGN KEY ("tax_id") REFERENCES "tax"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+      ALTER TABLE "way_pay" ADD CONSTRAINT "FK_way_pay_id_users" FOREIGN KEY ("id_users") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+      ALTER TABLE "way_pay" ADD CONSTRAINT "FK_way_pay_id_client" FOREIGN KEY ("id_client") REFERENCES "client"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+      ALTER TABLE "exam_routine_items" ADD CONSTRAINT "UQ_exam_routine_items_pair" UNIQUE ("routine_id", "exam_catalog_id");
+      ALTER TABLE "exam_tariff_prices" ADD CONSTRAINT "UQ_exam_tariff_prices_pair" UNIQUE ("tariff_id", "exam_catalog_id");
+      ALTER TABLE "group_ht_items" ADD CONSTRAINT "UQ_group_ht_items_pair" UNIQUE ("groupHtId", "examId");
+      ALTER TABLE "cash_register" ADD COLUMN "laboratory_branch_id" integer;
+      UPDATE "cash_register" t SET "laboratory_branch_id" = b."id" FROM "laboratory_branches" b WHERE b."laboratory_id" = t."laboratory_id" AND b."is_main" = true AND t."laboratory_branch_id" IS NULL;
+      ALTER TABLE "cash_register" ALTER COLUMN "laboratory_branch_id" SET NOT NULL;
+      ALTER TABLE "cash_register" ADD CONSTRAINT "FK_cash_register_laboratory_branch" FOREIGN KEY ("laboratory_branch_id") REFERENCES "laboratory_branches"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+
+      ALTER TABLE "invoice" ADD COLUMN "laboratory_branch_id" integer;
+      UPDATE "invoice" t SET "laboratory_branch_id" = b."id" FROM "laboratory_branches" b WHERE b."laboratory_id" = t."laboratory_id" AND b."is_main" = true AND t."laboratory_branch_id" IS NULL;
+      ALTER TABLE "invoice" ALTER COLUMN "laboratory_branch_id" SET NOT NULL;
+      ALTER TABLE "invoice" ADD CONSTRAINT "FK_invoice_laboratory_branch" FOREIGN KEY ("laboratory_branch_id") REFERENCES "laboratory_branches"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+
+      ALTER TABLE "patient_admissions" ADD COLUMN "laboratory_branch_id" integer;
+      UPDATE "patient_admissions" t SET "laboratory_branch_id" = b."id" FROM "laboratory_branches" b WHERE b."laboratory_id" = t."laboratory_id" AND b."is_main" = true AND t."laboratory_branch_id" IS NULL;
+      ALTER TABLE "patient_admissions" ALTER COLUMN "laboratory_branch_id" SET NOT NULL;
+      ALTER TABLE "patient_admissions" ADD CONSTRAINT "FK_patient_admissions_laboratory_branch" FOREIGN KEY ("laboratory_branch_id") REFERENCES "laboratory_branches"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+
+      ALTER TABLE "patient_exams" ADD COLUMN "laboratory_branch_id" integer;
+      UPDATE "patient_exams" t SET "laboratory_branch_id" = b."id" FROM "laboratory_branches" b WHERE b."laboratory_id" = t."laboratory_id" AND b."is_main" = true AND t."laboratory_branch_id" IS NULL;
+      ALTER TABLE "patient_exams" ALTER COLUMN "laboratory_branch_id" SET NOT NULL;
+      ALTER TABLE "patient_exams" ADD CONSTRAINT "FK_patient_exams_laboratory_branch" FOREIGN KEY ("laboratory_branch_id") REFERENCES "laboratory_branches"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+
+      ALTER TABLE "way_pay" ADD COLUMN "laboratory_branch_id" integer;
+      UPDATE "way_pay" t SET "laboratory_branch_id" = b."id" FROM "laboratory_branches" b WHERE b."laboratory_id" = t."laboratory_id" AND b."is_main" = true AND t."laboratory_branch_id" IS NULL;
+      ALTER TABLE "way_pay" ALTER COLUMN "laboratory_branch_id" SET NOT NULL;
+      ALTER TABLE "way_pay" ADD CONSTRAINT "FK_way_pay_laboratory_branch" FOREIGN KEY ("laboratory_branch_id") REFERENCES "laboratory_branches"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+
+    `);
 }
 
   async down(): Promise<void> {
