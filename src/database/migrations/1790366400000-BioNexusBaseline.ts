@@ -17,7 +17,34 @@ export class BioNexusBaseline1790366400000 implements MigrationInterface {
 
     const sql = gunzipSync(Buffer.from(BASELINE_GZIP_BASE64, 'base64')).toString('utf8');
     for (const statement of this.split(sql)) await queryRunner.query(statement);
-  }
+
+
+    // BIO_NEXUS_SECURITY_RELATIONAL_NORMALIZATION
+    // Las tablas puente ya usan PK compuesta, que garantiza la unicidad de cada par.
+    await queryRunner.query(`
+      ALTER TABLE "security_role_permissions"
+        ADD CONSTRAINT "FK_security_role_permissions_role"
+          FOREIGN KEY ("role_id") REFERENCES "security_roles"("id") ON DELETE RESTRICT ON UPDATE NO ACTION,
+        ADD CONSTRAINT "FK_security_role_permissions_permission"
+          FOREIGN KEY ("permission_id") REFERENCES "security_permissions"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+
+      ALTER TABLE "security_user_roles"
+        ADD CONSTRAINT "FK_security_user_roles_user"
+          FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE NO ACTION,
+        ADD CONSTRAINT "FK_security_user_roles_role"
+          FOREIGN KEY ("role_id") REFERENCES "security_roles"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+
+      ALTER TABLE "security_user_permission_overrides"
+        ADD CONSTRAINT "FK_security_user_permission_overrides_user"
+          FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE NO ACTION,
+        ADD CONSTRAINT "FK_security_user_permission_overrides_permission"
+          FOREIGN KEY ("permission_id") REFERENCES "security_permissions"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+
+      ALTER TABLE "security_audit_logs"
+        ADD CONSTRAINT "FK_security_audit_logs_actor_user"
+          FOREIGN KEY ("actor_user_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE NO ACTION;
+    `);
+}
 
   async down(): Promise<void> {
     throw new Error('BIONEXUS_BASELINE_DOWN_NOT_AVAILABLE');
