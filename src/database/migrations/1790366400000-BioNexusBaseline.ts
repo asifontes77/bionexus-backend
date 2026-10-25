@@ -366,6 +366,31 @@ export class BioNexusBaseline1790366400000 implements MigrationInterface {
       CREATE INDEX "IX_laboratory_modules_enabled"
         ON "laboratory_modules" ("laboratory_id", "is_enabled");
     `);
+
+    // BIO_NEXUS_LABORATORY_PROVISIONING_CONTRACT
+    await queryRunner.query(`
+      ALTER TABLE "laboratory" ALTER COLUMN "phone_1" DROP NOT NULL;
+      ALTER TABLE "laboratory" ALTER COLUMN "phone_2" DROP NOT NULL;
+      ALTER TABLE "laboratory" ALTER COLUMN "email" DROP NOT NULL;
+      ALTER TABLE "laboratory" ALTER COLUMN "logo" DROP NOT NULL;
+      ALTER TABLE "laboratory" ALTER COLUMN "url" DROP NOT NULL;
+      ALTER TABLE "laboratory" ALTER COLUMN "mask_phone" DROP NOT NULL;
+      ALTER TABLE "laboratory" ALTER COLUMN "voucher_format" DROP NOT NULL;
+      ALTER TABLE "laboratory" ALTER COLUMN "rows_description_invoices" DROP NOT NULL;
+      ALTER TABLE "laboratory" ALTER COLUMN "head_html" DROP NOT NULL;
+      ALTER TABLE "laboratory" ALTER COLUMN "body_html" DROP NOT NULL;
+      ALTER TABLE "laboratory" ALTER COLUMN "page_html" DROP NOT NULL;
+      ALTER TABLE "laboratory" ALTER COLUMN "workshee_format" DROP NOT NULL;
+      ALTER TABLE "laboratory" ALTER COLUMN "printer_type" DROP NOT NULL;
+      ALTER TABLE "laboratory" ALTER COLUMN "printer_interface" DROP NOT NULL;
+      ALTER TABLE "laboratory" ALTER COLUMN "license" DROP NOT NULL;
+      ALTER TABLE "laboratory" ALTER COLUMN "receipt_format" DROP NOT NULL;
+      ALTER TABLE "laboratory" ADD CONSTRAINT "CK_laboratory_rif_not_blank" CHECK (btrim("rif") <> '');
+      ALTER TABLE "laboratory" ADD CONSTRAINT "CK_laboratory_name_not_blank" CHECK (btrim("name") <> '');
+      ALTER TABLE "laboratory" ADD CONSTRAINT "CK_laboratory_business_name_not_blank" CHECK (btrim("business_name") <> '');
+      ALTER TABLE "laboratory" ADD CONSTRAINT "CK_laboratory_address_not_blank" CHECK (btrim("address") <> '');
+      CREATE UNIQUE INDEX "UQ_laboratory_rif_normalized" ON "laboratory" (upper(btrim("rif")));
+    `);
 }
 
   async down(): Promise<void> {
