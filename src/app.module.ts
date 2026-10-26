@@ -39,6 +39,7 @@ import { ApplicationSettingsModule } from './application-settings/application-se
 import { TariffsModule } from './tariffs/tariffs.module';
 import { PatientAdmissionCloseModule } from './patient-admission-close/patient-admission-close.module';
 import { DocumentDefinitionsModule } from './document-definitions/document-definitions.module';
+import { PlatformModule } from './platform/platform.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { DocumentDefinitionsModule } from './document-definitions/document-defin
     TariffsModule,
     PatientAdmissionCloseModule,
     DocumentDefinitionsModule,
+    PlatformModule,
     ConfigModule.forRoot({
       isGlobal: true,
     }),

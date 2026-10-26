@@ -160,12 +160,13 @@ async createUser(
       throw new HttpException('INVALID_CREDENTIALS', HttpStatus.UNAUTHORIZED);
     }
 
-    const payload = { id: userFound.id, name: userFound.name };
+    const payload = { id: userFound.id, name: userFound.name, identityType: 'tenant-user' as const };
     const token = await this.signSessionToken(payload);
 
     const dataUser = {
-      user: toSafeUserResponse(userFound),
+      user: { ...toSafeUserResponse(userFound), identityType: 'tenant-user' },
       token,
+      identityType: 'tenant-user',
     };
     return dataUser;
   }
@@ -178,9 +179,9 @@ async createUser(
     if (!userFound || userFound.hide_user) {
       throw new HttpException('USER_NOT_FOUND', HttpStatus.NOT_FOUND);
     }
-    const payload = { id: userFound.id, name: userFound.name };
+    const payload = { id: userFound.id, name: userFound.name, identityType: 'tenant-user' as const };
     const token = await this.signSessionToken(payload);
-    return { user: toSafeUserResponse(userFound), token };
+    return { user: { ...toSafeUserResponse(userFound), identityType: 'tenant-user' }, token, identityType: 'tenant-user' };
   }
   async deleteUser(_id: number): Promise<never> {
     throw new MethodNotAllowedException('USER_PHYSICAL_DELETE_DISABLED');
@@ -234,9 +235,38 @@ async updateUser(
     });
   }
 
-  private async signSessionToken(payload: { id: number; name: string }): Promise<string> {
+  async renewPlatformOwnerSession(ownerId: number) {
+    if (!this.dataSource || !Number.isInteger(ownerId) || ownerId <= 0) {
+      throw new HttpException('INVALID_CREDENTIALS', HttpStatus.UNAUTHORIZED);
+    }
+    const rows = await this.dataSource.query(
+      'SELECT id, username, name, email FROM platform_owners WHERE id=$1 AND is_active=true',
+      [ownerId],
+    );
+    const owner = rows[0];
+    if (!owner) throw new HttpException('INVALID_CREDENTIALS', HttpStatus.UNAUTHORIZED);
+    const user = { id: Number(owner.id), name: owner.name, user_name: owner.username, email: owner.email, roles: 'platform-owner', identityType: 'platform-owner' };
+    const token = await this.signSessionToken({ id: user.id, name: user.name, identityType: 'platform-owner' });
+    return { user, token, identityType: 'platform-owner' };
+  }
+
+  async getPlatformOwnerSession(userName: string, password: string) {
+    if (!this.dataSource) return null;
+    const rows = await this.dataSource.query(
+      'SELECT id, username, password_hash, name, email FROM platform_owners WHERE lower(btrim(username))=lower(btrim($1)) AND is_active=true',
+      [userName],
+    );
+    const owner = rows[0];
+    if (!owner || !(await bcrypt.compare(password, owner.password_hash))) return null;
+    await this.dataSource.query('UPDATE platform_owners SET last_login_at=CURRENT_TIMESTAMP, updated_at=CURRENT_TIMESTAMP WHERE id=$1', [owner.id]);
+    const user = { id: Number(owner.id), name: owner.name, user_name: owner.username, email: owner.email, roles: 'platform-owner', identityType: 'platform-owner' };
+    const token = await this.signSessionToken({ id: user.id, name: user.name, identityType: 'platform-owner' });
+    return { user, token, identityType: 'platform-owner' };
+  }
+
+  private async signSessionToken(payload: { id: number; name: string; identityType?: 'platform-owner' | 'tenant-user' }): Promise<string> {
     let timeoutMinutes = 30;
-    if (this.dataSource) {
+    if (payload.identityType !== 'platform-owner' && this.dataSource) {
       const settings = await this.dataSource.getRepository(ApplicationSettings).findOne({
         where: { laboratory_id: 1 },
         select: { session_timeout_minutes: true },

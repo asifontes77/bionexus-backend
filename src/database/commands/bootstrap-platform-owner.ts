@@ -1,4 +1,4 @@
-﻿import { DataSource } from 'typeorm';
+import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import AppDataSource from '../data-source';
 import { validatePassword } from './bootstrap-first-admin';
@@ -30,5 +30,7 @@ if (require.main === module) {
   AppDataSource.initialize()
     .then(() => bootstrapPlatformOwner())
     .then(() => process.stdout.write('Propietario global creado correctamente.\n'))
-    .finally(() => AppDataSource.destroy());
+    .finally(async () => {
+      if (AppDataSource.isInitialized) await AppDataSource.destroy();
+    });
 }

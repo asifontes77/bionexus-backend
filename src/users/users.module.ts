@@ -18,5 +18,6 @@ import { SecurityAuditModule } from '../audit/security-audit.module';
   ],
   controllers: [UsersController],
   providers: [UsersService],
+  exports: [UsersService],
 })
 export class UsersModule {}

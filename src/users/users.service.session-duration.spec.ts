@@ -9,7 +9,7 @@ describe('UsersService session duration', () => {
     const dataSource = { getRepository: jest.fn().mockReturnValue(settingsRepository) };
     const service = new UsersService(repository as never, jwt as unknown as JwtService, {} as never, {} as never, dataSource as never);
     await service.renewUserSession(7);
-    expect(jwt.sign).toHaveBeenCalledWith({ id: 7, name: 'Usuario' }, { expiresIn: '45m' });
+    expect(jwt.sign).toHaveBeenCalledWith({ id: 7, name: 'Usuario', identityType: 'tenant-user' }, { expiresIn: '45m' });
   });
 
   it('usa 30 minutos cuando no existe configuracion disponible', async () => {
@@ -17,6 +17,6 @@ describe('UsersService session duration', () => {
     const repository = { findOne: jest.fn().mockResolvedValue({ id: 8, name: 'Usuario', hide_user: false }) };
     const service = new UsersService(repository as never, jwt as unknown as JwtService, {} as never, {} as never);
     await service.renewUserSession(8);
-    expect(jwt.sign).toHaveBeenCalledWith({ id: 8, name: 'Usuario' }, { expiresIn: '30m' });
+    expect(jwt.sign).toHaveBeenCalledWith({ id: 8, name: 'Usuario', identityType: 'tenant-user' }, { expiresIn: '30m' });
   });
 });

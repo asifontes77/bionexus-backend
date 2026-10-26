@@ -68,12 +68,15 @@ export class UsersController {
 
   @UseGuards(JwtUserGuard)
   @Post('/session/renew')
-  renewUserSession(@Req() request: SecurityAuthenticatedRequest) {
-    const userId = getSecurityAuditActorUserId(request);
-    if (userId === null) {
+  renewUserSession(@Req() request: SecurityAuthenticatedRequest & { user?: { userId?: number; identityType?: string } }) {
+    const identityType = request.user?.identityType;
+    const userId = Number(request.user?.userId ?? getSecurityAuditActorUserId(request));
+    if (!Number.isInteger(userId) || userId <= 0) {
       throw new BadRequestException('AUTHENTICATED_USER_REQUIRED');
     }
-    return this.usersService.renewUserSession(userId);
+    return identityType === 'platform-owner'
+      ? this.usersService.renewPlatformOwnerSession(userId)
+      : this.usersService.renewUserSession(userId);
   }
   @UseGuards(JwtUserGuard, PermissionGuard)
   @RequirePermissions('security.users.create')
