@@ -25,7 +25,8 @@
     "migration:revert": "npm run typeorm -- migration:revert -d src/database/data-source.ts",
     "migration:generate": "npm run typeorm -- migration:generate src/database/migrations/Generated -d src/database/data-source.ts --pretty",
     "migration:check": "npm run typeorm -- migration:generate src/database/migrations/SchemaCheck -d src/database/data-source.ts --check",
-    "bootstrap:first-admin": "node -r ts-node/register -r tsconfig-paths/register src/database/commands/bootstrap-first-admin.ts"
+    "bootstrap:first-admin": "node -r ts-node/register -r tsconfig-paths/register src/database/commands/bootstrap-first-admin.ts",
+    "bootstrap:platform-owner": "ts-node src/database/commands/bootstrap-platform-owner.ts"
   },
   "dependencies": {
     "@nestjs/common": "11.1.28",

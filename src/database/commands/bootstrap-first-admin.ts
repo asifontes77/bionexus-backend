@@ -1,4 +1,4 @@
-import 'dotenv/config';
+﻿import 'dotenv/config';
 import * as bcrypt from 'bcrypt';
 import { DataSource, EntityManager } from 'typeorm';
 import AppDataSource from '../data-source';
@@ -187,8 +187,7 @@ function normalizeRequired(
   if (normalized === '') throw new Error(`${name}_REQUIRED`);
   return normalized;
 }
-
-function validatePassword(password: string): void {
+export function validatePassword(password: string): void {
   if (password.length < 12) throw new Error('BIO_NEXUS_ADMIN_PASSWORD_TOO_SHORT');
   if (password.length > 200) throw new Error('BIO_NEXUS_ADMIN_PASSWORD_TOO_LONG');
   if (!/[a-z]/.test(password))
