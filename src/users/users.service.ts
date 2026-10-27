@@ -160,7 +160,7 @@ async createUser(
       throw new HttpException('INVALID_CREDENTIALS', HttpStatus.UNAUTHORIZED);
     }
 
-    const payload = { id: userFound.id, name: userFound.name, identityType: 'tenant-user' as const };
+    const payload = { id: userFound.id, name: userFound.name, laboratoryId: userFound.laboratory_id, identityType: 'tenant-user' as const };
     const token = await this.signSessionToken(payload);
 
     const dataUser = {
@@ -179,7 +179,7 @@ async createUser(
     if (!userFound || userFound.hide_user) {
       throw new HttpException('USER_NOT_FOUND', HttpStatus.NOT_FOUND);
     }
-    const payload = { id: userFound.id, name: userFound.name, identityType: 'tenant-user' as const };
+    const payload = { id: userFound.id, name: userFound.name, laboratoryId: userFound.laboratory_id, identityType: 'tenant-user' as const };
     const token = await this.signSessionToken(payload);
     return { user: { ...toSafeUserResponse(userFound), identityType: 'tenant-user' }, token, identityType: 'tenant-user' };
   }
@@ -264,11 +264,14 @@ async updateUser(
     return { user, token, identityType: 'platform-owner' };
   }
 
-  private async signSessionToken(payload: { id: number; name: string; identityType?: 'platform-owner' | 'tenant-user' }): Promise<string> {
+  private async signSessionToken(payload: { id: number; name: string; laboratoryId?: number; identityType?: 'platform-owner' | 'tenant-user' }): Promise<string> {
     let timeoutMinutes = 30;
     if (payload.identityType !== 'platform-owner' && this.dataSource) {
+      if (!Number.isInteger(payload.laboratoryId) || Number(payload.laboratoryId) <= 0) {
+        throw new HttpException('LABORATORY_CONTEXT_REQUIRED', HttpStatus.UNAUTHORIZED);
+      }
       const settings = await this.dataSource.getRepository(ApplicationSettings).findOne({
-        where: { laboratory_id: 1 },
+        where: { laboratory_id: Number(payload.laboratoryId) },
         select: { session_timeout_minutes: true },
       });
       const configured = Number(settings?.session_timeout_minutes);

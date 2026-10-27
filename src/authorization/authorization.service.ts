@@ -1,4 +1,4 @@
-﻿import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { User } from '../users/users.entity';
@@ -41,6 +41,7 @@ export class AuthorizationService {
       },
       select: {
         id: true,
+        laboratory_id: true,
       },
     });
 
@@ -181,6 +182,7 @@ export class AuthorizationService {
 
     return {
       userId,
+      laboratoryId: user.laboratory_id,
       roles: roles
         .map((role) => role.code)
         .sort((left, right) => left.localeCompare(right)),

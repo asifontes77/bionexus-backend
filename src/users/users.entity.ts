@@ -4,6 +4,9 @@ export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column('int', { name: 'laboratory_id' })
+  laboratory_id?: number;
+
   @Column('varchar', { length: 500, nullable: true })
   password: string;
 
