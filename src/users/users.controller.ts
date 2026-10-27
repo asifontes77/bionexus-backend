@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs';
+﻿import { existsSync } from 'node:fs';
 import { mkdir, readdir, unlink, writeFile } from 'node:fs/promises';
 import { extname, join } from 'node:path';
 import {
@@ -167,7 +167,10 @@ export class UsersController {
     const user = await this.usersService.getUser(userId);
     if (user instanceof HttpException) throw user;
 
-    const laboratoryId = 1;
+    const laboratoryId = Number(request.user?.laboratoryId);
+    if (!Number.isInteger(laboratoryId) || laboratoryId <= 0) {
+      throw new BadRequestException('LABORATORY_CONTEXT_REQUIRED');
+    }
     const extension = extname(file.originalname).toLowerCase();
     const allowedExtensions = ['.png', '.jpg', '.jpeg', '.webp'];
     if (!allowedExtensions.includes(extension)) {

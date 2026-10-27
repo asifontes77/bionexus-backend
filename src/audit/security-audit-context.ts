@@ -1,9 +1,10 @@
-import { ForbiddenException } from '@nestjs/common';
+﻿import { ForbiddenException } from '@nestjs/common';
 import { AsyncLocalStorage } from 'async_hooks';
 
 export interface SecurityAuthenticatedRequest {
   user?: {
     userId?: number;
+    laboratoryId?: number;
     username?: string;
   };
   ip?: string;

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
@@ -20,11 +20,16 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
+    const identityType = payload.identityType ?? 'tenant-user';
+    const laboratoryId = Number(payload.laboratoryId);
+    if (identityType !== 'platform-owner' && (!Number.isInteger(laboratoryId) || laboratoryId <= 0)) {
+      return null;
+    }
     return {
       userId: payload.id,
       username: payload.name,
-      identityType: payload.identityType ?? 'tenant-user',
-      laboratoryId: payload.identityType === 'platform-owner' ? undefined : payload.laboratoryId,
+      identityType,
+      laboratoryId: identityType === 'platform-owner' ? undefined : laboratoryId,
     };
   }
 }
