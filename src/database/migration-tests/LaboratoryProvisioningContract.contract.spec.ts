@@ -1,4 +1,4 @@
-﻿import { readFileSync, readdirSync } from 'fs';
+import { readFileSync, readdirSync } from 'fs';
 
 /** Protege el contrato minimo para aprovisionar laboratorios por modulos. */
 describe('Laboratory provisioning contract', () => {
@@ -27,6 +27,13 @@ describe('Laboratory provisioning contract', () => {
   /** La baseline basica no aprovisiona laboratorios. */
   it('does not seed a laboratory', () => {
     expect(migration).not.toMatch(/INSERT INTO\s+"laboratory"\s*\(/);
+  });
+
+  it('scopes user identities and role codes by laboratory', () => {
+    expect(migration).toContain('BIO_NEXUS_TENANT_UNIQUENESS_CONTRACT');
+    expect(migration).toContain('UQ_users_laboratory_user_name_normalized');
+    expect(migration).toContain('UQ_users_laboratory_email_normalized');
+    expect(migration).toContain('UQ_security_roles_laboratory_code_normalized');
   });
 
   /** Conserva una unica migracion baseline. */

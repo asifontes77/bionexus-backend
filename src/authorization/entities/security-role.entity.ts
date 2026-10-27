@@ -7,11 +7,14 @@ import {
 } from 'typeorm';
 
 @Entity({ name: 'security_roles' })
-@Index('UQ_security_roles_code', ['code'], { unique: true })
+@Index('UQ_security_roles_laboratory_code', ['laboratoryId', 'code'], { unique: true })
 @Index('IX_security_roles_active', ['isActive'])
 export class SecurityRole {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @Column('int', { name: 'laboratory_id', nullable: true })
+  laboratoryId?: number | null;
 
   @Column('varchar', { length: 60 })
   code: string;

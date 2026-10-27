@@ -13,7 +13,7 @@ export class User {
   @Column('varchar', { length: 100 })
   name: string;
 
-  @Column('varchar', { length: 100, unique: true })
+  @Column('varchar', { length: 100 })
   user_name: string;
   @Column('varchar', { length: 50, nullable: true })
   college_number: string;
@@ -36,7 +36,7 @@ export class User {
   @Column('varchar', { length: 50, nullable: true })
   position: string;
 
-  @Column('varchar', { length: 100, nullable: true, unique: true })
+  @Column('varchar', { length: 100, nullable: true })
   email: string;
 
   @Column('int', { default: 0, nullable: true })
