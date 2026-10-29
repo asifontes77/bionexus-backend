@@ -24130,25 +24130,27 @@
       ]
     }
   },
-  "lastUpdatedAt": "2026-10-29T10:03:18.1614369-04:00",
+  "lastUpdatedAt": "2026-10-29T10:08:16.638976-04:00",
   "primaryObjective": "Completar y cerrar con evidencia la normalizacion integral de la base de datos de Bio Nexus.",
   "currentWorkstream": "database-normalization",
   "currentCheckpoint": {
-    "timestamp": "2026-10-29T10:03:18.1614369-04:00",
+    "timestamp": "2026-10-29T10:08:16.638976-04:00",
     "workstream": "database-normalization",
-    "status": "validated-and-published-on-feature-branches",
+    "status": "closed-integrated-main",
     "completed": [
-      "Normalizacion estructural y validacion de datos aprobadas.",
-      "Baseline unica con application_settings preparada para commit selectivo.",
-      "Publicacion limitada a baseline y bitacoras; cambios funcionales no relacionados excluidos."
+      "Normalizacion integral validada tecnicamente.",
+      "Baseline unica validada desde PostgreSQL vacio con 52 tablas y una migracion.",
+      "Semillas globales verificadas: 62 permisos y 20 modulos.",
+      "Backend integrado y publicado en main: 831f5ac1fabd8df965329d37a5bc7234526fb553.",
+      "Frontend integrado y publicado en main: cf0d43a7182bbc9050fbd1f1c0e5780ac2f90b89."
     ],
     "current": [
-      "Realizar commits selectivos y publicar las ramas actuales sin integrar en main."
+      "Normalizacion cerrada y protegida en main."
     ],
     "pending": [
-      "Integrar posteriormente los commits de normalizacion en main mediante una operacion aislada que no arrastre cambios funcionales pendientes."
+      "Retomar el siguiente frente funcional desde las ramas actuales, leyendo primero el contrato y este checkpoint."
     ],
-    "nextAction": "Preparar integracion selectiva de los commits de normalizacion en main cuando los arboles funcionales permitan una operacion aislada y segura.",
+    "nextAction": "Retomar el frente funcional pendiente desde las ramas actuales sin reabrir la normalizacion cerrada.",
     "databaseQueried": false,
     "databaseModified": false,
     "serversManaged": false
@@ -24432,9 +24434,31 @@
       "databaseQueried": false,
       "databaseModified": false,
       "serversManaged": false
+    },
+    {
+      "timestamp": "2026-10-29T10:08:16.638976-04:00",
+      "workstream": "database-normalization",
+      "status": "closed-integrated-main",
+      "completed": [
+        "Normalizacion integral validada tecnicamente.",
+        "Baseline unica validada desde PostgreSQL vacio con 52 tablas y una migracion.",
+        "Semillas globales verificadas: 62 permisos y 20 modulos.",
+        "Backend integrado y publicado en main: 831f5ac1fabd8df965329d37a5bc7234526fb553.",
+        "Frontend integrado y publicado en main: cf0d43a7182bbc9050fbd1f1c0e5780ac2f90b89."
+      ],
+      "current": [
+        "Normalizacion cerrada y protegida en main."
+      ],
+      "pending": [
+        "Retomar el siguiente frente funcional desde las ramas actuales, leyendo primero el contrato y este checkpoint."
+      ],
+      "nextAction": "Retomar el frente funcional pendiente desde las ramas actuales sin reabrir la normalizacion cerrada.",
+      "databaseQueried": false,
+      "databaseModified": false,
+      "serversManaged": false
     }
   ],
-  "nextAction": "Preparar integracion selectiva de los commits de normalizacion en main cuando los arboles funcionales permitan una operacion aislada y segura.",
+  "nextAction": "Retomar el frente funcional pendiente desde las ramas actuales sin reabrir la normalizacion cerrada.",
   "bitacoraPolicy": {
     "readBeforeEveryOperation": true,
     "updateBothCopiesInSameOperation": true,
@@ -26941,5 +26965,11 @@
       "blockingFindings": 0,
       "status": "approved"
     }
+  },
+  "normalizationClosure": {
+    "status": "closed-integrated-main",
+    "backendMainCommit": "831f5ac1fabd8df965329d37a5bc7234526fb553",
+    "frontendMainCommit": "cf0d43a7182bbc9050fbd1f1c0e5780ac2f90b89",
+    "closedAt": "2026-10-29T10:08:16.638976-04:00"
   }
 }
