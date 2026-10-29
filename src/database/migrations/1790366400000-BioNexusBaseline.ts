@@ -130,6 +130,14 @@ export class BioNexusBaseline1790366400000 implements MigrationInterface {
         UNIQUE ("laboratory_id", "payment_method_id", "currency_id");
     `);
 
+    // BIO_NEXUS_PATIENT_EXAMS_STATUS_BOOLEAN_UP
+    await queryRunner.query(`
+      ALTER TABLE "patient_exams" ALTER COLUMN "status" DROP DEFAULT;
+      ALTER TABLE "patient_exams" ALTER COLUMN "status" TYPE boolean USING ("status" <> 0);
+      ALTER TABLE "patient_exams" ALTER COLUMN "status" SET DEFAULT false;
+      ALTER TABLE "patient_exams" ALTER COLUMN "status" SET NOT NULL;
+    `);
+
     // BIO_NEXUS_DATABASE_NORMALIZATION_FINAL
     await queryRunner.query(`
       ALTER TABLE "antibiotic" ADD COLUMN "laboratory_id" integer;
@@ -424,6 +432,42 @@ export class BioNexusBaseline1790366400000 implements MigrationInterface {
       CREATE UNIQUE INDEX "UQ_platform_owners_single_active"
         ON "platform_owners" ((1)) WHERE "is_active" = true;
     `);
+
+    // BN-APPLICATION-SETTINGS-BEGIN
+    await queryRunner.query(`
+      CREATE TABLE IF NOT EXISTS "application_settings" (
+        "id" SERIAL NOT NULL,
+        "laboratory_id" integer NOT NULL,
+        "session_timeout_minutes" integer NOT NULL DEFAULT 30,
+        "inactivity_timeout_minutes" integer NOT NULL DEFAULT 20,
+        "countdown_seconds" integer NOT NULL DEFAULT 120,
+        "locale" character varying(16) NOT NULL DEFAULT 'es-VE',
+        "time_zone" character varying(64) NOT NULL DEFAULT 'America/Caracas',
+        "date_format" character varying(16) NOT NULL DEFAULT 'dd/MM/yyyy',
+        "hour_cycle" character varying(8) NOT NULL DEFAULT 'h12',
+        "financial_primary_currency_id" integer NOT NULL,
+        "first_day_of_week" character varying(8) NOT NULL DEFAULT 'monday',
+        "decimal_separator" character varying(1) NOT NULL DEFAULT ',',
+        "voucher_format" text NOT NULL,
+        "receipt_format" text NOT NULL,
+        "head_html" text NOT NULL,
+        "body_html" text NOT NULL,
+        "page_html" text NOT NULL,
+        "maximum_rows_report" integer NOT NULL DEFAULT 38,
+        "workshee_format" text NOT NULL,
+        "printer_type" character varying(100) NOT NULL,
+        "printer_interface" character varying(100) NOT NULL,
+        CONSTRAINT "PK_application_settings" PRIMARY KEY ("id"),
+        CONSTRAINT "UQ_application_settings_laboratory" UNIQUE ("laboratory_id"),
+        CONSTRAINT "FK_application_settings_laboratory" FOREIGN KEY ("laboratory_id") REFERENCES "laboratory"("id") ON DELETE CASCADE ON UPDATE NO ACTION,
+        CONSTRAINT "FK_application_settings_currency" FOREIGN KEY ("financial_primary_currency_id") REFERENCES "currencies"("id") ON DELETE RESTRICT ON UPDATE NO ACTION,
+        CONSTRAINT "CK_application_settings_session" CHECK ("session_timeout_minutes" > 0),
+        CONSTRAINT "CK_application_settings_inactivity" CHECK ("inactivity_timeout_minutes" >= 0),
+        CONSTRAINT "CK_application_settings_countdown" CHECK ("countdown_seconds" >= 0),
+        CONSTRAINT "CK_application_settings_timeout_sum" CHECK (("inactivity_timeout_minutes" + CEIL("countdown_seconds" / 60.0)) <= "session_timeout_minutes")
+      )
+    `);
+    // BN-APPLICATION-SETTINGS-END
 }
 
   async down(): Promise<void> {
