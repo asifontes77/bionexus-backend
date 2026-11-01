@@ -25623,7 +25623,7 @@
       ]
     }
   },
-  "lastUpdatedAt": "2026-11-01T17:00:36-04:00",
+  "lastUpdatedAt": "2026-11-01T17:00:43-04:00",
   "primaryObjective": "Completar y cerrar con evidencia la normalizacion integral de la base de datos de Bio Nexus.",
   "currentWorkstream": "database-normalization",
   "currentCheckpoint": {
@@ -32194,7 +32194,7 @@
   "technicalClosures": [
     {
       "id": "platform-seed-data-catalog-20261101",
-      "status": "validated-pending-integration",
+      "status": "integrated",
       "branch": "feature/platform-seed-data-catalog",
       "scope": "Catalogos globales e hibridos, paquetes versionados y provisionamiento de laboratorios",
       "validatedAt": "2026-11-01T17:00:36-04:00",
@@ -32207,7 +32207,9 @@
         "gitDiffCheck": "approved",
         "postgresqlReal": "unchanged",
         "servers": "stopped"
-      }
+      },
+      "integratedAt": "2026-11-01T17:00:43-04:00",
+      "targetBranch": "main"
     }
   ]
 }
