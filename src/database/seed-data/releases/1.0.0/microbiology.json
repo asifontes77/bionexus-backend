@@ -1,0 +1,932 @@
+{
+  "packageCode": "microbiology",
+  "version": "1.0.0",
+  "minimumSchemaVersion": "BioNexusBaseline1790366400000",
+  "tables": {
+    "antibiotic": [
+      {
+        "id": "1",
+        "description": "Amikacina",
+        "siglas": "AMK",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "2",
+        "description": "Aztreonam",
+        "siglas": "ATM",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "3",
+        "description": "Cefazolin",
+        "siglas": "CZO",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "4",
+        "description": "Cefoperazone",
+        "siglas": "CFP",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "5",
+        "description": "Cefotaxime",
+        "siglas": "CTX",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "6",
+        "description": "Cefoxitin",
+        "siglas": "FOX",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "7",
+        "description": "Ceftazidime",
+        "siglas": "CAZ",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "8",
+        "description": "Cefuroxima Parenteral",
+        "siglas": "CXM-P",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "9",
+        "description": "Clindamicina",
+        "siglas": "CLI",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "10",
+        "description": "Cloranfenicol",
+        "siglas": "CHL",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "11",
+        "description": "Eritromicina",
+        "siglas": "ERY",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "12",
+        "description": "Gentamicina",
+        "siglas": "GEN",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "13",
+        "description": "Kenamicina",
+        "siglas": "KAN",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "14",
+        "description": "Lomefloxacina",
+        "siglas": "LOM",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "15",
+        "description": "Nitrofurantoina",
+        "siglas": "NIT",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "16",
+        "description": "Norfloxacina",
+        "siglas": "NOR",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "17",
+        "description": "Penicilina",
+        "siglas": "PEN",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "19",
+        "description": "Rifampicina",
+        "siglas": "RIF",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "20",
+        "description": "Tetraciclina",
+        "siglas": "TCY",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "21",
+        "description": "Trimetropin",
+        "siglas": "TMP",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "22",
+        "description": "Vancomicina",
+        "siglas": "VAN",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "23",
+        "description": "Piperaciclina/tazobactam",
+        "siglas": "TZP",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "24",
+        "description": "Ampicilina/sulbactam",
+        "siglas": "SAM",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "25",
+        "description": "Cefamandol",
+        "siglas": "MAN",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "26",
+        "description": "Cefixima",
+        "siglas": "CFM",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "27",
+        "description": "Ceftriaxone",
+        "siglas": "CRO",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "28",
+        "description": "Tobramicina",
+        "siglas": "TOB",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "29",
+        "description": "Ampicilina",
+        "siglas": "AMP",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "30",
+        "description": "Cefalotina",
+        "siglas": "CEP",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "31",
+        "description": "Cefepime",
+        "siglas": "FEP",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "32",
+        "description": "Cefpodoxime",
+        "siglas": "CPD",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "33",
+        "description": "Imipenem",
+        "siglas": "IPM",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "34",
+        "description": "Ofloxacina",
+        "siglas": "OFX",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "35",
+        "description": "Piperacilina",
+        "siglas": "PIP",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "36",
+        "description": "Ticarcilina",
+        "siglas": "TIC",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "37",
+        "description": "Levofloxacina",
+        "siglas": "LVX",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "38",
+        "description": "Oxacilina",
+        "siglas": "OXA",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "39",
+        "description": "Amoxicilina",
+        "siglas": "AMX",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "40",
+        "description": "Netilmicina",
+        "siglas": "NET",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "41",
+        "description": "Fosfomicina",
+        "siglas": "FOS",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "42",
+        "description": "Ciprofloxacina",
+        "siglas": "CIP",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "43",
+        "description": "Teicoplanina",
+        "siglas": "TEC",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "44",
+        "description": "Ticar-ac.clav",
+        "siglas": "TIM",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "45",
+        "description": "Meropenem",
+        "siglas": "MEM",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "46",
+        "description": "Colistin",
+        "siglas": "COL",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "47",
+        "description": "Amox/ac.clavulanico",
+        "siglas": "AMC",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "48",
+        "description": "Acido Nalidixico",
+        "siglas": "NAL",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "49",
+        "description": "Cefaclor",
+        "siglas": "CEC",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "50",
+        "description": "Cefuroxime",
+        "siglas": "CXM",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "51",
+        "description": "Quinupristin-dalfopristin",
+        "siglas": "QDA",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "52",
+        "description": "Gentamicina 120",
+        "siglas": "GEN120",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "53",
+        "description": "Cefadroxil",
+        "siglas": "CFR",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "54",
+        "description": "Linezolid",
+        "siglas": "LNZ",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "55",
+        "description": "Ertapenem",
+        "siglas": "ETP",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "56",
+        "description": "Polimixina B",
+        "siglas": "PMB",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "57",
+        "description": "Moxifloxacina",
+        "siglas": "MXF",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "58",
+        "description": "Cefoperazone Sulbactam",
+        "siglas": "CSL",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "59",
+        "description": "Azitromicina",
+        "siglas": "AZM",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "60",
+        "description": "Ceftibuten",
+        "siglas": "CTB",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "61",
+        "description": "Ceftizoxime",
+        "siglas": "CZX",
+        "annulled": "0",
+        "review_status": "APPROVED_STANDARDIZED_CLINICAL_NAME_AND_ABBREVIATION"
+      },
+      {
+        "id": "62",
+        "description": "Carbenicilina",
+        "siglas": "CRB",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "63",
+        "description": "Loracarbet",
+        "siglas": "LOR",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "64",
+        "description": "Cefalexin",
+        "siglas": "LEX",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "65",
+        "description": "Claritromicina",
+        "siglas": "CLR",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "66",
+        "description": "Cotrimoxazol",
+        "siglas": "SXT",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "67",
+        "description": "Lincomicina",
+        "siglas": "LIN",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "68",
+        "description": "Doxiciclina",
+        "siglas": "DOX",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      },
+      {
+        "id": "69",
+        "description": "Neomicina",
+        "siglas": "NEO",
+        "annulled": "0",
+        "review_status": "APPROVED_UNIQUE_CLINICAL_ABBREVIATION"
+      }
+    ],
+    "list_germs": [
+      {
+        "germen": "Enterobacter Cloacae",
+        "id": "1",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Enterobacter Gergoviae",
+        "id": "2",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Citrobacter Braakii",
+        "id": "3",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Citrobacter Freundii",
+        "id": "4",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Citrobacter Koseri/Amalonaticus",
+        "id": "5",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Citrobacter Youngae",
+        "id": "6",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Edwardsiella Hoshinae",
+        "id": "7",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Edwardsiella Tarda",
+        "id": "8",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Enterobacter Aerogenes",
+        "id": "9",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Enterobacter Amnigenus",
+        "id": "10",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Enterobacter Asburiae",
+        "id": "11",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Enterobacter Cancerogenus",
+        "id": "12",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Enterobacter Intermedius",
+        "id": "13",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Enterobacter Sakazakii",
+        "id": "14",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Escherichia Coli",
+        "id": "15",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Escherichia Fergusonii",
+        "id": "16",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Escherichia Vulneris",
+        "id": "17",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Ewingella Americana",
+        "id": "18",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Hafnia Alvei",
+        "id": "19",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Klebsiella Ornithinolytica",
+        "id": "20",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Klebsiella Oxytoca",
+        "id": "21",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Klebsiella Ozaenae",
+        "id": "22",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Klebsiella Pneumoniae",
+        "id": "23",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Klebsiella Rhinoscleromatis",
+        "id": "24",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Klebsiella Terrigena",
+        "id": "25",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Morganella Morganii",
+        "id": "26",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Pantoea Spp",
+        "id": "27",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Proteus Mirabilis",
+        "id": "28",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Proteus Penneri",
+        "id": "29",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Proteus Vulgaris",
+        "id": "30",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Providencia Alcalifaciens/Rustigianii",
+        "id": "31",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Providencia Rettgeri",
+        "id": "32",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Providencia Stuartii",
+        "id": "33",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Salmonella Arizonae",
+        "id": "34",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Salmonella Choleraesuis",
+        "id": "35",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Salmonella Gallinarum",
+        "id": "36",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Salmonella Paratyphi A",
+        "id": "37",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Salmonella Pullorum",
+        "id": "38",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Salmonella Typhi",
+        "id": "39",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Salmonella Spp",
+        "id": "40",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Serratia Ficaria",
+        "id": "41",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Serratia Fonticola",
+        "id": "42",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Serratia Liquefaciens",
+        "id": "43",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Serratia Marcescens",
+        "id": "44",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Serratia Odorifera",
+        "id": "45",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Serratia Plymuthica",
+        "id": "46",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Serratia Rubidaea",
+        "id": "47",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Shigella Spp",
+        "id": "48",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Shigella Sonnei",
+        "id": "49",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Yersinia Enterocolitica",
+        "id": "50",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Aeromonas Hydrophila",
+        "id": "51",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Aeromonas Salmonicida",
+        "id": "52",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Plesiomonas Shigelloides",
+        "id": "53",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Vibrio Alginolyticus",
+        "id": "54",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Vibrio Cholerae",
+        "id": "55",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Vibrio Fluvialis",
+        "id": "56",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Vibrio Hollisae",
+        "id": "57",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Vibrio Mimicus",
+        "id": "58",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Vibrio Parahaemolyticus",
+        "id": "59",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Pasteurella Aerogenes",
+        "id": "60",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Acinetobacter Baumannii/Calcoaceticus",
+        "id": "61",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Burkholderia Cepacia",
+        "id": "62",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Eikenella Corrodens",
+        "id": "63",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Pseudomonas Aeruginosa",
+        "id": "64",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Pseudomonas Fluorescens/Putida",
+        "id": "65",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Shewanella Putrefaciens",
+        "id": "66",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Stenotrophomonas Maltophilia",
+        "id": "67",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Pseudomonas Stutzeri",
+        "id": "68",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Pseudomonas Vesicularis",
+        "id": "69",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Acinetobacter Junii/Johnsonii",
+        "id": "70",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Acinetobacter Lwoffii",
+        "id": "71",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Alcaligenes Faecalis",
+        "id": "72",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Alcaligenes Xylosoxidans Ssp Denitrificans",
+        "id": "73",
+        "annulled": "0",
+        "description": null
+      },
+      {
+        "germen": "Alcaligenes Xylosoxidans Ssp Xylosoxidans",
+        "id": "74",
+        "annulled": "0",
+        "description": null
+      }
+    ]
+  },
+  "checksum": "2BCECC9AD7C5A951D2FE4AB9402102C17A5F35B9ED10C2B98075C20D45811A3D"
+}

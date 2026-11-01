@@ -1,0 +1,160 @@
+{
+  "packageCode": "samples-and-tax",
+  "version": "1.0.0",
+  "minimumSchemaVersion": "BioNexusBaseline1790366400000",
+  "tables": {
+    "sample_type": [
+      {
+        "id": "1",
+        "description": "Sangre Total",
+        "annulled": "0"
+      },
+      {
+        "id": "2",
+        "description": "Médula Ósea",
+        "annulled": "0"
+      },
+      {
+        "id": "3",
+        "description": "Orina",
+        "annulled": "0"
+      },
+      {
+        "id": "4",
+        "description": "Biopsia Parafinada",
+        "annulled": "0"
+      },
+      {
+        "id": "5",
+        "description": "Esputo",
+        "annulled": "0"
+      },
+      {
+        "id": "6",
+        "description": "Hisopado Genital",
+        "annulled": "0"
+      },
+      {
+        "id": "7",
+        "description": "Hisopado Faríngeo",
+        "annulled": "0"
+      },
+      {
+        "id": "8",
+        "description": "Hisopado Nasal",
+        "annulled": "0"
+      },
+      {
+        "id": "9",
+        "description": "Cepillo Genital",
+        "annulled": "0"
+      },
+      {
+        "id": "10",
+        "description": "Semen",
+        "annulled": "0"
+      },
+      {
+        "id": "11",
+        "description": "LCR",
+        "annulled": "0"
+      },
+      {
+        "id": "12",
+        "description": "Biopsia Fresca",
+        "annulled": "0"
+      },
+      {
+        "id": "13",
+        "description": "Suero",
+        "annulled": "0"
+      },
+      {
+        "id": "14",
+        "description": "Lavado Bronquial",
+        "annulled": "0"
+      },
+      {
+        "id": "15",
+        "description": "Líquido Pleural",
+        "annulled": "0"
+      },
+      {
+        "id": "16",
+        "description": "Líquido Ascítico",
+        "annulled": "0"
+      },
+      {
+        "id": "17",
+        "description": "Humor Vítreo",
+        "annulled": "0"
+      },
+      {
+        "id": "18",
+        "description": "Biopsia Gástrica",
+        "annulled": "0"
+      },
+      {
+        "id": "19",
+        "description": "Contenido Gástrico",
+        "annulled": "0"
+      },
+      {
+        "id": "20",
+        "description": "Secreción Gástrica",
+        "annulled": "0"
+      },
+      {
+        "id": "21",
+        "description": "Hisopado de Lesión",
+        "annulled": "0"
+      },
+      {
+        "id": "22",
+        "description": "Trígono Vesical",
+        "annulled": "0"
+      },
+      {
+        "id": "23",
+        "description": "Líquido Pericárdico",
+        "annulled": "0"
+      },
+      {
+        "id": "24",
+        "description": "Secreción Bronquial",
+        "annulled": "0"
+      },
+      {
+        "id": "25",
+        "description": "Hisopado Uretral",
+        "annulled": "0"
+      },
+      {
+        "id": "26",
+        "description": "Aspirado Pulmonar",
+        "annulled": "0"
+      },
+      {
+        "id": "27",
+        "description": "Hisopado de Cuello Uterino",
+        "annulled": "0"
+      },
+      {
+        "id": "28",
+        "description": "ADN Extraído",
+        "annulled": "0"
+      }
+    ],
+    "tax": [
+      {
+        "id": "1",
+        "description": "Exonerado",
+        "value": "0.00",
+        "only_dollars": "0",
+        "always_subtotal": "0",
+        "hide": "0"
+      }
+    ]
+  },
+  "checksum": "85D0EB3BDC0AEBA72A4E335B10BF2C1E61ECEC5F260721CF58E6072EEE4E9896"
+}

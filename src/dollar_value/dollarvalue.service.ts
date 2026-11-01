@@ -42,7 +42,7 @@ export class DollarvalueService {
     if (Object.keys(body).some((field) => field !== 'value')) throw new BadRequestException('DOLLAR_VALUE_FIELD_UNKNOWN');
     const value = Number(body.value);
     if (!Number.isFinite(value) || value <= 0) throw new BadRequestException('DOLLAR_VALUE_INVALID');
-    const rounded = Math.round(value * 100) / 100;
+    const rounded = Math.round((value + Number.EPSILON) * 1_000_000) / 1_000_000;
     if (Math.abs(value - rounded) > Number.EPSILON) throw new BadRequestException('DOLLAR_VALUE_SCALE_INVALID');
     return rounded;
   }

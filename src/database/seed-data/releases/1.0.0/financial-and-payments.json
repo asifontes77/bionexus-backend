@@ -1,0 +1,294 @@
+{
+  "packageCode": "financial-and-payments",
+  "version": "1.0.0",
+  "minimumSchemaVersion": "BioNexusBaseline1790366400000",
+  "tables": {
+    "currencies": [
+      {
+        "id": "1",
+        "code": "VES",
+        "name": "Bolívar Venezolano",
+        "symbol": "Bs.",
+        "symbol_position": "after",
+        "decimal_places": "2",
+        "is_local": "1",
+        "is_base": "0",
+        "is_active": "1",
+        "display_order": "10"
+      },
+      {
+        "id": "2",
+        "code": "USD",
+        "name": "Dólar Estadounidense",
+        "symbol": "USD",
+        "symbol_position": "before",
+        "decimal_places": "2",
+        "is_local": "0",
+        "is_base": "1",
+        "is_active": "1",
+        "display_order": "20"
+      },
+      {
+        "id": "3",
+        "code": "EUR",
+        "name": "Euro",
+        "symbol": "€",
+        "symbol_position": "before",
+        "decimal_places": "2",
+        "is_local": "0",
+        "is_base": "0",
+        "is_active": "1",
+        "display_order": "21"
+      }
+    ],
+    "banks": [
+      {
+        "id": "1",
+        "code": "0102",
+        "name": "Banco de Venezuela",
+        "short_name": "Banco de Venezuela",
+        "is_active": "1",
+        "display_order": "10"
+      },
+      {
+        "id": "2",
+        "code": "0104",
+        "name": "Banco Venezolano de Crédito",
+        "short_name": "Venezolano de Crédito",
+        "is_active": "1",
+        "display_order": "20"
+      },
+      {
+        "id": "3",
+        "code": "0105",
+        "name": "Banco Mercantil",
+        "short_name": "Mercantil",
+        "is_active": "1",
+        "display_order": "30"
+      },
+      {
+        "id": "4",
+        "code": "0108",
+        "name": "Banco Provincial",
+        "short_name": "Provincial",
+        "is_active": "1",
+        "display_order": "40"
+      },
+      {
+        "id": "5",
+        "code": "0114",
+        "name": "Bancaribe",
+        "short_name": "Bancaribe",
+        "is_active": "1",
+        "display_order": "50"
+      },
+      {
+        "id": "6",
+        "code": "0115",
+        "name": "Banco Exterior",
+        "short_name": "Exterior",
+        "is_active": "1",
+        "display_order": "60"
+      },
+      {
+        "id": "7",
+        "code": "0128",
+        "name": "Banco Caroní",
+        "short_name": "Caroní",
+        "is_active": "1",
+        "display_order": "70"
+      },
+      {
+        "id": "8",
+        "code": "0134",
+        "name": "Banesco",
+        "short_name": "Banesco",
+        "is_active": "1",
+        "display_order": "80"
+      },
+      {
+        "id": "9",
+        "code": "0137",
+        "name": "Banco Sofitasa",
+        "short_name": "Sofitasa",
+        "is_active": "1",
+        "display_order": "90"
+      },
+      {
+        "id": "10",
+        "code": "0138",
+        "name": "Banco Plaza",
+        "short_name": "Plaza",
+        "is_active": "1",
+        "display_order": "100"
+      },
+      {
+        "id": "11",
+        "code": "0146",
+        "name": "Bangente",
+        "short_name": "Bangente",
+        "is_active": "1",
+        "display_order": "110"
+      },
+      {
+        "id": "12",
+        "code": "0151",
+        "name": "BFC Banco Fondo Común",
+        "short_name": "BFC",
+        "is_active": "1",
+        "display_order": "120"
+      },
+      {
+        "id": "13",
+        "code": "0156",
+        "name": "100% Banco",
+        "short_name": "100% Banco",
+        "is_active": "1",
+        "display_order": "130"
+      },
+      {
+        "id": "14",
+        "code": "0157",
+        "name": "Del Sur Banco Universal",
+        "short_name": "Del Sur",
+        "is_active": "1",
+        "display_order": "140"
+      },
+      {
+        "id": "15",
+        "code": "0163",
+        "name": "Banco del Tesoro",
+        "short_name": "Tesoro",
+        "is_active": "1",
+        "display_order": "150"
+      },
+      {
+        "id": "16",
+        "code": "0166",
+        "name": "Banco Agrícola de Venezuela",
+        "short_name": "Agrícola de Venezuela",
+        "is_active": "1",
+        "display_order": "160"
+      },
+      {
+        "id": "17",
+        "code": "0168",
+        "name": "Bancrecer",
+        "short_name": "Bancrecer",
+        "is_active": "1",
+        "display_order": "170"
+      },
+      {
+        "id": "18",
+        "code": "0169",
+        "name": "R4 Banco Microfinanciero",
+        "short_name": "R4",
+        "is_active": "1",
+        "display_order": "180"
+      },
+      {
+        "id": "19",
+        "code": "0171",
+        "name": "Banco Activo",
+        "short_name": "Activo",
+        "is_active": "1",
+        "display_order": "190"
+      },
+      {
+        "id": "20",
+        "code": "0172",
+        "name": "Bancamiga",
+        "short_name": "Bancamiga",
+        "is_active": "1",
+        "display_order": "200"
+      },
+      {
+        "id": "21",
+        "code": "0173",
+        "name": "Banco Internacional de Desarrollo",
+        "short_name": "BID",
+        "is_active": "1",
+        "display_order": "210"
+      },
+      {
+        "id": "22",
+        "code": "0174",
+        "name": "Banplus",
+        "short_name": "Banplus",
+        "is_active": "1",
+        "display_order": "220"
+      },
+      {
+        "id": "23",
+        "code": "0175",
+        "name": "Banco Digital de los Trabajadores",
+        "short_name": "BDT",
+        "is_active": "1",
+        "display_order": "230"
+      },
+      {
+        "id": "24",
+        "code": "0177",
+        "name": "BANFANB",
+        "short_name": "BANFANB",
+        "is_active": "1",
+        "display_order": "240"
+      },
+      {
+        "id": "25",
+        "code": "0178",
+        "name": "N58 Banco Digital",
+        "short_name": "N58",
+        "is_active": "1",
+        "display_order": "250"
+      },
+      {
+        "id": "26",
+        "code": "0191",
+        "name": "Banco Nacional de Crédito",
+        "short_name": "BNC",
+        "is_active": "1",
+        "display_order": "260"
+      },
+      {
+        "id": "27",
+        "code": "0601",
+        "name": "Instituto Municipal de Crédito Popular",
+        "short_name": "IMCP",
+        "is_active": "1",
+        "display_order": "270"
+      }
+    ],
+    "type_payment": [
+      {
+        "id": "1",
+        "code": "cash",
+        "description": "Efectivo",
+        "display_order": "10",
+        "annulled": "0"
+      },
+      {
+        "id": "3",
+        "code": "debit-card",
+        "description": "Tarjeta de Débito",
+        "display_order": "30",
+        "annulled": "0"
+      },
+      {
+        "id": "4",
+        "code": "mobile-payment",
+        "description": "Pago Móvil",
+        "display_order": "40",
+        "annulled": "0"
+      },
+      {
+        "id": "5",
+        "code": "credit-card",
+        "description": "Tarjeta de Crédito",
+        "display_order": "50",
+        "annulled": "0"
+      }
+    ]
+  },
+  "checksum": "D00C1AA0E57050248C2CCBD020D654FE7FCF59ED30AB403779CFC38E1D2A428E"
+}

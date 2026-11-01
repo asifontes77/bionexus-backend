@@ -433,6 +433,173 @@ export class BioNexusBaseline1790366400000 implements MigrationInterface {
         ON "platform_owners" ((1)) WHERE "is_active" = true;
     `);
 
+
+    // BIO_NEXUS_CATALOG_RELEASE_FOUNDATION
+    await queryRunner.query(`
+      CREATE TABLE "platform_catalog_releases" (
+        "id" uuid NOT NULL DEFAULT gen_random_uuid(),
+        "package_code" character varying(80) NOT NULL,
+        "version" character varying(40) NOT NULL,
+        "status" character varying(20) NOT NULL DEFAULT 'draft',
+        "checksum" character varying(64) NOT NULL,
+        "minimum_schema_version" character varying(80) NOT NULL,
+        "snapshot_payload" jsonb NOT NULL,
+        "published_at" timestamp with time zone,
+        "published_by" integer,
+        "created_at" timestamp with time zone NOT NULL DEFAULT now(),
+        "created_by" integer NOT NULL,
+        CONSTRAINT "PK_platform_catalog_releases" PRIMARY KEY ("id"),
+        CONSTRAINT "UQ_platform_catalog_releases_package_version" UNIQUE ("package_code", "version"),
+        CONSTRAINT "CK_platform_catalog_releases_status" CHECK ("status" IN ('draft','published','retired')),
+        CONSTRAINT "CK_platform_catalog_releases_checksum" CHECK ("checksum" ~ '^[A-F0-9]{64}$'),
+        CONSTRAINT "FK_platform_catalog_releases_created_by" FOREIGN KEY ("created_by") REFERENCES "platform_owners"("id") ON DELETE RESTRICT,
+        CONSTRAINT "FK_platform_catalog_releases_published_by" FOREIGN KEY ("published_by") REFERENCES "platform_owners"("id") ON DELETE RESTRICT
+      );
+      CREATE UNIQUE INDEX "UQ_platform_catalog_releases_one_published"
+        ON "platform_catalog_releases" ("package_code") WHERE "status" = 'published';
+
+      CREATE TABLE "laboratory_catalog_packages" (
+        "id" uuid NOT NULL DEFAULT gen_random_uuid(),
+        "laboratory_id" integer NOT NULL,
+        "package_code" character varying(80) NOT NULL,
+        "catalog_release_id" uuid NOT NULL,
+        "installed_version" character varying(40) NOT NULL,
+        "source_checksum" character varying(64) NOT NULL,
+        "installation_status" character varying(30) NOT NULL DEFAULT 'installed',
+        "installed_at" timestamp with time zone NOT NULL DEFAULT now(),
+        "installed_by" integer,
+        "last_checked_at" timestamp with time zone,
+        CONSTRAINT "PK_laboratory_catalog_packages" PRIMARY KEY ("id"),
+        CONSTRAINT "UQ_laboratory_catalog_packages_scope" UNIQUE ("laboratory_id", "package_code"),
+        CONSTRAINT "CK_laboratory_catalog_packages_key" CHECK (btrim("package_code") <> ''),
+            CONSTRAINT "CK_laboratory_catalog_packages_status" CHECK ("installation_status" IN ('installed','update_available','customized','deferred')),
+        CONSTRAINT "FK_laboratory_catalog_packages_laboratory" FOREIGN KEY ("laboratory_id") REFERENCES "laboratory"("id") ON DELETE CASCADE,
+        CONSTRAINT "FK_laboratory_catalog_packages_release" FOREIGN KEY ("catalog_release_id") REFERENCES "platform_catalog_releases"("id") ON DELETE RESTRICT,
+        CONSTRAINT "FK_laboratory_catalog_packages_installed_by" FOREIGN KEY ("installed_by") REFERENCES "platform_owners"("id") ON DELETE SET NULL
+      );
+      CREATE INDEX "IX_laboratory_catalog_packages_release" ON "laboratory_catalog_packages" ("catalog_release_id");
+    `);
+
+    await queryRunner.query(`ALTER TABLE "exam_catalog" ALTER COLUMN "description" TYPE character varying(80)`);
+    await queryRunner.query(`ALTER TABLE "exam_tariff_prices" ALTER COLUMN "laboratory_id" DROP NOT NULL`);
+    await queryRunner.query(`ALTER TABLE "parasiticforms" DROP CONSTRAINT IF EXISTS "UQ_e0cb95e9137751fd9bfe6573be3"`);
+    await queryRunner.query(`CREATE UNIQUE INDEX "UQ_parasiticforms_global_description" ON "parasiticforms" (lower(btrim("description"))) WHERE "laboratory_id" IS NULL`);
+    await queryRunner.query(`CREATE UNIQUE INDEX "UQ_parasiticforms_tenant_description" ON "parasiticforms" ("laboratory_id", lower(btrim("description"))) WHERE "laboratory_id" IS NOT NULL`);
+    await queryRunner.query(`ALTER TABLE "tariffs" DROP CONSTRAINT IF EXISTS "UQ_257274cc44e534b2d870962842a"`);
+    await queryRunner.query(`CREATE UNIQUE INDEX "UQ_tariffs_global_code" ON "tariffs" (upper(btrim("code"))) WHERE "laboratory_id" IS NULL`);
+    await queryRunner.query(`CREATE UNIQUE INDEX "UQ_tariffs_tenant_code" ON "tariffs" ("laboratory_id", upper(btrim("code"))) WHERE "laboratory_id" IS NOT NULL`);
+    // BN-HYBRID-CATALOG-BEGIN
+    // laboratory_catalog_packages is defined once in BIO_NEXUS_CATALOG_RELEASE_FOUNDATION.
+    // The hybrid catalog columns below reuse that versioned package-installation contract.
+    await queryRunner.query(`ALTER TABLE "antibiotic" ALTER COLUMN "laboratory_id" DROP NOT NULL`);
+    await queryRunner.query(`ALTER TABLE "antibiotic" ADD COLUMN "source_global_id" integer NULL`);
+    await queryRunner.query(`ALTER TABLE "antibiotic" ADD COLUMN "is_platform_managed" boolean NOT NULL DEFAULT false`);
+    await queryRunner.query(`ALTER TABLE "antibiotic" ADD CONSTRAINT "CK_antibiotic_hybrid_scope" CHECK (("laboratory_id" IS NULL AND "is_platform_managed" = true) OR ("laboratory_id" IS NOT NULL AND "is_platform_managed" = true AND "source_global_id" IS NOT NULL) OR ("laboratory_id" IS NOT NULL AND "is_platform_managed" = false AND "source_global_id" IS NULL))`);
+    await queryRunner.query(`CREATE UNIQUE INDEX "UQ_antibiotic_laboratory_source_global" ON "antibiotic" ("laboratory_id", "source_global_id") WHERE "source_global_id" IS NOT NULL`);
+    await queryRunner.query(`CREATE INDEX "IX_antibiotic_global" ON "antibiotic" ("id") WHERE "laboratory_id" IS NULL AND "is_platform_managed" = true`);
+    await queryRunner.query(`ALTER TABLE "list_germs" ALTER COLUMN "laboratory_id" DROP NOT NULL`);
+    await queryRunner.query(`ALTER TABLE "list_germs" ADD COLUMN "source_global_id" integer NULL`);
+    await queryRunner.query(`ALTER TABLE "list_germs" ADD COLUMN "is_platform_managed" boolean NOT NULL DEFAULT false`);
+    await queryRunner.query(`ALTER TABLE "list_germs" ADD CONSTRAINT "CK_list_germs_hybrid_scope" CHECK (("laboratory_id" IS NULL AND "is_platform_managed" = true) OR ("laboratory_id" IS NOT NULL AND "is_platform_managed" = true AND "source_global_id" IS NOT NULL) OR ("laboratory_id" IS NOT NULL AND "is_platform_managed" = false AND "source_global_id" IS NULL))`);
+    await queryRunner.query(`CREATE UNIQUE INDEX "UQ_list_germs_laboratory_source_global" ON "list_germs" ("laboratory_id", "source_global_id") WHERE "source_global_id" IS NOT NULL`);
+    await queryRunner.query(`CREATE INDEX "IX_list_germs_global" ON "list_germs" ("id") WHERE "laboratory_id" IS NULL AND "is_platform_managed" = true`);
+    await queryRunner.query(`ALTER TABLE "parasiticforms" ALTER COLUMN "laboratory_id" DROP NOT NULL`);
+    await queryRunner.query(`ALTER TABLE "parasiticforms" ADD COLUMN "source_global_id" integer NULL`);
+    await queryRunner.query(`ALTER TABLE "parasiticforms" ADD COLUMN "is_platform_managed" boolean NOT NULL DEFAULT false`);
+    await queryRunner.query(`ALTER TABLE "parasiticforms" ADD CONSTRAINT "CK_parasiticforms_hybrid_scope" CHECK (("laboratory_id" IS NULL AND "is_platform_managed" = true) OR ("laboratory_id" IS NOT NULL AND "is_platform_managed" = true AND "source_global_id" IS NOT NULL) OR ("laboratory_id" IS NOT NULL AND "is_platform_managed" = false AND "source_global_id" IS NULL))`);
+    await queryRunner.query(`CREATE UNIQUE INDEX "UQ_parasiticforms_laboratory_source_global" ON "parasiticforms" ("laboratory_id", "source_global_id") WHERE "source_global_id" IS NOT NULL`);
+    await queryRunner.query(`CREATE INDEX "IX_parasiticforms_global" ON "parasiticforms" ("id") WHERE "laboratory_id" IS NULL AND "is_platform_managed" = true`);
+    await queryRunner.query(`ALTER TABLE "sample_type" ALTER COLUMN "laboratory_id" DROP NOT NULL`);
+    await queryRunner.query(`ALTER TABLE "sample_type" ADD COLUMN "source_global_id" integer NULL`);
+    await queryRunner.query(`ALTER TABLE "sample_type" ADD COLUMN "is_platform_managed" boolean NOT NULL DEFAULT false`);
+    await queryRunner.query(`ALTER TABLE "sample_type" ADD CONSTRAINT "CK_sample_type_hybrid_scope" CHECK (("laboratory_id" IS NULL AND "is_platform_managed" = true) OR ("laboratory_id" IS NOT NULL AND "is_platform_managed" = true AND "source_global_id" IS NOT NULL) OR ("laboratory_id" IS NOT NULL AND "is_platform_managed" = false AND "source_global_id" IS NULL))`);
+    await queryRunner.query(`CREATE UNIQUE INDEX "UQ_sample_type_laboratory_source_global" ON "sample_type" ("laboratory_id", "source_global_id") WHERE "source_global_id" IS NOT NULL`);
+    await queryRunner.query(`CREATE INDEX "IX_sample_type_global" ON "sample_type" ("id") WHERE "laboratory_id" IS NULL AND "is_platform_managed" = true`);
+    await queryRunner.query(`ALTER TABLE "tax" ALTER COLUMN "laboratory_id" DROP NOT NULL`);
+    await queryRunner.query(`ALTER TABLE "tax" ADD COLUMN "source_global_id" integer NULL`);
+    await queryRunner.query(`ALTER TABLE "tax" ADD COLUMN "is_platform_managed" boolean NOT NULL DEFAULT false`);
+    await queryRunner.query(`ALTER TABLE "tax" ADD CONSTRAINT "CK_tax_hybrid_scope" CHECK (("laboratory_id" IS NULL AND "is_platform_managed" = true) OR ("laboratory_id" IS NOT NULL AND "is_platform_managed" = true AND "source_global_id" IS NOT NULL) OR ("laboratory_id" IS NOT NULL AND "is_platform_managed" = false AND "source_global_id" IS NULL))`);
+    await queryRunner.query(`CREATE UNIQUE INDEX "UQ_tax_laboratory_source_global" ON "tax" ("laboratory_id", "source_global_id") WHERE "source_global_id" IS NOT NULL`);
+    await queryRunner.query(`CREATE INDEX "IX_tax_global" ON "tax" ("id") WHERE "laboratory_id" IS NULL AND "is_platform_managed" = true`);
+    await queryRunner.query(`ALTER TABLE "banks" ALTER COLUMN "laboratory_id" DROP NOT NULL`);
+    await queryRunner.query(`ALTER TABLE "banks" ADD COLUMN "source_global_id" integer NULL`);
+    await queryRunner.query(`ALTER TABLE "banks" ADD COLUMN "is_platform_managed" boolean NOT NULL DEFAULT false`);
+    await queryRunner.query(`ALTER TABLE "banks" ADD CONSTRAINT "CK_banks_hybrid_scope" CHECK (("laboratory_id" IS NULL AND "is_platform_managed" = true) OR ("laboratory_id" IS NOT NULL AND "is_platform_managed" = true AND "source_global_id" IS NOT NULL) OR ("laboratory_id" IS NOT NULL AND "is_platform_managed" = false AND "source_global_id" IS NULL))`);
+    await queryRunner.query(`CREATE UNIQUE INDEX "UQ_banks_laboratory_source_global" ON "banks" ("laboratory_id", "source_global_id") WHERE "source_global_id" IS NOT NULL`);
+    await queryRunner.query(`CREATE INDEX "IX_banks_global" ON "banks" ("id") WHERE "laboratory_id" IS NULL AND "is_platform_managed" = true`);
+    await queryRunner.query(`ALTER TABLE "currencies" ALTER COLUMN "laboratory_id" DROP NOT NULL`);
+    await queryRunner.query(`ALTER TABLE "currencies" ADD COLUMN "source_global_id" integer NULL`);
+    await queryRunner.query(`ALTER TABLE "currencies" ADD COLUMN "is_platform_managed" boolean NOT NULL DEFAULT false`);
+    await queryRunner.query(`ALTER TABLE "currencies" ADD CONSTRAINT "CK_currencies_hybrid_scope" CHECK (("laboratory_id" IS NULL AND "is_platform_managed" = true) OR ("laboratory_id" IS NOT NULL AND "is_platform_managed" = true AND "source_global_id" IS NOT NULL) OR ("laboratory_id" IS NOT NULL AND "is_platform_managed" = false AND "source_global_id" IS NULL))`);
+    await queryRunner.query(`CREATE UNIQUE INDEX "UQ_currencies_laboratory_source_global" ON "currencies" ("laboratory_id", "source_global_id") WHERE "source_global_id" IS NOT NULL`);
+    await queryRunner.query(`CREATE INDEX "IX_currencies_global" ON "currencies" ("id") WHERE "laboratory_id" IS NULL AND "is_platform_managed" = true`);
+    await queryRunner.query(`ALTER TABLE "exam_group" ALTER COLUMN "laboratory_id" DROP NOT NULL`);
+    await queryRunner.query(`ALTER TABLE "exam_group" ADD COLUMN "source_global_id" integer NULL`);
+    await queryRunner.query(`ALTER TABLE "exam_group" ADD COLUMN "is_platform_managed" boolean NOT NULL DEFAULT false`);
+    await queryRunner.query(`ALTER TABLE "exam_group" ADD CONSTRAINT "CK_exam_group_hybrid_scope" CHECK (("laboratory_id" IS NULL AND "is_platform_managed" = true) OR ("laboratory_id" IS NOT NULL AND "is_platform_managed" = true AND "source_global_id" IS NOT NULL) OR ("laboratory_id" IS NOT NULL AND "is_platform_managed" = false AND "source_global_id" IS NULL))`);
+    await queryRunner.query(`CREATE UNIQUE INDEX "UQ_exam_group_laboratory_source_global" ON "exam_group" ("laboratory_id", "source_global_id") WHERE "source_global_id" IS NOT NULL`);
+    await queryRunner.query(`CREATE INDEX "IX_exam_group_global" ON "exam_group" ("id") WHERE "laboratory_id" IS NULL AND "is_platform_managed" = true`);
+    await queryRunner.query(`ALTER TABLE "exam_catalog" ALTER COLUMN "laboratory_id" DROP NOT NULL`);
+    await queryRunner.query(`ALTER TABLE "exam_catalog" ADD COLUMN "source_global_id" integer NULL`);
+    await queryRunner.query(`ALTER TABLE "exam_catalog" ADD COLUMN "is_platform_managed" boolean NOT NULL DEFAULT false`);
+    await queryRunner.query(`ALTER TABLE "exam_catalog" ADD CONSTRAINT "CK_exam_catalog_hybrid_scope" CHECK (("laboratory_id" IS NULL AND "is_platform_managed" = true) OR ("laboratory_id" IS NOT NULL AND "is_platform_managed" = true AND "source_global_id" IS NOT NULL) OR ("laboratory_id" IS NOT NULL AND "is_platform_managed" = false AND "source_global_id" IS NULL))`);
+    await queryRunner.query(`CREATE UNIQUE INDEX "UQ_exam_catalog_laboratory_source_global" ON "exam_catalog" ("laboratory_id", "source_global_id") WHERE "source_global_id" IS NOT NULL`);
+    await queryRunner.query(`CREATE INDEX "IX_exam_catalog_global" ON "exam_catalog" ("id") WHERE "laboratory_id" IS NULL AND "is_platform_managed" = true`);
+    await queryRunner.query(`ALTER TABLE "tariffs" ALTER COLUMN "laboratory_id" DROP NOT NULL`);
+    await queryRunner.query(`ALTER TABLE "tariffs" ADD COLUMN "source_global_id" integer NULL`);
+    await queryRunner.query(`ALTER TABLE "tariffs" ADD COLUMN "is_platform_managed" boolean NOT NULL DEFAULT false`);
+    await queryRunner.query(`ALTER TABLE "tariffs" ADD CONSTRAINT "CK_tariffs_hybrid_scope" CHECK (("laboratory_id" IS NULL AND "is_platform_managed" = true) OR ("laboratory_id" IS NOT NULL AND "is_platform_managed" = true AND "source_global_id" IS NOT NULL) OR ("laboratory_id" IS NOT NULL AND "is_platform_managed" = false AND "source_global_id" IS NULL))`);
+    await queryRunner.query(`CREATE UNIQUE INDEX "UQ_tariffs_laboratory_source_global" ON "tariffs" ("laboratory_id", "source_global_id") WHERE "source_global_id" IS NOT NULL`);
+    await queryRunner.query(`CREATE INDEX "IX_tariffs_global" ON "tariffs" ("id") WHERE "laboratory_id" IS NULL AND "is_platform_managed" = true`);
+    await queryRunner.query(`ALTER TABLE "type_payment" ALTER COLUMN "laboratory_id" DROP NOT NULL`);
+    await queryRunner.query(`ALTER TABLE "type_payment" ADD COLUMN "source_global_id" integer NULL`);
+    await queryRunner.query(`ALTER TABLE "type_payment" ADD COLUMN "is_platform_managed" boolean NOT NULL DEFAULT false`);
+    await queryRunner.query(`ALTER TABLE "type_payment" ADD CONSTRAINT "CK_type_payment_hybrid_scope" CHECK (("laboratory_id" IS NULL AND "is_platform_managed" = true) OR ("laboratory_id" IS NOT NULL AND "is_platform_managed" = true AND "source_global_id" IS NOT NULL) OR ("laboratory_id" IS NOT NULL AND "is_platform_managed" = false AND "source_global_id" IS NULL))`);
+    await queryRunner.query(`CREATE UNIQUE INDEX "UQ_type_payment_laboratory_source_global" ON "type_payment" ("laboratory_id", "source_global_id") WHERE "source_global_id" IS NOT NULL`);
+    await queryRunner.query(`CREATE INDEX "IX_type_payment_global" ON "type_payment" ("id") WHERE "laboratory_id" IS NULL AND "is_platform_managed" = true`);
+    await queryRunner.query(`CREATE OR REPLACE FUNCTION validate_hybrid_catalog_source() RETURNS trigger AS $$
+      DECLARE source_exists boolean;
+      BEGIN
+        IF NEW.source_global_id IS NULL THEN
+          RETURN NEW;
+        END IF;
+        IF NEW.laboratory_id IS NULL THEN
+          IF NEW.is_platform_managed IS DISTINCT FROM true THEN
+            RAISE EXCEPTION 'HYBRID_CATALOG_GLOBAL_MUST_BE_PLATFORM_MANAGED:%:%', TG_TABLE_NAME, NEW.source_global_id;
+          END IF;
+          RETURN NEW;
+        END IF;
+        EXECUTE format(
+          'SELECT EXISTS (SELECT 1 FROM %I source WHERE source.laboratory_id IS NULL AND source.source_global_id = $1 AND source.is_platform_managed = true)',
+          TG_TABLE_NAME
+        ) INTO source_exists USING NEW.source_global_id;
+        IF NOT source_exists THEN
+          RAISE EXCEPTION 'HYBRID_CATALOG_SOURCE_MUST_BE_GLOBAL:%:%', TG_TABLE_NAME, NEW.source_global_id;
+        END IF;
+        RETURN NEW;
+      END;
+    $$ LANGUAGE plpgsql`);
+    await queryRunner.query(`CREATE TRIGGER "TR_antibiotic_validate_hybrid_source" BEFORE INSERT OR UPDATE OF "source_global_id" ON "antibiotic" FOR EACH ROW EXECUTE FUNCTION "validate_hybrid_catalog_source"()`);
+    await queryRunner.query(`CREATE TRIGGER "TR_list_germs_validate_hybrid_source" BEFORE INSERT OR UPDATE OF "source_global_id" ON "list_germs" FOR EACH ROW EXECUTE FUNCTION "validate_hybrid_catalog_source"()`);
+    await queryRunner.query(`CREATE TRIGGER "TR_parasiticforms_validate_hybrid_source" BEFORE INSERT OR UPDATE OF "source_global_id" ON "parasiticforms" FOR EACH ROW EXECUTE FUNCTION "validate_hybrid_catalog_source"()`);
+    await queryRunner.query(`CREATE TRIGGER "TR_sample_type_validate_hybrid_source" BEFORE INSERT OR UPDATE OF "source_global_id" ON "sample_type" FOR EACH ROW EXECUTE FUNCTION "validate_hybrid_catalog_source"()`);
+    await queryRunner.query(`CREATE TRIGGER "TR_tax_validate_hybrid_source" BEFORE INSERT OR UPDATE OF "source_global_id" ON "tax" FOR EACH ROW EXECUTE FUNCTION "validate_hybrid_catalog_source"()`);
+    await queryRunner.query(`CREATE TRIGGER "TR_banks_validate_hybrid_source" BEFORE INSERT OR UPDATE OF "source_global_id" ON "banks" FOR EACH ROW EXECUTE FUNCTION "validate_hybrid_catalog_source"()`);
+    await queryRunner.query(`CREATE TRIGGER "TR_currencies_validate_hybrid_source" BEFORE INSERT OR UPDATE OF "source_global_id" ON "currencies" FOR EACH ROW EXECUTE FUNCTION "validate_hybrid_catalog_source"()`);
+    await queryRunner.query(`CREATE TRIGGER "TR_exam_group_validate_hybrid_source" BEFORE INSERT OR UPDATE OF "source_global_id" ON "exam_group" FOR EACH ROW EXECUTE FUNCTION "validate_hybrid_catalog_source"()`);
+    await queryRunner.query(`CREATE TRIGGER "TR_exam_catalog_validate_hybrid_source" BEFORE INSERT OR UPDATE OF "source_global_id" ON "exam_catalog" FOR EACH ROW EXECUTE FUNCTION "validate_hybrid_catalog_source"()`);
+    await queryRunner.query(`CREATE TRIGGER "TR_tariffs_validate_hybrid_source" BEFORE INSERT OR UPDATE OF "source_global_id" ON "tariffs" FOR EACH ROW EXECUTE FUNCTION "validate_hybrid_catalog_source"()`);
+    await queryRunner.query(`CREATE TRIGGER "TR_type_payment_validate_hybrid_source" BEFORE INSERT OR UPDATE OF "source_global_id" ON "type_payment" FOR EACH ROW EXECUTE FUNCTION "validate_hybrid_catalog_source"()`);
+    // BN-EXAM-TARIFF-PRICES-HYBRID-COMPLETION-BEGIN
+    await queryRunner.query(`ALTER TABLE "exam_tariff_prices" ADD COLUMN "source_global_id" integer NULL`);
+    await queryRunner.query(`ALTER TABLE "exam_tariff_prices" ADD COLUMN "is_platform_managed" boolean NOT NULL DEFAULT false`);
+    await queryRunner.query(`CREATE UNIQUE INDEX "UQ_exam_tariff_prices_global_source" ON "exam_tariff_prices" ("source_global_id") WHERE "laboratory_id" IS NULL AND "source_global_id" IS NOT NULL`);
+    await queryRunner.query(`CREATE UNIQUE INDEX "UQ_exam_tariff_prices_tenant_source" ON "exam_tariff_prices" ("laboratory_id", "source_global_id") WHERE "laboratory_id" IS NOT NULL AND "source_global_id" IS NOT NULL`);
+    // BN-EXAM-TARIFF-PRICES-HYBRID-COMPLETION-END
+
+    await queryRunner.query(`ALTER TABLE "exam_tariff_prices" ADD CONSTRAINT "CK_exam_tariff_prices_hybrid_scope" CHECK (("laboratory_id" IS NULL AND "is_platform_managed" = true) OR ("laboratory_id" IS NOT NULL AND "is_platform_managed" = true AND "source_global_id" IS NOT NULL) OR ("laboratory_id" IS NOT NULL AND "is_platform_managed" = false AND "source_global_id" IS NULL))`);
+    // BN-HYBRID-CATALOG-END
+
     // BN-APPLICATION-SETTINGS-BEGIN
     await queryRunner.query(`
       CREATE TABLE IF NOT EXISTS "application_settings" (

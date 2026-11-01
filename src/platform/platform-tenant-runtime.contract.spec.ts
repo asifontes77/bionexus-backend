@@ -1,4 +1,4 @@
-﻿import { readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 describe('Platform tenant runtime contract', () => {
   const provisioning = readFileSync('src/platform/platform-provisioning.service.ts','utf8');
   const strategy = readFileSync('src/users/jwt.strategy.ts','utf8');
@@ -13,9 +13,9 @@ describe('Platform tenant runtime contract', () => {
   });
   it('validates and installs only selected seed packages', () => {
     expect(provisioning).toContain('SEED_PACKAGE_KEYS');
-    expect(provisioning).toContain('installSeedPackages');
-    expect(provisioning).toContain('laboratory_seed_package_tables');
-    expect(provisioning).toContain('install_laboratory_seed_table');
+    expect(provisioning).toContain('tenantPackages.installSelected');
+    expect(provisioning).toContain('TenantCatalogPackageInstallerService');
+    expect(provisioning).toContain('installedCatalogPackages');
   });
   it('resolves VES inside the new laboratory', () => {
     expect(provisioning).toContain("WHERE laboratory_id=$1 AND upper(btrim(code))='VES'");

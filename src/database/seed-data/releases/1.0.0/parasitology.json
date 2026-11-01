@@ -1,0 +1,150 @@
+{
+  "packageCode": "parasitology",
+  "version": "1.0.0",
+  "minimumSchemaVersion": "BioNexusBaseline1790366400000",
+  "tables": {
+    "parasiticforms": [
+      {
+        "id": "1",
+        "description": "Quistes de Giardia Duodenalis Escasos x Cpo",
+        "annulled": "0"
+      },
+      {
+        "id": "2",
+        "description": "Quistes de Giardia Duodenalis Moderados x Cpo",
+        "annulled": "0"
+      },
+      {
+        "id": "3",
+        "description": "Quistes de Giardia Duodenalis Abundantes x Cpo",
+        "annulled": "0"
+      },
+      {
+        "id": "4",
+        "description": "Trofozoítos de Giardia Duodenalis Escasos x Cpo",
+        "annulled": "0"
+      },
+      {
+        "id": "5",
+        "description": "Trofozoítos de Giardia Duodenalis Moderados x Cpo",
+        "annulled": "0"
+      },
+      {
+        "id": "6",
+        "description": "Trofozoítos de Giardia Duodenalis Abundantes x Cpo",
+        "annulled": "0"
+      },
+      {
+        "id": "7",
+        "description": "Quistes de Entamoeba Coli Escasos x Cpo",
+        "annulled": "0"
+      },
+      {
+        "id": "8",
+        "description": "Quistes de Entamoeba Coli Moderados x Cpo",
+        "annulled": "0"
+      },
+      {
+        "id": "9",
+        "description": "Quistes de Entamoeba Coli Abundantes x Cpo",
+        "annulled": "0"
+      },
+      {
+        "id": "10",
+        "description": "Trofozoítos de Entamoeba Coli Escasos x Cpo",
+        "annulled": "0"
+      },
+      {
+        "id": "11",
+        "description": "Trofozoítos de Entamoeba Coli Moderados x Cpo",
+        "annulled": "0"
+      },
+      {
+        "id": "12",
+        "description": "Trofozoítos de Entamoeba Coli Abundantes x Cpo",
+        "annulled": "0"
+      },
+      {
+        "id": "13",
+        "description": "Quistes de Entamoeba Histolytica/Dispar Moderados",
+        "annulled": "0"
+      },
+      {
+        "id": "14",
+        "description": "Quistes de Entamoeba Histolytica/Dispar Escasos",
+        "annulled": "0"
+      },
+      {
+        "id": "15",
+        "description": "Quistes de Entamoeba Histolytica/Dispar Abundantes",
+        "annulled": "0"
+      },
+      {
+        "id": "16",
+        "description": "Trofozoítos de Entamoeba Histolytica/Dispar",
+        "annulled": "0"
+      },
+      {
+        "id": "17",
+        "description": "Quistes de Endolimax Nana Escasos x Cpo",
+        "annulled": "0"
+      },
+      {
+        "id": "18",
+        "description": "Quistes de Endolimax Nana Moderados x Cpo",
+        "annulled": "0"
+      },
+      {
+        "id": "19",
+        "description": "Quistes de Endolimax Nana Abundantes x Cpo",
+        "annulled": "0"
+      },
+      {
+        "id": "20",
+        "description": "Chilomastix Mesnili",
+        "annulled": "0"
+      },
+      {
+        "id": "21",
+        "description": "Huevos de Trichuris Trichiura Escasos x Cpo",
+        "annulled": "0"
+      },
+      {
+        "id": "22",
+        "description": "Huevos de Trichuris Trichiura Moderados x Cpo",
+        "annulled": "0"
+      },
+      {
+        "id": "23",
+        "description": "Huevos de Trichuris Trichiura Abundantes x Cpo",
+        "annulled": "0"
+      },
+      {
+        "id": "24",
+        "description": "Huevos de Hymenolepis Nana Escasos x Cpo",
+        "annulled": "0"
+      },
+      {
+        "id": "25",
+        "description": "Huevos de Hymenolepis Nana Abundantes x Cpo",
+        "annulled": "0"
+      },
+      {
+        "id": "26",
+        "description": "Huevos de Hymenolepis Nana Moderados x Cpo",
+        "annulled": "0"
+      },
+      {
+        "id": "27",
+        "description": "Blastocystis Sp",
+        "annulled": "0"
+      },
+      {
+        "id": "28",
+        "description": "Quistes de Iodamoeba Bütschlii Abundantes x Cpo",
+        "annulled": "0"
+      }
+    ]
+  },
+  "checksum": "DFA3A081B4F697119AF38BA14BE4EA8E56C677AEC4AE39CACC7B6629788CA5D5"
+}

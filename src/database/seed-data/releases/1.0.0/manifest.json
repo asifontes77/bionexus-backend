@@ -1,0 +1,124 @@
+{
+  "releaseVersion": "1.0.0",
+  "sourceSha256": "A1B2041B1028D8914CD3020DD41BAE1932CD69CCC0C9E1A3A9D3ED729BE2C878",
+  "minimumSchemaVersion": "BioNexusBaseline1790366400000",
+  "excludedTenantOwnedTables": [
+    "special_test_items",
+    "special_test_lab"
+  ],
+  "packages": [
+    {
+      "packageCode": "microbiology",
+      "file": "microbiology.json",
+      "checksum": "2BCECC9AD7C5A951D2FE4AB9402102C17A5F35B9ED10C2B98075C20D45811A3D",
+      "tables": {
+        "antibiotic": 68,
+        "list_germs": 74
+      },
+      "totalRows": 142
+    },
+    {
+      "packageCode": "parasitology",
+      "file": "parasitology.json",
+      "checksum": "DFA3A081B4F697119AF38BA14BE4EA8E56C677AEC4AE39CACC7B6629788CA5D5",
+      "tables": {
+        "parasiticforms": 28
+      },
+      "totalRows": 28
+    },
+    {
+      "packageCode": "samples-and-tax",
+      "file": "samples-and-tax.json",
+      "checksum": "85D0EB3BDC0AEBA72A4E335B10BF2C1E61ECEC5F260721CF58E6072EEE4E9896",
+      "tables": {
+        "sample_type": 28,
+        "tax": 1
+      },
+      "totalRows": 29
+    },
+    {
+      "packageCode": "exam-catalog",
+      "file": "exam-catalog.json",
+      "checksum": "B0E2D2CD707ABF6445284C9E4603605513E1B6C52ECC9BA22C6821D32253E699",
+      "tables": {
+        "exam_group": 26,
+        "exam_catalog": 637
+      },
+      "totalRows": 663
+    },
+    {
+      "packageCode": "financial-and-payments",
+      "file": "financial-and-payments.json",
+      "checksum": "D00C1AA0E57050248C2CCBD020D654FE7FCF59ED30AB403779CFC38E1D2A428E",
+      "tables": {
+        "currencies": 3,
+        "banks": 27,
+        "type_payment": 4
+      },
+      "totalRows": 34
+    },
+    {
+      "packageCode": "tariffs",
+      "file": "tariffs.json",
+      "checksum": "236972FE2225C732FA301B1C1DB736425584AE6097E54F2A235C431339B6DD95",
+      "tables": {
+        "tariffs": 6,
+        "exam_tariff_prices": 3822
+      },
+      "totalRows": 3828
+    }
+  ],
+  "selectionEvidence": {
+    "antibiotic": {
+      "selected": "$.catalogo_auditado.catalog.tables.antibiotic",
+      "discarded": []
+    },
+    "list_germs": {
+      "selected": "$.catalogo_auditado.catalog.tables.list_germs",
+      "discarded": []
+    },
+    "parasiticforms": {
+      "selected": "$.catalogo_auditado.catalog.tables.parasiticforms",
+      "discarded": []
+    },
+    "sample_type": {
+      "selected": "$.catalogo_auditado.catalog.tables.sample_type",
+      "discarded": []
+    },
+    "tax": {
+      "selected": "$.catalogo_auditado.catalog.tables.tax",
+      "discarded": []
+    },
+    "exam_group": {
+      "selected": "$.catalogo_auditado.catalog.tables.exam_group",
+      "discarded": [
+        "$.checks[4].detail.exam_group"
+      ]
+    },
+    "exam_catalog": {
+      "selected": "$.catalogo_auditado.catalog.tables.exam_catalog",
+      "discarded": []
+    },
+    "currencies": {
+      "selected": "$.catalogo_auditado.catalog.tables.currencies",
+      "discarded": []
+    },
+    "banks": {
+      "selected": "$.catalogo_auditado.catalog.tables.banks",
+      "discarded": []
+    },
+    "type_payment": {
+      "selected": "$.catalogo_auditado.catalog.tables.type_payment",
+      "discarded": []
+    },
+    "tariffs": {
+      "selected": "$.catalogo_auditado.catalog.tables.tariffs",
+      "discarded": []
+    },
+    "exam_tariff_prices": {
+      "selected": "$.catalogo_auditado.catalog.tables.exam_tariff_prices",
+      "discarded": []
+    }
+  },
+  "totalRows": 4724
+}

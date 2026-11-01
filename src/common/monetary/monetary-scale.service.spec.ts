@@ -1,0 +1,2 @@
+import { MonetaryScaleService } from './monetary-scale.service';
+describe('MonetaryScaleService',()=>{const service=new MonetaryScaleService();it('redondea importes a escala 2',()=>{expect(service.roundAmount(12.345)).toBe(12.35);expect(service.roundAmount(0.1+0.2)).toBe(0.3)});it('expone tolerancia 0.01',()=>expect(service.tolerance()).toBe(0.01));it('rechaza importes no finitos',()=>expect(()=>service.roundAmount(Number.NaN)).toThrow('MONETARY_AMOUNT_INVALID'))});

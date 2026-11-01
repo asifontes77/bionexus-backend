@@ -167,6 +167,7 @@ async createUser(
       user: { ...toSafeUserResponse(userFound), identityType: 'tenant-user' },
       token,
       identityType: 'tenant-user',
+      mustChangePassword: userFound.request_password === true,
     };
     return dataUser;
   }
@@ -181,8 +182,47 @@ async createUser(
     }
     const payload = { id: userFound.id, name: userFound.name, laboratoryId: userFound.laboratory_id, identityType: 'tenant-user' as const };
     const token = await this.signSessionToken(payload);
-    return { user: { ...toSafeUserResponse(userFound), identityType: 'tenant-user' }, token, identityType: 'tenant-user' };
+    return { user: { ...toSafeUserResponse(userFound), identityType: 'tenant-user' }, token, identityType: 'tenant-user', mustChangePassword: userFound.request_password === true };
   }
+  async changeRequiredPassword(userId: number, input: { currentPassword?: string; newPassword?: string; newPasswordConfirmation?: string }) {
+    if (!this.dataSource) throw new Error('USER_TRANSACTION_UNAVAILABLE');
+    if (!Number.isInteger(userId) || userId <= 0) throw new HttpException('AUTHENTICATED_USER_REQUIRED', HttpStatus.BAD_REQUEST);
+    const currentPassword = typeof input?.currentPassword === 'string' ? input.currentPassword : '';
+    const newPassword = typeof input?.newPassword === 'string' ? input.newPassword : '';
+    const confirmation = typeof input?.newPasswordConfirmation === 'string' ? input.newPasswordConfirmation : '';
+    if (currentPassword === '') throw new HttpException('CURRENT_PASSWORD_REQUIRED', HttpStatus.BAD_REQUEST);
+    if (newPassword !== confirmation) throw new HttpException('PASSWORD_CONFIRMATION_MISMATCH', HttpStatus.BAD_REQUEST);
+    this.validateRequiredPassword(newPassword);
+    return this.dataSource.transaction(async (manager) => {
+      const repository = manager.getRepository(User);
+      const user = await repository.findOne({ where: { id: userId } });
+      if (!user || user.hide_user) throw new HttpException('USER_NOT_FOUND', HttpStatus.NOT_FOUND);
+      if (user.request_password !== true) throw new HttpException('PASSWORD_CHANGE_NOT_REQUIRED', HttpStatus.CONFLICT);
+      if (!(await bcrypt.compare(currentPassword, user.password))) throw new HttpException('CURRENT_PASSWORD_INVALID', HttpStatus.UNAUTHORIZED);
+      if (await bcrypt.compare(newPassword, user.password)) throw new HttpException('PASSWORD_REUSE_NOT_ALLOWED', HttpStatus.BAD_REQUEST);
+      user.password = await bcrypt.hash(newPassword, 8);
+      user.request_password = false;
+      const saved = await repository.save(user);
+      if (this.securityAuditService) await this.securityAuditService.write(manager, {
+        actorUserId: userId,
+        action: 'security.user.required-password.changed',
+        entityType: 'user',
+        entityId: userId,
+        summary: 'Cambio obligatorio de contraseña completado',
+        metadata: { requiredPasswordChange: true },
+      });
+      const payload = { id: saved.id, name: saved.name, laboratoryId: saved.laboratory_id, identityType: 'tenant-user' as const };
+      const token = await this.signSessionToken(payload);
+      return { user: { ...toSafeUserResponse(saved), identityType: 'tenant-user' }, token, identityType: 'tenant-user', mustChangePassword: false };
+    });
+  }
+
+  private validateRequiredPassword(password: string): void {
+    if (password.length < 12 || password.length > 200 || !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password) || !/[^A-Za-z0-9]/.test(password)) {
+      throw new HttpException('PASSWORD_POLICY_INVALID', HttpStatus.BAD_REQUEST);
+    }
+  }
+
   async deleteUser(_id: number): Promise<never> {
     throw new MethodNotAllowedException('USER_PHYSICAL_DELETE_DISABLED');
   }

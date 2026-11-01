@@ -1,4 +1,4 @@
-﻿export class CreatePlatformLaboratoryDto {
+export class CreatePlatformLaboratoryDto {
   rif: string;
   name: string;
   businessName: string;
@@ -11,5 +11,6 @@
   administratorUsername: string;
   administratorEmail?: string;
   administratorPassword: string;
+  administratorPasswordConfirmation: string;
   seedPackages?: string[];
 }

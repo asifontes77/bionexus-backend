@@ -1,4 +1,4 @@
-﻿import { existsSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import { mkdir, readdir, unlink, writeFile } from 'node:fs/promises';
 import { extname, join } from 'node:path';
 import {
@@ -22,6 +22,7 @@ import { CreateUsersDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { VerifySignatureDto } from './dto/verify-signature.dto';
 import { LoginUserDto } from './dto/login-user.dto';
+import { ChangeRequiredPasswordDto } from './dto/change-required-password.dto';
 import { JwtUserGuard } from './jwt-user.guard';
 import { RequirePermissions } from '../authorization/decorators/require-permissions.decorator';
 import { PermissionGuard } from '../authorization/guards/permission.guard';
@@ -78,6 +79,17 @@ export class UsersController {
       ? this.usersService.renewPlatformOwnerSession(userId)
       : this.usersService.renewUserSession(userId);
   }
+  @UseGuards(JwtUserGuard)
+  @Post('/session/change-required-password')
+  changeRequiredPassword(
+    @Req() request: SecurityAuthenticatedRequest & { user?: { userId?: number; identityType?: string } },
+    @Body() body: ChangeRequiredPasswordDto,
+  ) {
+    if (request.user?.identityType === 'platform-owner') throw new BadRequestException('TENANT_USER_REQUIRED');
+    const userId = Number(request.user?.userId ?? getSecurityAuditActorUserId(request));
+    return this.usersService.changeRequiredPassword(userId, body);
+  }
+
   @UseGuards(JwtUserGuard, PermissionGuard)
   @RequirePermissions('security.users.create')
   @Post('/insert')

@@ -55,7 +55,7 @@ export class DollarvalueSourceService {
     if (comma >= 0 && dot >= 0) normalized = comma > dot ? raw.replace(/\./g, '').replace(',', '.') : raw.replace(/,/g, '');
     else if (comma >= 0) normalized = raw.replace(',', '.');
     const parsed = Number(normalized);
-    return Number.isFinite(parsed) && parsed > 0 ? Math.round(parsed * 100) / 100 : null;
+    return Number.isFinite(parsed) && parsed > 0 ? Math.round((parsed + Number.EPSILON) * 1_000_000) / 1_000_000 : null;
   }
   private parseDate(value: string): string | null {
     if (!value) return null;

@@ -49,7 +49,7 @@ export class Exam {
   @Column({ type: 'decimal', precision: 18, scale: 2, default: () => '0.00' })
   total: number;
 
-  @Column('int', { default: () => '0' })
+  @Column('boolean', { default: false })
   status: boolean;
 
   @Column({ type: 'text', nullable: true })

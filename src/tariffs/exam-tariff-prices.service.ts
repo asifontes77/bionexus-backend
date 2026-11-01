@@ -1,4 +1,5 @@
-﻿import {
+import { MonetaryScaleService } from '../common/monetary/monetary-scale.service';
+import {
   BadRequestException,
   Injectable,
   NotFoundException,
@@ -17,6 +18,7 @@ import { Tariff } from './tariff.entity';
 
 @Injectable()
 export class ExamTariffPricesService {
+  private readonly monetary = new MonetaryScaleService();
   constructor(
     @InjectRepository(ExamTariffPrice)
     private readonly priceRepository: Repository<ExamTariffPrice>,
@@ -194,7 +196,7 @@ export class ExamTariffPricesService {
         throw new BadRequestException('EXAM_TARIFF_PRICE_STATUS_INVALID');
       return {
         tariffId,
-        price: Math.round(price * 100) / 100,
+        price: this.monetary.roundAmount(price),
         isActive: item.isActive,
       };
     });

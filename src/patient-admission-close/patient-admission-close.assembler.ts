@@ -14,7 +14,7 @@ export class PatientAdmissionCloseAssembler {
     const wayPayItems=payments.map(item=>({id_way_pay:0,id_type_payment:item.typePaymentId,currencyId:item.currencyId,enteredAmount:item.enteredAmount,baseAmount:item.baseAmount,localEquivalentAmount:item.localAmount,exchangeRate:rate>0?rate:null,exchangeRateDecimalPlaces:rate>0?this.decimalPlaces(rate):null,exchangeRateDate:rate>0?now:null,fieldValues:item.fieldValues.map(value=>({fieldId:value.fieldId,fieldCode:value.fieldCode,fieldLabel:value.fieldLabel,fieldType:value.fieldType,valueText:value.valueText,bankId:value.bankId}))}));
     return{profile,admission,exams:examRows,wayPay,wayPayItems,audit:{actorUserId,action:'patient-admission.closed',entityType:'patient_admission',entityId:null,summary:'Ingreso de paciente cerrado',metadata:{clientId:input.clientId,tariffId:input.tariffId,examCount:examRows.length,paymentCount:wayPayItems.length,total:totals.total,receiptNumber:null as number|null}}};
   }
-  private resolveRate(payments:AdmissionCalculatedPayment[]){const row=payments.find(item=>item.baseAmount>0&&item.localAmount>0);return row?Math.round((row.localAmount/row.baseAmount)*100)/100:0;}
+  private resolveRate(payments:AdmissionCalculatedPayment[]){const row=payments.find(item=>item.baseAmount>0&&item.localAmount>0);return row?Math.round(((row.localAmount/row.baseAmount)+Number.EPSILON)*1_000_000)/1_000_000:0;}
   private decimalPlaces(value:number){const text=String(value);return text.includes('.')?text.split('.')[1].length:0;}
   private optional(value:unknown,max:number){if(typeof value!=='string'||value.trim()==='')return null;return value.trim().slice(0,max);}
   private isoDate(value:Date){return value.toISOString().slice(0,10);}
