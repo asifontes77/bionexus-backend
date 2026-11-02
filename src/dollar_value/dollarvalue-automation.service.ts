@@ -9,101 +9,18 @@ import { Dollarvalue } from './dollarvalue.entity';
 
 @Injectable()
 export class DollarvalueAutomationService implements OnModuleInit, OnModuleDestroy {
-  private readonly logger = new Logger(DollarvalueAutomationService.name);
-  private timer?: NodeJS.Timeout;
-  private running = false;
-  private lastScheduledDate: string | null = null;
-  constructor(@InjectRepository(DollarvalueAutomation) private readonly configRepo: Repository<DollarvalueAutomation>, @InjectRepository(DollarvalueAutomationRun) private readonly runRepo: Repository<DollarvalueAutomationRun>, private readonly dataSource: DataSource, private readonly source: DollarvalueSourceService, private readonly audit: SecurityAuditService) {}
-  onModuleInit(): void {
-    this.logger.log('DollarValue scheduler initializing. IntervalMs=60000');
-    this.timer = setInterval(() => void this.tick(), 60000);
-    this.timer.unref();
-    void this.tick();
-  }
-  onModuleDestroy(): void {
-    this.logger.log('DollarValue scheduler stopping.');
-    if (this.timer) clearInterval(this.timer);
-  }
-  async getConfig(): Promise<DollarvalueAutomation> { return this.ensureConfig(); }
-  async updateConfig(body: Record<string, unknown>, actorUserId: number): Promise<DollarvalueAutomation> {
-    if (!Number.isInteger(actorUserId) || actorUserId <= 0) throw new BadRequestException('DOLLAR_AUTOMATION_ACTOR_REQUIRED');
-    const allowed = ['enabled', 'run_time']; if (Object.keys(body ?? {}).some((x) => !allowed.includes(x))) throw new BadRequestException('DOLLAR_AUTOMATION_FIELD_UNKNOWN');
-    const config = await this.ensureConfig();
-    if (body.enabled !== undefined && typeof body.enabled !== 'boolean') throw new BadRequestException('DOLLAR_AUTOMATION_ENABLED_INVALID');
-    if (body.run_time !== undefined && (typeof body.run_time !== 'string' || !/^([01]\d|2[0-3]):[0-5]\d$/.test(body.run_time))) throw new BadRequestException('DOLLAR_AUTOMATION_TIME_INVALID');
-    const previousEnabled = config.enabled;
-    const previousRunTime = config.run_time;
-    Object.assign(config, body);
-    const scheduleChanged = previousEnabled !== config.enabled || previousRunTime !== config.run_time;
-    if (scheduleChanged) {
-      config.last_scheduled_date = null;
-      this.lastScheduledDate = null;
-      this.logger.log(`[CONFIGURATION]` + `\n    Caller: DollarValueScheduler` + `\n    Mensaje: Programacion automatica actualizada` + `\n    Habilitado: ${config.enabled}` + `\n    Hora: ${config.run_time}` + `\n    Zona horaria: ${config.time_zone}` + `\n    Control diario reiniciado: true`);
-    }
-    const saved = await this.configRepo.save(config);
-    if (scheduleChanged) void this.tick();
-    return saved;
-  }
-  async executeNow(actorUserId: number): Promise<Record<string, unknown>> { if (!Number.isInteger(actorUserId) || actorUserId <= 0) throw new BadRequestException('DOLLAR_AUTOMATION_ACTOR_REQUIRED'); return this.execute(actorUserId); }
-  private async tick(): Promise<void> {
-    const config = await this.ensureConfig();
-    if (!config.enabled) {
-      return;
-    }
-    if (this.running) {
-      this.logger.warn('DollarValue scheduler tick skipped. Reason=BUSY');
-      return;
-    }
-    const parts = new Intl.DateTimeFormat('en-CA', { timeZone: config.time_zone, weekday: 'short', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false, hourCycle: 'h23' }).formatToParts(new Date());
-    const get = (type: string) => parts.find((part) => part.type === type)?.value ?? '';
-    const day = get('year') + '-' + get('month') + '-' + get('day');
-    const weekday = get('weekday');
-    const time = get('hour') + ':' + get('minute');
-    if (['Sat', 'Sun'].includes(weekday)) {
-      return;
-    }
-    if (time < config.run_time) {
-      return;
-    }
-    if (config.last_scheduled_date === day) {
-      return;
-    }
-    this.logger.log(`[START]` + `\n    Caller: DollarValueScheduler` + `\n    Mensaje: Ejecucion automatica iniciada` + `\n    Fecha: ${day}` + `\n    Hora actual: ${time}` + `\n    Hora programada: ${config.run_time}`);
-    config.last_scheduled_date = day;
-    await this.configRepo.save(config);
-    this.lastScheduledDate = day;
-    const result = await this.execute(null);
-    this.logger.log(`[SUCCESS]` + `\n    Caller: DollarValueScheduler` + `\n    Mensaje: Ejecucion automatica finalizada` + `\n    Estado: ${String(result.status ?? 'UNKNOWN')}` + `\n    Fecha: ${day}`);
-  }
-  private async execute(actorUserId: number | null): Promise<Record<string, unknown>> {
-    if (this.running) return { status: 'BUSY' }; this.running = true;
-    const config = await this.ensureConfig(); const run = await this.runRepo.save(this.runRepo.create({ started_at: new Date(), finished_at: null, status: 'RUNNING', source: null, value: null, effective_date: null, error: null, requested_by_user_id: actorUserId }));
-    config.last_started_at = run.started_at; config.last_status = 'RUNNING'; config.last_error = null; await this.configRepo.save(config);
-    try {
-      const fetched = await this.source.fetch(config.bcv_url, config.fallback_url);
-      const result = await this.dataSource.transaction(async (manager) => {
-        const repository = manager.getRepository(Dollarvalue); const previous = await repository.findOne({ where: {}, order: { id: 'DESC' } });
-        if (previous && Number(previous.value) === fetched.value) return { status: 'UNCHANGED', record: previous };
-        const saved = await repository.save(repository.create({ value: fetched.value, date: fetched.effectiveDate, registeredAt: new Date(), source: fetched.source, updateMethod: 'AUTOMATIC' }));
-        if (actorUserId) await this.audit.write(manager, { actorUserId, action: 'dollar-value.automatic-published', entityType: 'dollar-value', entityId: saved.id, summary: 'Valor del dolar actualizado automaticamente', metadata: { source: fetched.source, effectiveDate: fetched.effectiveDate, previousValue: previous?.value ?? null, currentValue: saved.value } });
-        return { status: 'INSERTED', record: saved };
-      });
-      const finishedAt = new Date();
-      if (result.status === 'UNCHANGED') {
-        await this.runRepo.remove(run);
-        Object.assign(config, { last_finished_at: finishedAt, last_status: 'UNCHANGED', last_source: fetched.source, last_error: null });
-        await this.configRepo.save(config);
-        this.logger.log(`[SUCCESS]` + `\n    Caller: DollarValueScheduler` + `\n    Mensaje: Verificacion automatica finalizada sin cambios` + `\n    Estado: UNCHANGED` + `\n    Fuente: ${fetched.source}` + `\n    Valor: ${fetched.value}` + `\n    Fecha efectiva: ${fetched.effectiveDate}`);
-        return { status: 'UNCHANGED', source: fetched.source, value: fetched.value, effectiveDate: fetched.effectiveDate, record: result.record };
-      }
-      Object.assign(run, { finished_at: finishedAt, status: 'INSERTED', source: fetched.source, value: fetched.value, effective_date: fetched.effectiveDate });
-      Object.assign(config, { last_finished_at: finishedAt, last_status: 'INSERTED', last_source: fetched.source, last_error: null });
-      await this.runRepo.save(run);
-      await this.configRepo.save(config);
-      return { status: 'INSERTED', source: fetched.source, value: fetched.value, effectiveDate: fetched.effectiveDate, record: result.record };
-    } catch (error) {
-      const message = error instanceof Error ? error.message.slice(0, 500) : 'DOLLAR_AUTOMATION_FAILED'; Object.assign(run, { finished_at: new Date(), status: 'FAILED', error: message }); Object.assign(config, { last_finished_at: run.finished_at, last_status: 'FAILED', last_error: message }); await this.runRepo.save(run); await this.configRepo.save(config); return { status: 'FAILED', error: message };
-    } finally { this.running = false; }
-  }
-  private async ensureConfig(): Promise<DollarvalueAutomation> { return (await this.configRepo.findOne({ where: { id: 1 } })) ?? this.configRepo.save(this.configRepo.create({ id: 1, enabled: false, run_time: '18:00', time_zone: 'America/Caracas', bcv_url: 'https://www.bcv.org.ve/', fallback_url: 'https://ve.dolarapi.com/v1/dolares/oficial' })); }
+  private readonly logger=new Logger(DollarvalueAutomationService.name); private timer?:NodeJS.Timeout; private readonly running=new Set<number>();
+  constructor(@InjectRepository(DollarvalueAutomation) private readonly configRepo:Repository<DollarvalueAutomation>,@InjectRepository(DollarvalueAutomationRun) private readonly runRepo:Repository<DollarvalueAutomationRun>,private readonly dataSource:DataSource,private readonly source:DollarvalueSourceService,private readonly audit:SecurityAuditService){}
+  onModuleInit():void{this.logger.log('DollarValue scheduler initialized. IntervalMs=60000');this.timer = setInterval(this.tickAllForTimer.bind(this), 60000); this.timer.unref()}
+  onModuleDestroy():void{if(this.timer)clearInterval(this.timer)}
+  getConfig(laboratoryId:number){return this.ensureConfig(laboratoryId)}
+  async updateConfig(laboratoryId:number,body:Record<string,unknown>,actorUserId:number){this.id(laboratoryId);this.actor(actorUserId);const allowed=['enabled','run_time'];if(Object.keys(body??{}).some(x=>!allowed.includes(x)))throw new BadRequestException('DOLLAR_AUTOMATION_FIELD_UNKNOWN');const config=await this.ensureConfig(laboratoryId);if(body.enabled!==undefined&&typeof body.enabled!=='boolean')throw new BadRequestException('DOLLAR_AUTOMATION_ENABLED_INVALID');if(body.run_time!==undefined&&(typeof body.run_time!=='string'||!/^([01]\d|2[0-3]):[0-5]\d$/.test(body.run_time)))throw new BadRequestException('DOLLAR_AUTOMATION_TIME_INVALID');const changed=config.enabled!==body.enabled&&body.enabled!==undefined||config.run_time!==body.run_time&&body.run_time!==undefined;Object.assign(config,body);if(changed)config.last_scheduled_date=null;return this.configRepo.save(config)}
+  async executeNow(laboratoryId:number,actorUserId:number){this.id(laboratoryId);this.actor(actorUserId);return this.execute(laboratoryId,actorUserId)}
+  private tickAllForTimer(): void { void this.tickAll(); }
+  private async tickAll(){const configs=await this.configRepo.find({where:{enabled:true},order:{laboratoryId:'ASC'}});for(const config of configs){try{await this.tick(config)}catch(error){this.logger.error(`DollarValue laboratory tick failed. LaboratoryId=${config.laboratoryId}`,error instanceof Error?error.stack:String(error))}}}
+  private async tick(config:DollarvalueAutomation){if(this.running.has(config.laboratoryId))return;const parts=new Intl.DateTimeFormat('en-CA',{timeZone:config.time_zone,weekday:'short',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false,hourCycle:'h23'}).formatToParts(new Date());const get=(type:string)=>parts.find(part=>part.type===type)?.value??'';const day = `${get('year')}-${get('month')}-${get('day')}`; const time = `${get('hour')}:${get('minute')}`; if (['Sat','Sun'].includes(get('weekday')) || time < config.run_time || config.last_scheduled_date === day) return;config.last_scheduled_date = day;await this.configRepo.save(config);await this.execute(config.laboratoryId,null)}
+  private async execute(laboratoryId:number,actorUserId:number|null):Promise<Record<string,unknown>>{if(this.running.has(laboratoryId))return{status:'BUSY'};this.running.add(laboratoryId);const config=await this.ensureConfig(laboratoryId);const run=await this.runRepo.save(this.runRepo.create({laboratoryId,started_at:new Date(),finished_at:null,status:'RUNNING',source:null,value:null,effective_date:null,error:null,requested_by_user_id:actorUserId}));Object.assign(config,{last_started_at:run.started_at,last_status:'RUNNING',last_error:null});await this.configRepo.save(config);try{const fetched=await this.source.fetch(config.bcv_url,config.fallback_url);const result=await this.dataSource.transaction(async manager=>{const repository=manager.getRepository(Dollarvalue);const previous=await repository.findOne({where:{laboratoryId},order:{id:'DESC'}});if(previous&&Number(previous.value)===fetched.value)return{status:'UNCHANGED',record:previous};const saved=await repository.save(repository.create({laboratoryId,value:fetched.value,date: fetched.effectiveDate, registeredAt: new Date(), source: fetched.source, updateMethod: 'AUTOMATIC'}));if(actorUserId)await this.audit.write(manager,{actorUserId,action:'dollar-value.automatic-published',entityType:'dollar-value',entityId:saved.id,summary:'Valor del dolar actualizado automaticamente',metadata:{laboratoryId,source:fetched.source,effectiveDate:fetched.effectiveDate,previousValue:previous?.value??null,currentValue:saved.value}});return { status: 'INSERTED', record: saved }});const finishedAt=new Date();if (result.status === 'UNCHANGED') { await this.runRepo.remove(run); Object.assign(config, { last_finished_at: finishedAt, last_status: 'UNCHANGED', last_source: fetched.source, last_error: null }); await this.configRepo.save(config); this.logger.log(`Mensaje: Verificacion automatica finalizada sin cambios | Estado: UNCHANGED | Laboratorio: ${laboratoryId} | Fuente: ${fetched.source} | Valor: ${fetched.value} | Fecha efectiva: ${fetched.effectiveDate}`); return { status: 'UNCHANGED', source: fetched.source, value: fetched.value, effectiveDate: fetched.effectiveDate, record: result.record }; }Object.assign(run, { finished_at: finishedAt, status: 'INSERTED', source: fetched.source, value: fetched.value, effective_date: fetched.effectiveDate }); Object.assign(config, { last_finished_at: finishedAt, last_status: 'INSERTED', last_source: fetched.source, last_error: null });await this.runRepo.save(run);await this.configRepo.save(config);return { status: 'INSERTED', source: fetched.source, value: fetched.value, effectiveDate: fetched.effectiveDate, record: result.record }}catch(error){const message=error instanceof Error?error.message.slice(0,500):'DOLLAR_AUTOMATION_FAILED';Object.assign(run,{finished_at:new Date(),status: 'FAILED',error:message});Object.assign(config,{last_finished_at:run.finished_at,last_status: 'FAILED',last_error:message});await this.runRepo.save(run);await this.configRepo.save(config);return{status: 'FAILED',error:message}}finally{this.running.delete(laboratoryId)}}
+  private async ensureConfig(laboratoryId:number){this.id(laboratoryId);return(await this.configRepo.findOne({where:{laboratoryId}}))??this.configRepo.save(this.configRepo.create({laboratoryId,enabled:false,run_time:'18:00',time_zone:'America/Caracas',bcv_url:'https://www.bcv.org.ve/',fallback_url:'https://ve.dolarapi.com/v1/dolares/oficial'}))}
+  private id(value:number){if(!Number.isInteger(value)||value<=0)throw new BadRequestException('LABORATORY_ID_INVALID')}
+  private actor(value:number){if(!Number.isInteger(value)||value<=0)throw new BadRequestException('DOLLAR_AUTOMATION_ACTOR_REQUIRED')}
 }

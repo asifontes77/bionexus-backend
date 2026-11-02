@@ -179,6 +179,9 @@ export class BioNexusBaseline1790366400000 implements MigrationInterface {
       UPDATE "dollar_value_automation_runs" SET "laboratory_id" = 1 WHERE "laboratory_id" IS NULL;
       ALTER TABLE "dollar_value_automation_runs" ALTER COLUMN "laboratory_id" SET NOT NULL;
       ALTER TABLE "dollar_value_automation_runs" ADD CONSTRAINT "FK_dollar_value_automation_runs_laboratory" FOREIGN KEY ("laboratory_id") REFERENCES "laboratory"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+CREATE UNIQUE INDEX "UQ_dollar_value_automation_laboratory" ON "dollar_value_automation" ("laboratory_id");
+CREATE INDEX "IX_dollar_value_automation_runs_laboratory_started" ON "dollar_value_automation_runs" ("laboratory_id", "started_at");
+CREATE INDEX "IX_dollar_value_laboratory_date" ON "dollar_value" ("laboratory_id", "date");
 
       ALTER TABLE "exam_catalog" ADD COLUMN "laboratory_id" integer;
       UPDATE "exam_catalog" SET "laboratory_id" = 1 WHERE "laboratory_id" IS NULL;
