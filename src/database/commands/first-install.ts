@@ -5,6 +5,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { JwtModule } from '@nestjs/jwt';
 import { DataSource } from 'typeorm';
 import { resolveDatabaseOptions } from '../database.config';
 import { PlatformModule } from '../../platform/platform.module';
@@ -44,7 +45,7 @@ async function ensureDatabase(environment: NodeJS.ProcessEnv): Promise<{ databas
     return { database, created: true };
   } finally { await client.end(); }
 }
-@Module({ imports: [ConfigModule.forRoot({ isGlobal: true }), TypeOrmModule.forRootAsync({ inject: [ConfigService], useFactory: (config: ConfigService) => resolveDatabaseOptions({ DB_HOST: config.get<string>('DB_HOST'), DB_PORT: config.get<string>('DB_PORT'), DB_USER: config.get<string>('DB_USER'), DB_PASSWORD: config.get<string>('DB_PASSWORD'), DB_DATABASE: config.get<string>('DB_DATABASE') }, __dirname) }), PlatformModule] })
+@Module({ imports: [ConfigModule.forRoot({ isGlobal: true }), JwtModule.registerAsync({ global: true, inject: [ConfigService], useFactory: (config: ConfigService) => ({ secret: config.get<string>('JWT_SECRET') ?? 'first-install-context-only' }) }), TypeOrmModule.forRootAsync({ inject: [ConfigService], useFactory: (config: ConfigService) => resolveDatabaseOptions({ DB_HOST: config.get<string>('DB_HOST'), DB_PORT: config.get<string>('DB_PORT'), DB_USER: config.get<string>('DB_USER'), DB_PASSWORD: config.get<string>('DB_PASSWORD'), DB_DATABASE: config.get<string>('DB_DATABASE') }, __dirname) }), PlatformModule] })
 class FirstInstallModule {}
 export async function runFirstInstall(environment: NodeJS.ProcessEnv = process.env): Promise<void> {
   let stage: InstallStage = 'startup'; let databaseCreatedByRun = false; let context: Awaited<ReturnType<typeof NestFactory.createApplicationContext>> | undefined; const startedAt = Date.now();

@@ -32753,16 +32753,17 @@
         "Nunca debe eliminar bionexus si la base existia antes de la ejecucion.",
         "Una ejecucion fallida no puede dejar bases bionexus_install_*, bionexus_test_* o equivalentes abandonadas."
       ],
-      "windowsExecution": "En Windows los scripts npm hijos deben ejecutarse mediante ComSpec cmd.exe /d /s /c para evitar spawnSync npm.cmd EINVAL."
+      "windowsExecution": "En Windows los scripts npm hijos deben ejecutarse mediante ComSpec cmd.exe /d /s /c para evitar spawnSync npm.cmd EINVAL.",
+      "standaloneContext": "El contexto Nest de install:first debe registrar JwtService como proveedor global mediante JwtModule.registerAsync para satisfacer AuthorizationEventsGateway sin importar AppModule, sin iniciar HTTP y sin activar procesos de aplicacion ajenos al instalador.",
+      "observabilityStartupRule": "Los errores durante createApplicationContext tambien deben producir resultado estructurado. La configuracion del contexto no puede depender implicitamente del AppModule productivo."
     }
   },
   "latestLocalCheckpoint": {
-    "id": "first-install-failure-cleanup-20261103",
+    "id": "first-install-standalone-jwt-context-20261103",
     "status": "implemented-pending-runtime-validation",
-    "scope": "installer-resilience",
-    "summary": "install:first corregido para ejecutar npm en Windows mediante ComSpec y eliminar automaticamente la base creada por la ejecucion cuando falle cualquier etapa.",
-    "databaseChanged": true,
-    "databaseChange": "Se eliminaron exclusivamente bases auxiliares fallidas conocidas; bionexus fue preservada.",
+    "scope": "installer-standalone-context",
+    "summary": "Se corrigio el contexto independiente de install:first registrando JwtService global para AuthorizationEventsGateway, sin importar AppModule ni iniciar HTTP.",
+    "databaseChanged": false,
     "servicesStarted": false
   }
 }
