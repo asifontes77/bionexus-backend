@@ -32707,7 +32707,7 @@
     "observableFirstInstall": {
       "id": "observable-first-install-specification-v2",
       "type": "project-specification",
-      "status": "mandatory-validated",
+      "status": "mandatory-validated-and-applied",
       "supersedes": "observable-first-install-specification-v1",
       "title": "Instalador inicial observable de la plataforma Bio Nexus",
       "officialCommand": "npm run install:first",
@@ -32781,18 +32781,38 @@
         }
       },
       "finalDecision": "install:first queda aprobado como instalador inicial oficial de la plataforma. Crea la base cuando no existe, aplica la baseline unica, crea o preserva un platform_owner, publica los seis catalogos globales y valida cero laboratorios y cero usuarios tenant. El alta de laboratorios permanece exclusivamente en /admin despues de iniciar Backend y Frontend.",
-      "failureAndTestCleanup": "Toda base creada por una ejecucion fallida debe eliminarse automaticamente. Las bases usadas para pruebas de aceptacion tambien deben eliminarse despues del exito. La base real bionexus nunca se elimina si existia antes de la ejecucion."
+      "failureAndTestCleanup": "Toda base creada por una ejecucion fallida debe eliminarse automaticamente. Las bases usadas para pruebas de aceptacion tambien deben eliminarse despues del exito. La base real bionexus nunca se elimina si existia antes de la ejecucion.",
+      "realDatabaseApplication": {
+        "appliedAtLocal": "03-11-2026 05:23:15 PM -04:00",
+        "status": "approved",
+        "database": "bionexus",
+        "legacyDatabase": "bionexus_legacy_20261103_172315",
+        "strategy": "rename-existing-and-create-fresh",
+        "tables": 54,
+        "activePlatformOwners": 1,
+        "publishedGlobalReleases": 6,
+        "laboratories": 0,
+        "tenantUsers": 0,
+        "legacyPreserved": true,
+        "servicesStarted": false,
+        "evidence": {
+          "summary": "C:\\Users\\Alexis\\Desktop\\BioNexus-Aux\\reports\\1-realinstall-20261103-172315.txt",
+          "log": "C:\\Users\\Alexis\\Desktop\\BioNexus-Aux\\reports\\2-realinstall-20261103-172315.log",
+          "detail": "C:\\Users\\Alexis\\Desktop\\BioNexus-Aux\\reports\\3-realinstall-20261103-172315.txt"
+        }
+      },
+      "operationalDecision": "bionexus nueva es la base activa. bionexus_legacy_20261103_172315 queda preservada temporalmente para comparacion y rollback. Los laboratorios se crean posteriormente desde /admin."
     }
   },
   "latestLocalCheckpoint": {
-    "id": "first-install-final-validation-approved-20261103-120423",
+    "id": "real-bionexus-fresh-install-approved-20261103-172315",
     "status": "approved",
-    "scope": "first-install-final-runtime-validation",
-    "summary": "install:first validado completamente desde una base inexistente, con baseline, un platform_owner, seis releases globales, cero laboratorios, cero usuarios tenant y limpieza final sin residuos.",
-    "validatedDatabase": "bionexus_install_20261103_120423",
-    "databaseRemovedAfterValidation": true,
-    "databaseChanged": false,
+    "scope": "real-database-installation",
+    "summary": "bionexus real fue recreada desde cero con la baseline unica, un platform_owner activo, seis catalogos globales, cero laboratorios y cero usuarios tenant; la base anterior fue preservada como legacy.",
+    "activeDatabase": "bionexus",
+    "legacyDatabase": "bionexus_legacy_20261103_172315",
+    "databaseChanged": true,
     "servicesStarted": false,
-    "nextStep": "Cerrar e integrar las features Backend y Frontend; posteriormente iniciar ambos servicios con el inicializador del usuario y crear laboratorios desde /admin."
+    "nextStep": "Cerrar e integrar las features Backend y Frontend. Luego iniciar ambos servicios con el inicializador del usuario y validar Login, /admin y el alta de laboratorio."
   }
 }
