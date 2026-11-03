@@ -32705,113 +32705,56 @@
   },
   "projectSpecifications": {
     "observableFirstInstall": {
-      "id": "observable-first-install-specification-v1",
+      "id": "observable-first-install-specification-v2",
       "type": "project-specification",
-      "status": "mandatory",
-      "title": "Instalador inicial observable de Bio Nexus",
-      "purpose": "Proporcionar una primera instalacion reproducible, segura y observable, con resultado final inequívoco y diagnostico completo cuando ocurra un error.",
+      "status": "mandatory-corrected",
+      "supersedes": "observable-first-install-specification-v1",
+      "title": "Instalador inicial observable de la plataforma Bio Nexus",
       "officialCommand": "npm run install:first",
-      "implementation": "src/database/commands/first-install.ts",
-      "test": "src/database/commands/first-install.spec.ts",
-      "entryConditions": [
-        "La baseline unica debe estar aplicada sobre una base vacia.",
-        "La base debe contener exactamente un platform_owner activo preservado.",
-        "bootstrap:first-admin queda excluido del flujo multi-tenant.",
-        "Los datos del primer laboratorio y su administrador tenant deben recibirse mediante variables de entorno seguras.",
-        "Durante la validacion inicial solo se permiten bases cuyo nombre comience por bionexus_test_."
+      "purpose": "Crear o completar la instalacion inicial de la plataforma Bio Nexus sin crear laboratorios ni usuarios tenant.",
+      "scope": [
+        "Crear la base bionexus cuando no exista",
+        "Aplicar la baseline unica",
+        "Crear platform_owner cuando no exista o preservar el unico propietario activo",
+        "Registrar y materializar los seis catalogos globales",
+        "Validar plataforma instalada con laboratories=0 y users=0"
       ],
+      "excluded": [
+        "No solicitar RIF ni datos de laboratorio",
+        "No crear laboratorio",
+        "No crear sucursal",
+        "No crear administrador tenant",
+        "No ejecutar PlatformProvisioningService.provision",
+        "No instalar paquetes tenant"
+      ],
+      "postInstallFlow": "Despues de iniciar Backend y Frontend, el platform_owner autenticado usa /admin para crear cada laboratorio; ese flujo invoca PlatformProvisioningService y crea sucursal, administrador tenant y paquetes seleccionados.",
       "mandatoryStages": [
         "startup",
-        "database",
-        "owner",
+        "database-create",
+        "baseline",
+        "platform-owner",
         "global-catalogs",
-        "laboratory",
         "validation",
         "complete"
       ],
-      "requiredBehavior": [
-        "Ejecutar sin iniciar el servidor HTTP.",
-        "Reutilizar PlatformCatalogReleaseService para los seis catalogos globales.",
-        "Reutilizar PlatformProvisioningService para crear laboratorio, sucursal, administrador tenant, permisos, paquetes y configuracion financiera.",
-        "Emitir eventos JSON por cada etapa iniciada y completada.",
-        "Emitir siempre un resultado final JSON con success=true o success=false.",
-        "Finalizar con codigo 0 unicamente cuando success=true y stage=complete.",
-        "Finalizar con codigo distinto de 0 cuando success=false o exista un error fatal.",
-        "Cerrar siempre el contexto Nest y no dejar servicios iniciados.",
-        "No registrar claves, hashes, secretos ni variables sensibles."
+      "resultContract": "Siempre emitir JSON result success=true/false; en error incluir etapa, mensaje, codigo, detalle, restriccion, tabla, columna, stack y causa; preservar stdout/stderr y exit code.",
+      "acceptance": [
+        "Base disponible",
+        "Baseline aplicada",
+        "Un platform_owner activo",
+        "Seis releases globales publicados",
+        "Cero laboratorios",
+        "Cero usuarios tenant",
+        "Sin servidor HTTP iniciado"
       ],
-      "errorContract": {
-        "requiredFields": [
-          "stage",
-          "name",
-          "message",
-          "code",
-          "detail",
-          "constraint",
-          "table",
-          "column",
-          "stack",
-          "cause"
-        ],
-        "fatalHandlers": [
-          "unhandledRejection",
-          "uncaughtException"
-        ],
-        "rule": "Ningun fallo puede terminar solamente con codigo de salida. La salida debe identificar etapa y causa, y el wrapper debe conservar stdout y stderr completos."
-      },
-      "successContract": {
-        "requiredResult": {
-          "type": "result",
-          "success": true,
-          "stage": "complete"
-        },
-        "minimumValidation": [
-          "Seis releases globales publicados.",
-          "Un laboratorio creado.",
-          "Una sucursal principal creada.",
-          "Un administrador tenant creado dentro del laboratorio.",
-          "Seis paquetes tenant instalados.",
-          "Configuracion financiera creada.",
-          "Valor del dolar desactivado por defecto.",
-          "Relaciones de catalogo remapeadas sin huerfanos.",
-          "La base productiva o real y los repositorios permanecen protegidos durante la prueba temporal."
-        ]
-      },
-      "wrapperContract": [
-        "El script ejecutarBioNexus.ps1 debe capturar stdout, stderr y exit code por separado.",
-        "El log debe conservar stdout y stderr completos incluso si Node, Nest o PostgreSQL fallan.",
-        "Si falta el evento final result, el wrapper debe informar INSTALL_RESULT_MISSING.",
-        "Si success=false, el wrapper debe informar INSTALL_FAILED con etapa y mensaje.",
-        "Si existe un evento fatal, el wrapper debe informar INSTALL_FATAL con etapa y mensaje.",
-        "La consola debe mostrar en amarillo unicamente el archivo que el usuario necesita enviar."
-      ],
-      "databaseScope": [
-        "La baseline inicial es la unica migracion de arranque mientras no exista produccion consolidada.",
-        "platform_owners permanece separado del modelo tenant.",
-        "El propietario existente debe conservarse con su credencial actual.",
-        "users debe permanecer vacio antes de aprovisionar el primer laboratorio.",
-        "El administrador inicial tenant debe ser creado por PlatformProvisioningService dentro de su laboratory_id."
-      ],
-      "acceptanceCriteria": [
-        "Pruebas enfocadas del serializador de errores aprobadas.",
-        "Build Backend aprobado.",
-        "git diff --check aprobado.",
-        "Bitacoras oficiales Backend y Frontend actualizadas conjuntamente.",
-        "Una ejecucion temporal produce resultado final estructurado y verificable."
-      ],
-      "latestExecutionNote": {
-        "recordedAtLocal": "03-11-2026 09:57:22 AM -04:00",
-        "status": "preflight-failed-before-install-command",
-        "message": "El wrapper se detuvo durante la validacion SQL previa sobre bionexus_test_20261103_002829. install:first no llego a ejecutarse.",
-        "requiredFollowUp": "Corregir la validacion previa para que tambien capture y registre el error SQL completo, manteniendo este mismo contrato observable."
-      }
+      "correction": "La especificacion v1 mezclo incorrectamente instalacion de plataforma con aprovisionamiento de laboratorio y queda reemplazada integralmente."
     }
   },
   "latestLocalCheckpoint": {
-    "id": "observable-first-install-specification-recorded-20261103",
-    "status": "documented-pending-runtime-validation",
-    "scope": "project-specification",
-    "summary": "El instalador inicial observable quedo registrado como especificacion obligatoria del proyecto. La ejecucion de 03-11-2026 09:57:22 AM fallo en el preflight SQL antes de ejecutar install:first.",
+    "id": "first-install-platform-scope-corrected-20261103",
+    "status": "implemented-pending-runtime-validation",
+    "scope": "installer-and-project-specification",
+    "summary": "install:first corregido para instalar solo la plataforma; alta de laboratorios queda exclusivamente en /admin despues de iniciar Frontend y Backend.",
     "databaseChanged": false,
     "servicesStarted": false
   }
