@@ -25,8 +25,9 @@ export function assertSafeDatabaseName(value: string): string {
   return database;
 }
 function runNpmScript(script: string, environment: NodeJS.ProcessEnv): void {
-  const executable = process.platform === 'win32' ? 'npm.cmd' : 'npm';
-  const result = spawnSync(executable, ['run', script], { cwd: process.cwd(), env: environment, encoding: 'utf8', windowsHide: true });
+  const command = process.platform === 'win32' ? process.env.ComSpec ?? 'cmd.exe' : 'npm';
+  const args = process.platform === 'win32' ? ['/d', '/s', '/c', `npm run ${script}`] : ['run', script];
+  const result = spawnSync(command, args, { cwd: process.cwd(), env: environment, encoding: 'utf8', windowsHide: true });
   if (result.stdout) process.stdout.write(result.stdout);
   if (result.stderr) process.stderr.write(result.stderr);
   if (result.error) throw result.error;
@@ -46,11 +47,11 @@ async function ensureDatabase(environment: NodeJS.ProcessEnv): Promise<{ databas
 @Module({ imports: [ConfigModule.forRoot({ isGlobal: true }), TypeOrmModule.forRootAsync({ inject: [ConfigService], useFactory: (config: ConfigService) => resolveDatabaseOptions({ DB_HOST: config.get<string>('DB_HOST'), DB_PORT: config.get<string>('DB_PORT'), DB_USER: config.get<string>('DB_USER'), DB_PASSWORD: config.get<string>('DB_PASSWORD'), DB_DATABASE: config.get<string>('DB_DATABASE') }, __dirname) }), PlatformModule] })
 class FirstInstallModule {}
 export async function runFirstInstall(environment: NodeJS.ProcessEnv = process.env): Promise<void> {
-  let stage: InstallStage = 'startup'; let context: Awaited<ReturnType<typeof NestFactory.createApplicationContext>> | undefined; const startedAt = Date.now();
+  let stage: InstallStage = 'startup'; let databaseCreatedByRun = false; let context: Awaited<ReturnType<typeof NestFactory.createApplicationContext>> | undefined; const startedAt = Date.now();
   const emit = (status: 'started'|'succeeded', data: Record<string, unknown>={}) => writeInstallEvent({ type:'stage', stage, status, ...data });
   try {
     emit('started');
-    stage='database-create'; emit('started'); const databaseResult=await ensureDatabase(environment); emit('succeeded', databaseResult);
+    stage='database-create'; emit('started'); const databaseResult=await ensureDatabase(environment); databaseCreatedByRun=databaseResult.created; emit('succeeded', databaseResult);
     stage='baseline'; emit('started'); runNpmScript('migration:run', environment); emit('succeeded');
     stage='platform-owner'; emit('started');
     context=await NestFactory.createApplicationContext(FirstInstallModule,{logger:['error','warn','log']});
@@ -70,7 +71,18 @@ export async function runFirstInstall(environment: NodeJS.ProcessEnv = process.e
     const result=checks[0]??{};
     if(Number(result.active_owners)!==1||Number(result.global_releases)!==6||Number(result.laboratories)!==0||Number(result.users)!==0) throw new Error(`FIRST_INSTALL_VALIDATION_FAILED:${JSON.stringify(result)}`);
     emit('succeeded',result); stage='complete'; writeInstallEvent({type:'result',success:true,stage,durationMs:Date.now()-startedAt,...result});
-  } catch(error:unknown) { writeInstallEvent({type:'result',success:false,stage,durationMs:Date.now()-startedAt,error:serializeInstallError(error)}); process.exitCode=1; }
+  } catch(error:unknown) {
+    const serialized=serializeInstallError(error);
+    if(context){await context.close();context=undefined;}
+    if(databaseCreatedByRun){
+      const database=assertSafeDatabaseName(environment.DB_DATABASE ?? 'bionexus');
+      const maintenance=new Client({host:environment.DB_HOST,port:Number(environment.DB_PORT ?? 5432),user:environment.DB_USER,password:environment.DB_PASSWORD,database:environment.DB_MAINTENANCE_DATABASE ?? 'postgres'});
+      try{await maintenance.connect();await maintenance.query('SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname=$1 AND pid<>pg_backend_pid()',[database]);await maintenance.query(`DROP DATABASE IF EXISTS "${database.replace(/"/g,'""')}"`);writeInstallEvent({type:'cleanup',success:true,database,reason:'installation-failed'});}
+      catch(cleanupError:unknown){writeInstallEvent({type:'cleanup',success:false,database,error:serializeInstallError(cleanupError)});}
+      finally{await maintenance.end().catch(()=>undefined);}
+    }
+    writeInstallEvent({type:'result',success:false,stage,durationMs:Date.now()-startedAt,error:serialized});process.exitCode=1;
+  }
   finally { if(context) await context.close(); }
 }
 process.on('unhandledRejection',(reason)=>{writeInstallEvent({type:'fatal',success:false,stage:'unhandledRejection',error:serializeInstallError(reason)});process.exitCode=1;});

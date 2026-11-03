@@ -32747,15 +32747,22 @@
         "Cero usuarios tenant",
         "Sin servidor HTTP iniciado"
       ],
-      "correction": "La especificacion v1 mezclo incorrectamente instalacion de plataforma con aprovisionamiento de laboratorio y queda reemplazada integralmente."
+      "correction": "La especificacion v1 mezclo incorrectamente instalacion de plataforma con aprovisionamiento de laboratorio y queda reemplazada integralmente.",
+      "failureCleanup": [
+        "Si install:first crea la base y cualquier etapa posterior falla, debe cerrar conexiones, terminar sesiones, eliminar esa base y emitir un evento JSON cleanup.",
+        "Nunca debe eliminar bionexus si la base existia antes de la ejecucion.",
+        "Una ejecucion fallida no puede dejar bases bionexus_install_*, bionexus_test_* o equivalentes abandonadas."
+      ],
+      "windowsExecution": "En Windows los scripts npm hijos deben ejecutarse mediante ComSpec cmd.exe /d /s /c para evitar spawnSync npm.cmd EINVAL."
     }
   },
   "latestLocalCheckpoint": {
-    "id": "first-install-platform-scope-corrected-20261103",
+    "id": "first-install-failure-cleanup-20261103",
     "status": "implemented-pending-runtime-validation",
-    "scope": "installer-and-project-specification",
-    "summary": "install:first corregido para instalar solo la plataforma; alta de laboratorios queda exclusivamente en /admin despues de iniciar Frontend y Backend.",
-    "databaseChanged": false,
+    "scope": "installer-resilience",
+    "summary": "install:first corregido para ejecutar npm en Windows mediante ComSpec y eliminar automaticamente la base creada por la ejecucion cuando falle cualquier etapa.",
+    "databaseChanged": true,
+    "databaseChange": "Se eliminaron exclusivamente bases auxiliares fallidas conocidas; bionexus fue preservada.",
     "servicesStarted": false
   }
 }
