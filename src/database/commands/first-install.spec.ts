@@ -27,5 +27,7 @@ describe('first-install platform scope', () => {
     expect(source).toContain('databaseCreatedByRun');
     expect(source).toContain("process.env.ComSpec ?? 'cmd.exe'");
     expect(source).toContain("JwtModule.registerAsync({ global: true");
+    expect(source).toContain("FROM laboratory) AS laboratories");
+    expect(source).not.toContain("FROM laboratories) AS laboratories");
   });
 });

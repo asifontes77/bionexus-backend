@@ -32755,14 +32755,16 @@
       ],
       "windowsExecution": "En Windows los scripts npm hijos deben ejecutarse mediante ComSpec cmd.exe /d /s /c para evitar spawnSync npm.cmd EINVAL.",
       "standaloneContext": "El contexto Nest de install:first debe registrar JwtService como proveedor global mediante JwtModule.registerAsync para satisfacer AuthorizationEventsGateway sin importar AppModule, sin iniciar HTTP y sin activar procesos de aplicacion ajenos al instalador.",
-      "observabilityStartupRule": "Los errores durante createApplicationContext tambien deben producir resultado estructurado. La configuracion del contexto no puede depender implicitamente del AppModule productivo."
+      "observabilityStartupRule": "Los errores durante createApplicationContext tambien deben producir resultado estructurado. La configuracion del contexto no puede depender implicitamente del AppModule productivo.",
+      "validationSchemaContract": "La validacion final debe consultar la tabla tenant real laboratory (singular), mantener el alias de resultado laboratories y exigir conteo cero antes de cualquier alta desde /admin.",
+      "failedInstallCleanupConfirmed": "La ejecucion fallida bionexus_install_20261103_115311 fue eliminada automaticamente despues del error de validacion 42P01; bionexus real fue preservada."
     }
   },
   "latestLocalCheckpoint": {
-    "id": "first-install-standalone-jwt-context-20261103",
-    "status": "implemented-pending-runtime-validation",
-    "scope": "installer-standalone-context",
-    "summary": "Se corrigio el contexto independiente de install:first registrando JwtService global para AuthorizationEventsGateway, sin importar AppModule ni iniciar HTTP.",
+    "id": "first-install-validation-table-fix-20261103",
+    "status": "implemented-pending-final-runtime-validation",
+    "scope": "installer-validation",
+    "summary": "Se corrigio la validacion final de install:first para consultar laboratory singular, preservando el resultado laboratories=0 y la limpieza automatica.",
     "databaseChanged": false,
     "servicesStarted": false
   }
