@@ -32694,5 +32694,13 @@
     "security": "Credenciales solo por variables de entorno; no se registran contrasenas.",
     "databaseChanged": false,
     "servicesStarted": false
+  },
+  "observableFirstInstallCheckpoint": {
+    "id": "observable-first-install-command-20261103",
+    "status": "validated-locally-pending-commit",
+    "scope": "first-install-observability",
+    "summary": "Se agrego install:first con eventos JSON por etapa y resultado final success/error, incluyendo stack, code, detail, constraint y causa anidada.",
+    "databaseChanged": false,
+    "servicesStarted": false
   }
 }

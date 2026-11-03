@@ -27,7 +27,8 @@
     "migration:check": "npm run typeorm -- migration:generate src/database/migrations/SchemaCheck -d src/database/data-source.ts --check",
     "bootstrap:first-admin": "node -r ts-node/register -r tsconfig-paths/register src/database/commands/bootstrap-first-admin.ts",
     "bootstrap:platform-owner": "node -r ts-node/register -r tsconfig-paths/register src/database/commands/bootstrap-platform-owner.ts",
-    "provision:laboratory": "node -r ts-node/register -r tsconfig-paths/register src/database/commands/provision-laboratory.ts"
+    "provision:laboratory": "node -r ts-node/register -r tsconfig-paths/register src/database/commands/provision-laboratory.ts",
+    "install:first": "node -r ts-node/register -r tsconfig-paths/register src/database/commands/first-install.ts"
   },
   "dependencies": {
     "@nestjs/common": "11.1.28",
