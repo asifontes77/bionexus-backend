@@ -32591,5 +32591,58 @@
       "License Manager permanece como ultimo bloque absoluto."
     ],
     "nextModeDecision": "Continuar exclusivamente con Cloud hasta completar estabilidad funcional, alineacion de PostgreSQL real, provisionamiento y revision visual."
+  },
+  "sddCopilotAdoptionProposal": {
+    "id": "sdd-copilot-adoption-proposal-20261102",
+    "recordedAtLocal": "02-11-2026 10:20 PM -04:00",
+    "status": "proposed-after-current-closure",
+    "title": "Adopcion de Spec-Driven Development con GitHub Copilot en VS Code",
+    "context": "Se evaluo usar GitHub Copilot en el workspace de Bio Nexus con SDD para reducir iteraciones, conservar contratos y acelerar la modernizacion sin perder control arquitectonico.",
+    "decision": "Completar primero la reconstruccion integral de PostgreSQL bionexus desde cero, validar baseline, bootstraps, catalogos, aprovisionamiento y dolar por laboratorio; luego cerrar y publicar la feature Frontend actual. Despues se inicializara el piloto SDD sobre repositorios limpios.",
+    "proposedWorkflow": [
+      "Constitution",
+      "Specify",
+      "Clarify",
+      "Plan",
+      "Checklist",
+      "Tasks",
+      "Analyze",
+      "Implement",
+      "Converge"
+    ],
+    "copilotContextStrategy": {
+      "constitution": "Reglas invariantes de arquitectura, PostgreSQL, baseline unica, multi-tenant, seguridad, sesion, formularios, errores, componentes compartidos y orden de migracion.",
+      "repositoryInstructions": ".github/copilot-instructions.md y reglas especificas por ruta para Frontend Vue 3 y Backend NestJS/PostgreSQL.",
+      "featureArtifacts": [
+        "spec.md",
+        "plan.md",
+        "tasks.md",
+        "checklist.md",
+        "evidence.md"
+      ],
+      "reusableAutomation": ".github/prompts y agentes especializados para planificacion, implementacion, revision y validacion de base de datos."
+    },
+    "pilot": {
+      "firstScope": "Feature pequena, reversible y verificable antes de usar SDD en cambios amplios.",
+      "visualModernization": "La modernizacion visual considerable del Frontend sera planificada como bloque separado, por modulos y con revision visual antes de aprobar cada modulo.",
+      "measurements": [
+        "tiempo desde intencion hasta cierre",
+        "cantidad de prompts e iteraciones",
+        "archivos fuera de alcance",
+        "fallos de pruebas o contratos",
+        "diferencias entre especificacion, codigo y evidencia"
+      ]
+    },
+    "toolingBoundary": {
+      "copilotVsCode": "Edicion, pruebas enfocadas, builds locales, revision de diff y mantenimiento de artefactos SDD.",
+      "powershell": "Respaldos, PostgreSQL real, reconstruccion integral, publicacion, integracion, recuperacion y operaciones repetibles auditables.",
+      "python": "Analisis y transformaciones estructuradas para reducir errores de PowerShell."
+    },
+    "protectedCurrentState": [
+      "No mezclar infraestructura SDD con los cambios pendientes de feature/platform-owner-laboratory-registration.",
+      "No iniciar SDD antes de validar instalacion limpia y actualizar bionexus real.",
+      "Mantener License Manager como ultimo bloque absoluto.",
+      "Reservar comprobantes, formatos, impresion, documentos y plantillas para el ultimo tramo."
+    ]
   }
 }
