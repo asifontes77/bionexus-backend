@@ -32644,5 +32644,46 @@
       "Mantener License Manager como ultimo bloque absoluto.",
       "Reservar comprobantes, formatos, impresion, documentos y plantillas para el ultimo tramo."
     ]
+  },
+  "frontendTestFindingsCheckpoint": {
+    "id": "frontend-test-findings-confirmed-20261102",
+    "status": "confirmed-by-read-only-inspection",
+    "scope": "frontend-test-mechanism-and-seed-package-contract",
+    "frontendNoTestRunner": {
+      "confirmed": true,
+      "detail": "package.json no declara Vitest, Jest, Mocha ni otro test runner; tampoco existe un script npm de pruebas."
+    },
+    "packageScriptsOnlyVite": {
+      "confirmed": true,
+      "scripts": {
+        "dev": "vite",
+        "build": "vite build",
+        "preview": "vite preview"
+      }
+    },
+    "obsoleteSeedPackageContract": {
+      "confirmed": true,
+      "detail": "PlatformLaboratoryDialog.vue ya contiene los siete grupos, incluido microbiology, en JSON compacto con comillas dobles. El contrato busca key con comillas simples y produce un falso negativo.",
+      "dialogMustNotBeChanged": true,
+      "correctionPending": "Alinear exclusivamente source.includes del contrato con la representacion JSON real."
+    },
+    "inspectBeforeChange": {
+      "mandatory": true,
+      "rules": [
+        "Consultar primero ambas bitacoras oficiales.",
+        "Inspeccionar rutas, archivos, package.json, scripts, imports, globals y configuraciones reales antes de modificar.",
+        "No adivinar rutas, formatos, nombres de variables, runners ni comandos.",
+        "Separar inspeccion y modificacion cuando el mecanismo no este confirmado.",
+        "Usar Python para analisis estructurado y transformaciones verificables.",
+        "Usar respaldo temporal y rollback en correcciones sobre trabajo pendiente."
+      ]
+    },
+    "legacySpecDecision": {
+      "path": "src/components/ui/BioNexusDialog.scroll.contract.spec.js",
+      "state": "No ejecutable directamente con Node y sin runner declarado.",
+      "pendingDecision": "Convertir formalmente a contrato autocontenido .mjs o introducir un runner mediante una feature separada."
+    },
+    "databaseChanged": false,
+    "servicesStarted": false
   }
 }
