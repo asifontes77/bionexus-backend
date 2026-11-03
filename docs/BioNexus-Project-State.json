@@ -32685,5 +32685,14 @@
     },
     "databaseChanged": false,
     "servicesStarted": false
+  },
+  "provisionLaboratoryCliCheckpoint": {
+    "id": "provision-laboratory-cli-implemented-20261103",
+    "status": "validated-locally-pending-integration",
+    "scope": "backend-provisioning-cli",
+    "summary": "Se agrego provision:laboratory reutilizando PlatformProvisioningService dentro de un contexto Nest sin servidor HTTP.",
+    "security": "Credenciales solo por variables de entorno; no se registran contrasenas.",
+    "databaseChanged": false,
+    "servicesStarted": false
   }
 }
