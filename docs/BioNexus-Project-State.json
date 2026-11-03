@@ -32707,7 +32707,7 @@
     "observableFirstInstall": {
       "id": "observable-first-install-specification-v2",
       "type": "project-specification",
-      "status": "mandatory-corrected",
+      "status": "mandatory-validated",
       "supersedes": "observable-first-install-specification-v1",
       "title": "Instalador inicial observable de la plataforma Bio Nexus",
       "officialCommand": "npm run install:first",
@@ -32757,15 +32757,42 @@
       "standaloneContext": "El contexto Nest de install:first debe registrar JwtService como proveedor global mediante JwtModule.registerAsync para satisfacer AuthorizationEventsGateway sin importar AppModule, sin iniciar HTTP y sin activar procesos de aplicacion ajenos al instalador.",
       "observabilityStartupRule": "Los errores durante createApplicationContext tambien deben producir resultado estructurado. La configuracion del contexto no puede depender implicitamente del AppModule productivo.",
       "validationSchemaContract": "La validacion final debe consultar la tabla tenant real laboratory (singular), mantener el alias de resultado laboratories y exigir conteo cero antes de cualquier alta desde /admin.",
-      "failedInstallCleanupConfirmed": "La ejecucion fallida bionexus_install_20261103_115311 fue eliminada automaticamente despues del error de validacion 42P01; bionexus real fue preservada."
+      "failedInstallCleanupConfirmed": "La ejecucion fallida bionexus_install_20261103_115311 fue eliminada automaticamente despues del error de validacion 42P01; bionexus real fue preservada.",
+      "runtimeValidation": {
+        "validatedAtLocal": "03-11-2026 12:04:23 PM -04:00",
+        "durationSeconds": 98.7,
+        "database": "bionexus_install_20261103_120423",
+        "databaseCreatedFromMissing": true,
+        "baselineApplied": true,
+        "activePlatformOwners": 1,
+        "publishedGlobalReleases": 6,
+        "laboratories": 0,
+        "tenantUsers": 0,
+        "success": true,
+        "stage": "complete",
+        "temporaryDatabaseRemovedAfterSuccess": true,
+        "residualDatabases": 0,
+        "realDatabasePreserved": "bionexus",
+        "httpServicesStarted": false,
+        "evidence": {
+          "summary": "C:\\Users\\Alexis\\Desktop\\BioNexus-Aux\\reports\\1-installfinal-20261103-120423.txt",
+          "log": "C:\\Users\\Alexis\\Desktop\\BioNexus-Aux\\reports\\2-installfinal-20261103-120423.log",
+          "detail": "C:\\Users\\Alexis\\Desktop\\BioNexus-Aux\\reports\\3-installfinal-20261103-120423.txt"
+        }
+      },
+      "finalDecision": "install:first queda aprobado como instalador inicial oficial de la plataforma. Crea la base cuando no existe, aplica la baseline unica, crea o preserva un platform_owner, publica los seis catalogos globales y valida cero laboratorios y cero usuarios tenant. El alta de laboratorios permanece exclusivamente en /admin despues de iniciar Backend y Frontend.",
+      "failureAndTestCleanup": "Toda base creada por una ejecucion fallida debe eliminarse automaticamente. Las bases usadas para pruebas de aceptacion tambien deben eliminarse despues del exito. La base real bionexus nunca se elimina si existia antes de la ejecucion."
     }
   },
   "latestLocalCheckpoint": {
-    "id": "first-install-validation-table-fix-20261103",
-    "status": "implemented-pending-final-runtime-validation",
-    "scope": "installer-validation",
-    "summary": "Se corrigio la validacion final de install:first para consultar laboratory singular, preservando el resultado laboratories=0 y la limpieza automatica.",
+    "id": "first-install-final-validation-approved-20261103-120423",
+    "status": "approved",
+    "scope": "first-install-final-runtime-validation",
+    "summary": "install:first validado completamente desde una base inexistente, con baseline, un platform_owner, seis releases globales, cero laboratorios, cero usuarios tenant y limpieza final sin residuos.",
+    "validatedDatabase": "bionexus_install_20261103_120423",
+    "databaseRemovedAfterValidation": true,
     "databaseChanged": false,
-    "servicesStarted": false
+    "servicesStarted": false,
+    "nextStep": "Cerrar e integrar las features Backend y Frontend; posteriormente iniciar ambos servicios con el inicializador del usuario y crear laboratorios desde /admin."
   }
 }
