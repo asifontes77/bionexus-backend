@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "project": "Bio Nexus",
   "authoritative": true,
-  "updatedAt": "2026-11-04T15:08:46-04:00",
+  "updatedAt": "2026-11-04T15:42:00-04:00",
   "purpose": "Fuente persistente para conocer decisiones, estado, pendientes y siguiente paso sin depender del historial del chat.",
   "requiredReading": {
     "enabled": true,
@@ -10827,6 +10827,169 @@
         }
       },
       "nextAction": "Definir el proyecto/servicio y plan de Railway, añadir el dominio wildcard desde Railway y copiar sus registros CNAME/TXT exactos a Cloudflare; después planificar la instalación nueva en una base PostgreSQL con nombre nuevo, separada de bionexus."
+    },
+    {
+      "id": "readonly-bionexus-schema-and-branch-alignment-20261104",
+      "at": "2026-11-04T15:39:47-04:00",
+      "operation": "align-development-checkouts-and-read-only-bionexus-schema-inspection",
+      "status": "read-only-diagnostic-complete-schema-not-tenant-ready-no-migration-run",
+      "scope": {
+        "objective": "Alinear el flujo de ramas development/main y determinar si la base bionexus refleja el esquema tenant actual sin alterar datos.",
+        "context": "El usuario autorizó un diagnóstico conectado solo a bionexus, en transacción PostgreSQL READ ONLY, mostrando metadatos y conteos agregados; autorizó planificar una migración pero no ejecutarla.",
+        "repositories": {
+          "backend": {
+            "branchActive": "development",
+            "headBeforeThisChange": "68b44ac",
+            "mainAndDevelopmentWereAligned": true
+          },
+          "frontend": {
+            "branchActiveAfterAlignment": "development",
+            "head": "f7eefad",
+            "mainAndDevelopmentWereAligned": true
+          },
+          "copilotWorktrees": "Se conservaron ramas/worktrees ligados a sesiones de Copilot; no se inspeccionó contenido pendiente ni se borró ninguna sesión o rama."
+        },
+        "reviewedSources": [
+          "scripts/ops/README.md",
+          "scripts/ops/BioNexus-Operations.Common.ps1",
+          "scripts/ops/Install-BioNexus-Fresh.ps1",
+          "src/database/database.config.ts",
+          "src/database/data-source.ts",
+          "src/database/commands/first-install.ts",
+          "src/database/migrations/1790366400000-BioNexusBaseline.ts",
+          "package.json migration commands"
+        ],
+        "functionalScope": "Diagnóstico protegido del esquema instalado, estado baseline y presencia/consistencia de laboratory.access_slug; no consulta nombres ni datos de pacientes.",
+        "technicalScope": "PostgreSQL, TypeORM migration registry, metadatos de information_schema/pg_catalog y transacción BEGIN TRANSACTION READ ONLY.",
+        "changes": [
+          "Añadido scripts/ops/Test-BioNexus-DatabaseState.ps1, que rechaza conexión si DB_DATABASE no es exactamente bionexus, impone transacción READ ONLY, tiene timeout y emite solo metadatos y conteos.",
+          "Ampliado scripts/ops/README.md en español con el diagnóstico, flujo main/development, worktrees y bases separadas para desarrollo/producción.",
+          "El checkout principal del Frontend pasó de main a development; no se hizo push ni se promovieron los cambios de documentación/script a main."
+        ],
+        "validations": [
+          "Parser de PowerShell: PASS.",
+          "Diagnóstico real bionexus: conexión confirmada; transaction_read_only=on; transacción terminada con ROLLBACK.",
+          "No se ejecutaron migraciones, install:first, bootstrap, DDL, DML ni escritura de aplicación.",
+          "git diff --check del cambio de documentación/script se ejecutará antes del commit final."
+        ],
+        "results": {
+          "migrationRegistry": {
+            "tableExists": true,
+            "count": 1,
+            "latest": "BioNexusBaseline1790366400000 (1790366400000)",
+            "baselineRegistered": true
+          },
+          "laboratory": {
+            "tableExists": true,
+            "rowCount": 1,
+            "accessSlugColumnExists": false,
+            "formatConstraintExists": false,
+            "normalizedUniqueIndexExists": false
+          },
+          "classification": "La base bionexus no está lista para ejecutar la versión tenant actual: la migración baseline figura registrada, pero el esquema actual no contiene access_slug. Hay divergencia entre el registro de migración y el contrato de la baseline fuente actual; la causa no fue investigada ni asumida."
+        },
+        "decisions": [
+          "Usar development como checkout de trabajo y main como rama de promoción; un worktree adicional es opcional, no requisito.",
+          "Mantener bases PostgreSQL de desarrollo y producción separadas y configurar sus secretos por entorno.",
+          "Una migración incremental revisada será necesaria para la base no vacía; la baseline actual exige esquema vacío y no se debe volver a aplicar ni marcar con --fake."
+        ],
+        "risks": [
+          "La aplicación actual no debe conectarse a bionexus como si el soporte access_slug ya estuviera en su esquema.",
+          "No se revisaron contenidos de sesiones/worktrees Copilot; no borrar sus ramas hasta preservar el trabajo.",
+          "No se verificó despliegue, backup restaurable, DNS/TLS ni compatibilidad de runtime."
+        ],
+        "exclusions": [
+          "No se ejecutó instalación nueva ni se creó bionexus_dev.",
+          "No se modificó ninguna base ni se inspeccionaron valores de laboratorio o pacientes.",
+          "No se generó ni ejecutó una migración incremental y no se hizo push."
+        ],
+        "pending": [
+          "Confirmar qué slug debe asignarse al único laboratorio existente, sin inferirlo automáticamente de nombre u otros datos.",
+          "Diseñar migración incremental con respaldo probado, revisión de constraints/datos y ensayo sobre una copia de desarrollo.",
+          "Antes de migrar, investigar por qué la tabla migrations registra la baseline mientras falta su columna en el esquema actual."
+        ],
+        "nextAction": "Revisar el diff y resultados; luego ejecutar tests/builds focales y cerrar commits locales en development. No migrar bionexus hasta aprobar el diseño incremental y el slug del laboratorio.",
+        "databaseStatus": {
+          "database": "bionexus",
+          "readOnlyTransaction": true,
+          "changed": false,
+          "migrationExecuted": false
+        },
+        "serverStatus": {
+          "serversStartedOrRestarted": false
+        },
+        "replication": {
+          "ledgersMustRemainByteIdentical": true,
+          "replicationStatus": "Verificada igualdad byte a byte; el SHA-256 se informa fuera del documento para evitar una referencia circular."
+        }
+      }
+    },
+    {
+      "id": "bionexus-baseline-history-explains-access-slug-gap-20261104",
+      "at": "2026-11-04T15:42:00-04:00",
+      "operation": "trace-access-slug-baseline-history-and-prepare-incremental-migration-strategy",
+      "status": "historical-cause-identified-in-source-no-database-change",
+      "scope": {
+        "objective": "Explicar por qué bionexus registra una baseline aplicada pero no contiene access_slug y definir la estrategia correcta de actualización.",
+        "context": "El chequeo READ ONLY del 2026-11-04 encontró en bionexus una sola migración registrada (BioNexusBaseline1790366400000), una fila laboratory y ausencia de access_slug, constraint e índice tenant.",
+        "repositories": {
+          "backendBranch": "development",
+          "frontendBranch": "development",
+          "push": false
+        },
+        "reviewedSources": [
+          "historial Git de src/database/migrations/1790366400000-BioNexusBaseline.ts",
+          "commit 8fb0257 Implement tenant laboratory access",
+          "src/laboratory/laboratory.entity.ts",
+          "src/platform/dto/create-platform-laboratory.dto.ts",
+          "src/platform/platform-provisioning.service.ts"
+        ],
+        "functionalScope": "Determinar la preparación de la única fila laboratory para acceso tenant sin revelar ni inferir sus datos.",
+        "technicalScope": "TypeORM registra el nombre/timestamp de migración, no el hash del contenido aplicado; cambios a baseline aplicada no se repiten automáticamente.",
+        "changes": [
+          "Se comprobó que en commit 8fb0257 se añadieron access_slug, CK_laboratory_access_slug_format e índice único a la baseline 1790366400000 conservando su timestamp. El commit anterior e74f741 no contenía esos cambios."
+        ],
+        "validations": [
+          "Comparación Git del archivo baseline en e74f741 y diff de 8fb0257 confirma la incorporación posterior de access_slug en el archivo baseline con el mismo timestamp."
+        ],
+        "results": {
+          "cause": "La modificación in-place de la baseline explica la discrepancia: la base registra el nombre ya aplicado y TypeORM no la vuelve a ejecutar; el registro no guarda checksum, por lo que no puede probar exactamente qué bytes se aplicaron originalmente.",
+          "migrationRequired": "Una nueva migración incremental con timestamp distinto; no editar de nuevo ni repetir la baseline.",
+          "slugAssignment": "Hay una fila laboratory; su slug debe ser una decisión explícita, no se debe derivar automáticamente del nombre/identificador."
+        },
+        "decisions": [
+          "Conservar bionexus sin cambios hasta aprobar migración incremental, slugs y respaldo restaurable.",
+          "Ensayar primero contra una copia/restauración de desarrollo.",
+          "Mantener desarrollo y producción en bases separadas."
+        ],
+        "risks": [
+          "La app tenant actual puede fallar en bionexus mientras falte la columna.",
+          "Una migración sin slug explícito o sin comprobar duplicados podría bloquear la restricción única o asociar un host equivocado."
+        ],
+        "exclusions": [
+          "No se consultaron nombres, RIF, usuarios ni pacientes.",
+          "No se ejecutó install:first, migration:run, bootstrap, DDL ni DML.",
+          "No se generó ni aplicó migración; no se creó base de desarrollo."
+        ],
+        "pending": [
+          "Acordar access_slug para la fila existente.",
+          "Escribir y revisar migración incremental con backfill explícito; probar restore/preflight y reversión en base dev.",
+          "Solo después, decidir expresamente la ventana de aplicación en bionexus."
+        ],
+        "nextAction": "No desplegar la versión tenant contra bionexus hasta que una migración incremental revisada agregue y valide access_slug.",
+        "databaseStatus": {
+          "name": "bionexus",
+          "modified": false,
+          "readOnlyDiagnosticOnly": true
+        },
+        "serverStatus": {
+          "startedOrRestarted": false
+        },
+        "replication": {
+          "backendAndFrontendByteIdentical": true,
+          "sha256RecordedExternally": true
+        }
+      }
     }
   ],
   "stateReplication": {
@@ -26763,7 +26926,7 @@
       ]
     }
   },
-  "lastUpdatedAt": "2026-11-04T15:08:46-04:00",
+  "lastUpdatedAt": "2026-11-04T15:42:00-04:00",
   "primaryObjective": "Estabilizar y completar Bio Nexus Cloud; alinear PostgreSQL real con la baseline y cerrar el provisionamiento funcional antes de otros modos.",
   "currentWorkstream": "cloud-platform-stabilization-and-provisioning",
   "currentCheckpoint": {
