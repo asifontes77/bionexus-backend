@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "project": "Bio Nexus",
   "authoritative": true,
-  "updatedAt": "2026-11-04T13:53:26-04:00",
+  "updatedAt": "2026-11-04T13:56:19-04:00",
   "purpose": "Fuente persistente para conocer decisiones, estado, pendientes y siguiente paso sin depender del historial del chat.",
   "requiredReading": {
     "enabled": true,
@@ -10605,6 +10605,42 @@
         "temporaryDatabaseModifiedByThisSession": true
       },
       "nextAction": "Revisar visualmente el formulario y listado de laboratorios en Frontend; despues decidir la integracion de los cambios a main. La configuracion unica DNS/TLS del wildcard sigue siendo un paso de infraestructura separado."
+    },
+    {
+      "id": "tenant-access-local-main-integration-20261104",
+      "at": "2026-11-04T13:56:19-04:00",
+      "operation": "commit-and-fast-forward-tenant-access-to-local-main",
+      "status": "integrated-locally-tested-unpushed",
+      "summary": "Ante la instruccion de trabajar autonomamente, se guardaron los cambios ya validados en commits separados de Backend y Frontend y se actualizaron ambas ramas locales main mediante fast-forward. No se hizo push, no se ejecuto install:first y no se modifico bionexus.",
+      "scope": {
+        "backend": {
+          "branch": "main",
+          "commit": "8fb02571e8303c56c108ddf30db76276e5bf2cb9",
+          "message": "Implement tenant laboratory access",
+          "validationOnMain": "provision-laboratory.spec.ts: 1 suite / 4 tests PASS; npm run build PASS."
+        },
+        "frontend": {
+          "branch": "main",
+          "commit": "5b2ebfb0067a2e0807a13863d367345178e07736",
+          "message": "Add tenant access flow to frontend",
+          "validationOnMain": "tenantAccess.contract.spec.mjs PASS; npm run build PASS with existing eval/jspreadsheet and large-chunk warnings."
+        },
+        "database": {
+          "authoritativeBionexusModified": false,
+          "disposableValidationDatabase": "bionexus_tenant_test_20261104",
+          "warning": "La DB bionexus sigue con la baseline previa y no debe usarse con la nueva app hasta decidir y validar su actualizacion. No ejecutar install:first contra bionexus."
+        },
+        "git": {
+          "localMainUpdated": true,
+          "pushCreated": false,
+          "featureBranchesPreserved": true,
+          "mainWorkingTreesCleanAtIntegration": true
+        },
+        "wildcardDnsTlsProxy": "Pendiente; no configurado ni probado.",
+        "visualReviewCompleted": false,
+        "serversStarted": false
+      },
+      "nextAction": "Preparar una prueba visual de las ramas locales main conectadas solo a bionexus_tenant_test_20261104; no apuntar la app a bionexus. Despues revisar el flujo en pantalla y dejar el wildcard DNS/TLS para la configuracion de infraestructura."
     }
   ],
   "stateReplication": {
