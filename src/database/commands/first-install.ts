@@ -12,7 +12,27 @@ import { PlatformModule } from '../../platform/platform.module';
 import { PlatformCatalogReleaseService } from '../../platform/platform-catalog-release.service';
 
 type InstallStage = 'startup' | 'database-create' | 'baseline' | 'platform-owner' | 'global-catalogs' | 'validation' | 'complete';
+export const REQUIRED_GRANULAR_CATALOG_PACKAGES = [
+  'antibiotics',
+  'germs',
+  'parasitic-forms',
+  'sample-types',
+  'taxes',
+  'exam-groups',
+  'exams',
+  'currencies',
+  'tariffs',
+  'banks',
+  'payment-methods',
+] as const;
+export const INITIAL_CATALOG_SCHEMA_VERSION = 'BioNexusBaseline1790366400000';
 export interface SerializedInstallError { name: string; message: string; code?: string; detail?: string; constraint?: string; table?: string; column?: string; stack?: string; cause?: SerializedInstallError; }
+export function isFirstInstallStateValid(result: Record<string, unknown>): boolean {
+  return Number(result.active_owners) === 1
+    && Number(result.granular_releases) === REQUIRED_GRANULAR_CATALOG_PACKAGES.length
+    && Number(result.laboratories) === 0
+    && Number(result.users) === 0;
+}
 export function serializeInstallError(error: unknown, depth = 0): SerializedInstallError {
   if (depth > 5) return { name: 'Error', message: 'MAX_CAUSE_DEPTH_REACHED' };
   if (!(error instanceof Error)) return { name: 'UnknownError', message: String(error) };
@@ -68,9 +88,12 @@ export async function runFirstInstall(environment: NodeJS.ProcessEnv = process.e
     const ownerId=Number(owners[0].id); emit('succeeded',{ownerId,username:owners[0].username});
     stage='global-catalogs'; emit('started'); const catalogs=await context.get(PlatformCatalogReleaseService).bootstrapInitialReleases(ownerId); emit('succeeded',{releaseVersion:catalogs.releaseVersion,registered:catalogs.registered.length});
     stage='validation'; emit('started');
-    const checks=await context.get(DataSource).query(`SELECT (SELECT count(*)::int FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE') AS tables,(SELECT count(*)::int FROM platform_owners WHERE is_active=true) AS active_owners,(SELECT count(*)::int FROM platform_catalog_releases WHERE status='published') AS global_releases,(SELECT count(*)::int FROM laboratory) AS laboratories,(SELECT count(*)::int FROM users) AS users`);
+    const checks=await context.get(DataSource).query(
+      `SELECT (SELECT count(*)::int FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE') AS tables,(SELECT count(*)::int FROM platform_owners WHERE is_active=true) AS active_owners,(SELECT count(*)::int FROM platform_catalog_releases WHERE status='published') AS global_releases,(SELECT count(DISTINCT package_code)::int FROM platform_catalog_releases WHERE status='published' AND minimum_schema_version=$2 AND package_code=ANY($1::text[])) AS granular_releases,(SELECT count(*)::int FROM laboratory) AS laboratories,(SELECT count(*)::int FROM users) AS users`,
+      [REQUIRED_GRANULAR_CATALOG_PACKAGES, INITIAL_CATALOG_SCHEMA_VERSION],
+    );
     const result=checks[0]??{};
-    if(Number(result.active_owners)!==1||Number(result.global_releases)!==6||Number(result.laboratories)!==0||Number(result.users)!==0) throw new Error(`FIRST_INSTALL_VALIDATION_FAILED:${JSON.stringify(result)}`);
+    if(!isFirstInstallStateValid(result)) throw new Error(`FIRST_INSTALL_VALIDATION_FAILED:${JSON.stringify(result)}`);
     emit('succeeded',result); stage='complete'; writeInstallEvent({type:'result',success:true,stage,durationMs:Date.now()-startedAt,...result});
   } catch(error:unknown) {
     const serialized=serializeInstallError(error);

@@ -10,17 +10,17 @@ export class PlatformCatalogReleaseController {
   constructor(private readonly catalogReleases: PlatformCatalogReleaseService) {}
 
   @Post('bootstrap-initial')
-  bootstrapInitial(@Req() request: any) { return this.catalogReleases.bootstrapInitialReleases(Number(request.user?.id)); }
+  bootstrapInitial(@Req() request: any) { return this.catalogReleases.bootstrapInitialReleases(Number(request.user?.userId ?? request.user?.id)); }
 
   @Get()
   list() { return this.catalogReleases.list(); }
 
   @Post('drafts')
-  createDraft(@Body() dto: CreateCatalogReleaseDto,@Req() request: any) { return this.catalogReleases.createDraft(dto,Number(request.user?.id)); }
+  createDraft(@Body() dto: CreateCatalogReleaseDto,@Req() request: any) { return this.catalogReleases.createDraft(dto,Number(request.user?.userId ?? request.user?.id)); }
 
   @Post('publish')
-  publish(@Body() dto: PublishCatalogReleaseDto,@Req() request: any) { return this.catalogReleases.publish(dto.releaseId,Number(request.user?.id)); }
+  publish(@Body() dto: PublishCatalogReleaseDto,@Req() request: any) { return this.catalogReleases.publish(dto.releaseId,Number(request.user?.userId ?? request.user?.id)); }
 
   @Post('retire')
-  retire(@Body() dto: RetireCatalogReleaseDto,@Req() request: any) { return this.catalogReleases.retire(dto.releaseId,dto.reason,Number(request.user?.id)); }
+  retire(@Body() dto: RetireCatalogReleaseDto,@Req() request: any) { return this.catalogReleases.retire(dto.releaseId,dto.reason,Number(request.user?.userId ?? request.user?.id)); }
 }

@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 describe('Platform tenant runtime contract', () => {
   const provisioning = readFileSync('src/platform/platform-provisioning.service.ts','utf8');
+  const packageCatalog = readFileSync('src/platform/seed-package-catalog.ts','utf8');
   const strategy = readFileSync('src/users/jwt.strategy.ts','utf8');
   const usersController = readFileSync('src/users/users.controller.ts','utf8');
   it('requires a valid laboratory for tenant JWT identities', () => {
@@ -12,12 +13,13 @@ describe('Platform tenant runtime contract', () => {
     expect(usersController).toContain('request.user?.laboratoryId');
   });
   it('validates and installs only selected seed packages', () => {
-    expect(provisioning).toContain('SEED_PACKAGE_KEYS');
+    expect(provisioning).toContain('resolveGranularSeedPackages(requestedPackages)');
+    expect(packageCatalog).toContain('GRANULAR_SEED_PACKAGES');
     expect(provisioning).toContain('tenantPackages.installSelected');
     expect(provisioning).toContain('TenantCatalogPackageInstallerService');
     expect(provisioning).toContain('installedCatalogPackages');
   });
   it('resolves VES inside the new laboratory', () => {
-    expect(provisioning).toContain("WHERE laboratory_id=$1 AND upper(btrim(code))='VES'");
+    expect(provisioning).toContain("WHERE laboratory_id=$1 AND upper(btrim(code))='VES' AND is_active=true");
   });
 });

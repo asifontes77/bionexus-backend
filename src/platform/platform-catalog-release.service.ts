@@ -4,6 +4,7 @@ import { resolve } from 'node:path';
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { DataSource, EntityManager } from 'typeorm';
 import { CreateCatalogReleaseDto } from './dto/catalog-release.dto';
+import { buildGranularSeedSnapshots, catalogChecksum, CatalogSnapshot } from './seed-package-catalog';
 
 @Injectable()
 export class PlatformCatalogReleaseService {
@@ -22,26 +23,45 @@ export class PlatformCatalogReleaseService {
     }
     return this.dataSource.transaction(async manager => {
       const registered: Array<Record<string, unknown>> = [];
+      const sourceSnapshots: Record<string, CatalogSnapshot> = {};
       for (const item of manifest.packages) {
-        const document = JSON.parse(readFileSync(resolve(root, item.file), 'utf8')) as Record<string, unknown>;
-        if (document.checksum !== item.checksum) throw new BadRequestException('PLATFORM_CATALOG_INITIAL_CHECKSUM_INVALID');
+        const document = JSON.parse(readFileSync(resolve(root, item.file), 'utf8')) as CatalogSnapshot;
+        const { checksum, ...payload } = document;
+        if (checksum !== item.checksum || catalogChecksum(payload) !== item.checksum) {
+          throw new BadRequestException('PLATFORM_CATALOG_INITIAL_CHECKSUM_INVALID');
+        }
+        sourceSnapshots[item.packageCode] = document;
+      }
+
+      const granularSnapshots = buildGranularSeedSnapshots(
+        sourceSnapshots,
+        manifest.releaseVersion,
+        manifest.minimumSchemaVersion,
+      );
+      for (const document of granularSnapshots) {
+        const { packageCode, checksum } = document;
         const existing = await manager.query(
           `SELECT id,package_code AS "packageCode",version,status,checksum FROM platform_catalog_releases WHERE package_code=$1 AND version=$2 LIMIT 1`,
-          [item.packageCode, manifest.releaseVersion],
+          [packageCode, manifest.releaseVersion],
         );
         if (existing[0]) {
-          if (existing[0].checksum !== item.checksum) throw new ConflictException('PLATFORM_CATALOG_INITIAL_RELEASE_CONFLICT');
-          await this.materializer.materializeGlobal(manager, { package_code: item.packageCode, snapshot_payload: document });
+          if (existing[0].checksum !== checksum) throw new ConflictException('PLATFORM_CATALOG_INITIAL_RELEASE_CONFLICT');
+          await this.materializer.materializeGlobal(manager, { package_code: packageCode, snapshot_payload: document });
           registered.push(existing[0]);
           continue;
         }
-        const { checksum, ...snapshotPayload } = document;
-        await manager.query(`UPDATE platform_catalog_releases SET status='retired' WHERE package_code=$1 AND status='published'`, [item.packageCode]);
+        const snapshotPayload = {
+          packageCode: document.packageCode,
+          version: document.version,
+          minimumSchemaVersion: document.minimumSchemaVersion,
+          tables: document.tables,
+        };
+        await manager.query(`UPDATE platform_catalog_releases SET status='retired' WHERE package_code=$1 AND status='published'`, [packageCode]);
         const rows = await manager.query(
           `INSERT INTO platform_catalog_releases (package_code,version,status,checksum,minimum_schema_version,snapshot_payload,published_at,published_by,created_by) VALUES ($1,$2,'published',$3,$4,$5::jsonb,now(),$6,$6) RETURNING id,package_code AS "packageCode",version,status,checksum`,
-          [item.packageCode, manifest.releaseVersion, item.checksum, manifest.minimumSchemaVersion, JSON.stringify(snapshotPayload), ownerId],
+          [packageCode, manifest.releaseVersion, checksum, manifest.minimumSchemaVersion, JSON.stringify(snapshotPayload), ownerId],
         );
-        await this.materializer.materializeGlobal(manager, { package_code: item.packageCode, snapshot_payload: document });
+        await this.materializer.materializeGlobal(manager, { package_code: packageCode, snapshot_payload: document });
         registered.push(rows[0]);
       }
       return { releaseVersion: manifest.releaseVersion, registered };

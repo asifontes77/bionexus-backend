@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "project": "Bio Nexus",
   "authoritative": true,
-  "updatedAt": "2026-11-02T00:26:05.195279-04:00",
+  "updatedAt": "2026-11-04T10:49:21-04:00",
   "purpose": "Fuente persistente para conocer decisiones, estado, pendientes y siguiente paso sin depender del historial del chat.",
   "requiredReading": {
     "enabled": true,
@@ -20,8 +20,8 @@
   "repositories": {
     "backend": {
       "path": "C:\\Users\\Alexis\\Documents\\Bio Nexus\\Aplicacion\\Bio Nexus Backend",
-      "branch": "feature/platform-provisioning-functional-retry",
-      "head": "pending-first-commit",
+      "branch": "feature/platform-owner-runtime-context",
+      "head": "45174a2461ad27a7e8c744257819dab8ae3cb951",
       "statusEntries": [],
       "isClean": false
     },
@@ -127,15 +127,21 @@
       "Contrato tenant aprobado para Monedas: definicion canonica global y configuracion por laboratorio",
       "Regla universal aprobada: todo laboratorio puede crear y administrar todos sus maestros con aislamiento tenant",
       "Contrato tenant aprobado para Impuestos: creacion y edicion completa por laboratorio",
-      "Contrato tenant aprobado para Bancos: creacion y edicion completa por laboratorio"
+      "Contrato tenant aprobado para Bancos: creacion y edicion completa por laboratorio",
+      "Selección granular backend basada solo en los snapshots aprobados: 11 claves y 12 tablas; tarifas y precios permanecen como una unidad.",
+      "Bootstrap transaccional deriva y publica releases granulares versionados con checksums calculados, preservando los seis snapshots fuente aprobados.",
+      "Dependencias automáticas en orden seguro, aliases agregados compatibles solo para átomos aprobados y VES activo tenant-scoped obligatorio antes de application_settings.",
+      "Validación backend: build NestJS, ESLint focalizado y 10 suites/39 pruebas focalizadas aprobadas; validación funcional PostgreSQL sigue pendiente.",
+      "Frontend alineado con selección backend: ofrece solo 11 claves aprobadas, monedas VES obligatorias incluidas en el payload, etiqueta de tarifas/precios aclarada y claves sin snapshot excluidas; contrato Frontend y build aprobados.",
+      "install:first valida 11 releases granulares publicados compatibles y no exige total fijo: conserva releases agregados legacy durante upgrades; pruebas fresh/upgrade aprobadas sin ejecutar instalación ni DB.",
+      "Bootstrap inicial de releases granulares ejecutado por el usuario con respuesta exitosa reportada; releaseVersion 1.0.0 y 11 packageCodes aprobados publicados. Esto no valida el provisionamiento del laboratorio ni acredita creación de un laboratorio.",
+      "Provisionamiento del laboratorio RIF J-29514507-1 reportado por el usuario; auditoría SQL BEGIN READ ONLY/ROLLBACK en bionexus encontró 11 paquetes installed v1.0.0 con releases publicados/schema compatible y checksums coincidentes, conteos y relaciones tenant correctos, VES activo en application_settings, admin/permisos completos y cero source_global_id duplicados. No cubre rechazo de segunda solicitud ni rollback transaccional; revisión visual pendiente."
     ],
     "pending": [
-      "Reintentar PlatformProvisioningService.provision completo sobre PostgreSQL temporal.",
-      "Validar propietario, sucursal principal, administrador inicial y paquetes seleccionados.",
-      "Verificar filas tenant, rechazo de duplicados y rollback transaccional.",
+      "Ejercitar explícitamente el rechazo de duplicados y el rollback transaccional del provisionamiento.",
       "Revisar visualmente el panel administrador antes del cierre funcional."
     ],
-    "nextAction": "Inspeccionar pruebas y harness versionados de PlatformProvisioningService.provision y producir el comando exacto de reintento funcional.",
+    "nextAction": "Ejercitar rechazo de duplicados y rollback transaccional; luego completar la revisión visual del panel administrador. Mantener la fase abierta hasta contar con esa evidencia.",
     "prohibitedNextAction": "No aprobar bancos globales inmutables; no propagar cambios entre laboratorios; no reescribir pagos historicos; no modificar BioNexusBaseline antes de cerrar los contratos; no crear migraciones incrementales.",
     "name": "Platform foundation, master contracts and PostgreSQL normalization",
     "primaryPending": "Continue pending master contracts"
@@ -10042,6 +10048,392 @@
         "databaseModified": false
       },
       "nextAction": "Corregir e implementar el alcance por laboratorio del job del dolar, validar codigo y baseline en una base temporal, y solo despues sincronizar de forma controlada el esquema de bionexus real con respaldo previo."
+    },
+    {
+      "id": "closeguard-recovery-20261104-071107",
+      "at": "2026-11-04T07:11:11.459313-05:00",
+      "type": "frontend-closeguard-syntax-recovery",
+      "status": "BUILD_OK_PENDING_FUNCTIONAL_REVIEW",
+      "summary": "Se atendio el fallo de compilacion reportado en PlatformLaboratoryDialog.vue. Se corrigio exclusivamente la duplicacion async async cuando estuvo presente y se ejecuto el build.",
+      "scope": {
+        "objective": "Recuperar la compilacion tras el error de sintaxis de la ejecucion closeguard.",
+        "repositories": {
+          "backend": {
+            "branch": "feature/platform-owner-runtime-context",
+            "head": "45174a2461ad27a7e8c744257819dab8ae3cb951",
+            "status": [
+              " M src/database/migration-tests/PlatformProvisioningOwnerInstalledBy.contract.spec.ts",
+              " M src/platform/platform-catalog-release.controller.ts",
+              " M src/platform/platform.controller.ts",
+              "?? src/platform/platform-owner-runtime-context.contract.spec.ts"
+            ]
+          },
+          "frontend": {
+            "branch": "feature/platform-laboratory-phone-mask",
+            "head": "645f5af269f13a05dfdeefd1a8561f394df0bdfc",
+            "status": [
+              " M src/components/platform/PlatformLaboratoryDialog.vue"
+            ]
+          }
+        },
+        "target": "src/components/platform/PlatformLaboratoryDialog.vue",
+        "referenceDialogsInspected": 46,
+        "syntaxRepair": {
+          "status": "DUPLICATE_ASYNC_FIXED",
+          "backup": "C:\\Users\\Alexis\\AppData\\Local\\Temp\\PlatformLaboratoryDialog-20261104-071107.vue.bak",
+          "before": "async async function open()",
+          "after": "async function open()"
+        },
+        "build": "PASSED",
+        "unrelatedGitChanges": {},
+        "databaseModified": false,
+        "serversManaged": false,
+        "commitCreated": false
+      },
+      "evidence": "C:\\Users\\Alexis\\Desktop\\BioNexus-Aux\\reports\\3-closeguard-recovery-20261104-071107.json",
+      "evidenceSha256": "661ae1c6a9ad00cfea971f369617a367ce8e576d3288a2146eb8812b91294088",
+      "result": "BUILD_OK_PENDING_FUNCTIONAL_REVIEW",
+      "nextAction": "Revisar visual y funcionalmente el dialogo: modificar campos y paquetes, cerrar con Escape y con X, comprobar que la advertencia estandar aparece, cancelar conserva el formulario y confirmar descarta; luego registrar la evidencia. No hacer commit hasta aprobar."
+    },
+    {
+      "id": "seed-package-error-trace-20261104-083023",
+      "at": "2026-11-04T08:30:23.738728-04:00",
+      "type": "seed-package-error-trace",
+      "status": "TRACE_COMPLETED_READ_ONLY",
+      "summary": "Trazabilidad de solo lectura del rechazo PLATFORM_PROVISIONING_SEED_PACKAGE_INVALID:antibiotics.",
+      "scope": {
+        "sourcesInspected": 30,
+        "databaseModified": false,
+        "serversManaged": false,
+        "commitCreated": false
+      },
+      "evidence": "C:\\Users\\Alexis\\Desktop\\BioNexus-Aux\\reports\\3-seed-package-trace-20261104-083023.json",
+      "evidenceSha256": "e8680d97a5fe473232ae4ab93d6142d5b4fc899469b87f677f7de8ca98ba8e06",
+      "nextAction": "Corregir el validador/instalador que rechaza la clave atómica, después de confirmar el contrato de releases y dependencias."
+    },
+    {
+      "id": "atomic-seed-contract-audit-20261104-084702",
+      "at": "2026-11-04T08:47:04.003786-04:00",
+      "type": "atomic-seed-contract-audit",
+      "status": "AUDIT_COMPLETED",
+      "summary": "Auditoria de contratos atomicos, releases, instalador y pruebas para corregir PLATFORM_PROVISIONING_SEED_PACKAGE_INVALID:antibiotics.",
+      "scope": {
+        "sourceFilesModified": false,
+        "databaseConnected": false,
+        "databaseModified": false,
+        "serversStarted": false,
+        "commitCreated": false
+      },
+      "evidence": "C:\\Users\\Alexis\\Desktop\\BioNexus-Aux\\reports\\3-atomic-seed-contract-audit-20261104-084702.json",
+      "evidenceSha256": "d294b2213414febf587551909d8f38dffeafb79ea7def2651cec3af7d5d49a7f",
+      "nextAction": "Implementar adaptacion atomica/release solo despues de demostrar mapeo exacto de snapshot, tablas, dependencias y registro tenant."
+    },
+    {
+      "id": "granular-seed-packages-backend-20261104",
+      "at": "2026-11-04T09:40:06-04:00",
+      "operation": "approved-granular-seed-packages-backend-implementation",
+      "status": "implemented-tests-passed-functional-postgresql-pending",
+      "summary": "Se implementó selección granular exclusivamente desde snapshots aprobados, publicación/resolución de releases atomizados con checksum estable, dependencias topológicas automáticas y monedas VES obligatorias; no se ejecutó PostgreSQL.",
+      "scope": {
+        "repositories": [
+          "asifontes77/bionexus-backend"
+        ],
+        "branch": "feature/platform-owner-runtime-context",
+        "head": "45174a2461ad27a7e8c744257819dab8ae3cb951",
+        "userDecisions": [
+          "Mantener selección granular: preparar paquetes independientes compatibles con esa selección.",
+          "Dividir solo los datos aprobados; no sembrar ni habilitar lo demás.",
+          "Incluir dependencias automáticamente."
+        ],
+        "granularKeys": [
+          "antibiotics",
+          "germs",
+          "parasitic-forms",
+          "sample-types",
+          "taxes",
+          "exam-groups",
+          "exams",
+          "currencies",
+          "tariffs",
+          "banks",
+          "payment-methods"
+        ],
+        "excludedUnapprovedKeys": [
+          "routines",
+          "worksheet-groups",
+          "worksheet-items",
+          "reference-laboratories",
+          "special-tests"
+        ],
+        "dependencyRules": [
+          "exams => exam-groups, sample-types, taxes",
+          "tariffs => currencies, exams",
+          "payment-methods => currencies",
+          "currencies siempre se incluye para VES"
+        ],
+        "tariffsUnit": [
+          "tariffs",
+          "exam_tariff_prices"
+        ],
+        "changedFiles": [
+          "src/platform/seed-package-catalog.ts",
+          "src/platform/seed-package-catalog.spec.ts",
+          "src/platform/tenant-catalog-package-installer.service.ts",
+          "src/platform/tenant-catalog-package-installer.service.spec.ts",
+          "src/platform/platform-provisioning.service.ts",
+          "src/platform/platform-provisioning.service.spec.ts",
+          "src/platform/platform-catalog-release.service.ts",
+          "src/platform/platform-tenant-runtime.contract.spec.ts",
+          "src/database/migration-tests/ApprovedCatalogSnapshots.contract.spec.ts",
+          "src/database/migration-tests/TenantCatalogPackageInstaller.contract.spec.ts",
+          "src/database/migration-tests/PlatformCatalogInitialBootstrap.contract.spec.ts",
+          "src/database/migration-tests/PlatformProvisioningTenantPackages.contract.spec.ts"
+        ],
+        "preexistingLocalChangesPreserved": [
+          "src/platform/platform.controller.ts",
+          "src/platform/platform-catalog-release.controller.ts",
+          "src/database/migration-tests/PlatformProvisioningOwnerInstalledBy.contract.spec.ts",
+          "src/platform/platform-owner-runtime-context.contract.spec.ts"
+        ],
+        "baselineOrIncrementalMigrationChanged": false,
+        "databaseModified": false,
+        "serversManaged": false
+      },
+      "validation": {
+        "build": "npm run build: passed",
+        "lint": "npx eslint on changed implementation and related contracts: passed",
+        "focusedTests": {
+          "suitesPassed": 10,
+          "testsPassed": 39,
+          "files": [
+            "src/platform/seed-package-catalog.spec.ts",
+            "src/platform/tenant-catalog-package-installer.service.spec.ts",
+            "src/platform/platform-provisioning.service.spec.ts",
+            "src/platform/platform-tenant-runtime.contract.spec.ts",
+            "src/database/migration-tests/ApprovedCatalogSnapshots.contract.spec.ts",
+            "src/database/migration-tests/TenantCatalogPackageInstaller.contract.spec.ts",
+            "src/database/migration-tests/PlatformCatalogInitialBootstrap.contract.spec.ts",
+            "src/database/migration-tests/PlatformProvisioningTenantPackages.contract.spec.ts",
+            "src/database/migration-tests/PlatformProvisioningOwnerInstalledBy.contract.spec.ts",
+            "src/database/commands/provision-laboratory.spec.ts"
+          ]
+        },
+        "gitDiffCheck": "passed",
+        "functionalPostgreSQLProvisioning": "pending; not run"
+      },
+      "nextAction": "Ejecutar la validación funcional completa de PlatformProvisioningService.provision en PostgreSQL temporal, comprobar releases/filas granulares y VES, duplicados y rollback; no declarar validada esa etapa hasta tener evidencia.",
+      "databaseModified": false,
+      "temporaryDatabaseModified": false,
+      "serversManaged": false
+    },
+    {
+      "id": "granular-seed-packages-frontend-alignment-20261104",
+      "at": "2026-11-04T09:46:27-04:00",
+      "operation": "record-approved-frontend-granular-seed-package-alignment",
+      "status": "frontend-build-and-contract-passed-postgresql-validation-pending",
+      "summary": "Se registra la alineación Frontend con los paquetes granulares aprobados; no se modificó código Frontend durante esta actualización. La validación funcional PostgreSQL del aprovisionamiento sigue pendiente.",
+      "scope": {
+        "repositories": [
+          "asifontes77/bionexus-frontend"
+        ],
+        "reviewedChangesReportedByFrontendCoordinator": [
+          "src/components/platform/PlatformLaboratoryDialog.vue",
+          "platform-laboratory-seed-packages.contract.mjs"
+        ],
+        "frontendResult": [
+          "Solo se muestran las 11 claves granulares aprobadas.",
+          "Currencies es obligatorio, deshabilitado en selección y se incluye en el payload.",
+          "La etiqueta tariffs aclara que el paquete contiene tarifas y precios de exámenes.",
+          "Se excluyen las cinco claves no soportadas; se preserva la máscara telefónica."
+        ],
+        "validationReportedByFrontendCoordinator": {
+          "contract": "passed (10 optional, 1 required)",
+          "build": "npm run build passed; Vite emitted existing warnings only"
+        },
+        "frontendSourceModifiedByThisUpdate": false,
+        "backendFunctionalPostgreSQLValidation": "pending; no success claimed",
+        "databaseModified": false,
+        "serversManaged": false
+      },
+      "nextAction": "Ejecutar la validación funcional completa de PlatformProvisioningService.provision en PostgreSQL temporal, comprobar releases/filas granulares y VES, duplicados y rollback; no declarar validada esa etapa hasta tener evidencia.",
+      "databaseModified": false,
+      "temporaryDatabaseModified": false,
+      "serversManaged": false
+    },
+    {
+      "id": "first-install-granular-release-validation-20261104",
+      "at": "2026-11-04T10:05:34-04:00",
+      "operation": "align-first-install-validation-with-granular-release-bootstrap",
+      "status": "code-and-tests-passed-database-unmodified",
+      "summary": "La validación de install:first dejó de exigir seis releases publicados totales y ahora requiere los once package codes granulares publicados con minimum_schema_version de la baseline. Conserva los agregados legacy; no se ejecutó install:first ni hubo operaciones de base de datos.",
+      "scope": {
+        "repositories": [
+          "asifontes77/bionexus-backend"
+        ],
+        "branch": "feature/platform-owner-runtime-context",
+        "filesChanged": [
+          "src/database/commands/first-install.ts",
+          "src/database/commands/first-install.spec.ts"
+        ],
+        "expectedSemantics": {
+          "freshInstallPublishedReleases": 11,
+          "upgradeWithSixLegacyPublishedIncludingMatchingTariffs": 16,
+          "requiredPublishedGranularReleases": 11,
+          "legacyPublishedReleasesDeletedOrRetired": false,
+          "schemaVersion": "BioNexusBaseline1790366400000"
+        },
+        "validation": {
+          "jest": "npm test -- --runInBand --runTestsByPath src/database/commands/first-install.spec.ts: 1 suite, 5 tests passed",
+          "build": "npm run build: passed",
+          "eslint": "npx eslint src/database/commands/first-install.ts src/database/commands/first-install.spec.ts: passed",
+          "gitDiffCheck": "passed"
+        },
+        "installFirstExecuted": false,
+        "databaseQueriedOrModified": false,
+        "baselineOrMigrationsChanged": false,
+        "serversManaged": false
+      },
+      "nextAction": "Ejecutar la validación funcional completa de PlatformProvisioningService.provision en PostgreSQL temporal, comprobar releases/filas granulares y VES, duplicados y rollback; no declarar validada esa etapa hasta tener evidencia.",
+      "databaseModified": false,
+      "temporaryDatabaseModified": false,
+      "serversManaged": false
+    },
+    {
+      "id": "user-granular-catalog-release-bootstrap-20261104",
+      "at": "2026-11-04T10:45:13-04:00",
+      "operation": "user-executed-bootstrap-initial-catalog-releases",
+      "status": "successful-response-reported-by-user-provisioning-validation-pending",
+      "summary": "El usuario ejecutó manualmente POST http://localhost:3002/api/platform/catalog-releases/bootstrap-initial y reportó respuesta exitosa con releaseVersion 1.0.0 y los 11 packageCodes granulares. No se verificó independientemente la base runtime; este resultado no implica que se haya creado un laboratorio ni que el provisionamiento funcional esté validado.",
+      "scope": {
+        "repositories": [
+          "asifontes77/bionexus-backend",
+          "asifontes77/bionexus-frontend"
+        ],
+        "endpoint": "http://localhost:3002/api/platform/catalog-releases/bootstrap-initial",
+        "triggeredBy": "user",
+        "resultEvidence": "successful endpoint response reported by user",
+        "releaseVersion": "1.0.0",
+        "publishedPackageCodes": [
+          "currencies",
+          "sample-types",
+          "taxes",
+          "exam-groups",
+          "exams",
+          "tariffs",
+          "antibiotics",
+          "germs",
+          "parasitic-forms",
+          "banks",
+          "payment-methods"
+        ],
+        "databaseTargetIndependentlyVerified": false,
+        "laboratoryCreatedOrVerified": false,
+        "provisioningFunctionallyValidated": false,
+        "databaseProvisioningChecksPending": [
+          "tenant-scoped package data and VES",
+          "owner, main branch and initial administrator",
+          "duplicate rejection",
+          "transaction rollback"
+        ]
+      },
+      "nextAction": "Ejecutar la validación funcional completa de PlatformProvisioningService.provision en PostgreSQL temporal, comprobar releases/filas granulares y VES, duplicados y rollback; no declarar validada esa etapa hasta tener evidencia.",
+      "databaseModifiedByUserAction": true,
+      "databaseModifiedByThisSession": false,
+      "temporaryPostgreSqlProvisioningValidationPending": true,
+      "serversManagedByThisSession": false
+    },
+    {
+      "id": "user-laboratory-provisioning-readonly-audit-20261104",
+      "at": "2026-11-04T10:49:21-04:00",
+      "operation": "record-user-reported-laboratory-provisioning-and-read-only-sql-audit",
+      "status": "laboratory-created-and-data-audit-reported-successful-behavioral-duplicate-rollback-and-visual-checks-pending",
+      "summary": "El usuario reportó que provisionó el laboratorio RIF J-29514507-1 y ejecutó auditoría SQL estrictamente BEGIN READ ONLY/ROLLBACK contra la DB bionexus. Hallazgos reportados: releases/paquetes y contenido tenant correctos, VES presente, relaciones y conteos correctos. Esta auditoría no ejercitó rechazo de un aprovisionamiento duplicado ni rollback de una transacción fallida; tampoco se completó revisión visual. No se afirma que esos comportamientos hayan sido validados.",
+      "scope": {
+        "database": "bionexus",
+        "databaseTarget": "reported by user; not independently inspected in this session",
+        "laboratory": {
+          "id": 3,
+          "rif": "J-29514507-1",
+          "creation": "reported successful by user"
+        },
+        "auditMode": "BEGIN READ ONLY / ROLLBACK",
+        "auditExecutedBy": "user",
+        "packages": {
+          "count": 11,
+          "allInstalled": true,
+          "releaseVersion": "1.0.0",
+          "publishedAndSchemaCompatible": true,
+          "checksumMismatches": 0,
+          "codes": [
+            "antibiotics",
+            "germs",
+            "parasitic-forms",
+            "sample-types",
+            "taxes",
+            "exam-groups",
+            "exams",
+            "currencies",
+            "tariffs",
+            "banks",
+            "payment-methods"
+          ]
+        },
+        "tenantRowCounts": {
+          "antibiotic": 68,
+          "list_germs": 74,
+          "parasiticforms": 28,
+          "sample_type": 28,
+          "tax": 1,
+          "exam_group": 26,
+          "exam_catalog": 637,
+          "currencies": 3,
+          "tariffs": 6,
+          "banks": 27,
+          "type_payment": 4,
+          "exam_tariff_prices": 3822
+        },
+        "organizationAndAccess": {
+          "branches": 1,
+          "activePrimaryBranches": 1,
+          "applicationSettings": 1,
+          "applicationSettingsCurrency": "VES",
+          "activeAdminRoles": 1,
+          "tenantUsers": 1,
+          "adminRoleLinks": 1,
+          "activePermissions": 62,
+          "adminRolePermissionLinks": 62,
+          "activePermissionsUnassigned": 0
+        },
+        "orphanRelations": {
+          "exam_catalog_to_group": 0,
+          "exam_catalog_to_tax": 0,
+          "tariff_to_currency": 0,
+          "exam_tariff_prices_to_tariff": 0,
+          "exam_tariff_prices_to_exam": 0
+        },
+        "duplicateSourceGlobalIdRows": {
+          "tablesChecked": 12,
+          "duplicates": 0
+        },
+        "duplicateProvisioningRejectionExercised": false,
+        "transactionRollbackExercised": false,
+        "visualReviewCompleted": false,
+        "functionalValidationComplete": false,
+        "remainingValidation": [
+          "exercise duplicate provisioning rejection",
+          "exercise transaction rollback",
+          "visually review administrator panel"
+        ],
+        "databaseChangedByUserProvisioning": true,
+        "databaseChangedByReadOnlyAudit": false,
+        "databaseChangedByThisSession": false,
+        "codeChangedByThisSession": false
+      },
+      "nextAction": "Ejercitar rechazo de duplicados y rollback transaccional; luego completar la revisión visual del panel administrador. Mantener la fase abierta hasta contar con esa evidencia.",
+      "databaseModifiedByUserAction": true,
+      "databaseModifiedByThisSession": false,
+      "temporaryPostgreSqlProvisioningValidationPending": true,
+      "serversManagedByThisSession": false
     }
   ],
   "stateReplication": {
@@ -25978,7 +26370,7 @@
       ]
     }
   },
-  "lastUpdatedAt": "2026-11-01T21:51:19-04:00",
+  "lastUpdatedAt": "2026-11-04T08:47:04.003786-04:00",
   "primaryObjective": "Estabilizar y completar Bio Nexus Cloud; alinear PostgreSQL real con la baseline y cerrar el provisionamiento funcional antes de otros modos.",
   "currentWorkstream": "cloud-platform-stabilization-and-provisioning",
   "currentCheckpoint": {
@@ -32816,5 +33208,17 @@
     "databaseChanged": false,
     "servicesStarted": false,
     "nextStep": "Iniciar Backend y Frontend con el inicializador del usuario. Validar Login del platform_owner, acceso protegido a /admin y alta del primer laboratorio; conservar la base legacy hasta aprobar esas pruebas."
+  },
+  "closeGuardRecoveryCheckpoint": {
+    "id": "closeguard-recovery-20261104-071107",
+    "status": "BUILD_OK_PENDING_FUNCTIONAL_REVIEW",
+    "target": "src/components/platform/PlatformLaboratoryDialog.vue",
+    "summary": "BUILD_OK_PENDING_FUNCTIONAL_REVIEW",
+    "evidence": "C:\\Users\\Alexis\\Desktop\\BioNexus-Aux\\reports\\3-closeguard-recovery-20261104-071107.json",
+    "evidenceSha256": "661ae1c6a9ad00cfea971f369617a367ce8e576d3288a2146eb8812b91294088",
+    "nextAction": "Revisar visual y funcionalmente el dialogo: modificar campos y paquetes, cerrar con Escape y con X, comprobar que la advertencia estandar aparece, cancelar conserva el formulario y confirmar descarta; luego registrar la evidencia. No hacer commit hasta aprobar.",
+    "databaseModified": false,
+    "serversManaged": false,
+    "commitCreated": false
   }
 }

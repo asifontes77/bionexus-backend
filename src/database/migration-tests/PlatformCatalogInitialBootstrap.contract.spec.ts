@@ -9,14 +9,15 @@ describe('Platform catalog initial bootstrap contract', () => {
     expect(controller).toContain("@Post('bootstrap-initial')");
   });
 
-  it('registers the six packaged releases idempotently and transactionally', () => {
-    for (const token of ['bootstrapInitialReleases','manifest.packages.length !== 6','this.dataSource.transaction','PLATFORM_CATALOG_INITIAL_RELEASE_CONFLICT','PLATFORM_CATALOG_INITIAL_CHECKSUM_INVALID']) {
+  it('derives and registers granular releases from the six approved source snapshots transactionally', () => {
+    for (const token of ['bootstrapInitialReleases','manifest.packages.length !== 6','buildGranularSeedSnapshots','catalogChecksum(payload)','this.dataSource.transaction','PLATFORM_CATALOG_INITIAL_RELEASE_CONFLICT','PLATFORM_CATALOG_INITIAL_CHECKSUM_INVALID']) {
       expect(service).toContain(token);
     }
   });
 
   it('publishes immutable snapshots without embedding the checksum in snapshot_payload', () => {
-    expect(service).toContain('const { checksum, ...snapshotPayload } = document');
+    expect(service).toContain('const snapshotPayload = {');
+    expect(service).toContain('tables: document.tables');
     expect(service).toContain("VALUES ($1,$2,'published'");
     expect(service).toContain('published_by,created_by');
   });

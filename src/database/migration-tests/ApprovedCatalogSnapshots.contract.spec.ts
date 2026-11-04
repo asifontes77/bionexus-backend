@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { buildGranularSeedSnapshots, catalogChecksum } from '../../platform/seed-package-catalog';
 
 describe('Approved catalog snapshots contract', () => {
   const root = resolve('src/database/seed-data/releases/1.0.0');
@@ -34,5 +35,28 @@ describe('Approved catalog snapshots contract', () => {
   it('contains exactly the twelve approved global table identities', () => {
     const tables = manifest.packages.flatMap((item: { tables: Record<string, number> }) => Object.keys(item.tables)).sort();
     expect(tables).toEqual(['antibiotic','banks','currencies','exam_catalog','exam_group','exam_tariff_prices','list_germs','parasiticforms','sample_type','tariffs','tax','type_payment'].sort());
+  });
+
+  it('splits only approved tables into eleven granular releases with derived checksums', () => {
+    const sourceSnapshots = Object.fromEntries(manifest.packages.map((item: { packageCode: string; file: string }) => [
+      item.packageCode,
+      JSON.parse(readFileSync(resolve(root, item.file), 'utf8')),
+    ]));
+    const snapshots = buildGranularSeedSnapshots(sourceSnapshots, manifest.releaseVersion, manifest.minimumSchemaVersion);
+    const tables = snapshots.flatMap(snapshot => Object.keys(snapshot.tables));
+
+    expect(snapshots.map(snapshot => snapshot.packageCode)).toEqual([
+      'currencies','sample-types','taxes','exam-groups','exams','tariffs',
+      'antibiotics','germs','parasitic-forms','banks','payment-methods',
+    ]);
+    expect(tables.sort()).toEqual([
+      'antibiotic','banks','currencies','exam_catalog','exam_group','exam_tariff_prices',
+      'list_germs','parasiticforms','sample_type','tariffs','tax','type_payment',
+    ].sort());
+    for (const snapshot of snapshots) {
+      const { checksum, ...payload } = snapshot;
+      expect(checksum).toBe(catalogChecksum(payload));
+    }
+    expect(snapshots.find(snapshot => snapshot.packageCode === 'tariffs')?.tables).toHaveProperty('exam_tariff_prices');
   });
 });

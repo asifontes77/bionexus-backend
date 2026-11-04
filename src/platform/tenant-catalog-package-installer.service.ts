@@ -1,29 +1,22 @@
 import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { PlatformCatalogReleaseService } from './platform-catalog-release.service';
+import { GRANULAR_SEED_PACKAGES, resolveGranularSeedPackages } from './seed-package-catalog';
 
 interface PackageDefinition {
-  tables: string[];
+  tables: readonly string[];
 }
 
 @Injectable()
 export class TenantCatalogPackageInstallerService {
   private readonly schemaVersion = 'BioNexusBaseline1790366400000';
-  private readonly packages: Record<string, PackageDefinition> = {
-    microbiology: { tables: ['antibiotic', 'list_germs'] },
-    parasitology: { tables: ['parasiticforms'] },
-    'samples-and-tax': { tables: ['sample_type', 'tax'] },
-    'exam-catalog': { tables: ['exam_group', 'exam_catalog'] },
-    'financial-and-payments': { tables: ['currencies', 'banks', 'type_payment'] },
-    tariffs: { tables: ['tariffs', 'exam_tariff_prices'] },
-  };
+  private readonly packages: Record<string, PackageDefinition> = GRANULAR_SEED_PACKAGES;
 
   constructor(private readonly releases: PlatformCatalogReleaseService) {}
 
   async installSelected(manager: EntityManager, laboratoryId: number, packageCodes: string[], installedBy: number | null) {
     if (!Number.isInteger(laboratoryId) || laboratoryId <= 0) throw new BadRequestException('PLATFORM_PROVISIONING_LABORATORY_INVALID');
-    const selected = [...new Set((packageCodes ?? []).map(value => String(value).trim().toLowerCase()).filter(Boolean))];
-    for (const packageCode of selected) if (!this.packages[packageCode]) throw new BadRequestException(`PLATFORM_PROVISIONING_SEED_PACKAGE_INVALID:${packageCode}`);
+    const selected = resolveGranularSeedPackages(packageCodes ?? []);
 
     const installed: Array<Record<string, unknown>> = [];
     for (const packageCode of selected) {

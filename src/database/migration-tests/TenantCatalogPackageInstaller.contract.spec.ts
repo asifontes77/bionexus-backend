@@ -2,12 +2,13 @@ import { readFileSync } from 'node:fs';
 
 describe('Tenant catalog package installer contract', () => {
   const service = readFileSync('src/platform/tenant-catalog-package-installer.service.ts', 'utf8');
+  const packageCatalog = readFileSync('src/platform/seed-package-catalog.ts', 'utf8');
   const module = readFileSync('src/platform/platform.module.ts', 'utf8');
 
-  it('installs only the six approved packages and twelve shared tables', () => {
-    for (const code of ['microbiology','parasitology','samples-and-tax','exam-catalog','financial-and-payments','tariffs']) expect(service).toContain(code);
-    expect(service).not.toContain('special_test_lab');
-    expect(service).not.toContain('special_test_items');
+  it('installs only the eleven approved granular packages', () => {
+    for (const code of ['antibiotics','germs','parasitic-forms','sample-types','taxes','exam-groups','exams','currencies','tariffs','banks','payment-methods']) expect(packageCatalog).toContain(code);
+    for (const code of ['routines','worksheet-groups','worksheet-items','reference-laboratories','special-tests']) expect(packageCatalog).not.toContain(`${code}:`);
+    expect(service).toContain('resolveGranularSeedPackages(packageCodes ?? [])');
   });
 
   it('resolves the latest compatible release in the caller transaction', () => {
