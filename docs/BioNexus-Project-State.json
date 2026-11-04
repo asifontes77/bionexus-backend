@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "project": "Bio Nexus",
   "authoritative": true,
-  "updatedAt": "2026-11-04T13:56:19-04:00",
+  "updatedAt": "2026-11-04T14:27:20.084-04:00",
   "purpose": "Fuente persistente para conocer decisiones, estado, pendientes y siguiente paso sin depender del historial del chat.",
   "requiredReading": {
     "enabled": true,
@@ -10641,6 +10641,95 @@
         "serversStarted": false
       },
       "nextAction": "Preparar una prueba visual de las ramas locales main conectadas solo a bionexus_tenant_test_20261104; no apuntar la app a bionexus. Despues revisar el flujo en pantalla y dejar el wildcard DNS/TLS para la configuracion de infraestructura."
+    },
+    {
+      "id": "tenant-subdomain-readiness-20261104",
+      "at": "2026-11-04T14:27:20.084-04:00",
+      "operation": "verify-tenant-subdomain-contract-and-cloud-prerequisites",
+      "status": "application-subdomain-routing-supported-cloud-infrastructure-and-database-rollout-pending",
+      "summary": "Se verificó en los main locales que el acceso tenant soporta https://<access_slug>.bionexus.app/dashboard sin prefijo /l, conserva /l/<access_slug>/... como compatibilidad y valida el subdominio contra el access_slug del login. La aplicación está lista a nivel de código para ese patrón, pero todavía no está desplegada ni validada en DNS/TLS/ingress de producción.",
+      "scope": {
+        "objective": "Confirmar si access_slug soporta URLs tenant por subdominio, actualizar ambas bitácoras y distinguir el estado del código de los prerequisitos de nube.",
+        "context": "La URL local observada fue http://127.0.0.1:8082/l/lsjt-01/dashboard; la URL productiva deseada es https://lsjt-01.bionexus.app/dashboard.",
+        "repositories": {
+          "backend": {
+            "repository": "asifontes77/bionexus-backend",
+            "branch": "main",
+            "head": "cbf4b15d3b69ab38fd12882d3e04a95627ee0fe7",
+            "workingTreeNote": "El ajuste validado de src/main.ts agrega X-Bio-Nexus-Socket-Id a allowedHeaders y se consolidará en el commit local de esta tarea."
+          },
+          "frontend": {
+            "repository": "asifontes77/bionexus-frontend",
+            "branch": "main",
+            "head": "7bb110d",
+            "workingTreeNote": "limpio durante la inspección."
+          }
+        },
+        "reviewedSources": [
+          "Frontend: src/logic/tenantAccess.js, src/logic/tenantAccess.contract.spec.mjs, src/router/index.js, src/api/apiUrl.js, docs/BioNexus-Project-State.json.",
+          "Backend: src/users/tenant-host.ts, src/users/users.controller.ts, src/users/users.service.ts, src/main.ts, src/bootstrap/bootstrap.config.ts, docs/BioNexus-Project-State.json."
+        ],
+        "functionalScope": {
+          "productionUrl": "https://<access_slug>.bionexus.app/dashboard",
+          "localCompatibilityUrl": "/l/<access_slug>/...",
+          "frontendDomainSetting": "VITE_TENANT_BASE_DOMAIN=bionexus.app por defecto; el router mantiene rutas limpias en subdominio y soporta la ruta /l/<slug>.",
+          "backendLogin": "Deriva un único subdominio del hostname BIONEXUS_TENANT_DOMAIN y compara el slug normalizado con access_slug del body; el usuario y el JWT quedan acotados al laboratory_id resuelto.",
+          "api": "En producción se asume frontend y /api bajo el mismo origen, con reverse proxy al backend que preserve Host."
+        },
+        "technicalScope": "El contrato de access_slug, normalización, unicidad global, slugs reservados, contexto/login tenant y rutas directas por hostname ya existe en ambos main locales. El hostname se valida durante login; tras autenticación el contexto tenant proviene del JWT.",
+        "changes": {
+          "applicationCode": "No se necesitó cambio de routing para subdominios en esta revisión.",
+          "backendCors": "Se preserva el cambio local validado en src/main.ts que permite X-Bio-Nexus-Socket-Id; no se amplió CORS a todos los subdominios.",
+          "ledgers": "Se agregó esta entrada idéntica en las copias Backend y Frontend y se actualizaron updatedAt/nextAction."
+        },
+        "validations": {
+          "frontendTenantContract": "node .\\src\\logic\\tenantAccess.contract.spec.mjs PASS; valida extracción del host slug, dominio reservado/ajeno y utilidades de ruta /l.",
+          "routerCoverage": "El contrato inspecciona el router estáticamente, pero no es una prueba runtime del guard con host real; la infraestructura de producción no está disponible para prueba aquí.",
+          "backendCorsFix": "En la tarea anterior: build, ESLint focal, preflight CORS y cambio de contraseña desde la UI aislada PASS.",
+          "ledgerBytes": "Las copias tenían el mismo SHA-256 antes de la actualización; se verificará igualdad y SHA-256 después.",
+          "database": "Solo se usó la base desechable bionexus_tenant_test_20261104; no se modificó ni conectó bionexus."
+        },
+        "results": "El patrón de URL deseado está soportado por el código local actual. Esto no equivale a despliegue cloud listo: no se validaron DNS, certificado, reverse proxy, fallback SPA ni la nueva baseline sobre la base bionexus existente.",
+        "decisions": [
+          "Conservar /l/<access_slug>/... como ruta local y de compatibilidad.",
+          "Servir frontend y /api bajo el mismo subdominio con proxy same-origin en producción.",
+          "Mantener CORS limitado; no abrir orígenes wildcard."
+        ],
+        "risks": [
+          "Sin DNS *.bionexus.app y certificado TLS wildcard, el subdominio no resolverá/negociará HTTPS.",
+          "El ingress debe preservar el Host confiable, enrutar /api al Backend y aplicar fallback SPA para /dashboard y otras rutas profundas.",
+          "La base existente bionexus aún requiere un plan separado de migración/backfill desde su baseline antigua antes de desplegar la nueva app contra ella.",
+          "El frontend test de contrato no ejecuta el guard de Vue Router con un hostname de navegador real."
+        ],
+        "exclusions": [
+          "No se configuraron DNS, certificados, hosting, reverse proxy ni recursos de nube.",
+          "No se ejecutó install:first, migración, reset o escritura en la base bionexus.",
+          "No se hizo push; los cambios se consolidan únicamente en commits locales de main."
+        ],
+        "pending": [
+          "Elegir/proporcionar el hosting/ingress y configurar DNS wildcard *.bionexus.app.",
+          "Emitir/configurar TLS wildcard para *.bionexus.app; cubrir el apex por separado si también se publicará.",
+          "Configurar proxy /api same-origin preservando Host y fallback SPA para rutas tenant profundas.",
+          "Diseñar y aprobar la migración/backfill segura de bionexus; no ejecutar install:first sobre esa base.",
+          "Probar una vez desplegado: https://<access_slug>.bionexus.app/dashboard, login y refresh de sesión."
+        ],
+        "nextAction": "Definir proveedor/host de despliegue y preparar DNS wildcard + TLS + reverse proxy/SPA fallback; acordar por separado un plan de migración/backfill respaldado para bionexus antes de conectarla a la app nueva.",
+        "databaseStatus": {
+          "disposableValidationDatabase": "bionexus_tenant_test_20261104",
+          "authoritativeBionexusModified": false,
+          "authoritativeBionexusSchema": "baseline previa sin access_slug; requiere plan de migración/backfill separado."
+        },
+        "serverStatus": {
+          "localPreviewServers": "detenidos tras la verificación",
+          "dnsTlsProxy": "no configurado ni probado"
+        },
+        "replication": {
+          "frontendAndBackendLedgersMustBeByteIdentical": true,
+          "preUpdateSha256": "DE40B4C57C916538501BE37881DF38651A562BD8106DE83DDE831F89602B6FA8",
+          "postUpdateSha256": "Se verificará y reportará fuera del ledger para evitar una referencia hash autorreferencial."
+        }
+      },
+      "nextAction": "Definir proveedor/host de despliegue y preparar DNS wildcard + TLS + reverse proxy/SPA fallback; acordar por separado un plan de migración/backfill respaldado para bionexus antes de conectarla a la app nueva."
     }
   ],
   "stateReplication": {
@@ -26577,7 +26666,7 @@
       ]
     }
   },
-  "lastUpdatedAt": "2026-11-04T08:47:04.003786-04:00",
+  "lastUpdatedAt": "2026-11-04T14:27:20.084-04:00",
   "primaryObjective": "Estabilizar y completar Bio Nexus Cloud; alinear PostgreSQL real con la baseline y cerrar el provisionamiento funcional antes de otros modos.",
   "currentWorkstream": "cloud-platform-stabilization-and-provisioning",
   "currentCheckpoint": {
@@ -27700,7 +27789,7 @@
       "serversManaged": false
     }
   ],
-  "nextAction": "Corregir e implementar el alcance por laboratorio del job del dolar, validar codigo y baseline en una base temporal, y solo despues sincronizar de forma controlada el esquema de bionexus real con respaldo previo.",
+  "nextAction": "Definir proveedor/host de despliegue y preparar DNS wildcard + TLS + reverse proxy/SPA fallback; acordar por separado un plan de migración/backfill respaldado para bionexus antes de conectarla a la app nueva.",
   "bitacoraPolicy": {
     "readBeforeEveryOperation": true,
     "updateBothCopiesInSameOperation": true,
