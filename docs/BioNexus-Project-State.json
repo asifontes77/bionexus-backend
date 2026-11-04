@@ -10823,7 +10823,7 @@
         "nextAction": "Definir el proyecto/servicio y plan de Railway, añadir el dominio wildcard desde Railway y copiar sus registros CNAME/TXT exactos a Cloudflare; después planificar la instalación nueva en una base PostgreSQL con nombre nuevo, separada de bionexus.",
         "ledgerReplication": {
           "backendAndFrontendMustRemainByteIdentical": true,
-          "postUpdateSha256": "verificado externamente tras la actualización."
+          "replicationStatus": "JSON válido y archivos idénticos verificados después de sincronizar ambas bitácoras."
         }
       },
       "nextAction": "Definir el proyecto/servicio y plan de Railway, añadir el dominio wildcard desde Railway y copiar sus registros CNAME/TXT exactos a Cloudflare; después planificar la instalación nueva en una base PostgreSQL con nombre nuevo, separada de bionexus."
