@@ -20,6 +20,8 @@ import {
   toSafeUserResponse,
   toSafeUserResponses,
 } from './responses/user-response.mapper';
+import { normalizeLaboratoryAccessSlug } from '../laboratory/access-slug';
+import { resolveTenantSlugFromHostname } from './tenant-host';
 
 @Injectable()
 export class UsersService {
@@ -142,13 +144,35 @@ async createUser(
     return dataUser;
   }
 
-  async getUserSession(userLogin: LoginUserDto) {
+  async getTenantContextByAccessSlug(accessSlug: string) {
+    return this.laboratoryService.getTenantContextByAccessSlug(accessSlug);
+  }
+
+  async getUserSession(userLogin: LoginUserDto, hostname?: string) {
+    const accessSlug = normalizeLaboratoryAccessSlug(userLogin?.access_slug);
+    const hostSlug = resolveTenantSlugFromHostname(hostname);
+    if (
+      !accessSlug ||
+      typeof userLogin?.user_name !== 'string' ||
+      !userLogin.user_name.trim() ||
+      typeof userLogin?.password !== 'string' ||
+      (hostSlug !== null && hostSlug !== accessSlug)
+    ) {
+      throw new HttpException('INVALID_CREDENTIALS', HttpStatus.UNAUTHORIZED);
+    }
+
+    const laboratory = await this.laboratoryService.findByAccessSlug(accessSlug);
+    if (!laboratory) {
+      throw new HttpException('INVALID_CREDENTIALS', HttpStatus.UNAUTHORIZED);
+    }
+
     const { user_name, password } = userLogin;
     // License Manager remains intentionally outside the current Bio Nexus scope.
     // Authentication must not be blocked until that final project phase is implemented.
     const userFound = await this.usersRepository.findOne({
       where: {
         user_name,
+        laboratory_id: laboratory.id,
       },
     });
 
@@ -160,7 +184,7 @@ async createUser(
       throw new HttpException('INVALID_CREDENTIALS', HttpStatus.UNAUTHORIZED);
     }
 
-    const payload = { id: userFound.id, name: userFound.name, laboratoryId: userFound.laboratory_id, identityType: 'tenant-user' as const };
+    const payload = { id: userFound.id, name: userFound.name, laboratoryId: laboratory.id, identityType: 'tenant-user' as const };
     const token = await this.signSessionToken(payload);
 
     const dataUser = {

@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "project": "Bio Nexus",
   "authoritative": true,
-  "updatedAt": "2026-11-04T10:49:21-04:00",
+  "updatedAt": "2026-11-04T13:53:26-04:00",
   "purpose": "Fuente persistente para conocer decisiones, estado, pendientes y siguiente paso sin depender del historial del chat.",
   "requiredReading": {
     "enabled": true,
@@ -10434,6 +10434,177 @@
       "databaseModifiedByThisSession": false,
       "temporaryPostgreSqlProvisioningValidationPending": true,
       "serversManagedByThisSession": false
+    },
+    {
+      "id": "backend-tenant-access-20261104",
+      "at": "2026-11-04T11:31:32-04:00",
+      "operation": "implement-backend-multi-laboratory-access-contract",
+      "status": "implementation-and-focused-validation-complete-database-untouched",
+      "summary": "Se implementó el acceso backend por access_slug estable: resolución pública del contexto, autenticación aislada por laboratorio, validación de host tenant y alta con slug normalizado y único. Los slugs reservados www, api y admin se rechazan en aplicación y baseline; api.bionexus.app no se interpreta como tenant y el login continúa resolviendo el slug recibido en el body. Se conservó mustChangePassword y el contexto JWT proviene del laboratorio resuelto.",
+      "scope": {
+        "login": {
+          "method": "POST",
+          "path": "/api/users/session",
+          "request": {
+            "access_slug": "string",
+            "user_name": "string",
+            "password": "string"
+          },
+          "tenantHostMismatch": "rechazado con INVALID_CREDENTIALS; username, clave y slug inválidos usan respuesta genérica"
+        },
+        "tenantContext": {
+          "method": "GET",
+          "path": "/api/users/tenant-context/:access_slug",
+          "response": {
+            "access_slug": "string",
+            "laboratory_name": "string"
+          }
+        },
+        "provisioning": {
+          "field": "access_slug",
+          "normalization": "trim, lowercase, whitespace-to-hyphen; slug ASCII DNS-safe hasta 63 caracteres",
+          "uniqueness": "global en laboratory",
+          "reservedSlugs": ["www", "api", "admin"],
+          "reservedSlugBehavior": "rechazados por normalizador de aplicación y constraint CHECK de baseline; el host api.bionexus.app se ignora al comparar tenant-host mismatch",
+          "tenantDomainEnvironment": "BIONEXUS_TENANT_DOMAIN opcional; default bionexus.app, documentado en .env.example"
+        },
+        "database": {
+          "schema": "la columna, restricción e índice único se agregaron a la baseline única existente; no se creó migración incremental",
+          "changedByThisSession": false,
+          "installFirstExecuted": false,
+          "migrationExecuted": false
+        },
+        "validation": {
+          "focusedTestSuites": 8,
+          "focusedTestsPassed": 60,
+          "reservedSlugRegressionTestSuites": 5,
+          "reservedSlugRegressionTestsPassed": 26,
+          "buildPassed": true,
+          "lintPassedForReservedSlugChanges": true,
+          "lintPassedForChangedFilesExceptExistingFinding": true,
+          "diffCheckPassed": true,
+          "lintCaveat": "El lint directo de src/users/users.service.ts reporta el no-unused-vars preexistente de deleteUser(_id), una línea sin cambios; el resto de archivos fuente y pruebas modificados pasa."
+        },
+        "serversStarted": false,
+        "commitCreated": false,
+        "frontendImplementation": {
+          "status": "reported-complete-and-validated-by-coordinator",
+          "independentVerification": false,
+          "details": "El coordinador reportó que el handoff Frontend quedó listo y todas sus validaciones pasan; no se recibieron conteos o comandos de validación en este handoff."
+        },
+        "frontendStateReplication": {
+          "rule": "La copia Frontend debe ser byte-idéntica y verificar SHA-256 tras cualquier actualización."
+        }
+      },
+      "nextAction": "La siguiente entrada valida el esquema nuevo en una base PostgreSQL desechable y aclara que no debe ejecutarse install:first contra bionexus."
+    },
+    {
+      "id": "tenant-single-lab-access-code-20261104",
+      "at": "2026-11-04T17:06:19.630Z",
+      "operation": "remove-duplicate-branch-code-and-clarify-package-count",
+      "status": "implementation-and-fresh-baseline-complete-provisioning-smoke-pending",
+      "summary": "Se consolido el alta con un solo codigo de acceso del laboratorio almacenado como access_slug. El codigo de sucursal queda como dato interno y el alta crea la sucursal principal con PRINCIPAL si no se provee codigo. El listado de plataforma distingue modulos activos de paquetes de catalogo instalados. La base bionexus fue inspeccionada solo en lectura; una base PostgreSQL desechable aplico correctamente la baseline tenant, sin modificar bionexus.",
+      "scope": {
+        "decisions": [
+          "El codigo de acceso es identidad global del laboratorio; no se reutiliza el codigo de sucursal como autoridad de tenant.",
+          "laboratory_branches.code sigue siendo codigo interno, unico dentro del laboratorio; laboratory_branch_id permanece en las operaciones transaccionales aprobadas.",
+          "El usuario introduce un unico codigo de acceso; branchCode es opcional en el DTO/CLI y la sucursal principal usa PRINCIPAL por defecto.",
+          "DNS wildcard *.bionexus.app es una unica configuracion de infraestructura pendiente; no se configuro ni probo DNS/TLS/proxy."
+        ],
+        "backend": {
+          "files": [
+            "src/platform/dto/create-platform-laboratory.dto.ts",
+            "src/platform/platform-provisioning.service.ts",
+            "src/database/commands/provision-laboratory.ts",
+            "src/platform/platform.controller.ts"
+          ],
+          "platformLaboratoryList": "catalogPackageCount cuenta laboratory_catalog_packages y moduleCount conserva el conteo de modulos habilitados"
+        },
+        "frontend": {
+          "files": [
+            "src/components/platform/PlatformLaboratoryDialog.vue",
+            "src/services/platformService.js",
+            "src/views/PlatformLaboratoriesView.vue"
+          ],
+          "provisioning": "El formulario pide codigo de acceso de laboratorio y ya no pide codigo de sucursal; la sucursal principal se nombra normalmente."
+        },
+        "database": {
+          "existingDatabase": "bionexus fue leida dentro de transaccion READ ONLY; baseline antigua aplicada, laboratorio id 3 con sucursal LSJT-01, 11 paquetes en laboratory_catalog_packages, 0 filas en laboratory_modules y sin columna laboratory.access_slug.",
+          "existingDatabaseModified": false,
+          "temporaryDatabase": "bionexus_tenant_test_20261104",
+          "freshInstall": "PASS: 54 tablas, baseline aplicada, access_slug presente, 1 propietario activo, 11 releases granulares publicados, 0 laboratorios y 0 usuarios.",
+          "provisioningSmoke": "Pendiente: los intentos del CLI contra la base temporal terminaron con codigo 1 sin salida de error capturada; consultas de verificacion confirmaron que la transaccion no dejo laboratorio ni usuario. No se afecto bionexus."
+        },
+        "validation": {
+          "backend": "6 suites / 25 pruebas enfocadas PASS; build PASS; ESLint focal PASS al desactivar no-unused-vars para incluir users.service.ts, que conserva un hallazgo preexistente en deleteUser(_id); git diff --check PASS.",
+          "frontend": "tenantAccess.contract.spec.mjs PASS; build PASS con warnings existentes de jspreadsheet/chunks; git diff --check PASS.",
+          "freshBaselineInstall": true,
+          "tenantProvisioningEndToEnd": false,
+          "tenantProvisioningNote": "Las pruebas de contrato confirman que el DTO/CLI acepta omitir branchCode y asigna PRINCIPAL. La instalacion limpia de baseline paso. No se pudo obtener evidencia confiable de un aprovisionamiento real desde este coordinador: los intentos CLI devolvieron codigo 1 sin diagnostico capturado; no quedaron laboratorio/usuarios en la base de prueba. La sesion Backend informo que su worktree no tenia las variables DB/provision requeridas."
+        },
+        "git": {
+          "commitCreated": false,
+          "pushOrMerge": false,
+          "mainRepositoriesRemainClean": true
+        }
+      },
+      "nextAction": "Diagnosticar la salida no capturada del CLI de aprovisionamiento y validar codigo lsjt-01 con branchCode omitido en la base desechable; luego completar login/contexto tenant de extremo a extremo y sincronizar/verificar ambas bitacoras byte por byte."
+    },
+    {
+      "id": "tenant-provisioning-e2e-validation-20261104",
+      "at": "2026-11-04T13:53:26-04:00",
+      "operation": "diagnose-and-validate-tenant-provisioning-end-to-end",
+      "status": "disposable-database-provisioning-login-duplicate-and-rollback-passed",
+      "summary": "Se encontro y corrigio la causa del aprovisionamiento silencioso: el CLI cerraba el contexto Nest antes de esperar el Promise de provisioning. Tambien se corrigio la composicion de JwtService requerida por AuthorizationModule y se habilito propagacion de errores. En PostgreSQL desechable se creo el tenant lsjt-01 con sucursal PRINCIPAL, paquete currencies y administrador; contexto publico y login real de UsersService pasan, incluyendo mustChangePassword=true. Rechazo de slug duplicado y rollback tras fallo inducido tambien pasan. bionexus no se modifico.",
+      "scope": {
+        "backendChanges": [
+          "src/database/commands/provision-laboratory.ts",
+          "src/database/commands/provision-laboratory.spec.ts"
+        ],
+        "rootCause": "La funcion devolvia provisioning.provision(...) sin await dentro de try/finally, por lo que context.close() podia cerrar TypeORM antes de que terminara la transaccion. El comando tambien usaba abortOnError predeterminado, ocultando el error de DI; faltaba JwtService global para AuthorizationModule.",
+        "fix": "Se espera el aprovisionamiento antes de cerrar el contexto, se registra JwtModule global context-only y se establece abortOnError=false para propagar errores.",
+        "database": {
+          "target": "bionexus_tenant_test_20261104",
+          "authoritativeDatabaseModified": false,
+          "laboratory": {
+            "id": 1,
+            "access_slug": "lsjt-01",
+            "branchId": 1,
+            "branchCode": "PRINCIPAL",
+            "administratorId": 1,
+            "administratorUsername": "tenant_admin_test",
+            "installedCatalogPackages": ["currencies"],
+            "request_password": true
+          },
+          "temporaryAdministratorPassword": "Generada aleatoriamente solo para validar login; no se guardo ni divulgo."
+        },
+        "functionalValidation": {
+          "tenantContext": "PASS: access_slug=lsjt-01; nombre del laboratorio correcto.",
+          "tenantLogin": "PASS via UsersService con host api.bionexus.app, identityType=tenant-user, token presente y mustChangePassword=true.",
+          "duplicateSlugRejection": "PASS: segundo aprovisionamiento con slug lsjt-01 y RIF distinto rechazado con PLATFORM_PROVISIONING_ACCESS_SLUG_EXISTS.",
+          "transactionRollback": "PASS: trigger temporal de prueba fallo en application_settings; despues del rollback quedaron 0 laboratorios, sucursales y paquetes para el slug de prueba. Trigger y funcion se eliminaron."
+        },
+        "codeValidation": {
+          "provisionCommandTest": "1 suite / 4 tests PASS.",
+          "backendBuild": "PASS.",
+          "gitDiffCheck": "PASS."
+        },
+        "frontend": {
+          "modifiedByThisOperation": false,
+          "previousContractAndBuildValidation": "PASS; la revision visual sigue pendiente."
+        },
+        "infrastructure": {
+          "wildcardDnsTlsProxy": "Pendiente; no configurado ni probado."
+        },
+        "git": {
+          "commitCreated": false,
+          "pushOrMerge": false,
+          "mainRepositoriesRemainUntouched": true
+        },
+        "serversStarted": false,
+        "temporaryDatabaseModifiedByThisSession": true
+      },
+      "nextAction": "Revisar visualmente el formulario y listado de laboratorios en Frontend; despues decidir la integracion de los cambios a main. La configuracion unica DNS/TLS del wildcard sigue siendo un paso de infraestructura separado."
     }
   ],
   "stateReplication": {

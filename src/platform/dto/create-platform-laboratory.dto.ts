@@ -1,11 +1,12 @@
 export class CreatePlatformLaboratoryDto {
+  access_slug: string;
   rif: string;
   name: string;
   businessName: string;
   address: string;
   phone?: string;
   email?: string;
-  branchCode: string;
+  branchCode?: string;
   branchName: string;
   administratorName: string;
   administratorUsername: string;

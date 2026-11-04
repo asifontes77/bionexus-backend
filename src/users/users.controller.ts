@@ -55,6 +55,12 @@ export class UsersController {
   getUsersOrder() {
     return this.usersService.getUsersOrder();
   }
+
+  @Get('/tenant-context/:access_slug')
+  getTenantContext(@Param('access_slug') accessSlug: string) {
+    return this.usersService.getTenantContextByAccessSlug(accessSlug);
+  }
+
   @UseGuards(JwtUserGuard, PermissionGuard)
   @RequirePermissions('security.users.read')
   @Get(':id')
@@ -63,8 +69,11 @@ export class UsersController {
   }
 
   @Post('/session')
-  getUserSession(@Body() userLogin: LoginUserDto) {
-    return this.usersService.getUserSession(userLogin);
+  getUserSession(
+    @Body() userLogin: LoginUserDto,
+    @Req() request: { hostname?: string },
+  ) {
+    return this.usersService.getUserSession(userLogin, request.hostname);
   }
 
   @UseGuards(JwtUserGuard)

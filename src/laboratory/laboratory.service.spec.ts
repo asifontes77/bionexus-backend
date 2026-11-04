@@ -66,6 +66,29 @@ describe('LaboratoryService', () => {
     expect(findOne).not.toHaveBeenCalled();
   });
 
+  it('resuelve el contexto público por slug sin devolver campos sensibles', async () => {
+    findOne.mockResolvedValue({
+      id: 8,
+      access_slug: 'lab-a',
+      name: 'Laboratorio A',
+    });
+
+    await expect(service.getTenantContextByAccessSlug(' Lab A ')).resolves.toEqual({
+      access_slug: 'lab-a',
+      laboratory_name: 'Laboratorio A',
+    });
+    expect(findOne).toHaveBeenCalledWith({
+      where: { access_slug: 'lab-a' },
+      select: { id: true, access_slug: true, name: true },
+    });
+  });
+
+  it('responde de forma genérica si el slug no existe', async () => {
+    findOne.mockResolvedValue(null);
+    await expect(service.getTenantContextByAccessSlug('unknown'))
+      .rejects.toThrow(new NotFoundException('TENANT_NOT_FOUND'));
+  });
+
   it('retira la licencia y vacia la clave SMTP en la respuesta publica', async () => {
     const laboratory = createLaboratory();
     findOne.mockResolvedValue(laboratory);

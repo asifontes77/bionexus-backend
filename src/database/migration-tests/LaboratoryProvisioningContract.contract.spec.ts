@@ -15,6 +15,10 @@ describe('Laboratory provisioning contract', () => {
       expect(migration).toContain(`CK_laboratory_${name}_not_blank`);
     }
     expect(migration).toContain('UQ_laboratory_rif_normalized');
+    expect(migration).toContain('"access_slug" character varying(63) NOT NULL');
+    expect(migration).toContain('CK_laboratory_access_slug_format');
+    expect(migration).toContain(`"access_slug" NOT IN ('www', 'api', 'admin')`);
+    expect(migration).toContain('UQ_laboratory_access_slug_normalized');
   });
 
   /** Las configuraciones de impresion, licencia y contacto son opcionales. */
