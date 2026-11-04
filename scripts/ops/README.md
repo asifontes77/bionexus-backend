@@ -62,49 +62,67 @@ http://127.0.0.1:8082/l/<access_slug>/login
 
 Sustituye `<access_slug>` por el slug del laboratorio. Para detener la prueba, usa `Ctrl+C` en las consolas que abrió el script. El script no cambia de rama, no modifica la base, no crea datos, no hace commits ni inicia migraciones.
 
-## 3. Simular una instalación inicial desde cero
+## 3. Crear las bases y roles separados
 
-`install:first` es para una base de datos nueva, todavía inexistente. Crea la base, instala la baseline actual, prepara el propietario inicial de plataforma, publica catálogos y comprueba el estado inicial sin laboratorios ni usuarios tenant. **No es un comando para borrar y reinicializar una base existente.**
+`install:first` aplica la baseline en una base vacía, prepara el propietario de plataforma, publica los catálogos y valida que el inicio no tenga laboratorios ni usuarios tenant. No es un comando de borrado/reinstalación.
 
-### Paso A: validar el entorno sin instalar
+El instalador nuevo crea una base y un rol de aplicación separados por entorno. Usa las credenciales administrativas del `.env` solo para crear la base, ejecutar migraciones y asignar permisos; la aplicación conecta con un rol sin permisos de administrador. Las contraseñas de esos roles se guardan cifradas por Windows DPAPI para el usuario actual, fuera del repositorio, en `%LOCALAPPDATA%\BioNexus\database-credentials`.
 
-Comprueba que el `.env` del Backend tenga conexión PostgreSQL (`DB_HOST`, `DB_PORT`, `DB_USER` y `DB_PASSWORD`) y que el usuario PostgreSQL pueda conectarse a la base de mantenimiento (normalmente `postgres`) y crear bases. No compartas ni copies los secretos.
-
-Puedes revisar qué intentaría hacer el script, sin conexión a PostgreSQL:
+Primero simula desarrollo; `-WhatIf` no conecta a PostgreSQL:
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\ops\Install-BioNexus-Fresh.ps1" -DatabaseName "bionexus_dev" -WhatIf
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\ops\Install-BioNexus-Environment.ps1" -EnvironmentName Development -WhatIf
 ```
 
-`-WhatIf` no crea la base ni ejecuta `install:first`.
-
-### Paso B: realizar la instalación de desarrollo
-
-Cuando estés listo, ejecuta:
+Cuando verifiques el nombre y decidas ejecutar la instalación real:
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\ops\Install-BioNexus-Fresh.ps1" -DatabaseName "bionexus_dev"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\ops\Install-BioNexus-Environment.ps1" -EnvironmentName Development
 ```
 
-El script te pedirá confirmar la operación. Verifica que la base elegida sea la que quieres crear. Si no existen en el `.env` los datos del propietario, solicitará el nombre de usuario, el nombre visible y una contraseña oculta. La contraseña solicitada no se imprime ni se guarda en el `.env`.
+El script se detiene si ya existe `bionexus_dev`, `bionexus_dev_app` o su archivo local de credenciales. Solicita confirmación y la contraseña del propietario de Bio Nexus mediante un prompt oculto. Genera automáticamente una contraseña aleatoria fuerte para el rol PostgreSQL de aplicación; no la imprime ni la solicita, y la guarda cifrada con DPAPI para el usuario Windows actual. El rol no recibe `CREATEDB`, `CREATEROLE` ni superusuario; se le conceden permisos de lectura/escritura en tablas y secuencias de esa base. La configuración administrativa actual se usa para futuras migraciones; no configures la aplicación con ese usuario.
 
-El nombre debe ser `bionexus_dev`, `bionexus_test`, `bionexus_prod` o una variante con sufijo. El script comprueba que la base no exista y **se niega a reutilizar cualquier base existente**, incluida la protegida `bionexus`. Si ya existe `bionexus_dev`, no la borra: elige otro nombre nuevo o detente para decidir cómo administrarla.
+Cuando desarrollo esté instalada, ejecuta las comprobaciones del proyecto y abre la aplicación con el script:
 
-### Paso C: comprobar el resultado
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\ops\Test-BioNexus-Ready.ps1"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\ops\Start-BioNexus-Development.ps1"
+```
 
-Espera el mensaje de instalación completada. Si falla, conserva el error y el evento de resultado de `install:first` para diagnosticarlo; no vuelvas a ejecutar sobre una base existente. El instalador puede limpiar la base nueva que él mismo haya creado cuando la instalación falla, pero el script no elimina bases preexistentes.
+Inicia sesión con el propietario, crea un laboratorio y confirma su URL/slug. El script de inicio valida `bionexus_dev`, su baseline tenant y rol de aplicación antes de abrir consolas separadas. Para parar los servicios, usa `Ctrl+C` en sus consolas.
 
-Después de una instalación inicial exitosa:
+Luego puedes instalar `bionexus_prod` **localmente como ensayo** con su rol separado:
 
-- no ejecutes `bootstrap:platform-owner` por separado; `install:first` prepara el propietario si hace falta;
-- `bootstrap:first-admin` es un flujo distinto y no sustituye al propietario global de plataforma;
-- inicia sesión como propietario y crea el laboratorio desde la aplicación; el laboratorio y su `access_slug` se crean después.
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\ops\Install-BioNexus-Environment.ps1" -EnvironmentName Production -WhatIf
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\ops\Install-BioNexus-Environment.ps1" -EnvironmentName Production
+```
 
-Para representar una instalación limpia, comienza con una base nueva como `bionexus_dev`. Este procedimiento no borra ni sustituye `bionexus` ni ninguna otra base existente. No uses `bionexus_prod` hasta haber decidido expresamente el destino de producción y verificado su configuración.
+Importante: que una base local se llame `bionexus_prod` no la convierte en producción real. El despliegue productivo deberá usar el PostgreSQL y el gestor de secretos configurados en el proveedor de hosting; no subas el secreto DPAPI/local ni uses esta computadora como servidor productivo. La suscripción de Railway sirve para sus servicios/dominios, pero no cambia la configuración ni el PostgreSQL local de esta instalación.
 
-## 4. Revisar el estado de la base `bionexus` sin modificarla
+## 4. Retirar la base antigua después de validar reemplazos
 
-Este comando comprueba la base real configurada en el `.env`, pero solo si `DB_DATABASE` es exactamente `bionexus`:
+No uses este paso hasta que existan `bionexus_dev` y `bionexus_prod`, pasen la validación del instalador y hayas comprobado la nueva aplicación. El script revisa ambos esquemas y roles; si encuentra conexiones activas a la base anterior, aborta sin terminarlas. Luego requiere confirmación de PowerShell y escribir literalmente `DESCARTAR bionexus`.
+
+Primero simula:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\ops\Remove-BioNexus-LegacyDatabase.ps1" -WhatIf
+```
+
+Solo después de comprobar ambos reemplazos, ejecuta:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\ops\Remove-BioNexus-LegacyDatabase.ps1"
+```
+
+Este comando es irreversible: elimina exclusivamente la base `bionexus`, no borra las nuevas bases ni roles, y no termina procesos conectados. Si se desea un respaldo previo, hay que producirlo y comprobar que restaura antes de retirar la base; el script no hace ni guarda backups.
+
+Las migraciones futuras deben ser incrementales con timestamp nuevo: primero en desarrollo, luego en producción con respaldo y revisión. No vuelvas a editar la baseline ya instalada ni uses `migration:run` o `install:first` contra una base existente para intentar “actualizarla”.
+
+## 5. Diagnóstico histórico de `bionexus`
+
+Este comando de solo lectura se preparó para el diagnóstico de la antigua base `bionexus`. Solo se conecta si `DB_DATABASE` es exactamente `bionexus`:
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\ops\Test-BioNexus-DatabaseState.ps1"
@@ -116,27 +134,30 @@ Esto permite confirmar el estado del esquema actual, pero no certifica por sí s
 
 La baseline `BioNexusBaseline1790366400000` es para una instalación en una base vacía. Una vez aplicada, no se debe editar para introducir cambios nuevos: TypeORM registra su nombre/timestamp y no vuelve a ejecutarla cuando ese mismo archivo cambia. La revisión de Git encontró que el commit `8fb0257` añadió `access_slug` a esa baseline conservando el mismo timestamp; esto explica la discrepancia observada en `bionexus`, aunque la tabla de migraciones no guarda el hash del código que se ejecutó originalmente.
 
-En la comprobación actual, `bionexus` registra una migración baseline, tiene una fila en `laboratory`, pero no tiene la columna `access_slug`. Por tanto, **no está lista para ejecutar la versión tenant actual**. No ejecutes `install:first` ni `migration:run` sin una migración incremental revisada.
+El diagnóstico histórico encontró una baseline registrada, una fila en `laboratory`, pero ninguna columna `access_slug`. Esa conclusión ya no describe los entornos nuevos: el 4 de noviembre de 2026 se instalaron `bionexus_dev` y `bionexus_prod` desde cero; ambas pasaron la validación tenant del instalador. En la comprobación final, el script protegido de retiro encontró que `bionexus` ya no existía. No se debe inferir quién o qué proceso externo la retiró.
 
-El siguiente diseño debe crear una migración nueva con timestamp nuevo. Primero se define explícitamente el slug de la fila existente (no se deriva automáticamente del nombre del laboratorio), luego se agrega/backfillea la columna, se valida normalización, formato, no-reservado y unicidad, y solo después se establecen `NOT NULL`, el `CHECK` y el índice único normalizado. Antes de aplicar a `bionexus`, se debe validar un respaldo restaurable, probar en una copia de desarrollo, revisar el diff/plan y preparar pasos de reversión. No se debe marcar la baseline como ejecutada con `--fake`. La migración no está creada ni aplicada todavía.
+No vuelvas a ejecutar `install:first` contra una base ya instalada. Los cambios futuros de esquema requieren una migración incremental con timestamp nuevo, probada primero en `bionexus_dev` y luego aplicada a la base productiva real tras respaldo y revisión. La base local `bionexus_prod` es solo un ensayo; no es la base de producción de Railway.
 
-## 5. Flujo recomendado de ramas y worktrees
+## 6. Flujo recomendado de ramas y worktrees
 
 - Usa `development` como rama de trabajo y prueba en Backend y Frontend. Mantén ambas carpetas principales en esa rama para el trabajo diario.
 - Usa `main` como rama de promoción/producción: incorpora cambios desde `development` solo después de validarlos y revisarlos. No hagas `push` como parte de una prueba local.
 - Una rama es una línea de commits; un worktree es otra carpeta de trabajo que permite tener una rama distinta abierta al mismo tiempo. No necesitas un worktree para usar `development`; es opcional cuando realmente quieras trabajar en `development` y `main` simultáneamente.
 - Las carpetas bajo `.copilot\repos\copilot-worktrees` pueden estar enlazadas a sesiones de Copilot. Antes de borrar una rama `asifontes77-*`, verifica que su worktree esté retirado de forma segura, que la sesión esté terminada y que cualquier cambio útil esté preservado. No borres `origin/main`.
 
-## 6. Separar bases de datos de desarrollo y producción
+## 7. Separar bases de datos de desarrollo y producción
 
 Sí: lo recomendable es tener una base de desarrollo y otra de producción, en el mismo servidor PostgreSQL o en servidores separados, pero con nombres, credenciales y configuración claramente separados. Una base distinta evita que las pruebas o instalaciones iniciales alteren producción.
 
-- Desarrollo: usa una base nueva, por ejemplo `bionexus_dev`, con credenciales de desarrollo.
-- Producción: usa `bionexus` solo con las credenciales de producción y cambios de esquema previamente respaldados, probados y aprobados.
+- Desarrollo local: `bionexus_dev`, con el rol de aplicación `bionexus_dev_app`.
+- Ensayo local de producción: `bionexus_prod`, con el rol de aplicación `bionexus_prod_app`. No usarla como producción desplegada ni para datos reales.
+- Producción desplegada: una base administrada por el proveedor (por ejemplo Railway), con sus propias credenciales y secretos; todavía debe configurarse y validarse por separado.
 - Mantén secretos fuera de Git; prepara el `.env` local para desarrollo y las variables secretas del proveedor para producción.
 - La rama Git no selecciona automáticamente la base. Antes de cada comando de base de datos, confirma el entorno configurado; los scripts de instalación nueva y diagnóstico tienen protecciones propias.
 
-## 7. Cloudflare y Railway: preparar subdominios de laboratorios
+El 4 de noviembre de 2026, ambas bases locales se crearon con la baseline actual, cada una con un propietario de plataforma y sin laboratorios ni usuarios tenant. El instalador comprobó el esquema `access_slug` y el acceso de su rol runtime; el script de retiro volvió a validar ambos reemplazos. El estado observado al terminar fue: `bionexus_dev` y `bionexus_prod` disponibles, `bionexus` ausente. Las credenciales runtime están cifradas con DPAPI para el usuario Windows actual; no se pueden trasladar a otro equipo ni a Railway.
+
+## 8. Cloudflare y Railway: preparar subdominios de laboratorios
 
 El registro `*.bionexus.app` no aparece en la captura previa. La dirección del apex (`bionexus.app`) no permite deducir el destino del wildcard. Obtén los valores exactos desde Railway:
 
