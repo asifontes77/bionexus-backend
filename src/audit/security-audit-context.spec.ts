@@ -32,7 +32,7 @@ describe('getSecurityAuditActorUserId', () => {
   );
   it('captura IP y User-Agent del request autenticado', () => {
     getSecurityAuditActorUserId({
-      user: { userId: 7 },
+      user: { userId: 7, laboratoryId: 3 },
       ip: '127.0.0.1',
       headers: {
         'x-forwarded-for': '203.0.113.10, 10.0.0.1',
@@ -43,6 +43,7 @@ describe('getSecurityAuditActorUserId', () => {
     expect(getSecurityAuditHttpContext()).toEqual({
       ipAddress: '203.0.113.10',
       userAgent: 'Bio Nexus regression test',
+      laboratoryId: 3,
     });
   });
 

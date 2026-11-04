@@ -229,6 +229,7 @@ async createUser(
       const saved = await repository.save(user);
       if (this.securityAuditService) await this.securityAuditService.write(manager, {
         actorUserId: userId,
+        laboratoryId: user.laboratory_id,
         action: 'security.user.required-password.changed',
         entityType: 'user',
         entityId: userId,

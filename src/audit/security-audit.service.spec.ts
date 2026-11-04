@@ -28,6 +28,7 @@ describe('SecurityAuditService', () => {
   it('persiste un evento seguro con actor autenticado', async () => {
     await service.write(manager, {
       actorUserId: 7,
+      laboratoryId: 3,
       action: 'security.user.roles.replaced',
       entityType: 'user',
       entityId: 8,
@@ -41,6 +42,7 @@ describe('SecurityAuditService', () => {
     expect(save).toHaveBeenCalledTimes(1);
     expect(create).toHaveBeenCalledWith(
       expect.objectContaining({
+        laboratoryId: 3,
         actorUserId: 7,
         action: 'security.user.roles.replaced',
         entityType: 'user',
@@ -53,6 +55,7 @@ describe('SecurityAuditService', () => {
   it('elimina metadatos sensibles', async () => {
     await service.write(manager, {
       actorUserId: 7,
+      laboratoryId: 3,
       action: 'security.user.updated',
       entityType: 'user',
       entityId: 8,
@@ -79,6 +82,7 @@ describe('SecurityAuditService', () => {
       await expect(
         service.write(manager, {
           actorUserId,
+          laboratoryId: 3,
           action: 'security.user.updated',
           entityType: 'user',
           summary: 'Usuario actualizado',
@@ -90,7 +94,7 @@ describe('SecurityAuditService', () => {
   );
   it('usa IP y User-Agent capturados cuando el input no los especifica', async () => {
     getSecurityAuditActorUserId({
-      user: { userId: 7 },
+      user: { userId: 7, laboratoryId: 3 },
       ip: '127.0.0.1',
       headers: {
         'user-agent': 'Bio Nexus audit test',
@@ -107,6 +111,7 @@ describe('SecurityAuditService', () => {
 
     expect(create).toHaveBeenCalledWith(
       expect.objectContaining({
+        laboratoryId: 3,
         ipAddress: '127.0.0.1',
         userAgent: 'Bio Nexus audit test',
       }),

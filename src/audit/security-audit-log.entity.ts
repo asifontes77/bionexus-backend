@@ -32,6 +32,9 @@ export class SecurityAuditLog {
   })
   occurredAt!: Date;
 
+  @Column({ name: 'laboratory_id', type: 'int' })
+  laboratoryId!: number;
+
   @Column({ name: 'actor_user_id', type: 'int', nullable: true })
   actorUserId!: number | null;
 
