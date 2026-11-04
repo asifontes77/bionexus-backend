@@ -32805,14 +32805,16 @@
     }
   },
   "latestLocalCheckpoint": {
-    "id": "real-bionexus-fresh-install-approved-20261103-172315",
-    "status": "approved",
-    "scope": "real-database-installation",
-    "summary": "bionexus real fue recreada desde cero con la baseline unica, un platform_owner activo, seis catalogos globales, cero laboratorios y cero usuarios tenant; la base anterior fue preservada como legacy.",
-    "activeDatabase": "bionexus",
+    "id": "platform-administration-integrated-main-20261103",
+    "status": "integrated-and-features-removed",
+    "scope": "backend-and-frontend-main",
+    "summary": "Backend y Frontend quedaron integrados en main. La divergencia Frontend se resolvio rebasando la feature publicada sobre origin/main y luego aplicando fast-forward.",
+    "backendMainHead": "56372d0a07da2127c44768a0bdb1a1c3b557ebe4",
+    "frontendMainHead": "e0686304186e7d8e4ff932498f3ceadaaf2c27f6",
+    "database": "bionexus",
     "legacyDatabase": "bionexus_legacy_20261103_172315",
-    "databaseChanged": true,
+    "databaseChanged": false,
     "servicesStarted": false,
-    "nextStep": "Cerrar e integrar las features Backend y Frontend. Luego iniciar ambos servicios con el inicializador del usuario y validar Login, /admin y el alta de laboratorio."
+    "nextStep": "Iniciar Backend y Frontend con el inicializador del usuario. Validar Login del platform_owner, acceso protegido a /admin y alta del primer laboratorio; conservar la base legacy hasta aprobar esas pruebas."
   }
 }
