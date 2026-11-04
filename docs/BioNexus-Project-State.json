@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "project": "Bio Nexus",
   "authoritative": true,
-  "updatedAt": "2026-11-04T14:27:20.084-04:00",
+  "updatedAt": "2026-11-04T15:08:46-04:00",
   "purpose": "Fuente persistente para conocer decisiones, estado, pendientes y siguiente paso sin depender del historial del chat.",
   "requiredReading": {
     "enabled": true,
@@ -10730,6 +10730,103 @@
         }
       },
       "nextAction": "Definir proveedor/host de despliegue y preparar DNS wildcard + TLS + reverse proxy/SPA fallback; acordar por separado un plan de migración/backfill respaldado para bionexus antes de conectarla a la app nueva."
+    },
+    {
+      "id": "operations-scripts-development-branches-cloudflare-20261104",
+      "at": "2026-11-04T15:08:46-04:00",
+      "operation": "create-local-development-branches-and-safe-operational-powershell-scripts",
+      "status": "scripts-validated-local-development-branches-created-no-database-install-or-cloud-dns-change",
+      "summary": "Se crearon ramas locales development en Backend y Frontend desde sus main actuales. Se añadieron scripts PowerShell operativos con logs timestamped para preflight/build/test, prueba aislada de tenant y primera instalación de plataforma en una base nueva. La instalación nueva rehúsa cualquier DB existente y protege bionexus; no se ejecutó install:first. Se inspeccionó la captura Cloudflare: existe CNAME apex proxied hacia Railway y TXT de verificación, pero no wildcard.",
+      "scope": {
+        "objective": "Facilitar las tareas repetibles por comandos PowerShell seguros, registrar la estrategia local development/main y orientar la configuración wildcard de Cloudflare/Railway.",
+        "repositories": {
+          "backend": {
+            "repository": "asifontes77/bionexus-backend",
+            "mainCommitAtStart": "4602b33",
+            "developmentBranchCreated": true,
+            "branchPolicy": "development para validar; main como candidato a producción luego de merge revisado."
+          },
+          "frontend": {
+            "repository": "asifontes77/bionexus-frontend",
+            "mainCommitAtStart": "9da5268",
+            "developmentBranchCreated": true,
+            "branchPolicy": "development para validar; main como candidato a producción luego de merge revisado."
+          }
+        },
+        "scripts": [
+          {
+            "path": "Bio Nexus Backend/scripts/ops/Test-BioNexus-Ready.ps1",
+            "purpose": "Validar igualdad/JSON de ledgers, contrato tenant, suites focales Backend, builds y git diff --check; no conecta a DB."
+          },
+          {
+            "path": "Bio Nexus Backend/scripts/ops/Run-BioNexus-Tenant-Test.ps1",
+            "purpose": "Preflight read-only de DB de test con baseline/access_slug y arranque opcional de Backend/Frontend en consolas separadas; allowlist bionexus_*test* y confirmación explícita."
+          },
+          {
+            "path": "Bio Nexus Backend/scripts/ops/Install-BioNexus-Fresh.ps1",
+            "purpose": "Instalar baseline en un nombre nuevo bionexus_dev/test/prod; rehúsa bionexus y cualquier DB existente; pide confirmación y recoge el password del platform_owner de forma oculta si falta en .env."
+          },
+          {
+            "path": "Bio Nexus Backend/scripts/ops/BioNexus-Operations.Common.ps1",
+            "purpose": "Funciones compartidas de logging, carga .env sin imprimir secretos, validaciones de DB/puertos y lanzamiento de consolas."
+          },
+          {
+            "path": "Bio Nexus Backend/scripts/ops/README.md",
+            "purpose": "Comandos de uso, explicación de install:first/bootstrap y pasos manuales Cloudflare/Railway."
+          }
+        ],
+        "validation": {
+          "PowerShellSyntax": "Todos los .ps1 en scripts/ops parsean correctamente.",
+          "TestBioNexusReady": "PASS: frontend tenant contract, 3 suites/16 tests backend, build Backend y Frontend, JSON/igualdad de ledger, diff check.",
+          "TenantTestPreflight": "PASS read-only en bionexus_tenant_test_20261104; detectó baseline tenant y laboratorio con access_slug; no lanzó servidores.",
+          "DryRuns": "Install-BioNexus-Fresh.ps1 -WhatIf y Run-BioNexus-Tenant-Test.ps1 -WhatIf PASS sin conexión a DB ni inicio de procesos.",
+          "Database": "No se ejecutó install:first/bootstrap ni se modificó bionexus; DB de prueba solo se consultó en lectura."
+        },
+        "installationDecision": {
+          "command": "npm run install:first",
+          "purpose": "Crear una base nueva, aplicar la baseline, crear platform_owner cuando falta, publicar catálogos y validar estado inicial sin laboratorios/usuarios tenant.",
+          "bootstrapPlatformOwner": "El install:first ejecuta bootstrap:platform-owner si hace falta; no ejecutarlo manualmente después.",
+          "bootstrapFirstAdmin": "No forma parte del flujo de propietario global de la plataforma.",
+          "safety": "El nuevo script exige nombre DB nuevo y rechaza cualquier base existente; nunca apunta automáticamente a bionexus."
+        },
+        "cloudflareScreenshot": {
+          "observed": [
+            "CNAME de apex bionexus.app hacia hostname up.railway, proxy Cloudflare activo.",
+            "TXT de verificación Railway, DNS-only.",
+            "No se ve registro wildcard *.bionexus.app.",
+            "La recomendación de Cloudflare indica www sin registro; www no es requisito para los subdominios de laboratorios."
+          ],
+          "manualSetup": "Agregar primero *.bionexus.app como custom domain en el servicio Railway correcto; copiar exactamente los CNAME (wildcard y _acme-challenge) y TXT que entrega Railway. El CNAME _acme-challenge debe quedar DNS-only. Activar Universal SSL y Full (strict); configurar proxy SPA, /api same-origin y preservación de Host en el gateway.",
+          "planCaveat": "Railway Trial permite un custom domain por servicio; el apex actual más wildcard puede requerir un plan con límite de al menos dos dominios.",
+          "reference": "https://docs.railway.com/networking/domains/working-with-domains; https://developers.cloudflare.com/dns/manage-dns-records/reference/wildcard-dns-records/",
+          "changed": false
+        },
+        "databaseStatus": {
+          "authoritativeBionexusModified": false,
+          "installFirstExecuted": false,
+          "disposableDatabaseReadOnlyPreflight": "bionexus_tenant_test_20261104"
+        },
+        "serverStatus": {
+          "testServersStarted": false,
+          "dnsTlsProxyChanged": false
+        },
+        "gitStatus": {
+          "committedLocallyAfterValidation": true,
+          "pushed": false,
+          "developmentBranchesCreatedLocally": true
+        },
+        "risks": [
+          "No eliminar las ramas/worktrees Copilot existentes automáticamente: son worktrees de sesión y pueden tener trabajo persistente.",
+          "No tratar development como producción; promover cambios a main después de validar y revisar.",
+          "No registrar Cloudflare hasta tener el servicio y destino exacto de Railway; no adivinar CNAMEs ni tokens de verificación."
+        ],
+        "nextAction": "Definir el proyecto/servicio y plan de Railway, añadir el dominio wildcard desde Railway y copiar sus registros CNAME/TXT exactos a Cloudflare; después planificar la instalación nueva en una base PostgreSQL con nombre nuevo, separada de bionexus.",
+        "ledgerReplication": {
+          "backendAndFrontendMustRemainByteIdentical": true,
+          "postUpdateSha256": "verificado externamente tras la actualización."
+        }
+      },
+      "nextAction": "Definir el proyecto/servicio y plan de Railway, añadir el dominio wildcard desde Railway y copiar sus registros CNAME/TXT exactos a Cloudflare; después planificar la instalación nueva en una base PostgreSQL con nombre nuevo, separada de bionexus."
     }
   ],
   "stateReplication": {
@@ -26666,7 +26763,7 @@
       ]
     }
   },
-  "lastUpdatedAt": "2026-11-04T14:27:20.084-04:00",
+  "lastUpdatedAt": "2026-11-04T15:08:46-04:00",
   "primaryObjective": "Estabilizar y completar Bio Nexus Cloud; alinear PostgreSQL real con la baseline y cerrar el provisionamiento funcional antes de otros modos.",
   "currentWorkstream": "cloud-platform-stabilization-and-provisioning",
   "currentCheckpoint": {
@@ -27789,7 +27886,7 @@
       "serversManaged": false
     }
   ],
-  "nextAction": "Definir proveedor/host de despliegue y preparar DNS wildcard + TLS + reverse proxy/SPA fallback; acordar por separado un plan de migración/backfill respaldado para bionexus antes de conectarla a la app nueva.",
+  "nextAction": "Definir el proyecto/servicio y plan de Railway, añadir el dominio wildcard desde Railway y copiar sus registros CNAME/TXT exactos a Cloudflare; después planificar la instalación nueva en una base PostgreSQL con nombre nuevo, separada de bionexus.",
   "bitacoraPolicy": {
     "readBeforeEveryOperation": true,
     "updateBothCopiesInSameOperation": true,
