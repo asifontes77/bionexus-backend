@@ -6,7 +6,7 @@ describe('Platform provisioning owner installed_by contract',()=>{
  const baseline=readFileSync('src/database/migrations/1790366400000-BioNexusBaseline.ts','utf8');
  it('propagates the authenticated platform owner from the protected controller',()=>{
   expect(controller).toContain('@UseGuards(JwtUserGuard, PlatformOwnerGuard)');
-  expect(controller).toContain('request.user?.id');
+  expect(controller).toContain('request.user?.userId ?? request.user?.id');
   expect(controller).toContain('this.provisioning.provision(body,platformOwnerId)');
  });
  it('uses the platform owner as installed_by and keeps the laboratory administrator separate',()=>{

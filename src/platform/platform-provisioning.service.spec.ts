@@ -21,15 +21,19 @@ describe('PlatformProvisioningService', () => {
     });
     const manager = { query };
     const dataSource = { transaction: jest.fn(async (_level, work) => work(manager)) };
-    const service = new PlatformProvisioningService(dataSource as never, { installSelected: jest.fn().mockResolvedValue([]) } as never);
+    const installSelected = jest.fn().mockResolvedValue([]);
+    const service = new PlatformProvisioningService(dataSource as never, { installSelected } as never);
     await expect(service.provision({
       rif: 'J-12345678-9', name: 'Lab', businessName: 'Lab CA', address: 'Caracas',
       branchCode: 'MAIN', branchName: 'Principal', administratorName: 'Admin', administratorUsername: 'admin',
       administratorPassword: 'Strong!Pass123', administratorPasswordConfirmation: 'Strong!Pass123', seedPackages: [],
     }, 7001)).resolves.toEqual(expect.objectContaining({ laboratory: expect.objectContaining({ id: 1 }), mainBranch: expect.objectContaining({ id: 2 }) }));
     expect(dataSource.transaction).toHaveBeenCalledWith('SERIALIZABLE', expect.any(Function));
+    expect(installSelected).toHaveBeenCalledWith(manager, 1, ['currencies'], 7001);
     expect(query.mock.calls.some(call => String(call[0]).includes('laboratory_branches'))).toBe(true);
     expect(query.mock.calls.some(call => String(call[0]).includes('request_password'))).toBe(true);
+    expect(query.mock.calls.find(call => String(call[0]).toLowerCase().startsWith('select id from currencies'))?.[0])
+      .toContain("upper(btrim(code))='VES' AND is_active=true");
   });
 
   it('rejects a mismatched confirmation before opening a transaction', async () => {
@@ -42,4 +46,16 @@ describe('PlatformProvisioningService', () => {
     } as never, 7001)).rejects.toThrow('PLATFORM_PROVISIONING_PASSWORD_CONFIRMATION_MISMATCH');
     expect(dataSource.transaction).not.toHaveBeenCalled();
   }, 7001);
+
+  it('rejects packages without approved snapshots before opening a transaction', async () => {
+    const dataSource = { transaction: jest.fn() };
+    const service = new PlatformProvisioningService(dataSource as never, { installSelected: jest.fn() } as never);
+    await expect(service.provision({
+      rif: 'J-12345678-9', name: 'Lab', businessName: 'Lab CA', address: 'Caracas',
+      branchCode: 'MAIN', branchName: 'Principal', administratorName: 'Admin', administratorUsername: 'admin',
+      administratorPassword: 'Strong!Pass123', administratorPasswordConfirmation: 'Strong!Pass123',
+      seedPackages: ['special-tests'],
+    }, 7001)).rejects.toThrow('PLATFORM_PROVISIONING_SEED_PACKAGE_UNKNOWN');
+    expect(dataSource.transaction).not.toHaveBeenCalled();
+  });
 });
