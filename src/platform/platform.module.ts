@@ -8,9 +8,12 @@ import { PlatformAuthController } from './platform-auth.controller';
 import { PlatformController } from './platform.controller';
 import { PlatformOwnerGuard } from './platform-owner.guard';
 import { PlatformProvisioningService } from './platform-provisioning.service';
+import { PlatformLaboratoryAdminService } from './platform-laboratory-admin.service';
+import { PlatformLaboratoryAuditService } from './platform-laboratory-audit.service';
 @Module({imports:[UsersModule],controllers: [PlatformAuthController,PlatformController,
     PlatformCatalogReleaseController
-  ],providers: [PlatformOwnerGuard,PlatformProvisioningService,
+  ],providers: [PlatformOwnerGuard,PlatformProvisioningService,PlatformLaboratoryAdminService,
+    PlatformLaboratoryAuditService,
     PlatformCatalogReleaseService,
     PlatformCatalogMaterializerService,
     TenantCatalogPackageInstallerService

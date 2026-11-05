@@ -5,18 +5,23 @@ import * as bcrypt from 'bcrypt';
 import { CreatePlatformLaboratoryDto } from './dto/create-platform-laboratory.dto';
 import { resolveGranularSeedPackages } from './seed-package-catalog';
 import { normalizeLaboratoryAccessSlug } from '../laboratory/access-slug';
+import { PlatformLaboratoryAuditService } from './platform-laboratory-audit.service';
 
 @Injectable()
 export class PlatformProvisioningService {
-  constructor(private readonly dataSource: DataSource, private readonly tenantPackages: TenantCatalogPackageInstallerService) {}
+  constructor(
+    private readonly dataSource: DataSource,
+    private readonly tenantPackages: TenantCatalogPackageInstallerService,
+    private readonly audit: PlatformLaboratoryAuditService,
+  ) {}
 
   async provision(input: CreatePlatformLaboratoryDto, platformOwnerId: number) {
     if(!Number.isInteger(platformOwnerId)||platformOwnerId<=0) throw new BadRequestException('PLATFORM_OWNER_CONTEXT_REQUIRED');
-    const dto=this.validate(input);
+    const dto=this.validate(input, platformOwnerId);
     return this.dataSource.transaction('SERIALIZABLE', async manager => {
       await manager.query('SELECT pg_advisory_xact_lock($1)', [81426001]);
       await this.ensureAvailable(manager,dto);
-      const laboratory=(await manager.query(`INSERT INTO laboratory (access_slug,rif,name,business_name,address,phone_1,email,print_invoice,print_sample_take,invoice_number,voucher_number,creditnote_number,max_height_logo,max_width_logo,maximum_rows_report,rows_description_receipt,receipt_number,print_receipt) VALUES ($1,$2,$3,$4,$5,$6,$7,false,false,0,0,0,170,170,38,10,0,false) RETURNING id,access_slug,rif,name,business_name AS "businessName",address`,[dto.access_slug,dto.rif,dto.name,dto.businessName,dto.address,dto.phone||null,dto.email||null]))[0];
+      const laboratory=(await manager.query(`INSERT INTO laboratory (access_slug,rif,name,business_name,address,phone_1,email,service_mode,plan_code,subscription_status,service_starts_at,service_expires_at,grace_until,perpetual_free_reason,perpetual_free_granted_at,perpetual_free_granted_by,commercial_notes,print_invoice,print_sample_take,invoice_number,voucher_number,creditnote_number,max_height_logo,max_width_logo,maximum_rows_report,rows_description_receipt,receipt_number,print_receipt) VALUES ($1,$2,$3,$4,$5,$6,$7,'cloud',$8,$9,$10,$11,$12,$13,CASE WHEN $9='perpetual_free' THEN now() ELSE NULL END,CASE WHEN $9='perpetual_free' THEN $14 ELSE NULL END,$15,false,false,0,0,0,170,170,38,10,0,false) RETURNING id,access_slug,rif,name,business_name AS "businessName",address,service_mode,plan_code,subscription_status,service_starts_at,service_expires_at,grace_until,is_active`,[dto.access_slug,dto.rif,dto.name,dto.businessName,dto.address,dto.phone||null,dto.email||null,dto.planCode,dto.subscriptionStatus,dto.serviceStartsAt,dto.serviceExpiresAt,dto.graceUntil,dto.perpetualFreeReason,platformOwnerId,dto.commercialNotes]))[0];
       const branch=(await manager.query(`INSERT INTO laboratory_branches (laboratory_id,code,name,address,phone,email,is_main,is_active,display_order) VALUES ($1,$2,$3,$4,$5,$6,true,true,0) RETURNING id,code,name`,[laboratory.id,dto.branchCode,dto.branchName,dto.address,dto.phone||null,dto.email||null]))[0];
       const installedCatalogPackages = await this.tenantPackages.installSelected(manager, Number(laboratory.id), dto.seedPackages, platformOwnerId);
       const currency=(await manager.query(`SELECT id FROM currencies WHERE laboratory_id=$1 AND upper(btrim(code))='VES' AND is_active=true ORDER BY id LIMIT 1`,[laboratory.id]))[0];
@@ -27,6 +32,21 @@ export class PlatformProvisioningService {
       const passwordHash=await bcrypt.hash(dto.administratorPassword,8);
       const user=(await manager.query(`INSERT INTO users (laboratory_id,password,name,user_name,telephone,email,roles,request_password,hide_user) VALUES ($1,$2,$3,$4,'',$5,'administrator',true,false) RETURNING id,name,user_name AS username`,[laboratory.id,passwordHash,dto.administratorName,dto.administratorUsername,dto.administratorEmail||null]))[0];
       await manager.query(`INSERT INTO security_user_roles (laboratory_id,user_id,role_id) VALUES ($1,$2,$3)`,[laboratory.id,user.id,role.id]);
+      await this.audit.write(manager, {
+        laboratoryId: Number(laboratory.id),
+        platformOwnerId,
+        action: 'platform.laboratory.created',
+        summary: 'Platform owner created a Cloud laboratory',
+        metadata: {
+          accessSlug: laboratory.access_slug,
+          planCode: dto.planCode,
+          subscriptionStatus: dto.subscriptionStatus,
+          serviceStartsAt: dto.serviceStartsAt,
+          serviceExpiresAt: dto.serviceExpiresAt,
+          graceUntil: dto.graceUntil,
+          perpetualFreeReason: dto.perpetualFreeReason,
+        },
+      });
       return { laboratory, mainBranch:branch, administrator:{id:user.id,name:user.name,username:user.username}, installedCatalogPackages };
     });
   }
@@ -37,7 +57,7 @@ export class PlatformProvisioningService {
     if(duplicate.access_slug) throw new ConflictException('PLATFORM_PROVISIONING_ACCESS_SLUG_EXISTS');
   }
 
-  private validate(input:CreatePlatformLaboratoryDto) {
+  private validate(input:CreatePlatformLaboratoryDto, platformOwnerId: number) {
     const text=(value:unknown,max:number,code:string)=>{const normalized=typeof value==='string'?value.trim():'';if(!normalized||normalized.length>max)throw new BadRequestException(code);return normalized};
     const rif=text(input?.rif,20,'PLATFORM_PROVISIONING_RIF_REQUIRED').toUpperCase();
     if(!/^[VEJG]-?\d{7,9}-?\d$/i.test(rif)) throw new BadRequestException('PLATFORM_PROVISIONING_RIF_INVALID');
@@ -48,13 +68,59 @@ export class PlatformProvisioningService {
     const passwordConfirmation=typeof input?.administratorPasswordConfirmation==='string'?input.administratorPasswordConfirmation:'';
     if(password!==passwordConfirmation) throw new BadRequestException('PLATFORM_PROVISIONING_PASSWORD_CONFIRMATION_MISMATCH');
     if(password.length<12||!/[A-Z]/.test(password)||!/[a-z]/.test(password)||!/[0-9]/.test(password)||!(/[^A-Za-z0-9]/.test(password))) throw new BadRequestException('PLATFORM_PROVISIONING_PASSWORD_INVALID');
+    const subscription = this.validateSubscription(input, platformOwnerId);
     const requestedPackages = input.seedPackages ?? [];
     if (!Array.isArray(requestedPackages) || requestedPackages.some((value) => typeof value !== 'string')) throw new BadRequestException('PLATFORM_PROVISIONING_SEED_PACKAGES_INVALID');
     const seedPackages = resolveGranularSeedPackages(requestedPackages);
     const branchCode = input.branchCode == null || (typeof input.branchCode === 'string' && !input.branchCode.trim())
       ? 'PRINCIPAL'
       : text(input.branchCode, 30, 'PLATFORM_PROVISIONING_BRANCH_CODE_INVALID').toUpperCase();
-    return {access_slug,rif,name:text(input.name,50,'PLATFORM_PROVISIONING_NAME_REQUIRED'),businessName:text(input.businessName,100,'PLATFORM_PROVISIONING_BUSINESS_NAME_REQUIRED'),address:text(input.address,200,'PLATFORM_PROVISIONING_ADDRESS_REQUIRED'),phone:typeof input.phone==='string'?input.phone.trim():'',email:typeof input.email==='string'?input.email.trim().toLowerCase():'',branchCode,branchName:text(input.branchName,100,'PLATFORM_PROVISIONING_BRANCH_NAME_REQUIRED'),administratorName:text(input.administratorName,100,'PLATFORM_PROVISIONING_ADMIN_NAME_REQUIRED'),administratorUsername:text(input.administratorUsername,100,'PLATFORM_PROVISIONING_ADMIN_USERNAME_REQUIRED').toLowerCase(),administratorEmail:typeof input.administratorEmail==='string'?input.administratorEmail.trim().toLowerCase():'',administratorPassword:password,administratorPasswordConfirmation:passwordConfirmation,seedPackages};
+    return {access_slug,rif,name:text(input.name,50,'PLATFORM_PROVISIONING_NAME_REQUIRED'),businessName:text(input.businessName,100,'PLATFORM_PROVISIONING_BUSINESS_NAME_REQUIRED'),address:text(input.address,200,'PLATFORM_PROVISIONING_ADDRESS_REQUIRED'),phone:typeof input.phone==='string'?input.phone.trim():'',email:typeof input.email==='string'?input.email.trim().toLowerCase():'',branchCode,branchName:text(input.branchName,100,'PLATFORM_PROVISIONING_BRANCH_NAME_REQUIRED'),administratorName:text(input.administratorName,100,'PLATFORM_PROVISIONING_ADMIN_NAME_REQUIRED'),administratorUsername:text(input.administratorUsername,100,'PLATFORM_PROVISIONING_ADMIN_USERNAME_REQUIRED').toLowerCase(),administratorEmail:typeof input.administratorEmail==='string'?input.administratorEmail.trim().toLowerCase():'',administratorPassword:password,administratorPasswordConfirmation:passwordConfirmation,seedPackages,...subscription};
+  }
+
+  private validateSubscription(input: CreatePlatformLaboratoryDto, ownerId: number) {
+    const planCode = typeof input?.plan_code === 'string' ? input.plan_code.trim() : '';
+    if (!planCode || planCode.length > 80) throw new BadRequestException('PLATFORM_SUBSCRIPTION_PLAN_REQUIRED');
+    const subscriptionStatus = input?.subscription_status;
+    if (!['trial', 'active', 'perpetual_free'].includes(subscriptionStatus)) {
+      throw new BadRequestException('PLATFORM_SUBSCRIPTION_STATUS_INVALID');
+    }
+    const timestamp = (value: unknown, required: boolean, code: string): string | null => {
+      if (value == null || value === '') {
+        if (required) throw new BadRequestException(code);
+        return null;
+      }
+      if (typeof value !== 'string' || !/(?:Z|[+-]\d{2}:\d{2})$/i.test(value)) throw new BadRequestException(code);
+      const parsed = new Date(value);
+      if (Number.isNaN(parsed.getTime())) throw new BadRequestException(code);
+      return parsed.toISOString();
+    };
+    const serviceStartsAt = timestamp(input.service_starts_at, true, 'PLATFORM_SUBSCRIPTION_START_INVALID');
+    const serviceExpiresAt = timestamp(input.service_expires_at, subscriptionStatus !== 'perpetual_free', 'PLATFORM_SUBSCRIPTION_EXPIRY_REQUIRED');
+    const graceUntil = timestamp(input.grace_until, false, 'PLATFORM_SUBSCRIPTION_GRACE_INVALID');
+    if (serviceExpiresAt && new Date(serviceExpiresAt) <= new Date(serviceStartsAt!)) {
+      throw new BadRequestException('PLATFORM_SUBSCRIPTION_DATES_INVALID');
+    }
+    const perpetualFreeReason = typeof input.perpetual_free_reason === 'string' ? input.perpetual_free_reason.trim() : '';
+    if (subscriptionStatus === 'perpetual_free' && !perpetualFreeReason) {
+      throw new BadRequestException('PLATFORM_PERPETUAL_FREE_REASON_REQUIRED');
+    }
+    if (subscriptionStatus === 'perpetual_free' && graceUntil) {
+      throw new BadRequestException('PLATFORM_PERPETUAL_FREE_GRACE_FORBIDDEN');
+    }
+    if (graceUntil && (!serviceExpiresAt || new Date(graceUntil) <= new Date(serviceExpiresAt))) {
+      throw new BadRequestException('PLATFORM_SUBSCRIPTION_GRACE_INVALID');
+    }
+    return {
+      planCode,
+      subscriptionStatus,
+      serviceStartsAt,
+      serviceExpiresAt,
+      graceUntil,
+      perpetualFreeReason: subscriptionStatus === 'perpetual_free' ? perpetualFreeReason : null,
+      commercialNotes: typeof input.commercial_notes === 'string' ? input.commercial_notes.trim() || null : null,
+      platformOwnerId: ownerId,
+    };
   }
 
 }
