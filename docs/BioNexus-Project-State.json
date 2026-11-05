@@ -11325,6 +11325,48 @@
           "sha256RecordedExternally": true
         }
       }
+    },
+    {
+      "id": "platform-admin-visual-phase-opened-20261105",
+      "timestamp": "2026-11-05T10:01:05-04:00",
+      "status": "approved-in-progress",
+      "summary": "Los cambios de administracion de laboratorios, dashboard, planes, pagos y billing ya estan integrados en development. Se abre una fase local de revision y correccion visual del administrador usando exclusivamente los componentes compartidos Bio Nexus aprobados; no se prepararan instrucciones para GitHub Copilot durante esta fase.",
+      "scope": {
+        "gitState": {
+          "frontendBranch": "development",
+          "frontendCommit": "d7391c2bfd82254ea78a90b0d763d20972ef03d3",
+          "backendBranch": "development",
+          "backendCommit": "c2cdf2f54c80c8fdf8fe713e9472b0ffdf1161db",
+          "frontendClean": true,
+          "backendClean": true,
+          "integratedThroughPullRequests": true
+        },
+        "visualScope": [
+          "AdminLayout",
+          "AdminDashboardView",
+          "PlatformLaboratoriesView",
+          "AdminPlansView",
+          "AdminPaymentsView",
+          "dialogs administrativos de laboratorio"
+        ],
+        "protectedContracts": [
+          "autenticacion platform-owner",
+          "rutas y permisos",
+          "aislamiento tenant",
+          "subscription_status y perpetual_free",
+          "auditoria",
+          "validaciones y servicios",
+          "componentes compartidos",
+          "responsive",
+          "cierres protegidos",
+          "acciones icon-only del grid"
+        ],
+        "approvedComponentRule": "Todo control cubierto por un componente compartido Bio Nexus debe usar ese componente; quedan prohibidas duplicaciones nativas sin justificacion registrada.",
+        "copilotInstructionsDeferred": true,
+        "databaseModified": false,
+        "serversManaged": false
+      },
+      "nextAction": "Revisar y corregir primero el shell administrativo y luego Dashboard, Laboratorios, Planes, Pagos y dialogs, bloque por bloque, con build, contratos y revision visual antes de aprobar cada bloque."
     }
   ],
   "stateReplication": {
@@ -27265,24 +27307,26 @@
   "primaryObjective": "Estabilizar y completar Bio Nexus Cloud; alinear PostgreSQL real con la baseline y cerrar el provisionamiento funcional antes de otros modos.",
   "currentWorkstream": "platform-laboratory-administration-cloud",
   "currentCheckpoint":   {
-    "id": "platform-laboratory-administration-cloud-20261104",
-    "at": "2026-11-04T23:21:00-04:00",
-    "status": "implemented-in-isolated-worktrees;targeted-validation-passed;awaiting-review-and-rollout",
+    "id": "platform-admin-visual-redesign-20261105",
+    "at": "2026-11-05T10:01:05-04:00",
+    "status": "integrated-development;visual-review-in-progress",
     "completed": [
-      "Frontend: grid de laboratorios con columna de acciones fija e icon-only; diálogos para configuración/accesos, paquetes, sucursales y borrado con reautenticación del platform-owner.",
-      "Alta Cloud ahora requiere plan, estado y vigencia explícitos; perpetual_free no expira y exige motivo con auditoría server-side. No se inventa duración de trial ni se ofrecen Edge/Private.",
-      "Backend: endpoints protegidos para detalle/edición, paquetes y sucursales; borrado reautenticado solo para tenant vacío y esquema cuya seguridad puede demostrarse, sin purga general ni fallback.",
-      "Migración incremental 1793847600000-AddPlatformLaboratoryLifecycle añade lifecycle y platform_laboratory_audit_logs global; baseline existente intacta.",
-      "Auditoría de alta, cambios comerciales y borrado atribuida a platform_owner; el evento de borrado queda dentro de la transacción y los logs sobreviven como referencia histórica sin FK al laboratorio.",
-      "Backend: 6 suites/33 pruebas dirigidas, build, ESLint y git diff --check aprobados. Frontend: 7 contratos dirigidos, build y git diff --check aprobados; la suite completa reportó 27 fallos ajenos a laboratorios.",
-      "Las dos copias de esta bitácora quedan sincronizadas byte a byte. No hubo commits/push, migraciones, cambios de base de datos ni gestión de servicios."
+      "Frontend development limpio y sincronizado en d7391c2; administracion de laboratorios y shell/dashboard/billing integrados por pull request.",
+      "Backend development limpio y sincronizado en c2cdf2f; API de laboratorios, suscripciones, billing y validacion operativa integradas por pull request.",
+      "Bitacoras gemelas consultadas y auditoria visual del administrador completada en modo solo lectura.",
+      "Se confirma que el trabajo inmediato sera local, sin instrucciones para GitHub Copilot."
+    ],
+    "current": [
+      "Fase de actualizacion visual del administrador usando componentes y patrones Bio Nexus ya aprobados.",
+      "Primero se normalizara AdminLayout y el patron compartido de pagina administrativa; despues se revisaran Dashboard, Laboratorios, Planes, Pagos y dialogs."
     ],
     "pending": [
-      "Revisar ambos diffs aislados e integrar coordinadamente Backend y Frontend; validar visualmente el panel administrador.",
-      "Planificar y autorizar explícitamente el rollout de la migración incremental con respaldo verificable; no aplicarla como parte de esta entrega.",
-      "Mantener enforcement/licenciamiento completo y License Manager diferidos; Edge y Private no están habilitados."
+      "Revisar visualmente cada bloque antes de aprobarlo.",
+      "Reemplazar controles nativos cuando exista componente compartido oficial.",
+      "No aplicar migraciones ni modificar PostgreSQL durante el trabajo visual.",
+      "Mantener pendiente el rollout respaldado de las migraciones 1793847600000 y 1793862000000."
     ],
-    "nextAction": "Revisar visualmente y coordinar la integración de ambos worktrees; preparar un plan de rollout con respaldo antes de aplicar la migración.",
+    "nextAction": "Inspeccionar el catalogo exacto de componentes compartidos y ejecutar el primer bloque visual sobre AdminLayout sin cambiar funcionalidad.",
     "databaseQueried": false,
     "databaseModified": false,
     "serversManaged": false
