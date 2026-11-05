@@ -22,9 +22,13 @@ describe('Financial and admissions relational normalization contract', () => {
     expect(migration).toContain('UNIQUE ("laboratory_id", "payment_method_id", "currency_id")');
   });
 
-  /** Evita migraciones incrementales durante la etapa baseline. */
-  it('keeps exactly one migration file', () => {
+  /** Evita editar la baseline aunque haya migraciones posteriores. */
+  it('keeps the original baseline and ordered incremental migrations', () => {
     const migrations = readdirSync('src/database/migrations').filter((name) => name.endsWith('.ts'));
-    expect(migrations).toEqual(['1790366400000-BioNexusBaseline.ts']);
+    expect(migrations.sort()).toEqual([
+      '1790366400000-BioNexusBaseline.ts',
+      '1793847600000-AddPlatformLaboratoryLifecycle.ts',
+      '1793862000000-AddPlatformSubscriptionCatalogAndBilling.ts',
+    ]);
   });
 });

@@ -40,6 +40,19 @@ describe('resolveProvisionLaboratoryInput', () => {
     expect(input.dto.branchCode).toBe('suc');
   });
 
+  it('allows perpetual-free provisioning without a catalog plan and still requires a plan for trial or active', () => {
+    const perpetualFree = resolveProvisionLaboratoryInput({
+      ...environment,
+      BIONEXUS_PROVISION_PLAN_CODE: undefined,
+    });
+    expect(perpetualFree.dto.plan_code).toBeUndefined();
+    expect(() => resolveProvisionLaboratoryInput({
+      ...environment,
+      BIONEXUS_PROVISION_PLAN_CODE: undefined,
+      BIONEXUS_PROVISION_SUBSCRIPTION_STATUS: 'active',
+    })).toThrow('BIONEXUS_PROVISION_PLAN_CODE_REQUIRED');
+  });
+
   it('rechaza variables obligatorias ausentes sin mostrar secretos', () => {
     expect(() => resolveProvisionLaboratoryInput({ ...environment, BIONEXUS_PROVISION_RIF: ' ' }))
       .toThrow('BIONEXUS_PROVISION_RIF_REQUIRED');

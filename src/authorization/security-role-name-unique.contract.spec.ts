@@ -1,7 +1,7 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { gunzipSync } from 'node:zlib';
 
-describe('Security role name uniqueness in the single baseline', () => {
+describe('Security role name uniqueness in the baseline', () => {
   const service = readFileSync('src/authorization/authorization-administration.service.ts', 'utf8');
   const baseline = readFileSync('src/database/migrations/1790366400000-BioNexusBaseline.ts', 'utf8');
   const payload = baseline.match(/const BASELINE_GZIP_BASE64 = '([^']+)';/)?.[1];
@@ -21,12 +21,16 @@ describe('Security role name uniqueness in the single baseline', () => {
     expect(service).toContain('UX_security_roles_name_normalized');
   });
 
-  it('keeps the physical protection inside the only baseline migration', () => {
+  it('keeps physical protection in the original baseline and later schema changes additive', () => {
     expect(payload).toBeDefined();
     expect(sql).toContain('lower(btrim((name)::text))');
     expect(sql).toContain('CREATE UNIQUE INDEX "UX_security_roles_name_normalized"');
     expect(sql).toContain('UX_security_roles_name_normalized');
     const migrations = readdirSync('src/database/migrations').filter((name) => name.endsWith('.ts'));
-    expect(migrations).toEqual(['1790366400000-BioNexusBaseline.ts']);
+    expect(migrations).toEqual([
+      '1790366400000-BioNexusBaseline.ts',
+      '1793847600000-AddPlatformLaboratoryLifecycle.ts',
+      '1793862000000-AddPlatformSubscriptionCatalogAndBilling.ts',
+    ]);
   });
 });

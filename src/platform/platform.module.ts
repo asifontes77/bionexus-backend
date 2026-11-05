@@ -10,13 +10,17 @@ import { PlatformOwnerGuard } from './platform-owner.guard';
 import { PlatformProvisioningService } from './platform-provisioning.service';
 import { PlatformLaboratoryAdminService } from './platform-laboratory-admin.service';
 import { PlatformLaboratoryAuditService } from './platform-laboratory-audit.service';
+import { PlatformSubscriptionBillingService } from './platform-subscription-billing.service';
+import { PlatformPaymentProofStorageService } from './platform-payment-proof-storage.service';
 @Module({imports:[UsersModule],controllers: [PlatformAuthController,PlatformController,
     PlatformCatalogReleaseController
   ],providers: [PlatformOwnerGuard,PlatformProvisioningService,PlatformLaboratoryAdminService,
     PlatformLaboratoryAuditService,
     PlatformCatalogReleaseService,
     PlatformCatalogMaterializerService,
-    TenantCatalogPackageInstallerService
+    TenantCatalogPackageInstallerService,
+    PlatformSubscriptionBillingService,
+    PlatformPaymentProofStorageService,
   ],
   exports: [PlatformCatalogReleaseService,
     PlatformCatalogMaterializerService,

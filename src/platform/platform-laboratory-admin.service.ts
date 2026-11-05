@@ -12,7 +12,6 @@ import { GRANULAR_SEED_PACKAGES, resolveGranularSeedPackages } from './seed-pack
 import { TenantCatalogPackageInstallerService } from './tenant-catalog-package-installer.service';
 import { PlatformLaboratoryAuditService } from './platform-laboratory-audit.service';
 
-const SUBSCRIPTION_STATUSES = ['trial', 'active', 'grace', 'suspended', 'cancelled', 'perpetual_free'] as const;
 const PACKAGE_TABLES: string[] = Object.values(GRANULAR_SEED_PACKAGES).flatMap(({ tables }) => [...tables]);
 const SAFE_PROVISIONING_TABLES = new Set([
   'users',
@@ -51,13 +50,6 @@ export class PlatformLaboratoryAdminService {
       email: 'email',
       access_slug: 'access_slug',
       is_active: 'is_active',
-      plan_code: 'plan_code',
-      subscription_status: 'subscription_status',
-      service_starts_at: 'service_starts_at',
-      service_expires_at: 'service_expires_at',
-      grace_until: 'grace_until',
-      perpetual_free_reason: 'perpetual_free_reason',
-      suspension_reason: 'suspension_reason',
       commercial_notes: 'commercial_notes',
     };
     const keys = Object.keys(input ?? {});
@@ -67,15 +59,6 @@ export class PlatformLaboratoryAdminService {
 
     return this.dataSource.transaction('SERIALIZABLE', async (manager) => {
       const current = await this.findLaboratory(manager, laboratoryId, true);
-      const merged = { ...current, ...input };
-      const lifecycleFields = [
-        'plan_code', 'subscription_status', 'service_starts_at', 'service_expires_at',
-        'grace_until', 'perpetual_free_reason',
-      ];
-      const lifecycleConfigured = current.plan_code != null || current.subscription_status != null || current.service_starts_at != null;
-      const validated = keys.some((key) => lifecycleFields.includes(key)) || lifecycleConfigured
-        ? this.validateSubscription(merged, ownerId, true)
-        : null;
       const values: unknown[] = [];
       const assignments = keys.map((key) => {
         let value = input[key];
@@ -84,7 +67,7 @@ export class PlatformLaboratoryAdminService {
           if (!value) throw new BadRequestException('PLATFORM_PROVISIONING_ACCESS_SLUG_INVALID');
         } else if (key === 'is_active') {
           if (typeof value !== 'boolean') throw new BadRequestException('PLATFORM_LABORATORY_ACTIVE_INVALID');
-        } else if (['rif', 'name', 'business_name', 'address', 'plan_code'].includes(key)) {
+        } else if (['rif', 'name', 'business_name', 'address'].includes(key)) {
           if (typeof value !== 'string' || !value.trim()) throw new BadRequestException('PLATFORM_LABORATORY_FIELD_REQUIRED');
           const textValue = value.trim();
           const maximumLength: Record<string, number> = {
@@ -92,14 +75,13 @@ export class PlatformLaboratoryAdminService {
             name: 50,
             business_name: 100,
             address: 200,
-            plan_code: 80,
           };
           if (textValue.length > maximumLength[key]) throw new BadRequestException('PLATFORM_LABORATORY_FIELD_INVALID');
           if (key === 'rif' && !/^[VEJG]-?\d{7,9}-?\d$/i.test(textValue)) {
             throw new BadRequestException('PLATFORM_PROVISIONING_RIF_INVALID');
           }
           value = textValue;
-        } else if (['phone_1', 'email', 'commercial_notes', 'perpetual_free_reason', 'suspension_reason'].includes(key)) {
+        } else if (['phone_1', 'email', 'commercial_notes'].includes(key)) {
           value = typeof value === 'string' && value.trim() ? value.trim() : null;
           if (key === 'phone_1' && typeof value === 'string' && value.length > 20) {
             throw new BadRequestException('PLATFORM_LABORATORY_FIELD_INVALID');
@@ -108,26 +90,10 @@ export class PlatformLaboratoryAdminService {
             if (value.length > 100) throw new BadRequestException('PLATFORM_LABORATORY_FIELD_INVALID');
             value = value.toLowerCase();
           }
-        } else if (['service_starts_at', 'service_expires_at', 'grace_until'].includes(key)) {
-          value = this.parseTimestamp(value, key === 'service_starts_at' || (key === 'service_expires_at' && merged.subscription_status !== 'perpetual_free'));
-        } else if (key === 'subscription_status') {
-          if (!SUBSCRIPTION_STATUSES.includes(value as (typeof SUBSCRIPTION_STATUSES)[number])) {
-            throw new BadRequestException('PLATFORM_SUBSCRIPTION_STATUS_INVALID');
-          }
-          value = validated!.subscriptionStatus;
         }
         values.push(value);
         return `"${allowed[key]}"=$${values.length}`;
       });
-
-      if (keys.includes('subscription_status') || keys.includes('service_expires_at') || keys.includes('grace_until')
-        || keys.includes('perpetual_free_reason')) {
-        this.appendSubscriptionAudit(assignments, values, validated!, ownerId);
-      }
-      if (input.subscription_status === 'suspended' && current.subscription_status !== 'suspended') {
-        values.push(new Date().toISOString());
-        assignments.push(`"suspended_at"=$${values.length}`);
-      }
 
       values.push(laboratoryId);
       let rows: Array<Record<string, unknown>>;
@@ -142,9 +108,7 @@ export class PlatformLaboratoryAdminService {
       }
       if (!rows[0]) throw new NotFoundException('PLATFORM_LABORATORY_NOT_FOUND');
       const auditedLifecycleFields = keys.filter((key) => [
-        'is_active', 'plan_code', 'subscription_status', 'service_starts_at',
-        'service_expires_at', 'grace_until', 'perpetual_free_reason',
-        'suspension_reason',
+        'is_active',
       ].includes(key));
       if (auditedLifecycleFields.length) {
         await this.audit.write(manager, {
@@ -604,7 +568,7 @@ export class PlatformLaboratoryAdminService {
   }
 
   private laboratoryProjection() {
-    return `id,access_slug,service_mode,rif,name,business_name,address,phone_1,email,is_active,plan_code,subscription_status,service_starts_at,service_expires_at,grace_until,perpetual_free_reason,perpetual_free_granted_at,perpetual_free_granted_by,suspension_reason,suspended_at,commercial_notes`;
+    return `id,access_slug,service_mode,rif,name,business_name,address,phone_1,email,is_active,plan_id,plan_code,plan_name,plan_description,plan_price,plan_currency,billing_interval,plan_limits_benefits,plan_grace_period_days,subscription_status,service_starts_at,service_expires_at,grace_until,perpetual_free_reason,perpetual_free_granted_at,perpetual_free_granted_by,suspension_reason,suspended_at,commercial_notes`;
   }
 
   private lifecycleSnapshot(laboratory: Record<string, unknown>) {
@@ -627,74 +591,6 @@ export class PlatformLaboratoryAdminService {
     if (typeof packageCode !== 'string' || !Object.prototype.hasOwnProperty.call(GRANULAR_SEED_PACKAGES, packageCode)) {
       throw new BadRequestException('PLATFORM_PROVISIONING_SEED_PACKAGE_UNKNOWN');
     }
-  }
-
-  private validateSubscription(input: Record<string, unknown>, ownerId: number, update: boolean) {
-    const status = input.subscription_status;
-    if (!SUBSCRIPTION_STATUSES.includes(status as (typeof SUBSCRIPTION_STATUSES)[number])) {
-      throw new BadRequestException('PLATFORM_SUBSCRIPTION_STATUS_INVALID');
-    }
-    const planCode = typeof input.plan_code === 'string' ? input.plan_code.trim() : '';
-    if (!planCode || planCode.length > 80) throw new BadRequestException('PLATFORM_SUBSCRIPTION_PLAN_REQUIRED');
-    const serviceStartsAt = this.parseTimestamp(input.service_starts_at, true);
-    const serviceExpiresAt = this.parseTimestamp(input.service_expires_at, status !== 'perpetual_free');
-    const graceUntil = this.parseTimestamp(input.grace_until, false);
-    if (serviceExpiresAt && serviceExpiresAt <= serviceStartsAt) throw new BadRequestException('PLATFORM_SUBSCRIPTION_DATES_INVALID');
-    if (status === 'perpetual_free') {
-      const reason = typeof input.perpetual_free_reason === 'string' ? input.perpetual_free_reason.trim() : '';
-      if (!reason) throw new BadRequestException('PLATFORM_PERPETUAL_FREE_REASON_REQUIRED');
-      if (serviceExpiresAt || graceUntil) throw new BadRequestException('PLATFORM_PERPETUAL_FREE_EXPIRY_FORBIDDEN');
-    }
-    if (graceUntil && (!serviceExpiresAt || graceUntil <= serviceExpiresAt)) {
-      throw new BadRequestException('PLATFORM_SUBSCRIPTION_GRACE_INVALID');
-    }
-    if (status === 'grace' && !graceUntil) throw new BadRequestException('PLATFORM_SUBSCRIPTION_GRACE_REQUIRED');
-    return {
-      subscriptionStatus: status,
-      planCode,
-      serviceStartsAt,
-      serviceExpiresAt,
-      graceUntil,
-      perpetualFreeReason: typeof input.perpetual_free_reason === 'string' ? input.perpetual_free_reason.trim() : null,
-      perpetualFreeGrantedAt: update ? input.perpetual_free_granted_at : null,
-      perpetualFreeGrantedBy: ownerId,
-    };
-  }
-
-  private appendSubscriptionAudit(
-    assignments: string[],
-    values: unknown[],
-    validated: ReturnType<PlatformLaboratoryAdminService['validateSubscription']>,
-    ownerId: number,
-  ) {
-    if (validated.subscriptionStatus === 'perpetual_free') {
-      values.push(validated.perpetualFreeReason);
-      assignments.push(`"perpetual_free_reason"=$${values.length}`);
-      values.push(new Date().toISOString());
-      assignments.push(`"perpetual_free_granted_at"=$${values.length}`);
-      values.push(ownerId);
-      assignments.push(`"perpetual_free_granted_by"=$${values.length}`);
-    } else if (validated.perpetualFreeGrantedAt == null) {
-      values.push(null);
-      assignments.push(`"perpetual_free_granted_at"=$${values.length}`);
-      values.push(null);
-      assignments.push(`"perpetual_free_granted_by"=$${values.length}`);
-    }
-  }
-
-  private parseTimestamp(value: unknown, required: boolean): Date | null {
-    if (value == null || value === '') {
-      if (required) throw new BadRequestException('PLATFORM_SUBSCRIPTION_DATE_REQUIRED');
-      return null;
-    }
-    if (typeof value !== 'string' && !(value instanceof Date)) throw new BadRequestException('PLATFORM_SUBSCRIPTION_DATE_INVALID');
-    const source = value instanceof Date ? value.toISOString() : value;
-    if (typeof source !== 'string' || !/(?:Z|[+-]\d{2}:\d{2})$/i.test(source)) {
-      throw new BadRequestException('PLATFORM_SUBSCRIPTION_DATE_INVALID');
-    }
-    const timestamp = new Date(source);
-    if (Number.isNaN(timestamp.getTime())) throw new BadRequestException('PLATFORM_SUBSCRIPTION_DATE_INVALID');
-    return timestamp;
   }
 
   private requiredText(value: unknown, maxLength: number, code: string) {

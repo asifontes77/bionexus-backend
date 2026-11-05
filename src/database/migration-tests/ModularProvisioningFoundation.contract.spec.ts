@@ -27,9 +27,13 @@ describe('Modular provisioning foundation contract', () => {
     expect(migration).not.toMatch(/INSERT INTO\s+"laboratory"\s*\(/);
   });
 
-  /** Conserva una unica migracion baseline. */
-  it('keeps exactly one migration file', () => {
+  /** Conserva una baseline y entrega cambios posteriores de forma incremental. */
+  it('keeps the original baseline and ordered incremental migrations', () => {
     const migrations = readdirSync('src/database/migrations').filter((name) => name.endsWith('.ts'));
-    expect(migrations).toEqual(['1790366400000-BioNexusBaseline.ts']);
+    expect(migrations.sort()).toEqual([
+      '1790366400000-BioNexusBaseline.ts',
+      '1793847600000-AddPlatformLaboratoryLifecycle.ts',
+      '1793862000000-AddPlatformSubscriptionCatalogAndBilling.ts',
+    ]);
   });
 });

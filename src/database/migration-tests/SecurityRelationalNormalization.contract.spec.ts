@@ -2,8 +2,8 @@ import { readFileSync, readdirSync, statSync } from 'fs';
 import { join } from 'path';
 
 /**
- * Protege las relaciones fisicas del bloque de seguridad dentro de la unica
- * migracion baseline permitida para Bio Nexus.
+ * Protege las relaciones fisicas del bloque de seguridad dentro de la baseline
+ * inicial, sin impedir las migraciones incrementales posteriores.
  */
 describe('Security relational normalization contract', () => {
   const migrationPath = 'src/database/migrations/1790366400000-BioNexusBaseline.ts';
@@ -51,9 +51,13 @@ describe('Security relational normalization contract', () => {
     }
   });
 
-  /** Evita crear migraciones incrementales durante la etapa baseline. */
-  it('keeps exactly one migration file', () => {
+  /** Evita editar la baseline y conserva el orden de las migraciones. */
+  it('keeps the original baseline and ordered incremental migrations', () => {
     const migrations = readdirSync('src/database/migrations').filter((name) => name.endsWith('.ts'));
-    expect(migrations).toEqual(['1790366400000-BioNexusBaseline.ts']);
+    expect(migrations.sort()).toEqual([
+      '1790366400000-BioNexusBaseline.ts',
+      '1793847600000-AddPlatformLaboratoryLifecycle.ts',
+      '1793862000000-AddPlatformSubscriptionCatalogAndBilling.ts',
+    ]);
   });
 });

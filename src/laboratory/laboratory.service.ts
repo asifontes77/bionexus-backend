@@ -15,7 +15,29 @@ import { normalizeLaboratoryAccessSlug } from './access-slug';
 
 type EmailSettings = Partial<LaboratoryEmailSettingsDto>;
 
-type PublicLaboratory = Omit<Laboratory, 'license' | 'sendEmail'> & {
+type PublicLaboratory = Omit<
+  Laboratory,
+  | 'license'
+  | 'sendEmail'
+  | 'plan_id'
+  | 'plan_code'
+  | 'plan_name'
+  | 'plan_description'
+  | 'plan_price'
+  | 'plan_currency'
+  | 'billing_interval'
+  | 'plan_limits_benefits'
+  | 'plan_grace_period_days'
+  | 'subscription_status'
+  | 'service_starts_at'
+  | 'service_expires_at'
+  | 'grace_until'
+  | 'perpetual_free_reason'
+  | 'perpetual_free_granted_at'
+  | 'perpetual_free_granted_by'
+  | 'suspension_reason'
+  | 'suspended_at'
+> & {
   sendEmail: EmailSettings | null;
 };
 
@@ -106,18 +128,18 @@ export class LaboratoryService {
     laboratory: UpdateLaboratoryDto,
     actorUserId?: number,
     action: 'laboratory.updated' | 'laboratory.logo.updated' = 'laboratory.updated',
-  ): Promise<Laboratory> {
+  ): Promise<PublicLaboratory> {
     this.validateId(id);
     this.validateUpdate(laboratory);
     if (actorUserId === undefined) {
-      return this.updateWithRepository(this.laboratoryRepository, id, laboratory);
+      return this.toPublicLaboratory(await this.updateWithRepository(this.laboratoryRepository, id, laboratory));
     }
     if (!this.dataSource) throw new Error('LABORATORY_TRANSACTION_UNAVAILABLE');
     return this.dataSource.transaction(async (manager) => {
       const repository = manager.getRepository(Laboratory);
       const saved = await this.updateWithRepository(repository, id, laboratory);
       await this.writeAudit(manager, actorUserId, action, saved.id, Object.keys(laboratory));
-      return saved;
+      return this.toPublicLaboratory(saved);
     });
   }
 
@@ -354,10 +376,46 @@ export class LaboratoryService {
     const {
       license: omittedLicense,
       sendEmail,
+      plan_id: omittedPlanId,
+      plan_code: omittedPlanCode,
+      plan_name: omittedPlanName,
+      plan_description: omittedPlanDescription,
+      plan_price: omittedPlanPrice,
+      plan_currency: omittedPlanCurrency,
+      billing_interval: omittedBillingInterval,
+      plan_limits_benefits: omittedPlanLimitsBenefits,
+      plan_grace_period_days: omittedPlanGracePeriodDays,
+      subscription_status: omittedSubscriptionStatus,
+      service_starts_at: omittedServiceStartsAt,
+      service_expires_at: omittedServiceExpiresAt,
+      grace_until: omittedGraceUntil,
+      perpetual_free_reason: omittedPerpetualFreeReason,
+      perpetual_free_granted_at: omittedPerpetualFreeGrantedAt,
+      perpetual_free_granted_by: omittedPerpetualFreeGrantedBy,
+      suspension_reason: omittedSuspensionReason,
+      suspended_at: omittedSuspendedAt,
       ...publicLaboratory
     } = serialized;
 
     void omittedLicense;
+    void omittedPlanId;
+    void omittedPlanCode;
+    void omittedPlanName;
+    void omittedPlanDescription;
+    void omittedPlanPrice;
+    void omittedPlanCurrency;
+    void omittedBillingInterval;
+    void omittedPlanLimitsBenefits;
+    void omittedPlanGracePeriodDays;
+    void omittedSubscriptionStatus;
+    void omittedServiceStartsAt;
+    void omittedServiceExpiresAt;
+    void omittedGraceUntil;
+    void omittedPerpetualFreeReason;
+    void omittedPerpetualFreeGrantedAt;
+    void omittedPerpetualFreeGrantedBy;
+    void omittedSuspensionReason;
+    void omittedSuspendedAt;
 
     return {
       ...publicLaboratory,

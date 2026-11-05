@@ -100,7 +100,7 @@ describe('PlatformLaboratoryAdminService', () => {
     expect(query.mock.calls[0][0]).toContain('service_mode');
   });
 
-  it('updates properties and explicit subscription dates in a tenant-scoped transaction', async () => {
+  it('updates laboratory properties in a tenant-scoped transaction while lifecycle changes use subscription APIs', async () => {
     const query = jest.fn(async (sql: string, _parameters?: unknown[]) => {
       void _parameters;
       if (sql.includes('FROM laboratory WHERE id=$1')) return [laboratory];
@@ -112,7 +112,6 @@ describe('PlatformLaboratoryAdminService', () => {
 
     await expect(service.updateLaboratory(8, {
       name: ' Nuevo nombre ',
-      service_expires_at: '2027-12-30T00:00:00Z',
     }, 70)).resolves.toEqual(expect.objectContaining({
       laboratory: expect.objectContaining({ name: 'Nuevo nombre' }),
       access: { slug: 'lab-eight' },
@@ -121,10 +120,10 @@ describe('PlatformLaboratoryAdminService', () => {
     const update = query.mock.calls.find(([sql]) => String(sql).startsWith('UPDATE laboratory'));
     expect(update?.[0]).toContain('WHERE id=$');
     expect(update?.[1]).toContain(8);
-    expect(update?.[1]).toContainEqual(new Date('2027-12-30T00:00:00Z'));
+    expect(update?.[1]).toContain('Nuevo nombre');
   });
 
-  it('records suspension metadata when the platform owner suspends a laboratory', async () => {
+  it('rejects direct lifecycle edits through the laboratory profile API', async () => {
     const query = jest.fn(async (sql: string, _parameters?: unknown[]) => {
       void _parameters;
       if (sql.includes('FROM laboratory WHERE id=$1')) return [laboratory];
@@ -133,26 +132,14 @@ describe('PlatformLaboratoryAdminService', () => {
       throw new Error('UNEXPECTED_SQL');
     });
     const { service } = createService(query);
-
-    await service.updateLaboratory(8, {
+    await expect(service.updateLaboratory(8, {
       subscription_status: 'suspended',
       suspension_reason: 'Owner requested',
-    }, 70);
-    const update = query.mock.calls.find(([sql]) => String(sql).startsWith('UPDATE laboratory'));
-    expect(update?.[0]).toContain('"suspended_at"=$');
-    expect(update?.[1]).toContain('Owner requested');
-    const audit = query.mock.calls.find(([sql]) => String(sql).startsWith('INSERT INTO platform_laboratory_audit_logs'));
-    expect(audit?.[1]).toEqual(expect.arrayContaining([
-      8,
-      70,
-      'platform.laboratory.lifecycle.updated',
-    ]));
-    const auditMetadata = JSON.parse(String(audit?.[1]?.[4]));
-    expect(auditMetadata.after.subscriptionStatus).toBe('suspended');
-    expect(auditMetadata.before.subscriptionStatus).toBe('active');
+    }, 70)).rejects.toThrow('PLATFORM_LABORATORY_UPDATE_FIELDS_INVALID');
+    expect(query).not.toHaveBeenCalled();
   });
 
-  it('audits reactivation and service extensions with the platform-owner actor', async () => {
+  it('rejects plan and service-date changes through the laboratory profile API', async () => {
     const suspendedLaboratory = {
       ...laboratory,
       subscription_status: 'suspended',
@@ -169,29 +156,14 @@ describe('PlatformLaboratoryAdminService', () => {
       throw new Error('UNEXPECTED_SQL');
     });
     const { service } = createService(query);
-
-    await service.updateLaboratory(8, {
+    await expect(service.updateLaboratory(8, {
       subscription_status: 'active',
       service_expires_at: '2028-10-30T00:00:00Z',
-    }, 70);
-    await service.updateLaboratory(8, {
-      service_expires_at: '2029-10-30T00:00:00Z',
-    }, 70);
-
-    const auditCalls = query.mock.calls.filter(([sql]) =>
-      String(sql).startsWith('INSERT INTO platform_laboratory_audit_logs'),
-    );
-    expect(auditCalls).toHaveLength(2);
-    for (const [, parameters] of auditCalls) {
-      expect(parameters).toEqual(expect.arrayContaining([
-        8,
-        70,
-        'platform.laboratory.lifecycle.updated',
-      ]));
-    }
+    }, 70)).rejects.toThrow('PLATFORM_LABORATORY_UPDATE_FIELDS_INVALID');
+    expect(query).not.toHaveBeenCalled();
   });
 
-  it('requires explicit dates and a reason for perpetual-free status, and rejects unsupported modes/fields', async () => {
+  it('rejects direct perpetual-free lifecycle changes and unsupported fields', async () => {
     const query = jest.fn().mockResolvedValue([laboratory]);
     const { service } = createService(query);
 
@@ -199,7 +171,7 @@ describe('PlatformLaboratoryAdminService', () => {
       subscription_status: 'perpetual_free',
       service_expires_at: null,
       grace_until: null,
-    }, 70)).rejects.toThrow('PLATFORM_PERPETUAL_FREE_REASON_REQUIRED');
+    }, 70)).rejects.toThrow('PLATFORM_LABORATORY_UPDATE_FIELDS_INVALID');
     await expect(service.updateLaboratory(8, { service_mode: 'private' }, 70))
       .rejects.toThrow('PLATFORM_LABORATORY_UPDATE_FIELDS_INVALID');
   });
