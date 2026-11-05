@@ -14,13 +14,13 @@ $applicationRole = if ($EnvironmentName -eq 'Development') { 'bionexus_dev_app' 
 $secretFile = Join-Path $env:LOCALAPPDATA "BioNexus\database-credentials\$EnvironmentName.xml"
 $databaseCreated = $false
 $roleCreated = $false
-$secretCreated = $false
+$secretFileExistedBefore = Test-Path -LiteralPath $secretFile
+$secretTempFile = "$secretFile.$PID.tmp"
 $environment = @{}
 $ownerSecurePassword = $null
 $applicationSecurePassword = $null
 $applicationPassword = $null
-$randomBytes = $null
-$randomGenerator = $null
+$applicationPasswordPointer = [IntPtr]::Zero
 $ownerPasswordPointer = [IntPtr]::Zero
 
 function Invoke-BioNexusAdminNode {
@@ -130,18 +130,13 @@ try {
     $ownerPasswordPointer = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($ownerSecurePassword)
     $environment['BIONEXUS_OWNER_PASSWORD'] = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($ownerPasswordPointer)
 
-    $randomBytes = New-Object byte[] 36
-    $randomGenerator = [Security.Cryptography.RandomNumberGenerator]::Create()
-    try {
-        $randomGenerator.GetBytes($randomBytes)
-        $applicationPassword = [Convert]::ToBase64String($randomBytes).TrimEnd('=').Replace('+', '-').Replace('/', '_')
+    $applicationSecurePassword = Read-Host "Contraseña para el rol PostgreSQL '$applicationRole' (usa una contraseña fuerte de tu gestor y guárdala allí)" -AsSecureString
+    if ($applicationSecurePassword.Length -lt 20) {
+        throw 'La contraseña del rol de aplicación debe tener al menos 20 caracteres.'
     }
-    finally {
-        [Array]::Clear($randomBytes, 0, $randomBytes.Length)
-        $randomGenerator.Dispose()
-    }
-    $applicationSecurePassword = ConvertTo-SecureString -String $applicationPassword -AsPlainText -Force
-    Write-BioNexusLog "Se generó una contraseña aleatoria para '$applicationRole'; no se mostrará y se guardará cifrada localmente." 'INFO'
+    $applicationPasswordPointer = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($applicationSecurePassword)
+    $applicationPassword = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($applicationPasswordPointer)
+    Write-BioNexusLog "Se guardará la contraseña elegida para '$applicationRole' cifrada con DPAPI para este usuario Windows." 'INFO'
 
     $adminProbe = @'
 const { Client } = require('pg');
@@ -186,10 +181,14 @@ main().catch(error => {
         throw 'El usuario PostgreSQL del .env necesita permisos CREATEDB y CREATEROLE para preparar los entornos.'
     }
     if ($state.databaseExists) { throw "La base '$databaseName' ya existe. No fue modificada." }
-    if ($state.roleExists) { throw "El rol '$applicationRole' ya existe. No fue modificado." }
-    if (Test-Path -LiteralPath $secretFile) { throw "Ya existe un archivo de credenciales protegido para $EnvironmentName. No se sobrescribió." }
+    if ($state.roleExists) {
+        Write-BioNexusLog "El rol dedicado '$applicationRole' ya existe; se actualizará su contraseña y se reutilizará con permisos limitados." 'WARN'
+    }
+    if ($secretFileExistedBefore) {
+        Write-BioNexusLog "Se reemplazará el archivo DPAPI existente para $EnvironmentName después de verificar el acceso." 'WARN'
+    }
 
-    $createRoleCode = @'
+    $configureRoleCode = @'
 const { Client } = require('pg');
 async function main() {
   const client = new Client({
@@ -200,8 +199,13 @@ async function main() {
   try {
     const role = `"${process.env.BIONEXUS_TARGET_ROLE.replace(/"/g, '""')}"`;
     const password = `'${process.env.BIONEXUS_APP_PASSWORD.replace(/'/g, "''")}'`;
-    await client.query(`CREATE ROLE ${role} LOGIN PASSWORD ${password} NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT`);
-    process.stdout.write(JSON.stringify({ success: true }));
+    const exists = await client.query('SELECT 1 FROM pg_roles WHERE rolname=$1', [process.env.BIONEXUS_TARGET_ROLE]);
+    if (exists.rowCount) {
+      await client.query(`ALTER ROLE ${role} WITH LOGIN PASSWORD ${password} NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT`);
+    } else {
+      await client.query(`CREATE ROLE ${role} LOGIN PASSWORD ${password} NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT`);
+    }
+    process.stdout.write(JSON.stringify({ success: true, created: exists.rowCount === 0 }));
   } finally { await client.end(); }
 }
 main().catch(error => {
@@ -214,14 +218,24 @@ main().catch(error => {
     $roleEnvironment['BIONEXUS_APP_PASSWORD'] = $applicationPassword
     $previous = Set-BioNexusProcessEnvironment -Values $roleEnvironment
     try {
-        $null = Invoke-BioNexusAdminNode -Code $createRoleCode
-        $roleCreated = $true
+        $roleResult = Invoke-BioNexusAdminNode -Code $configureRoleCode
+        $roleCreated = [bool]$roleResult.created
     }
     finally {
         Restore-BioNexusProcessEnvironment -Values $previous
         $roleEnvironment['BIONEXUS_APP_PASSWORD'] = $null
     }
-    Write-BioNexusLog "Rol '$applicationRole' creado sin privilegios administrativos." 'OK'
+    $secretDirectory = Split-Path -Parent $secretFile
+    New-Item -ItemType Directory -Path $secretDirectory -Force | Out-Null
+    $secret = [pscustomobject]@{
+        Environment = $EnvironmentName
+        Database = $databaseName
+        Username = $applicationRole
+        Password = $applicationSecurePassword
+    }
+    $secret | Export-Clixml -LiteralPath $secretTempFile
+    Move-Item -LiteralPath $secretTempFile -Destination $secretFile -Force
+    Write-BioNexusLog "Rol '$applicationRole' configurado sin privilegios administrativos; su secreto DPAPI ya está guardado." 'OK'
 
     $createDatabaseCode = @'
 const { Client } = require('pg');
@@ -358,18 +372,6 @@ main().catch(error => {
     }
     if (-not $validation.success) { throw 'La validación de la base nueva no pasó.' }
 
-    $secretDirectory = Split-Path -Parent $secretFile
-    New-Item -ItemType Directory -Path $secretDirectory -Force | Out-Null
-    $secret = [pscustomobject]@{
-        Environment = $EnvironmentName
-        Database = $databaseName
-        Username = $applicationRole
-        Password = $applicationSecurePassword
-    }
-    $secret | Export-Clixml -LiteralPath $secretFile
-    $secretCreated = $true
-    Write-BioNexusLog "Credencial de aplicación guardada cifrada para este usuario Windows en '$secretFile'." 'OK'
-
     Write-BioNexusLog "Entorno $EnvironmentName validado: base '$databaseName', rol runtime '$applicationRole', baseline tenant presente." 'OK'
     Write-BioNexusLog "La base bionexus todavía no fue borrada. Elimínala solo mediante el script protegido después de validar ambos entornos." 'WARN'
 }
@@ -384,7 +386,7 @@ catch {
             Write-BioNexusLog "La limpieza automática no pudo completarse: $($_.Exception.Message). No vuelvas a ejecutar hasta revisar el estado." 'ERROR'
         }
     }
-    if ($secretCreated -and (Test-Path -LiteralPath $secretFile)) {
+    if ($roleCreated -and (Test-Path -LiteralPath $secretFile)) {
         Remove-Item -LiteralPath $secretFile -Force
     }
     exit 1
@@ -394,8 +396,12 @@ finally {
         [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ownerPasswordPointer)
     }
     $applicationPassword = $null
-    if ($randomBytes) { [Array]::Clear($randomBytes, 0, $randomBytes.Length) }
-    if ($randomGenerator) { $randomGenerator.Dispose() }
+    if ($applicationPasswordPointer -ne [IntPtr]::Zero) {
+        [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($applicationPasswordPointer)
+    }
+    if (Test-Path -LiteralPath $secretTempFile) {
+        Remove-Item -LiteralPath $secretTempFile -Force
+    }
     if ($environment) { $environment['BIONEXUS_OWNER_PASSWORD'] = $null }
     if ($environment) { $environment['DB_PASSWORD'] = $null }
     if ($ownerSecurePassword) { $ownerSecurePassword.Dispose() }

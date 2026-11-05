@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "project": "Bio Nexus",
   "authoritative": true,
-  "updatedAt": "2026-11-04T17:57:17-04:00",
+  "updatedAt": "2026-11-04T22:15:00-04:00",
   "purpose": "Fuente persistente para conocer decisiones, estado, pendientes y siguiente paso sin depender del historial del chat.",
   "requiredReading": {
     "enabled": true,
@@ -11115,6 +11115,210 @@
         "replication": {
           "backendAndFrontendByteIdentical": true,
           "sha256RecordedExternally": true
+        }
+      }
+    },
+    {
+        "id": "clean-install-and-migration-ops-20261104",
+        "at": "2026-11-04T20:03:00-04:00",
+        "operation": "prepare-portable-clean-install-and-migration-scripts",
+        "status": "scripts-updated-and-validated;awaiting-user-clean-reinstall-and-ui-smoke-test",
+        "summary": "Se actualizaron los scripts de instalacion desde cero y migraciones, la guia operativa en español y la plantilla PostgreSQL. El instalador solicita las contraseñas elegidas para el propietario y el rol runtime, protege el secreto del rol con DPAPI y permite reutilizar el rol dedicado si solo se borro la base. El flujo de migraciones valida primero Development y luego permite promover solo migraciones ya aplicadas a la base local de ensayo Production.",
+        "scope": {
+          "objective": "Dejar documentado y validado un procedimiento portable y repetible para reinstalar las bases locales vacias y aplicar migraciones primero en Development y luego en el ensayo local Production.",
+          "context": "El usuario eliminara manualmente bionexus_dev y bionexus_prod para repetir la instalacion desde cero. Railway sigue siendo independiente y no se migro ni modifico.",
+          "repositories": {
+            "backendBranch": "development",
+            "backendWorkingTreeHasChanges": true,
+            "frontendBranch": "development",
+            "frontendWorkingTreeChanges": "solo copia sincronizada de la bitacora",
+            "commitCreated": false,
+            "push": false
+          },
+          "reviewedSources": [
+            "scripts/ops/Install-BioNexus-Environment.ps1",
+            "scripts/ops/Invoke-BioNexus-Migrations.ps1",
+            "scripts/ops/Start-BioNexus-Development.ps1",
+            "scripts/ops/BioNexus-Operations.Common.ps1",
+            "scripts/ops/Test-BioNexus-Ready.ps1",
+            "scripts/ops/README.md",
+            ".env.example",
+            "docs/BioNexus-Project-State.json en ambos repositorios",
+            "salida real de npm run migration:show en bionexus_dev y bionexus_prod"
+          ],
+          "functionalScope": "Instalacion limpia con contraseñas elegidas por el usuario, uso administrativo del .env solo para operaciones de mantenimiento, rol runtime no administrativo con secreto DPAPI y promocion local protegida de migraciones.",
+          "technicalScope": "Scripts PowerShell con rutas calculadas desde PSScriptRoot, PostgreSQL, TypeORM, install:first sobre base vacia, comprobacion de estados de migracion y replicacion byte a byte de bitacoras.",
+          "changes": [
+            "Install-BioNexus-Environment.ps1 solicita las contraseñas de propietario y rol runtime de forma oculta; exige 20 caracteres para el rol app, guarda el secreto protegido con DPAPI y actualiza el rol dedicado existente cuando se reinstala tras borrar solo la base.",
+            "Se agrego Invoke-BioNexus-Migrations.ps1 para aplicar migraciones comprometidas y probadas primero en bionexus_dev, luego promover solo las ya aplicadas en Development a bionexus_prod local con confirmacion literal.",
+            "Se corrigio el parser de migration:show para tratar el numero de TypeORM como posicion de listado e identificar migraciones por su nombre exacto.",
+            "Se amplio scripts/ops/README.md con la guia de instalacion desde cero, comandos y proposito individual de cada script, credenciales, portabilidad, migraciones y separacion entre ensayo local y Railway.",
+            "Se actualizo .env.example a valores iniciales PostgreSQL y se sincronizaron las dos bitacoras."
+          ],
+          "validations": [
+            "Test-BioNexus-Ready.ps1: bitacoras JSON validas e identicas, contrato tenant Frontend PASS, 3 suites y 16 pruebas tenant Backend PASS, builds Backend y Frontend PASS, y git diff --check PASS.",
+            "El parser PowerShell aprobo todos los scripts de scripts/ops.",
+            "Los modos -WhatIf de instalacion y migraciones para Development y Production indicaron que no consultaron ni modificaron bases.",
+            "Invoke-BioNexus-Migrations.ps1 consulto ambos entornos: no hay migraciones pendientes en bionexus_dev ni bionexus_prod.",
+            "npm run migration:show devolvio en ambas bases [X] 1 BioNexusBaseline1790366400000; la consulta fue de solo lectura.",
+            "Test-BioNexus-Ready.ps1 se ejecuto invocandolo por ruta absoluta desde fuera de ambos repositorios."
+          ],
+          "results": {
+            "developmentMigrationStatus": "sin migraciones pendientes; baseline BioNexusBaseline1790366400000 aplicada",
+            "productionRehearsalMigrationStatus": "sin migraciones pendientes; baseline BioNexusBaseline1790366400000 aplicada",
+            "applicationBuilds": "Backend y Frontend completados correctamente",
+            "databaseModified": false,
+            "serversStarted": false,
+            "ledgersByteIdentical": true
+          },
+          "decisions": [
+            "El usuario elige y guarda por separado las contraseñas de bionexus_dev_app y bionexus_prod_app; los prompts son ocultos y el archivo DPAPI funciona solo para el mismo usuario Windows y equipo.",
+            "El .env local conserva la cuenta administrativa para crear bases/roles y ejecutar migraciones; Start-BioNexus-Development.ps1 entrega a la aplicacion el rol runtime bionexus_dev_app.",
+            "La instalacion vacia ejecuta install:first mediante el instalador; no debe ejecutarse manualmente sobre una base ya instalada.",
+            "bionexus_prod es un ensayo local y no es la produccion de Railway."
+          ],
+          "risks": [
+            "Los secretos DPAPI no se trasladan a otro equipo ni sirven para Railway.",
+            "La validacion de estado de migraciones no prueba aun el flujo visual de login, /admin ni la creacion de un laboratorio.",
+            "El frontend compilo con advertencias de dependencia por eval directo y tamaño de algunos chunks; el build termino correctamente."
+          ],
+          "exclusions": [
+            "No se eliminaron ni recrearon bases, ni se altero el esquema o se aplicaron migraciones.",
+            "No se iniciaron servicios Backend o Frontend.",
+            "No se configuraron DNS, TLS, proxy ni PostgreSQL en Railway.",
+            "No se creo commit ni se hizo push."
+          ],
+          "pending": [
+            "El usuario eliminara manualmente solo bionexus_dev y bionexus_prod antes de reinstalar; puede dejar los roles dedicados, que el instalador reconfigura con la contraseña elegida.",
+            "Ejecutar Install-BioNexus-Environment.ps1 para Development y despues validar login del propietario, /admin y alta de laboratorio con Start-BioNexus-Development.ps1.",
+            "Configurar y validar por separado la base, secretos, dominio wildcard, TLS y proxy de la produccion real en Railway."
+          ],
+          "nextAction": "Seguir scripts/ops/README.md desde la instalacion desde cero: borrar manualmente las dos bases locales, instalar Development con Install-BioNexus-Environment.ps1 y luego validar login y provisionamiento tenant; no ejecutar install:first por separado.",
+          "databaseStatus": {
+            "engine": "PostgreSQL local",
+            "readOnlyMigrationChecks": true,
+            "development": "bionexus_dev permanece instalada; baseline aplicada y sin pendientes",
+            "productionRehearsal": "bionexus_prod permanece instalada; baseline aplicada y sin pendientes",
+            "databaseModifiedDuringThisOperation": false
+          },
+          "serverStatus": {
+            "startedOrRestarted": false
+          },
+          "replication": {
+            "backendAndFrontendByteIdentical": true,
+            "sha256RecordedExternally": true
+          }
+        }
+    },
+    {
+      "id": "remove-backend-root-artifacts-20261104",
+      "at": "2026-11-04T22:15:00-04:00",
+      "operation": "remove-backend-root-artifacts-from-development-and-main",
+      "status": "development-cleanup-validated-and-committed;development-push-completed;main-cleanup-committed-and-pushed;history-preserved",
+      "summary": "Se eliminaron del arbol Backend las carpetas .postman, postman, Audit y Auditoria-Backend-Extraccion, y los certificados localhost+1.pem y localhost+1-key.pem. development conserva y compromete los cambios operativos pendientes; main recibe solo estas eliminaciones en un commit basado en origin/main.",
+      "scope": {
+        "objective": "Retirar de los tips de development y main los cuatro directorios y los dos certificados localhost indicados, preservando todos los demas archivos y el historial Git.",
+        "context": "El usuario autorizo borrar los artefactos indicados del arbol local y de las ramas actuales, crear un commit con los cambios pendientes existentes en development y actualizar ambas ramas remotas sin reescribir historial ni promover los cambios funcionales de development a main.",
+        "repositories": {
+          "backendDevelopment": {
+            "branch": "development",
+            "headBefore": "87e7c5d",
+            "pendingChangesPreserved": [
+              ".env.example",
+              "docs/BioNexus-Project-State.json",
+              "scripts/ops/Install-BioNexus-Environment.ps1",
+              "scripts/ops/README.md",
+              "scripts/ops/Invoke-BioNexus-Migrations.ps1"
+            ],
+            "cleanupCommitCreated": true,
+            "pushToOriginDevelopment": true
+          },
+          "backendMain": {
+            "cleanupBase": "origin/main at e74f741fa447dcfb3a8ee8901e656dc48266bb0b",
+            "cleanupCommit": "336dd5e45f4cda4ce996c4759b9e6fc41a191ced",
+            "pushToOriginMain": true,
+            "localMainFastForwarded": false,
+            "localMainDecision": "La rama local main ya tenia seis commits propios delante de origin/main; no se movio porque no podia actualizarse por fast-forward de forma segura despues del push."
+          },
+          "frontend": {
+            "branch": "development",
+            "ledgerCoordination": "El padre replica esta entrada exacta en la copia Frontend y verifica igualdad byte a byte antes del siguiente paso tecnico."
+          }
+        },
+        "reviewedSources": [
+          "Estado Git y ramas development, main y origin/main del Backend",
+          "Inventario versionado de .postman, postman, Audit, Auditoria-Backend-Extraccion, localhost+1.pem y localhost+1-key.pem",
+          "Referencias del repositorio a localhost+1.pem y localhost+1-key.pem",
+          "Raiz Backend: .env, .env.example, dist, docs, node_modules, public, scripts, src, test, configuraciones, package.json, package-lock.json y README.md",
+          "docs/BioNexus-Project-State.json en Backend"
+        ],
+        "functionalScope": "Eliminar exclusivamente artefactos Postman y de auditoria solicitados, junto con los certificados localhost; mantener intacto el codigo de producto, configuraciones restantes y secretos locales.",
+        "technicalScope": "Commit con cambios pendientes preservados en development; commit aislado de eliminaciones basado en origin/main; pushes fast-forward sin force; ninguna reescritura de historia.",
+        "changes": [
+          "Eliminados .postman/resources.yaml y postman/globals/workspace.globals.yaml.",
+          "Eliminados los cuatro archivos bajo Audit y los siete archivos bajo Auditoria-Backend-Extraccion.",
+          "Eliminados localhost+1.pem y localhost+1-key.pem sin leer ni imprimir su contenido.",
+          "Preservados .env, .env.example, dist, docs, node_modules, public, scripts, src, test, configuraciones, package.json, package-lock.json y README.md.",
+          "En main se incluyeron unicamente las 14 eliminaciones en el commit 336dd5e45f4cda4ce996c4759b9e6fc41a191ced; no se promovieron cambios funcionales de development."
+        ],
+        "validations": [
+          "git diff --check ejecutado para los cambios Backend.",
+          "Pruebas tenant Backend: 3 suites y 16 pruebas aprobadas.",
+          "npm run build Backend completado correctamente.",
+          "Parser PowerShell: los ocho scripts de scripts/ops parsearon correctamente.",
+          "Contrato tenant Frontend aprobado.",
+          "Confirmada ausencia de los directorios y certificados solicitados en ambos tips; git grep no encontro referencias activas a los certificados.",
+          "Commit main revisado: contiene solo 14 eliminaciones; push normal a origin/main completado."
+        ],
+        "results": {
+          "databaseModified": false,
+          "servicesStartedOrRestarted": false,
+          "userReportedDevelopmentCleanReinstallAndAdminSmokeTest": "El usuario confirmo que la reinstalacion limpia de Development y el smoke test de administracion fueron exitosos; no se infieren operaciones de base de datos adicionales.",
+          "gitHistoryRewritten": false,
+          "developmentChangesPreserved": true,
+          "mainContainsOnlyRequestedDeletions": true,
+          "mainLocalBranchFastForwarded": false,
+          "frontendLedgerByteIdentity": "Pendiente de replicacion y verificacion final del padre."
+        },
+        "decisions": [
+          "Las eliminaciones nuevas no purgan versiones anteriores de los commits; se preserva el historial Git solicitado.",
+          "La ref local main se mantiene intacta porque tiene seis commits propios no publicados y el avance remoto no puede incorporarse por fast-forward.",
+          "Se conserva .env y el resto de la raiz Backend; no se imprimen ni inspeccionan contenidos de los certificados.",
+          "Se registra solo el reporte del usuario sobre la reinstalacion limpia y smoke exitoso de administracion en Development, sin atribuir cambios de bases a esta operacion."
+        ],
+        "risks": [
+          "Los certificados seguiran presentes en commits historicos anteriores, ya que el historial no se reescribio."
+        ],
+        "exclusions": [
+          "No se modificaron ni consultaron bases de datos.",
+          "No se iniciaron, detuvieron ni reiniciaron servicios.",
+          "No se ejecutaron instaladores ni migraciones.",
+          "No se promovieron a main .env.example, scripts, README ni otros cambios de development.",
+          "No se hizo force push ni se reescribieron commits."
+        ],
+        "pending": [
+          "Replicar esta entrada exacta en la bitacora Frontend y verificar igualdad byte a byte mediante el padre coordinador.",
+          "Ejercitar el rechazo de duplicados y el rollback transaccional del provisionamiento.",
+          "Completar la revision visual del panel administrador."
+        ],
+        "nextAction": "El padre debe replicar esta entrada exacta y verificar igualdad byte a byte; despues ejercitar duplicados/rollback y completar la revision visual del panel administrador.",
+        "databaseStatus": {
+          "queried": false,
+          "modified": false
+        },
+        "serverStatus": {
+          "startedOrRestarted": false
+        },
+        "gitStatus": {
+          "developmentCommitAndPush": "Completados; el hash del commit de development se conserva en Git.",
+          "mainCleanupCommit": "336dd5e45f4cda4ce996c4759b9e6fc41a191ced",
+          "mainPush": "Completado sin force desde origin/main.",
+          "localMainFastForward": false,
+          "historyRewritten": false
+        },
+        "replication": {
+          "backendAndFrontendByteIdentical": "El padre debe replicar esta entrada exacta en Frontend y confirmar igualdad byte a byte antes del siguiente paso tecnico.",
+          "sha256RecordedExternally": false
         }
       }
     }
@@ -27053,26 +27257,32 @@
       ]
     }
   },
-  "lastUpdatedAt": "2026-11-04T17:57:17-04:00",
+  "lastUpdatedAt": "2026-11-04T22:15:00-04:00",
   "primaryObjective": "Estabilizar y completar Bio Nexus Cloud; alinear PostgreSQL real con la baseline y cerrar el provisionamiento funcional antes de otros modos.",
   "currentWorkstream": "local-development-and-production-database-separation",
   "currentCheckpoint": {
-    "id": "separate-postgresql-environments-installed-20261104",
-    "at": "2026-11-04T17:54:19-04:00",
-    "status": "local-environments-installed-and-validated-operational-scripts-committed-ui-smoke-test-pending",
+    "id": "remove-backend-root-artifacts-20261104",
+    "at": "2026-11-04T22:15:00-04:00",
+    "status": "backend-cleanup-committed-and-pushed;frontend-ledger-replication-required;history-preserved",
     "completed": [
       "Se crearon bionexus_dev y bionexus_prod en PostgreSQL local desde una base vacia, con roles runtime separados.",
       "install:first completo en ambas bases: 54 tablas, un propietario de plataforma, 11 releases globales y cero laboratorios/usuarios tenant.",
       "El instalador valido en ambas bases la baseline tenant, access_slug, constraint, indice normalizado y conexion del rol runtime.",
       "El script protegido comprobo ambos reemplazos; en la verificacion final bionexus ya no existia.",
-      "Contrato Frontend, 3 suites/16 pruebas tenant Backend y builds Backend/Frontend aprobados."
+      "Contrato Frontend, 3 suites/16 pruebas tenant Backend y builds Backend/Frontend aprobados.",
+      "Se actualizaron el instalador, el flujo de migraciones, .env.example y la guia detallada de scripts; se valido el formato real de migration:show.",
+      "Eliminados del Backend los cuatro directorios y los dos certificados localhost solicitados, preservando el resto de la raiz.",
+      "Commit de limpieza aislado desde origin/main con solo las 14 eliminaciones, publicado en origin/main como 336dd5e45f4cda4ce996c4759b9e6fc41a191ced.",
+      "Pruebas tenant Backend (3 suites/16 pruebas), build Backend, parser de ocho scripts PowerShell y contrato tenant Frontend aprobados.",
+      "No se modificaron bases de datos ni se iniciaron o detuvieron servicios; no se reescribio historial."
     ],
     "pending": [
-      "Iniciar development y validar login del propietario, acceso /admin y creacion de un laboratorio de prueba.",
+      "Ejercitar explícitamente el rechazo de duplicados y el rollback transaccional del provisionamiento.",
+      "Revisar visualmente el panel administrador antes del cierre funcional.",
       "Configurar PostgreSQL/secretos de produccion real en Railway; bionexus_prod local no es produccion desplegada.",
       "Crear un respaldo comprobable antes de cualquier cambio de esquema en la base productiva real."
     ],
-    "nextAction": "Ejecutar scripts/ops/Start-BioNexus-Development.ps1 y validar el flujo de propietario y alta tenant; no iniciar servicios desde automatizaciones ni aplicar cambios a Railway."
+    "nextAction": "El padre debe replicar y verificar esta bitacora byte a byte en Frontend; despues ejercitar el rechazo de duplicados y rollback y completar la revision visual del panel administrador."
   },
   "checkpointHistory": [
     {
@@ -28175,7 +28385,7 @@
       "serversManaged": false
     }
   ],
-  "nextAction": "Validar funcionalmente bionexus_dev con Start-BioNexus-Development.ps1; despues configurar y probar por separado los secretos, base PostgreSQL, dominio wildcard, TLS y proxy del despliegue real en Railway.",
+  "nextAction": "El padre debe replicar y verificar esta bitacora byte a byte en Frontend; despues continuar la reinstalacion local Development y la validacion visual pendientes segun scripts/ops/README.md.",
   "bitacoraPolicy": {
     "readBeforeEveryOperation": true,
     "updateBothCopiesInSameOperation": true,
@@ -33880,18 +34090,24 @@
     }
   },
   "latestLocalCheckpoint": {
-    "id": "separate-postgresql-environments-installed-20261104",
-    "status": "local-environments-installed-and-validated-operational-scripts-committed-ui-smoke-test-pending",
-    "scope": "backend-development-local-postgresql",
-    "summary": "Se instalaron y validaron bionexus_dev y bionexus_prod con roles runtime separados; ambas contienen la baseline tenant actual y comienzan sin laboratorios ni usuarios tenant. Los scripts quedaron comprometidos en d1ceed7 y la comprobacion protegida final encontro bionexus ausente.",
+    "id": "remove-backend-root-artifacts-20261104",
+    "at": "2026-11-04T22:15:00-04:00",
+    "status": "backend-development-cleanup-committed-and-pushed;backend-main-cleanup-committed-and-pushed;frontend-ledger-sync-required",
+    "scope": "backend-development-and-main-root-artifact-cleanup",
+    "summary": "Eliminados unicamente .postman, postman, Audit, Auditoria-Backend-Extraccion y los dos certificados localhost. development conserva y compromete los cambios operativos pendientes; main contiene solo las 14 eliminaciones en un commit basado en origin/main. Pruebas focalizadas, build, parser PowerShell y contrato Frontend aprobados.",
     "backendBranch": "development",
     "frontendBranch": "development",
-    "database": "bionexus_dev",
-    "localProductionRehearsal": "bionexus_prod",
-    "legacyDatabase": "bionexus (ausente en comprobacion final)",
-    "databaseChanged": true,
+    "backendMainCleanupCommit": "336dd5e45f4cda4ce996c4759b9e6fc41a191ced",
+    "backendMainPushed": true,
+    "backendDevelopmentCommitCreated": true,
+    "backendDevelopmentPushed": true,
+    "localMainFastForwarded": false,
+    "databaseChanged": false,
     "servicesStarted": false,
-    "nextStep": "Validar login del propietario, acceso a /admin y alta de un laboratorio en development; no confundir bionexus_prod local con produccion Railway."
+    "historyRewritten": false,
+    "userReportedDevelopmentCleanReinstallAndAdminSmokeTest": "El usuario confirmo ambos exitos; no se infieren consultas o cambios de base de datos para esta limpieza.",
+    "frontendLedgerByteIdentity": "El padre replicara esta misma bitacora y verificara igualdad byte a byte antes del siguiente paso tecnico.",
+    "nextStep": "El padre replicara la entrada exacta y verificara igualdad byte a byte; despues se ejercitara el rechazo de duplicados/rollback y se completara la revision visual del panel administrador."
   },
   "closeGuardRecoveryCheckpoint": {
     "id": "closeguard-recovery-20261104-071107",
