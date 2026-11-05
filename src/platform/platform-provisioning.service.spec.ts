@@ -2,13 +2,17 @@ import { PlatformProvisioningService } from './platform-provisioning.service';
 
 describe('PlatformProvisioningService', () => {
   it('uses one serializable transaction and installs the required tenant data', async () => {
-    const query = jest.fn(async (sql: string) => {
+    const branchInsertValues: unknown[][] = [];
+    const query = jest.fn(async (sql: string, parameters?: unknown[]) => {
       const normalized = String(sql).replace(/\s+/g, ' ').trim();
       const lower = normalized.toLowerCase();
       if (lower.includes('pg_advisory_xact_lock')) return undefined;
-      if (lower.includes('select exists(select 1 from laboratory') && lower.includes('username')) return [{ rif: false, username: false }];
-      if (lower.startsWith('insert into laboratory (')) return [{ id: 1, rif: 'J-12345678-9', name: 'Lab' }];
-      if (lower.startsWith('insert into laboratory_branches')) return [{ id: 2, code: 'MAIN', name: 'Principal' }];
+      if (lower.includes('select exists(select 1 from laboratory') && lower.includes('access_slug')) return [{ rif: false, access_slug: false }];
+      if (lower.startsWith('insert into laboratory (')) return [{ id: 1, access_slug: 'lab-a', rif: 'J-12345678-9', name: 'Lab' }];
+      if (lower.startsWith('insert into laboratory_branches')) {
+        branchInsertValues.push(parameters ?? []);
+        return [{ id: 2, code: 'PRINCIPAL', name: 'Principal' }];
+      }
       if (lower.includes('from information_schema.columns')) return [{ column_name: 'code', is_identity: 'NO' }];
       if (lower.startsWith('insert into "')) return undefined;
       if (lower.startsWith('select id from currencies')) return [{ id: 3 }];
@@ -24,14 +28,17 @@ describe('PlatformProvisioningService', () => {
     const installSelected = jest.fn().mockResolvedValue([]);
     const service = new PlatformProvisioningService(dataSource as never, { installSelected } as never);
     await expect(service.provision({
-      rif: 'J-12345678-9', name: 'Lab', businessName: 'Lab CA', address: 'Caracas',
-      branchCode: 'MAIN', branchName: 'Principal', administratorName: 'Admin', administratorUsername: 'admin',
+      access_slug: ' Lab A ', rif: 'J-12345678-9', name: 'Lab', businessName: 'Lab CA', address: 'Caracas',
+      branchName: 'Principal', administratorName: 'Admin', administratorUsername: 'admin',
       administratorPassword: 'Strong!Pass123', administratorPasswordConfirmation: 'Strong!Pass123', seedPackages: [],
-    }, 7001)).resolves.toEqual(expect.objectContaining({ laboratory: expect.objectContaining({ id: 1 }), mainBranch: expect.objectContaining({ id: 2 }) }));
+    }, 7001)).resolves.toEqual(expect.objectContaining({ laboratory: expect.objectContaining({ id: 1, access_slug: 'lab-a' }), mainBranch: expect.objectContaining({ id: 2, code: 'PRINCIPAL' }) }));
     expect(dataSource.transaction).toHaveBeenCalledWith('SERIALIZABLE', expect.any(Function));
     expect(installSelected).toHaveBeenCalledWith(manager, 1, ['currencies'], 7001);
     expect(query.mock.calls.some(call => String(call[0]).includes('laboratory_branches'))).toBe(true);
+    expect(branchInsertValues[0]).toContain('PRINCIPAL');
     expect(query.mock.calls.some(call => String(call[0]).includes('request_password'))).toBe(true);
+    expect(query.mock.calls.find(call => String(call[0]).toLowerCase().startsWith('insert into laboratory ('))?.[0])
+      .toContain('access_slug');
     expect(query.mock.calls.find(call => String(call[0]).toLowerCase().startsWith('select id from currencies'))?.[0])
       .toContain("upper(btrim(code))='VES' AND is_active=true");
   });
@@ -40,8 +47,8 @@ describe('PlatformProvisioningService', () => {
     const dataSource = { transaction: jest.fn() };
     const service = new PlatformProvisioningService(dataSource as never, { installSelected: jest.fn().mockResolvedValue([]) } as never);
     await expect(service.provision({
-      rif: 'J-12345678-9', name: 'Lab', businessName: 'Lab CA', address: 'Caracas',
-      branchCode: 'MAIN', branchName: 'Principal', administratorName: 'Admin', administratorUsername: 'admin',
+      access_slug: 'lab-a', rif: 'J-12345678-9', name: 'Lab', businessName: 'Lab CA', address: 'Caracas',
+      branchName: 'Principal', administratorName: 'Admin', administratorUsername: 'admin',
       administratorPassword: 'Strong!Pass123', administratorPasswordConfirmation: 'Different!Pass123', seedPackages: [],
     } as never, 7001)).rejects.toThrow('PLATFORM_PROVISIONING_PASSWORD_CONFIRMATION_MISMATCH');
     expect(dataSource.transaction).not.toHaveBeenCalled();
@@ -51,11 +58,50 @@ describe('PlatformProvisioningService', () => {
     const dataSource = { transaction: jest.fn() };
     const service = new PlatformProvisioningService(dataSource as never, { installSelected: jest.fn() } as never);
     await expect(service.provision({
-      rif: 'J-12345678-9', name: 'Lab', businessName: 'Lab CA', address: 'Caracas',
-      branchCode: 'MAIN', branchName: 'Principal', administratorName: 'Admin', administratorUsername: 'admin',
+      access_slug: 'lab-a', rif: 'J-12345678-9', name: 'Lab', businessName: 'Lab CA', address: 'Caracas',
+      branchName: 'Principal', administratorName: 'Admin', administratorUsername: 'admin',
       administratorPassword: 'Strong!Pass123', administratorPasswordConfirmation: 'Strong!Pass123',
       seedPackages: ['special-tests'],
     }, 7001)).rejects.toThrow('PLATFORM_PROVISIONING_SEED_PACKAGE_UNKNOWN');
     expect(dataSource.transaction).not.toHaveBeenCalled();
+  });
+
+  it('requires and validates a normalized tenant access slug before opening a transaction', async () => {
+    const dataSource = { transaction: jest.fn() };
+    const service = new PlatformProvisioningService(dataSource as never, { installSelected: jest.fn() } as never);
+    const input = {
+      rif: 'J-12345678-9', name: 'Lab', businessName: 'Lab CA', address: 'Caracas',
+      branchName: 'Principal', administratorName: 'Admin', administratorUsername: 'admin',
+      administratorPassword: 'Strong!Pass123', administratorPasswordConfirmation: 'Strong!Pass123', seedPackages: [],
+    };
+
+    await expect(service.provision({ ...input, access_slug: 'invalid slug!' }, 7001))
+      .rejects.toThrow('PLATFORM_PROVISIONING_ACCESS_SLUG_INVALID');
+    await expect(service.provision(input as never, 7001))
+      .rejects.toThrow('PLATFORM_PROVISIONING_ACCESS_SLUG_REQUIRED');
+    expect(dataSource.transaction).not.toHaveBeenCalled();
+  });
+
+  it('rejects a globally duplicated access slug before inserting a laboratory', async () => {
+    const query = jest.fn(async (sql: string) => {
+      if (String(sql).toLowerCase().includes('pg_advisory_xact_lock')) return undefined;
+      if (String(sql).toLowerCase().includes('exists(select 1 from laboratory')) {
+        return [{ rif: false, access_slug: true }];
+      }
+      throw new Error('UNEXPECTED_SQL');
+    });
+    const manager = { query };
+    const dataSource = { transaction: jest.fn(async (_level, work) => work(manager)) };
+    const service = new PlatformProvisioningService(
+      dataSource as never,
+      { installSelected: jest.fn() } as never,
+    );
+
+    await expect(service.provision({
+      access_slug: ' Lab A ', rif: 'J-12345678-9', name: 'Lab', businessName: 'Lab CA', address: 'Caracas',
+      branchCode: 'MAIN', branchName: 'Principal', administratorName: 'Admin', administratorUsername: 'admin',
+      administratorPassword: 'Strong!Pass123', administratorPasswordConfirmation: 'Strong!Pass123', seedPackages: [],
+    }, 7001)).rejects.toThrow('PLATFORM_PROVISIONING_ACCESS_SLUG_EXISTS');
+    expect(query).toHaveBeenCalledTimes(2);
   });
 });

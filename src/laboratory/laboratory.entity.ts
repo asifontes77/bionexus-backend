@@ -1,9 +1,13 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, Index, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity({ name: 'laboratory' })
+@Index('UQ_laboratory_access_slug_normalized', ['access_slug'], { unique: true })
 export class Laboratory {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @Column('varchar', { length: 63 })
+  access_slug: string;
 
   @Column({ type: 'char', length: 20 })
   rif: string;

@@ -16,6 +16,7 @@ export interface SecurityAuthenticatedRequest {
 export interface SecurityAuditHttpContext {
   ipAddress: string | null;
   userAgent: string | null;
+  laboratoryId: number | null;
 }
 
 const securityAuditHttpStorage =
@@ -44,10 +45,17 @@ function captureSecurityAuditHttpContext(
     ? userAgentHeader[0]
     : userAgentHeader;
   const userAgent = userAgentValue?.trim().slice(0, 500) || null;
+  const laboratoryId = request.user?.laboratoryId;
 
   securityAuditHttpStorage.enterWith({
     ipAddress,
     userAgent,
+    laboratoryId:
+      typeof laboratoryId === 'number' &&
+      Number.isInteger(laboratoryId) &&
+      laboratoryId > 0
+        ? laboratoryId
+        : null,
   });
 }
 

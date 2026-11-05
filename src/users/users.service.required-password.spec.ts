@@ -11,10 +11,12 @@ describe('UsersService required password change', () => {
     const manager = { getRepository: jest.fn().mockReturnValue(repository) };
     const dataSource = { transaction: jest.fn(async callback => callback(manager)), getRepository: jest.fn().mockReturnValue(repository) };
     const jwt = { sign: jest.fn().mockResolvedValue('new-token') };
+    const audit = { write: jest.fn().mockResolvedValue(undefined) };
     jest.spyOn(bcrypt, 'compare').mockResolvedValueOnce(true as never).mockResolvedValueOnce(false as never);
     jest.spyOn(bcrypt, 'hash').mockResolvedValue('new-hash' as never);
-    const service = new UsersService({} as Repository<User>, jwt as unknown as JwtService, {} as never, {} as never, dataSource as unknown as DataSource);
+    const service = new UsersService({} as Repository<User>, jwt as unknown as JwtService, {} as never, {} as never, dataSource as unknown as DataSource, audit as never);
     await expect(service.changeRequiredPassword(7, { currentPassword: 'Temporary!123', newPassword: 'Permanent!456', newPasswordConfirmation: 'Permanent!456' })).resolves.toMatchObject({ token: 'new-token', mustChangePassword: false });
     expect(repository.save).toHaveBeenCalledWith(expect.objectContaining({ password: 'new-hash', request_password: false }));
+    expect(audit.write).toHaveBeenCalledWith(manager, expect.objectContaining({ laboratoryId: 3 }));
   });
 });

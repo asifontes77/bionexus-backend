@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "project": "Bio Nexus",
   "authoritative": true,
-  "updatedAt": "2026-11-04T10:49:21-04:00",
+  "updatedAt": "2026-11-04T22:15:00-04:00",
   "purpose": "Fuente persistente para conocer decisiones, estado, pendientes y siguiente paso sin depender del historial del chat.",
   "requiredReading": {
     "enabled": true,
@@ -20,30 +20,46 @@
   "repositories": {
     "backend": {
       "path": "C:\\Users\\Alexis\\Documents\\Bio Nexus\\Aplicacion\\Bio Nexus Backend",
-      "branch": "feature/platform-owner-runtime-context",
-      "head": "45174a2461ad27a7e8c744257819dab8ae3cb951",
-      "statusEntries": [],
-      "isClean": false
+      "branch": "development",
+      "head": "3d6c71e7b624876e16aeab8c5a83a44a7fdd86b1",
+      "statusEntries": [
+        "Limpieza de artefactos, cambios operativos pendientes y bitacora comprometidos y publicados en origin/development."
+      ],
+      "isClean": true
     },
     "frontend": {
       "path": "C:\\Users\\Alexis\\Documents\\Bio Nexus\\Aplicacion\\Bio Nexus Frontend",
-      "branch": "preserved-existing-branch",
-      "head": "preserved",
+      "branch": "development",
+      "head": "4fe0451f0b906d4c9ffd4c5d330a78bb136fb5f4",
       "statusEntries": [
-        "Local changes preserved; exact inventory captured in report."
+        "Bitacora Backend/Frontend sincronizada byte a byte; commit publicado normalmente en origin/development."
       ],
-      "isClean": false
+      "isClean": true
     }
   },
   "database": {
     "engine": "PostgreSQL",
     "productionConsolidated": false,
     "baseline": "src/database/migrations/1790366400000-BioNexusBaseline.ts",
-    "migrationPolicy": "single-initial-baseline-no-incremental-migrations-during-foundation",
-    "realDatabaseModifiedInCurrentWork": false,
+    "migrationPolicy": "Usar baseline solo para bases vacias; cambios futuros mediante migraciones incrementales con timestamp nuevo.",
+    "realDatabaseModifiedInCurrentWork": true,
     "activeEngine": "PostgreSQL",
-    "activeDatabase": "bionexus",
-    "activeStatus": "authoritative-development-database",
+    "activeDatabase": "bionexus_dev",
+    "activeStatus": "base local de desarrollo instalada y validada",
+    "localEnvironments": [
+      {
+        "database": "bionexus_dev",
+        "applicationRole": "bionexus_dev_app",
+        "status": "installed-and-validated"
+      },
+      {
+        "database": "bionexus_prod",
+        "applicationRole": "bionexus_prod_app",
+        "status": "installed-and-validated-local-rehearsal-only"
+      }
+    ],
+    "legacyDatabase": "bionexus",
+    "legacyStatus": "absent-at-final-protected-check",
     "historicalEngine": "MySQL",
     "historicalDatabase": "bionexus",
     "historicalStatus": "read-only-historical-reference",
@@ -10434,6 +10450,881 @@
       "databaseModifiedByThisSession": false,
       "temporaryPostgreSqlProvisioningValidationPending": true,
       "serversManagedByThisSession": false
+    },
+    {
+      "id": "backend-tenant-access-20261104",
+      "at": "2026-11-04T11:31:32-04:00",
+      "operation": "implement-backend-multi-laboratory-access-contract",
+      "status": "implementation-and-focused-validation-complete-database-untouched",
+      "summary": "Se implementó el acceso backend por access_slug estable: resolución pública del contexto, autenticación aislada por laboratorio, validación de host tenant y alta con slug normalizado y único. Los slugs reservados www, api y admin se rechazan en aplicación y baseline; api.bionexus.app no se interpreta como tenant y el login continúa resolviendo el slug recibido en el body. Se conservó mustChangePassword y el contexto JWT proviene del laboratorio resuelto.",
+      "scope": {
+        "login": {
+          "method": "POST",
+          "path": "/api/users/session",
+          "request": {
+            "access_slug": "string",
+            "user_name": "string",
+            "password": "string"
+          },
+          "tenantHostMismatch": "rechazado con INVALID_CREDENTIALS; username, clave y slug inválidos usan respuesta genérica"
+        },
+        "tenantContext": {
+          "method": "GET",
+          "path": "/api/users/tenant-context/:access_slug",
+          "response": {
+            "access_slug": "string",
+            "laboratory_name": "string"
+          }
+        },
+        "provisioning": {
+          "field": "access_slug",
+          "normalization": "trim, lowercase, whitespace-to-hyphen; slug ASCII DNS-safe hasta 63 caracteres",
+          "uniqueness": "global en laboratory",
+          "reservedSlugs": ["www", "api", "admin"],
+          "reservedSlugBehavior": "rechazados por normalizador de aplicación y constraint CHECK de baseline; el host api.bionexus.app se ignora al comparar tenant-host mismatch",
+          "tenantDomainEnvironment": "BIONEXUS_TENANT_DOMAIN opcional; default bionexus.app, documentado en .env.example"
+        },
+        "database": {
+          "schema": "la columna, restricción e índice único se agregaron a la baseline única existente; no se creó migración incremental",
+          "changedByThisSession": false,
+          "installFirstExecuted": false,
+          "migrationExecuted": false
+        },
+        "validation": {
+          "focusedTestSuites": 8,
+          "focusedTestsPassed": 60,
+          "reservedSlugRegressionTestSuites": 5,
+          "reservedSlugRegressionTestsPassed": 26,
+          "buildPassed": true,
+          "lintPassedForReservedSlugChanges": true,
+          "lintPassedForChangedFilesExceptExistingFinding": true,
+          "diffCheckPassed": true,
+          "lintCaveat": "El lint directo de src/users/users.service.ts reporta el no-unused-vars preexistente de deleteUser(_id), una línea sin cambios; el resto de archivos fuente y pruebas modificados pasa."
+        },
+        "serversStarted": false,
+        "commitCreated": false,
+        "frontendImplementation": {
+          "status": "reported-complete-and-validated-by-coordinator",
+          "independentVerification": false,
+          "details": "El coordinador reportó que el handoff Frontend quedó listo y todas sus validaciones pasan; no se recibieron conteos o comandos de validación en este handoff."
+        },
+        "frontendStateReplication": {
+          "rule": "La copia Frontend debe ser byte-idéntica y verificar SHA-256 tras cualquier actualización."
+        }
+      },
+      "nextAction": "La siguiente entrada valida el esquema nuevo en una base PostgreSQL desechable y aclara que no debe ejecutarse install:first contra bionexus."
+    },
+    {
+      "id": "tenant-single-lab-access-code-20261104",
+      "at": "2026-11-04T17:06:19.630Z",
+      "operation": "remove-duplicate-branch-code-and-clarify-package-count",
+      "status": "implementation-and-fresh-baseline-complete-provisioning-smoke-pending",
+      "summary": "Se consolido el alta con un solo codigo de acceso del laboratorio almacenado como access_slug. El codigo de sucursal queda como dato interno y el alta crea la sucursal principal con PRINCIPAL si no se provee codigo. El listado de plataforma distingue modulos activos de paquetes de catalogo instalados. La base bionexus fue inspeccionada solo en lectura; una base PostgreSQL desechable aplico correctamente la baseline tenant, sin modificar bionexus.",
+      "scope": {
+        "decisions": [
+          "El codigo de acceso es identidad global del laboratorio; no se reutiliza el codigo de sucursal como autoridad de tenant.",
+          "laboratory_branches.code sigue siendo codigo interno, unico dentro del laboratorio; laboratory_branch_id permanece en las operaciones transaccionales aprobadas.",
+          "El usuario introduce un unico codigo de acceso; branchCode es opcional en el DTO/CLI y la sucursal principal usa PRINCIPAL por defecto.",
+          "DNS wildcard *.bionexus.app es una unica configuracion de infraestructura pendiente; no se configuro ni probo DNS/TLS/proxy."
+        ],
+        "backend": {
+          "files": [
+            "src/platform/dto/create-platform-laboratory.dto.ts",
+            "src/platform/platform-provisioning.service.ts",
+            "src/database/commands/provision-laboratory.ts",
+            "src/platform/platform.controller.ts"
+          ],
+          "platformLaboratoryList": "catalogPackageCount cuenta laboratory_catalog_packages y moduleCount conserva el conteo de modulos habilitados"
+        },
+        "frontend": {
+          "files": [
+            "src/components/platform/PlatformLaboratoryDialog.vue",
+            "src/services/platformService.js",
+            "src/views/PlatformLaboratoriesView.vue"
+          ],
+          "provisioning": "El formulario pide codigo de acceso de laboratorio y ya no pide codigo de sucursal; la sucursal principal se nombra normalmente."
+        },
+        "database": {
+          "existingDatabase": "bionexus fue leida dentro de transaccion READ ONLY; baseline antigua aplicada, laboratorio id 3 con sucursal LSJT-01, 11 paquetes en laboratory_catalog_packages, 0 filas en laboratory_modules y sin columna laboratory.access_slug.",
+          "existingDatabaseModified": false,
+          "temporaryDatabase": "bionexus_tenant_test_20261104",
+          "freshInstall": "PASS: 54 tablas, baseline aplicada, access_slug presente, 1 propietario activo, 11 releases granulares publicados, 0 laboratorios y 0 usuarios.",
+          "provisioningSmoke": "Pendiente: los intentos del CLI contra la base temporal terminaron con codigo 1 sin salida de error capturada; consultas de verificacion confirmaron que la transaccion no dejo laboratorio ni usuario. No se afecto bionexus."
+        },
+        "validation": {
+          "backend": "6 suites / 25 pruebas enfocadas PASS; build PASS; ESLint focal PASS al desactivar no-unused-vars para incluir users.service.ts, que conserva un hallazgo preexistente en deleteUser(_id); git diff --check PASS.",
+          "frontend": "tenantAccess.contract.spec.mjs PASS; build PASS con warnings existentes de jspreadsheet/chunks; git diff --check PASS.",
+          "freshBaselineInstall": true,
+          "tenantProvisioningEndToEnd": false,
+          "tenantProvisioningNote": "Las pruebas de contrato confirman que el DTO/CLI acepta omitir branchCode y asigna PRINCIPAL. La instalacion limpia de baseline paso. No se pudo obtener evidencia confiable de un aprovisionamiento real desde este coordinador: los intentos CLI devolvieron codigo 1 sin diagnostico capturado; no quedaron laboratorio/usuarios en la base de prueba. La sesion Backend informo que su worktree no tenia las variables DB/provision requeridas."
+        },
+        "git": {
+          "commitCreated": false,
+          "pushOrMerge": false,
+          "mainRepositoriesRemainClean": true
+        }
+      },
+      "nextAction": "Diagnosticar la salida no capturada del CLI de aprovisionamiento y validar codigo lsjt-01 con branchCode omitido en la base desechable; luego completar login/contexto tenant de extremo a extremo y sincronizar/verificar ambas bitacoras byte por byte."
+    },
+    {
+      "id": "tenant-provisioning-e2e-validation-20261104",
+      "at": "2026-11-04T13:53:26-04:00",
+      "operation": "diagnose-and-validate-tenant-provisioning-end-to-end",
+      "status": "disposable-database-provisioning-login-duplicate-and-rollback-passed",
+      "summary": "Se encontro y corrigio la causa del aprovisionamiento silencioso: el CLI cerraba el contexto Nest antes de esperar el Promise de provisioning. Tambien se corrigio la composicion de JwtService requerida por AuthorizationModule y se habilito propagacion de errores. En PostgreSQL desechable se creo el tenant lsjt-01 con sucursal PRINCIPAL, paquete currencies y administrador; contexto publico y login real de UsersService pasan, incluyendo mustChangePassword=true. Rechazo de slug duplicado y rollback tras fallo inducido tambien pasan. bionexus no se modifico.",
+      "scope": {
+        "backendChanges": [
+          "src/database/commands/provision-laboratory.ts",
+          "src/database/commands/provision-laboratory.spec.ts"
+        ],
+        "rootCause": "La funcion devolvia provisioning.provision(...) sin await dentro de try/finally, por lo que context.close() podia cerrar TypeORM antes de que terminara la transaccion. El comando tambien usaba abortOnError predeterminado, ocultando el error de DI; faltaba JwtService global para AuthorizationModule.",
+        "fix": "Se espera el aprovisionamiento antes de cerrar el contexto, se registra JwtModule global context-only y se establece abortOnError=false para propagar errores.",
+        "database": {
+          "target": "bionexus_tenant_test_20261104",
+          "authoritativeDatabaseModified": false,
+          "laboratory": {
+            "id": 1,
+            "access_slug": "lsjt-01",
+            "branchId": 1,
+            "branchCode": "PRINCIPAL",
+            "administratorId": 1,
+            "administratorUsername": "tenant_admin_test",
+            "installedCatalogPackages": ["currencies"],
+            "request_password": true
+          },
+          "temporaryAdministratorPassword": "Generada aleatoriamente solo para validar login; no se guardo ni divulgo."
+        },
+        "functionalValidation": {
+          "tenantContext": "PASS: access_slug=lsjt-01; nombre del laboratorio correcto.",
+          "tenantLogin": "PASS via UsersService con host api.bionexus.app, identityType=tenant-user, token presente y mustChangePassword=true.",
+          "duplicateSlugRejection": "PASS: segundo aprovisionamiento con slug lsjt-01 y RIF distinto rechazado con PLATFORM_PROVISIONING_ACCESS_SLUG_EXISTS.",
+          "transactionRollback": "PASS: trigger temporal de prueba fallo en application_settings; despues del rollback quedaron 0 laboratorios, sucursales y paquetes para el slug de prueba. Trigger y funcion se eliminaron."
+        },
+        "codeValidation": {
+          "provisionCommandTest": "1 suite / 4 tests PASS.",
+          "backendBuild": "PASS.",
+          "gitDiffCheck": "PASS."
+        },
+        "frontend": {
+          "modifiedByThisOperation": false,
+          "previousContractAndBuildValidation": "PASS; la revision visual sigue pendiente."
+        },
+        "infrastructure": {
+          "wildcardDnsTlsProxy": "Pendiente; no configurado ni probado."
+        },
+        "git": {
+          "commitCreated": false,
+          "pushOrMerge": false,
+          "mainRepositoriesRemainUntouched": true
+        },
+        "serversStarted": false,
+        "temporaryDatabaseModifiedByThisSession": true
+      },
+      "nextAction": "Revisar visualmente el formulario y listado de laboratorios en Frontend; despues decidir la integracion de los cambios a main. La configuracion unica DNS/TLS del wildcard sigue siendo un paso de infraestructura separado."
+    },
+    {
+      "id": "tenant-access-local-main-integration-20261104",
+      "at": "2026-11-04T13:56:19-04:00",
+      "operation": "commit-and-fast-forward-tenant-access-to-local-main",
+      "status": "integrated-locally-tested-unpushed",
+      "summary": "Ante la instruccion de trabajar autonomamente, se guardaron los cambios ya validados en commits separados de Backend y Frontend y se actualizaron ambas ramas locales main mediante fast-forward. No se hizo push, no se ejecuto install:first y no se modifico bionexus.",
+      "scope": {
+        "backend": {
+          "branch": "main",
+          "commit": "8fb02571e8303c56c108ddf30db76276e5bf2cb9",
+          "message": "Implement tenant laboratory access",
+          "validationOnMain": "provision-laboratory.spec.ts: 1 suite / 4 tests PASS; npm run build PASS."
+        },
+        "frontend": {
+          "branch": "main",
+          "commit": "5b2ebfb0067a2e0807a13863d367345178e07736",
+          "message": "Add tenant access flow to frontend",
+          "validationOnMain": "tenantAccess.contract.spec.mjs PASS; npm run build PASS with existing eval/jspreadsheet and large-chunk warnings."
+        },
+        "database": {
+          "authoritativeBionexusModified": false,
+          "disposableValidationDatabase": "bionexus_tenant_test_20261104",
+          "warning": "La DB bionexus sigue con la baseline previa y no debe usarse con la nueva app hasta decidir y validar su actualizacion. No ejecutar install:first contra bionexus."
+        },
+        "git": {
+          "localMainUpdated": true,
+          "pushCreated": false,
+          "featureBranchesPreserved": true,
+          "mainWorkingTreesCleanAtIntegration": true
+        },
+        "wildcardDnsTlsProxy": "Pendiente; no configurado ni probado.",
+        "visualReviewCompleted": false,
+        "serversStarted": false
+      },
+      "nextAction": "Preparar una prueba visual de las ramas locales main conectadas solo a bionexus_tenant_test_20261104; no apuntar la app a bionexus. Despues revisar el flujo en pantalla y dejar el wildcard DNS/TLS para la configuracion de infraestructura."
+    },
+    {
+      "id": "tenant-subdomain-readiness-20261104",
+      "at": "2026-11-04T14:27:20.084-04:00",
+      "operation": "verify-tenant-subdomain-contract-and-cloud-prerequisites",
+      "status": "application-subdomain-routing-supported-cloud-infrastructure-and-database-rollout-pending",
+      "summary": "Se verificó en los main locales que el acceso tenant soporta https://<access_slug>.bionexus.app/dashboard sin prefijo /l, conserva /l/<access_slug>/... como compatibilidad y valida el subdominio contra el access_slug del login. La aplicación está lista a nivel de código para ese patrón, pero todavía no está desplegada ni validada en DNS/TLS/ingress de producción.",
+      "scope": {
+        "objective": "Confirmar si access_slug soporta URLs tenant por subdominio, actualizar ambas bitácoras y distinguir el estado del código de los prerequisitos de nube.",
+        "context": "La URL local observada fue http://127.0.0.1:8082/l/lsjt-01/dashboard; la URL productiva deseada es https://lsjt-01.bionexus.app/dashboard.",
+        "repositories": {
+          "backend": {
+            "repository": "asifontes77/bionexus-backend",
+            "branch": "main",
+            "head": "cbf4b15d3b69ab38fd12882d3e04a95627ee0fe7",
+            "workingTreeNote": "El ajuste validado de src/main.ts agrega X-Bio-Nexus-Socket-Id a allowedHeaders y se consolidará en el commit local de esta tarea."
+          },
+          "frontend": {
+            "repository": "asifontes77/bionexus-frontend",
+            "branch": "main",
+            "head": "7bb110d",
+            "workingTreeNote": "limpio durante la inspección."
+          }
+        },
+        "reviewedSources": [
+          "Frontend: src/logic/tenantAccess.js, src/logic/tenantAccess.contract.spec.mjs, src/router/index.js, src/api/apiUrl.js, docs/BioNexus-Project-State.json.",
+          "Backend: src/users/tenant-host.ts, src/users/users.controller.ts, src/users/users.service.ts, src/main.ts, src/bootstrap/bootstrap.config.ts, docs/BioNexus-Project-State.json."
+        ],
+        "functionalScope": {
+          "productionUrl": "https://<access_slug>.bionexus.app/dashboard",
+          "localCompatibilityUrl": "/l/<access_slug>/...",
+          "frontendDomainSetting": "VITE_TENANT_BASE_DOMAIN=bionexus.app por defecto; el router mantiene rutas limpias en subdominio y soporta la ruta /l/<slug>.",
+          "backendLogin": "Deriva un único subdominio del hostname BIONEXUS_TENANT_DOMAIN y compara el slug normalizado con access_slug del body; el usuario y el JWT quedan acotados al laboratory_id resuelto.",
+          "api": "En producción se asume frontend y /api bajo el mismo origen, con reverse proxy al backend que preserve Host."
+        },
+        "technicalScope": "El contrato de access_slug, normalización, unicidad global, slugs reservados, contexto/login tenant y rutas directas por hostname ya existe en ambos main locales. El hostname se valida durante login; tras autenticación el contexto tenant proviene del JWT.",
+        "changes": {
+          "applicationCode": "No se necesitó cambio de routing para subdominios en esta revisión.",
+          "backendCors": "Se preserva el cambio local validado en src/main.ts que permite X-Bio-Nexus-Socket-Id; no se amplió CORS a todos los subdominios.",
+          "ledgers": "Se agregó esta entrada idéntica en las copias Backend y Frontend y se actualizaron updatedAt/nextAction."
+        },
+        "validations": {
+          "frontendTenantContract": "node .\\src\\logic\\tenantAccess.contract.spec.mjs PASS; valida extracción del host slug, dominio reservado/ajeno y utilidades de ruta /l.",
+          "routerCoverage": "El contrato inspecciona el router estáticamente, pero no es una prueba runtime del guard con host real; la infraestructura de producción no está disponible para prueba aquí.",
+          "backendCorsFix": "En la tarea anterior: build, ESLint focal, preflight CORS y cambio de contraseña desde la UI aislada PASS.",
+          "ledgerBytes": "Las copias tenían el mismo SHA-256 antes de la actualización; se verificará igualdad y SHA-256 después.",
+          "database": "Solo se usó la base desechable bionexus_tenant_test_20261104; no se modificó ni conectó bionexus."
+        },
+        "results": "El patrón de URL deseado está soportado por el código local actual. Esto no equivale a despliegue cloud listo: no se validaron DNS, certificado, reverse proxy, fallback SPA ni la nueva baseline sobre la base bionexus existente.",
+        "decisions": [
+          "Conservar /l/<access_slug>/... como ruta local y de compatibilidad.",
+          "Servir frontend y /api bajo el mismo subdominio con proxy same-origin en producción.",
+          "Mantener CORS limitado; no abrir orígenes wildcard."
+        ],
+        "risks": [
+          "Sin DNS *.bionexus.app y certificado TLS wildcard, el subdominio no resolverá/negociará HTTPS.",
+          "El ingress debe preservar el Host confiable, enrutar /api al Backend y aplicar fallback SPA para /dashboard y otras rutas profundas.",
+          "La base existente bionexus aún requiere un plan separado de migración/backfill desde su baseline antigua antes de desplegar la nueva app contra ella.",
+          "El frontend test de contrato no ejecuta el guard de Vue Router con un hostname de navegador real."
+        ],
+        "exclusions": [
+          "No se configuraron DNS, certificados, hosting, reverse proxy ni recursos de nube.",
+          "No se ejecutó install:first, migración, reset o escritura en la base bionexus.",
+          "No se hizo push; los cambios se consolidan únicamente en commits locales de main."
+        ],
+        "pending": [
+          "Elegir/proporcionar el hosting/ingress y configurar DNS wildcard *.bionexus.app.",
+          "Emitir/configurar TLS wildcard para *.bionexus.app; cubrir el apex por separado si también se publicará.",
+          "Configurar proxy /api same-origin preservando Host y fallback SPA para rutas tenant profundas.",
+          "Diseñar y aprobar la migración/backfill segura de bionexus; no ejecutar install:first sobre esa base.",
+          "Probar una vez desplegado: https://<access_slug>.bionexus.app/dashboard, login y refresh de sesión."
+        ],
+        "nextAction": "Definir proveedor/host de despliegue y preparar DNS wildcard + TLS + reverse proxy/SPA fallback; acordar por separado un plan de migración/backfill respaldado para bionexus antes de conectarla a la app nueva.",
+        "databaseStatus": {
+          "disposableValidationDatabase": "bionexus_tenant_test_20261104",
+          "authoritativeBionexusModified": false,
+          "authoritativeBionexusSchema": "baseline previa sin access_slug; requiere plan de migración/backfill separado."
+        },
+        "serverStatus": {
+          "localPreviewServers": "detenidos tras la verificación",
+          "dnsTlsProxy": "no configurado ni probado"
+        },
+        "replication": {
+          "frontendAndBackendLedgersMustBeByteIdentical": true,
+          "preUpdateSha256": "DE40B4C57C916538501BE37881DF38651A562BD8106DE83DDE831F89602B6FA8",
+          "postUpdateSha256": "Se verificará y reportará fuera del ledger para evitar una referencia hash autorreferencial."
+        }
+      },
+      "nextAction": "Definir proveedor/host de despliegue y preparar DNS wildcard + TLS + reverse proxy/SPA fallback; acordar por separado un plan de migración/backfill respaldado para bionexus antes de conectarla a la app nueva."
+    },
+    {
+      "id": "operations-scripts-development-branches-cloudflare-20261104",
+      "at": "2026-11-04T15:08:46-04:00",
+      "operation": "create-local-development-branches-and-safe-operational-powershell-scripts",
+      "status": "scripts-validated-local-development-branches-created-no-database-install-or-cloud-dns-change",
+      "summary": "Se crearon ramas locales development en Backend y Frontend desde sus main actuales. Se añadieron scripts PowerShell operativos con logs timestamped para preflight/build/test, prueba aislada de tenant y primera instalación de plataforma en una base nueva. La instalación nueva rehúsa cualquier DB existente y protege bionexus; no se ejecutó install:first. Se inspeccionó la captura Cloudflare: existe CNAME apex proxied hacia Railway y TXT de verificación, pero no wildcard.",
+      "scope": {
+        "objective": "Facilitar las tareas repetibles por comandos PowerShell seguros, registrar la estrategia local development/main y orientar la configuración wildcard de Cloudflare/Railway.",
+        "repositories": {
+          "backend": {
+            "repository": "asifontes77/bionexus-backend",
+            "mainCommitAtStart": "4602b33",
+            "developmentBranchCreated": true,
+            "branchPolicy": "development para validar; main como candidato a producción luego de merge revisado."
+          },
+          "frontend": {
+            "repository": "asifontes77/bionexus-frontend",
+            "mainCommitAtStart": "9da5268",
+            "developmentBranchCreated": true,
+            "branchPolicy": "development para validar; main como candidato a producción luego de merge revisado."
+          }
+        },
+        "scripts": [
+          {
+            "path": "Bio Nexus Backend/scripts/ops/Test-BioNexus-Ready.ps1",
+            "purpose": "Validar igualdad/JSON de ledgers, contrato tenant, suites focales Backend, builds y git diff --check; no conecta a DB."
+          },
+          {
+            "path": "Bio Nexus Backend/scripts/ops/Run-BioNexus-Tenant-Test.ps1",
+            "purpose": "Preflight read-only de DB de test con baseline/access_slug y arranque opcional de Backend/Frontend en consolas separadas; allowlist bionexus_*test* y confirmación explícita."
+          },
+          {
+            "path": "Bio Nexus Backend/scripts/ops/Install-BioNexus-Fresh.ps1",
+            "purpose": "Instalar baseline en un nombre nuevo bionexus_dev/test/prod; rehúsa bionexus y cualquier DB existente; pide confirmación y recoge el password del platform_owner de forma oculta si falta en .env."
+          },
+          {
+            "path": "Bio Nexus Backend/scripts/ops/BioNexus-Operations.Common.ps1",
+            "purpose": "Funciones compartidas de logging, carga .env sin imprimir secretos, validaciones de DB/puertos y lanzamiento de consolas."
+          },
+          {
+            "path": "Bio Nexus Backend/scripts/ops/README.md",
+            "purpose": "Comandos de uso, explicación de install:first/bootstrap y pasos manuales Cloudflare/Railway."
+          }
+        ],
+        "validation": {
+          "PowerShellSyntax": "Todos los .ps1 en scripts/ops parsean correctamente.",
+          "TestBioNexusReady": "PASS: frontend tenant contract, 3 suites/16 tests backend, build Backend y Frontend, JSON/igualdad de ledger, diff check.",
+          "TenantTestPreflight": "PASS read-only en bionexus_tenant_test_20261104; detectó baseline tenant y laboratorio con access_slug; no lanzó servidores.",
+          "DryRuns": "Install-BioNexus-Fresh.ps1 -WhatIf y Run-BioNexus-Tenant-Test.ps1 -WhatIf PASS sin conexión a DB ni inicio de procesos.",
+          "Database": "No se ejecutó install:first/bootstrap ni se modificó bionexus; DB de prueba solo se consultó en lectura."
+        },
+        "installationDecision": {
+          "command": "npm run install:first",
+          "purpose": "Crear una base nueva, aplicar la baseline, crear platform_owner cuando falta, publicar catálogos y validar estado inicial sin laboratorios/usuarios tenant.",
+          "bootstrapPlatformOwner": "El install:first ejecuta bootstrap:platform-owner si hace falta; no ejecutarlo manualmente después.",
+          "bootstrapFirstAdmin": "No forma parte del flujo de propietario global de la plataforma.",
+          "safety": "El nuevo script exige nombre DB nuevo y rechaza cualquier base existente; nunca apunta automáticamente a bionexus."
+        },
+        "cloudflareScreenshot": {
+          "observed": [
+            "CNAME de apex bionexus.app hacia hostname up.railway, proxy Cloudflare activo.",
+            "TXT de verificación Railway, DNS-only.",
+            "No se ve registro wildcard *.bionexus.app.",
+            "La recomendación de Cloudflare indica www sin registro; www no es requisito para los subdominios de laboratorios."
+          ],
+          "manualSetup": "Agregar primero *.bionexus.app como custom domain en el servicio Railway correcto; copiar exactamente los CNAME (wildcard y _acme-challenge) y TXT que entrega Railway. El CNAME _acme-challenge debe quedar DNS-only. Activar Universal SSL y Full (strict); configurar proxy SPA, /api same-origin y preservación de Host en el gateway.",
+          "planCaveat": "Railway Trial permite un custom domain por servicio; el apex actual más wildcard puede requerir un plan con límite de al menos dos dominios.",
+          "reference": "https://docs.railway.com/networking/domains/working-with-domains; https://developers.cloudflare.com/dns/manage-dns-records/reference/wildcard-dns-records/",
+          "changed": false
+        },
+        "databaseStatus": {
+          "authoritativeBionexusModified": false,
+          "installFirstExecuted": false,
+          "disposableDatabaseReadOnlyPreflight": "bionexus_tenant_test_20261104"
+        },
+        "serverStatus": {
+          "testServersStarted": false,
+          "dnsTlsProxyChanged": false
+        },
+        "gitStatus": {
+          "committedLocallyAfterValidation": true,
+          "pushed": false,
+          "developmentBranchesCreatedLocally": true
+        },
+        "risks": [
+          "No eliminar las ramas/worktrees Copilot existentes automáticamente: son worktrees de sesión y pueden tener trabajo persistente.",
+          "No tratar development como producción; promover cambios a main después de validar y revisar.",
+          "No registrar Cloudflare hasta tener el servicio y destino exacto de Railway; no adivinar CNAMEs ni tokens de verificación."
+        ],
+        "nextAction": "Definir el proyecto/servicio y plan de Railway, añadir el dominio wildcard desde Railway y copiar sus registros CNAME/TXT exactos a Cloudflare; después planificar la instalación nueva en una base PostgreSQL con nombre nuevo, separada de bionexus.",
+        "ledgerReplication": {
+          "backendAndFrontendMustRemainByteIdentical": true,
+          "replicationStatus": "JSON válido y archivos idénticos verificados después de sincronizar ambas bitácoras."
+        }
+      },
+      "nextAction": "Definir el proyecto/servicio y plan de Railway, añadir el dominio wildcard desde Railway y copiar sus registros CNAME/TXT exactos a Cloudflare; después planificar la instalación nueva en una base PostgreSQL con nombre nuevo, separada de bionexus."
+    },
+    {
+      "id": "readonly-bionexus-schema-and-branch-alignment-20261104",
+      "at": "2026-11-04T15:39:47-04:00",
+      "operation": "align-development-checkouts-and-read-only-bionexus-schema-inspection",
+      "status": "read-only-diagnostic-complete-schema-not-tenant-ready-no-migration-run",
+      "scope": {
+        "objective": "Alinear el flujo de ramas development/main y determinar si la base bionexus refleja el esquema tenant actual sin alterar datos.",
+        "context": "El usuario autorizó un diagnóstico conectado solo a bionexus, en transacción PostgreSQL READ ONLY, mostrando metadatos y conteos agregados; autorizó planificar una migración pero no ejecutarla.",
+        "repositories": {
+          "backend": {
+            "branchActive": "development",
+            "headBeforeThisChange": "68b44ac",
+            "mainAndDevelopmentWereAligned": true
+          },
+          "frontend": {
+            "branchActiveAfterAlignment": "development",
+            "head": "f7eefad",
+            "mainAndDevelopmentWereAligned": true
+          },
+          "copilotWorktrees": "Se conservaron ramas/worktrees ligados a sesiones de Copilot; no se inspeccionó contenido pendiente ni se borró ninguna sesión o rama."
+        },
+        "reviewedSources": [
+          "scripts/ops/README.md",
+          "scripts/ops/BioNexus-Operations.Common.ps1",
+          "scripts/ops/Install-BioNexus-Fresh.ps1",
+          "src/database/database.config.ts",
+          "src/database/data-source.ts",
+          "src/database/commands/first-install.ts",
+          "src/database/migrations/1790366400000-BioNexusBaseline.ts",
+          "package.json migration commands"
+        ],
+        "functionalScope": "Diagnóstico protegido del esquema instalado, estado baseline y presencia/consistencia de laboratory.access_slug; no consulta nombres ni datos de pacientes.",
+        "technicalScope": "PostgreSQL, TypeORM migration registry, metadatos de information_schema/pg_catalog y transacción BEGIN TRANSACTION READ ONLY.",
+        "changes": [
+          "Añadido scripts/ops/Test-BioNexus-DatabaseState.ps1, que rechaza conexión si DB_DATABASE no es exactamente bionexus, impone transacción READ ONLY, tiene timeout y emite solo metadatos y conteos.",
+          "Ampliado scripts/ops/README.md en español con el diagnóstico, flujo main/development, worktrees y bases separadas para desarrollo/producción.",
+          "El checkout principal del Frontend pasó de main a development; no se hizo push ni se promovieron los cambios de documentación/script a main."
+        ],
+        "validations": [
+          "Parser de PowerShell: PASS.",
+          "Diagnóstico real bionexus: conexión confirmada; transaction_read_only=on; transacción terminada con ROLLBACK.",
+          "No se ejecutaron migraciones, install:first, bootstrap, DDL, DML ni escritura de aplicación.",
+          "git diff --check del cambio de documentación/script se ejecutará antes del commit final."
+        ],
+        "results": {
+          "migrationRegistry": {
+            "tableExists": true,
+            "count": 1,
+            "latest": "BioNexusBaseline1790366400000 (1790366400000)",
+            "baselineRegistered": true
+          },
+          "laboratory": {
+            "tableExists": true,
+            "rowCount": 1,
+            "accessSlugColumnExists": false,
+            "formatConstraintExists": false,
+            "normalizedUniqueIndexExists": false
+          },
+          "classification": "La base bionexus no está lista para ejecutar la versión tenant actual: la migración baseline figura registrada, pero el esquema actual no contiene access_slug. Hay divergencia entre el registro de migración y el contrato de la baseline fuente actual; la causa no fue investigada ni asumida."
+        },
+        "decisions": [
+          "Usar development como checkout de trabajo y main como rama de promoción; un worktree adicional es opcional, no requisito.",
+          "Mantener bases PostgreSQL de desarrollo y producción separadas y configurar sus secretos por entorno.",
+          "Una migración incremental revisada será necesaria para la base no vacía; la baseline actual exige esquema vacío y no se debe volver a aplicar ni marcar con --fake."
+        ],
+        "risks": [
+          "La aplicación actual no debe conectarse a bionexus como si el soporte access_slug ya estuviera en su esquema.",
+          "No se revisaron contenidos de sesiones/worktrees Copilot; no borrar sus ramas hasta preservar el trabajo.",
+          "No se verificó despliegue, backup restaurable, DNS/TLS ni compatibilidad de runtime."
+        ],
+        "exclusions": [
+          "No se ejecutó instalación nueva ni se creó bionexus_dev.",
+          "No se modificó ninguna base ni se inspeccionaron valores de laboratorio o pacientes.",
+          "No se generó ni ejecutó una migración incremental y no se hizo push."
+        ],
+        "pending": [
+          "Confirmar qué slug debe asignarse al único laboratorio existente, sin inferirlo automáticamente de nombre u otros datos.",
+          "Diseñar migración incremental con respaldo probado, revisión de constraints/datos y ensayo sobre una copia de desarrollo.",
+          "Antes de migrar, investigar por qué la tabla migrations registra la baseline mientras falta su columna en el esquema actual."
+        ],
+        "nextAction": "Revisar el diff y resultados; luego ejecutar tests/builds focales y cerrar commits locales en development. No migrar bionexus hasta aprobar el diseño incremental y el slug del laboratorio.",
+        "databaseStatus": {
+          "database": "bionexus",
+          "readOnlyTransaction": true,
+          "changed": false,
+          "migrationExecuted": false
+        },
+        "serverStatus": {
+          "serversStartedOrRestarted": false
+        },
+        "replication": {
+          "ledgersMustRemainByteIdentical": true,
+          "replicationStatus": "Verificada igualdad byte a byte; el SHA-256 se informa fuera del documento para evitar una referencia circular."
+        }
+      }
+    },
+    {
+      "id": "bionexus-baseline-history-explains-access-slug-gap-20261104",
+      "at": "2026-11-04T15:42:00-04:00",
+      "operation": "trace-access-slug-baseline-history-and-prepare-incremental-migration-strategy",
+      "status": "historical-cause-identified-in-source-no-database-change",
+      "scope": {
+        "objective": "Explicar por qué bionexus registra una baseline aplicada pero no contiene access_slug y definir la estrategia correcta de actualización.",
+        "context": "El chequeo READ ONLY del 2026-11-04 encontró en bionexus una sola migración registrada (BioNexusBaseline1790366400000), una fila laboratory y ausencia de access_slug, constraint e índice tenant.",
+        "repositories": {
+          "backendBranch": "development",
+          "frontendBranch": "development",
+          "push": false
+        },
+        "reviewedSources": [
+          "historial Git de src/database/migrations/1790366400000-BioNexusBaseline.ts",
+          "commit 8fb0257 Implement tenant laboratory access",
+          "src/laboratory/laboratory.entity.ts",
+          "src/platform/dto/create-platform-laboratory.dto.ts",
+          "src/platform/platform-provisioning.service.ts"
+        ],
+        "functionalScope": "Determinar la preparación de la única fila laboratory para acceso tenant sin revelar ni inferir sus datos.",
+        "technicalScope": "TypeORM registra el nombre/timestamp de migración, no el hash del contenido aplicado; cambios a baseline aplicada no se repiten automáticamente.",
+        "changes": [
+          "Se comprobó que en commit 8fb0257 se añadieron access_slug, CK_laboratory_access_slug_format e índice único a la baseline 1790366400000 conservando su timestamp. El commit anterior e74f741 no contenía esos cambios."
+        ],
+        "validations": [
+          "Comparación Git del archivo baseline en e74f741 y diff de 8fb0257 confirma la incorporación posterior de access_slug en el archivo baseline con el mismo timestamp."
+        ],
+        "results": {
+          "cause": "La modificación in-place de la baseline explica la discrepancia: la base registra el nombre ya aplicado y TypeORM no la vuelve a ejecutar; el registro no guarda checksum, por lo que no puede probar exactamente qué bytes se aplicaron originalmente.",
+          "migrationRequired": "Una nueva migración incremental con timestamp distinto; no editar de nuevo ni repetir la baseline.",
+          "slugAssignment": "Hay una fila laboratory; su slug debe ser una decisión explícita, no se debe derivar automáticamente del nombre/identificador."
+        },
+        "decisions": [
+          "Conservar bionexus sin cambios hasta aprobar migración incremental, slugs y respaldo restaurable.",
+          "Ensayar primero contra una copia/restauración de desarrollo.",
+          "Mantener desarrollo y producción en bases separadas."
+        ],
+        "risks": [
+          "La app tenant actual puede fallar en bionexus mientras falte la columna.",
+          "Una migración sin slug explícito o sin comprobar duplicados podría bloquear la restricción única o asociar un host equivocado."
+        ],
+        "exclusions": [
+          "No se consultaron nombres, RIF, usuarios ni pacientes.",
+          "No se ejecutó install:first, migration:run, bootstrap, DDL ni DML.",
+          "No se generó ni aplicó migración; no se creó base de desarrollo."
+        ],
+        "pending": [
+          "Acordar access_slug para la fila existente.",
+          "Escribir y revisar migración incremental con backfill explícito; probar restore/preflight y reversión en base dev.",
+          "Solo después, decidir expresamente la ventana de aplicación en bionexus."
+        ],
+        "nextAction": "No desplegar la versión tenant contra bionexus hasta que una migración incremental revisada agregue y valide access_slug.",
+        "databaseStatus": {
+          "name": "bionexus",
+          "modified": false,
+          "readOnlyDiagnosticOnly": true
+        },
+        "serverStatus": {
+          "startedOrRestarted": false
+        },
+        "replication": {
+          "backendAndFrontendByteIdentical": true,
+          "sha256RecordedExternally": true
+        }
+      }
+    },
+    {
+      "id": "separate-postgresql-environments-installed-20261104",
+      "at": "2026-11-04T17:54:19-04:00",
+      "operation": "install-and-validate-separated-local-postgresql-environments",
+      "status": "both-local-environments-installed-and-validated;legacy-absent-at-final-check;ui-smoke-test-pending",
+      "scope": {
+        "objective": "Preparar entornos locales separados para development y ensayo de produccion, y retirar la dependencia operativa de la base vieja solo despues de validar reemplazos.",
+        "context": "El usuario autorizo crear bionexus_dev y bionexus_prod en el PostgreSQL local y descartar bionexus porque solo tenia datos de prueba. La suscripcion Railway no convierte la base local en produccion desplegada.",
+        "repositories": {
+          "backendBranch": "development",
+          "backendImplementationCommit": "d1ceed7",
+          "frontendBranch": "development",
+          "frontendHeadBeforeCommit": "f3106ebaf1a07abbdf15c5cd8ea54aff3369d956",
+          "changesPendingCommit": false,
+          "push": false
+        },
+        "reviewedSources": [
+          "scripts/ops/Install-BioNexus-Environment.ps1",
+          "scripts/ops/Start-BioNexus-Development.ps1",
+          "scripts/ops/Remove-BioNexus-LegacyDatabase.ps1",
+          "scripts/ops/Test-BioNexus-Ready.ps1",
+          "scripts/ops/Test-BioNexus-DatabaseState.ps1",
+          "scripts/ops/BioNexus-Operations.Common.ps1",
+          "scripts/ops/README.md",
+          "src/database/commands/first-install.ts",
+          "src/database/migrations/1790366400000-BioNexusBaseline.ts"
+        ],
+        "functionalScope": "Separar desarrollo y ensayo local de produccion usando bases y roles runtime distintos; ambas instalaciones comienzan sin laboratorios ni usuarios tenant.",
+        "technicalScope": "PostgreSQL local, install:first, baseline tenant con access_slug, permisos minimos de runtime, secretos cifrados con DPAPI por el usuario Windows y scripts PowerShell con operaciones protegidas.",
+        "changes": [
+          "Se sustituyo Install-BioNexus-Fresh.ps1 por Install-BioNexus-Environment.ps1 para Development y Production; el rol de aplicacion se genera aleatoriamente y su secreto se guarda cifrado localmente.",
+          "Se incorporaron Start-BioNexus-Development.ps1 y Remove-BioNexus-LegacyDatabase.ps1; se documento el flujo en espanol en scripts/ops/README.md.",
+          "Se corrigio el transporte del codigo JavaScript del preflight por argumentos PowerShell/Node; el intento previo fallo antes de crear recursos y una consulta posterior confirmo que no dejo base ni rol.",
+          "Se instalaron localmente bionexus_dev con bionexus_dev_app y bionexus_prod con bionexus_prod_app.",
+          "La comprobacion final protegida valido ambos reemplazos y reporto que bionexus ya no existia. El primer intento se aborto de forma segura por conexiones idle de DBeaver; no se terminaron procesos."
+        ],
+        "validations": [
+          "install:first termino correctamente en ambas bases: 54 tablas, un propietario de plataforma, 11 releases globales, cero laboratorios y cero usuarios tenant.",
+          "El instalador verifico en cada base la baseline registrada, access_slug NOT NULL, constraint e indice normalizado, y conexion con el rol runtime correspondiente.",
+          "El script protegido comprobo los permisos y esquemas de ambos reemplazos; en el intento final la base legacy ya estaba ausente.",
+          "El contrato tenant Frontend paso; 3 suites y 16 pruebas tenant Backend pasaron; los builds Backend y Frontend pasaron.",
+          "El parser de PowerShell aprobo todos los scripts de ops; los modos -WhatIf de instalacion y retiro no conectaron ni modificaron PostgreSQL.",
+          "No se iniciaron servidores. Las bitacoras se actualizaron en paralelo y deben permanecer byte-identicas."
+        ],
+        "results": {
+          "development": {
+            "database": "bionexus_dev",
+            "applicationRole": "bionexus_dev_app",
+            "tables": 54,
+            "platformOwners": 1,
+            "globalCatalogReleases": 11,
+            "laboratories": 0,
+            "tenantUsers": 0,
+            "tenantSchemaReady": true
+          },
+          "productionLocalRehearsal": {
+            "database": "bionexus_prod",
+            "applicationRole": "bionexus_prod_app",
+            "tables": 54,
+            "platformOwners": 1,
+            "globalCatalogReleases": 11,
+            "laboratories": 0,
+            "tenantUsers": 0,
+            "tenantSchemaReady": true,
+            "isRailwayProduction": false
+          },
+          "legacyDatabase": {
+            "name": "bionexus",
+            "existsAtFinalProtectedCheck": false,
+            "deletionCause": "not-established"
+          },
+          "runtimeSecrets": "Guardados como DPAPI para el usuario Windows actual; no se registran en Git ni se pueden reutilizar en Railway."
+        },
+        "decisions": [
+          "bionexus_dev es la base local diaria de desarrollo; bionexus_prod es solo un ensayo local separado.",
+          "La produccion desplegada debe usar PostgreSQL y secretos propios del proveedor; no se ha configurado Railway.",
+          "Las instalaciones nuevas usan la baseline actual que ya contiene el esquema tenant; cualquier cambio futuro requiere migracion incremental con timestamp nuevo.",
+          "No se terminaran automaticamente conexiones activas durante el retiro de una base."
+        ],
+        "risks": [
+          "Aun falta probar login, acceso a /admin y alta de laboratorio con los servicios locales iniciados.",
+          "Las dos bases locales comparten el mismo servidor PostgreSQL y no equivalen a aislamiento de infraestructura productiva.",
+          "No hay evidencia de DNS wildcard, TLS, proxy ni PostgreSQL productivo configurados en Railway."
+        ],
+        "exclusions": [
+          "No se iniciaron ni reiniciaron Backend o Frontend.",
+          "No se cambio DNS/Cloudflare ni se desplego en Railway.",
+          "No se copiaron datos entre bases ni se genero un backup.",
+          "No se hizo push."
+        ],
+        "pending": [
+          "Ejecutar Start-BioNexus-Development.ps1 y validar login del propietario, /admin y provisionamiento de un laboratorio de prueba.",
+          "Configurar y validar PostgreSQL, secretos, dominio wildcard, TLS y proxy de la produccion real por separado."
+        ],
+        "nextAction": "Realizar la prueba funcional local con Start-BioNexus-Development.ps1.",
+        "databaseStatus": {
+          "engine": "PostgreSQL local",
+          "development": "bionexus_dev instalada y validada",
+          "productionRehearsal": "bionexus_prod instalada y validada localmente; no es produccion desplegada",
+          "legacy": "bionexus ausente en la comprobacion protegida final",
+          "dataCopied": false
+        },
+        "serverStatus": {
+          "startedOrRestarted": false
+        },
+        "replication": {
+          "backendAndFrontendByteIdentical": true,
+          "sha256RecordedExternally": true
+        }
+      }
+    },
+    {
+        "id": "clean-install-and-migration-ops-20261104",
+        "at": "2026-11-04T20:03:00-04:00",
+        "operation": "prepare-portable-clean-install-and-migration-scripts",
+        "status": "scripts-updated-and-validated;awaiting-user-clean-reinstall-and-ui-smoke-test",
+        "summary": "Se actualizaron los scripts de instalacion desde cero y migraciones, la guia operativa en español y la plantilla PostgreSQL. El instalador solicita las contraseñas elegidas para el propietario y el rol runtime, protege el secreto del rol con DPAPI y permite reutilizar el rol dedicado si solo se borro la base. El flujo de migraciones valida primero Development y luego permite promover solo migraciones ya aplicadas a la base local de ensayo Production.",
+        "scope": {
+          "objective": "Dejar documentado y validado un procedimiento portable y repetible para reinstalar las bases locales vacias y aplicar migraciones primero en Development y luego en el ensayo local Production.",
+          "context": "El usuario eliminara manualmente bionexus_dev y bionexus_prod para repetir la instalacion desde cero. Railway sigue siendo independiente y no se migro ni modifico.",
+          "repositories": {
+            "backendBranch": "development",
+            "backendWorkingTreeHasChanges": true,
+            "frontendBranch": "development",
+            "frontendWorkingTreeChanges": "solo copia sincronizada de la bitacora",
+            "commitCreated": false,
+            "push": false
+          },
+          "reviewedSources": [
+            "scripts/ops/Install-BioNexus-Environment.ps1",
+            "scripts/ops/Invoke-BioNexus-Migrations.ps1",
+            "scripts/ops/Start-BioNexus-Development.ps1",
+            "scripts/ops/BioNexus-Operations.Common.ps1",
+            "scripts/ops/Test-BioNexus-Ready.ps1",
+            "scripts/ops/README.md",
+            ".env.example",
+            "docs/BioNexus-Project-State.json en ambos repositorios",
+            "salida real de npm run migration:show en bionexus_dev y bionexus_prod"
+          ],
+          "functionalScope": "Instalacion limpia con contraseñas elegidas por el usuario, uso administrativo del .env solo para operaciones de mantenimiento, rol runtime no administrativo con secreto DPAPI y promocion local protegida de migraciones.",
+          "technicalScope": "Scripts PowerShell con rutas calculadas desde PSScriptRoot, PostgreSQL, TypeORM, install:first sobre base vacia, comprobacion de estados de migracion y replicacion byte a byte de bitacoras.",
+          "changes": [
+            "Install-BioNexus-Environment.ps1 solicita las contraseñas de propietario y rol runtime de forma oculta; exige 20 caracteres para el rol app, guarda el secreto protegido con DPAPI y actualiza el rol dedicado existente cuando se reinstala tras borrar solo la base.",
+            "Se agrego Invoke-BioNexus-Migrations.ps1 para aplicar migraciones comprometidas y probadas primero en bionexus_dev, luego promover solo las ya aplicadas en Development a bionexus_prod local con confirmacion literal.",
+            "Se corrigio el parser de migration:show para tratar el numero de TypeORM como posicion de listado e identificar migraciones por su nombre exacto.",
+            "Se amplio scripts/ops/README.md con la guia de instalacion desde cero, comandos y proposito individual de cada script, credenciales, portabilidad, migraciones y separacion entre ensayo local y Railway.",
+            "Se actualizo .env.example a valores iniciales PostgreSQL y se sincronizaron las dos bitacoras."
+          ],
+          "validations": [
+            "Test-BioNexus-Ready.ps1: bitacoras JSON validas e identicas, contrato tenant Frontend PASS, 3 suites y 16 pruebas tenant Backend PASS, builds Backend y Frontend PASS, y git diff --check PASS.",
+            "El parser PowerShell aprobo todos los scripts de scripts/ops.",
+            "Los modos -WhatIf de instalacion y migraciones para Development y Production indicaron que no consultaron ni modificaron bases.",
+            "Invoke-BioNexus-Migrations.ps1 consulto ambos entornos: no hay migraciones pendientes en bionexus_dev ni bionexus_prod.",
+            "npm run migration:show devolvio en ambas bases [X] 1 BioNexusBaseline1790366400000; la consulta fue de solo lectura.",
+            "Test-BioNexus-Ready.ps1 se ejecuto invocandolo por ruta absoluta desde fuera de ambos repositorios."
+          ],
+          "results": {
+            "developmentMigrationStatus": "sin migraciones pendientes; baseline BioNexusBaseline1790366400000 aplicada",
+            "productionRehearsalMigrationStatus": "sin migraciones pendientes; baseline BioNexusBaseline1790366400000 aplicada",
+            "applicationBuilds": "Backend y Frontend completados correctamente",
+            "databaseModified": false,
+            "serversStarted": false,
+            "ledgersByteIdentical": true
+          },
+          "decisions": [
+            "El usuario elige y guarda por separado las contraseñas de bionexus_dev_app y bionexus_prod_app; los prompts son ocultos y el archivo DPAPI funciona solo para el mismo usuario Windows y equipo.",
+            "El .env local conserva la cuenta administrativa para crear bases/roles y ejecutar migraciones; Start-BioNexus-Development.ps1 entrega a la aplicacion el rol runtime bionexus_dev_app.",
+            "La instalacion vacia ejecuta install:first mediante el instalador; no debe ejecutarse manualmente sobre una base ya instalada.",
+            "bionexus_prod es un ensayo local y no es la produccion de Railway."
+          ],
+          "risks": [
+            "Los secretos DPAPI no se trasladan a otro equipo ni sirven para Railway.",
+            "La validacion de estado de migraciones no prueba aun el flujo visual de login, /admin ni la creacion de un laboratorio.",
+            "El frontend compilo con advertencias de dependencia por eval directo y tamaño de algunos chunks; el build termino correctamente."
+          ],
+          "exclusions": [
+            "No se eliminaron ni recrearon bases, ni se altero el esquema o se aplicaron migraciones.",
+            "No se iniciaron servicios Backend o Frontend.",
+            "No se configuraron DNS, TLS, proxy ni PostgreSQL en Railway.",
+            "No se creo commit ni se hizo push."
+          ],
+          "pending": [
+            "El usuario eliminara manualmente solo bionexus_dev y bionexus_prod antes de reinstalar; puede dejar los roles dedicados, que el instalador reconfigura con la contraseña elegida.",
+            "Ejecutar Install-BioNexus-Environment.ps1 para Development y despues validar login del propietario, /admin y alta de laboratorio con Start-BioNexus-Development.ps1.",
+            "Configurar y validar por separado la base, secretos, dominio wildcard, TLS y proxy de la produccion real en Railway."
+          ],
+          "nextAction": "Seguir scripts/ops/README.md desde la instalacion desde cero: borrar manualmente las dos bases locales, instalar Development con Install-BioNexus-Environment.ps1 y luego validar login y provisionamiento tenant; no ejecutar install:first por separado.",
+          "databaseStatus": {
+            "engine": "PostgreSQL local",
+            "readOnlyMigrationChecks": true,
+            "development": "bionexus_dev permanece instalada; baseline aplicada y sin pendientes",
+            "productionRehearsal": "bionexus_prod permanece instalada; baseline aplicada y sin pendientes",
+            "databaseModifiedDuringThisOperation": false
+          },
+          "serverStatus": {
+            "startedOrRestarted": false
+          },
+          "replication": {
+            "backendAndFrontendByteIdentical": true,
+            "sha256RecordedExternally": true
+          }
+        }
+    },
+    {
+      "id": "remove-backend-root-artifacts-20261104",
+      "at": "2026-11-04T22:15:00-04:00",
+      "operation": "remove-backend-root-artifacts-from-development-and-main",
+      "status": "development-cleanup-validated-and-committed;development-push-completed;main-cleanup-committed-and-pushed;frontend-ledger-replication-confirmed;history-preserved",
+      "summary": "Se eliminaron del arbol Backend las carpetas .postman, postman, Audit y Auditoria-Backend-Extraccion, y los certificados localhost+1.pem y localhost+1-key.pem. development conserva y compromete los cambios operativos pendientes; main recibe solo estas eliminaciones en un commit basado en origin/main.",
+      "scope": {
+        "objective": "Retirar de los tips de development y main los cuatro directorios y los dos certificados localhost indicados, preservando todos los demas archivos y el historial Git.",
+        "context": "El usuario autorizo borrar los artefactos indicados del arbol local y de las ramas actuales, crear un commit con los cambios pendientes existentes en development y actualizar ambas ramas remotas sin reescribir historial ni promover los cambios funcionales de development a main.",
+        "repositories": {
+          "backendDevelopment": {
+            "branch": "development",
+            "headBefore": "87e7c5d",
+            "pendingChangesPreserved": [
+              ".env.example",
+              "docs/BioNexus-Project-State.json",
+              "scripts/ops/Install-BioNexus-Environment.ps1",
+              "scripts/ops/README.md",
+              "scripts/ops/Invoke-BioNexus-Migrations.ps1"
+            ],
+            "cleanupCommit": "3d6c71e7b624876e16aeab8c5a83a44a7fdd86b1",
+            "cleanupCommitCreated": true,
+            "pushToOriginDevelopment": true
+          },
+          "backendMain": {
+            "cleanupBase": "origin/main at e74f741fa447dcfb3a8ee8901e656dc48266bb0b",
+            "cleanupCommit": "336dd5e45f4cda4ce996c4759b9e6fc41a191ced",
+            "pushToOriginMain": true,
+            "localMainFastForwarded": false,
+            "localMainDecision": "La rama local main ya tenia seis commits propios delante de origin/main; no se movio porque no podia actualizarse por fast-forward de forma segura despues del push."
+          },
+          "frontend": {
+            "branch": "development",
+            "ledgerCommit": "4fe0451f0b906d4c9ffd4c5d330a78bb136fb5f4",
+            "ledgerSha256": "B6DC0D9ABCB9E057A59F4E95D62061BD88C7EDD46408784992E58C216B9B6B5E",
+            "ledgerBytes": 1702317,
+            "ledgerPushToOriginDevelopment": true,
+            "ledgerByteIdentityVerified": true
+          }
+        },
+        "reviewedSources": [
+          "Estado Git y ramas development, main y origin/main del Backend",
+          "Inventario versionado de .postman, postman, Audit, Auditoria-Backend-Extraccion, localhost+1.pem y localhost+1-key.pem",
+          "Referencias del repositorio a localhost+1.pem y localhost+1-key.pem",
+          "Raiz Backend: .env, .env.example, dist, docs, node_modules, public, scripts, src, test, configuraciones, package.json, package-lock.json y README.md",
+          "docs/BioNexus-Project-State.json en Backend"
+        ],
+        "functionalScope": "Eliminar exclusivamente artefactos Postman y de auditoria solicitados, junto con los certificados localhost; mantener intacto el codigo de producto, configuraciones restantes y secretos locales.",
+        "technicalScope": "Commit con cambios pendientes preservados en development; commit aislado de eliminaciones basado en origin/main; pushes fast-forward sin force; ninguna reescritura de historia.",
+        "changes": [
+          "Eliminados .postman/resources.yaml y postman/globals/workspace.globals.yaml.",
+          "Eliminados los tres archivos bajo Audit y los siete archivos bajo Auditoria-Backend-Extraccion.",
+          "Eliminados localhost+1.pem y localhost+1-key.pem sin leer ni imprimir su contenido.",
+          "Preservados .env, .env.example, dist, docs, node_modules, public, scripts, src, test, configuraciones, package.json, package-lock.json y README.md.",
+          "En main se incluyeron unicamente las 14 eliminaciones en el commit 336dd5e45f4cda4ce996c4759b9e6fc41a191ced; no se promovieron cambios funcionales de development."
+        ],
+        "validations": [
+          "git diff --check ejecutado para los cambios Backend.",
+          "Pruebas tenant Backend: 3 suites y 16 pruebas aprobadas.",
+          "npm run build Backend completado correctamente.",
+          "Parser PowerShell: los ocho scripts de scripts/ops parsearon correctamente.",
+          "Contrato tenant Frontend aprobado.",
+          "Confirmada ausencia de los directorios y certificados solicitados en ambos tips; git grep, excluyendo esta bitacora, no encontro referencias activas a los certificados.",
+          "Commit main revisado: contiene solo 14 eliminaciones; push normal a origin/main completado."
+        ],
+        "results": {
+          "databaseModified": false,
+          "servicesStartedOrRestarted": false,
+          "userReportedDevelopmentCleanReinstallAndAdminSmokeTest": "El usuario confirmo que la reinstalacion limpia de Development y el smoke test de administracion fueron exitosos; no se infieren operaciones de base de datos adicionales.",
+          "gitHistoryRewritten": false,
+          "developmentChangesPreserved": true,
+          "mainContainsOnlyRequestedDeletions": true,
+          "mainLocalBranchFastForwarded": false,
+          "frontendLedgerByteIdentity": true
+        },
+        "decisions": [
+          "Las eliminaciones nuevas no purgan versiones anteriores de los commits; se preserva el historial Git solicitado.",
+          "La ref local main se mantiene intacta porque tiene seis commits propios no publicados y el avance remoto no puede incorporarse por fast-forward.",
+          "Se conserva .env y el resto de la raiz Backend; no se imprimen ni inspeccionan contenidos de los certificados.",
+          "Se registra solo el reporte del usuario sobre la reinstalacion limpia y smoke exitoso de administracion en Development, sin atribuir cambios de bases a esta operacion."
+        ],
+        "risks": [
+          "Los certificados seguiran presentes en commits historicos anteriores, ya que el historial no se reescribio."
+        ],
+        "exclusions": [
+          "No se modificaron ni consultaron bases de datos.",
+          "No se iniciaron, detuvieron ni reiniciaron servicios.",
+          "No se ejecutaron instaladores ni migraciones.",
+          "No se promovieron a main .env.example, scripts, README ni otros cambios de development.",
+          "No se hizo force push ni se reescribieron commits."
+        ],
+        "pending": [
+          "Ejercitar el rechazo de duplicados y el rollback transaccional del provisionamiento.",
+          "Completar la revision visual del panel administrador."
+        ],
+        "nextAction": "Ejercitar el rechazo de duplicados y el rollback transaccional del provisionamiento; despues completar la revision visual del panel administrador.",
+        "databaseStatus": {
+          "queried": false,
+          "modified": false
+        },
+        "serverStatus": {
+          "startedOrRestarted": false
+        },
+        "gitStatus": {
+          "developmentCommitAndPush": "Completados; el hash del commit de development se conserva en Git.",
+          "mainCleanupCommit": "336dd5e45f4cda4ce996c4759b9e6fc41a191ced",
+          "mainPush": "Completado sin force desde origin/main.",
+          "localMainFastForward": false,
+          "historyRewritten": false
+        },
+        "replication": {
+          "backendAndFrontendByteIdentical": true,
+          "sha256RecordedExternally": true
+        }
+      }
     }
   ],
   "stateReplication": {
@@ -10449,7 +11340,7 @@
     "commitBothInSameProjectCheckpoint": true,
     "independentStateFilesProhibited": true,
     "required": true,
-    "validatedAt": "2026-10-28T19:11:23.973185-04:00",
+    "validatedAt": "2026-11-04T22:15:00-04:00",
     "scriptPolicy": "python-first-powershell-orchestration",
     "requiredScopeFields": {
       "objective": "Qué se pretende lograr y por qué.",
@@ -26370,27 +27261,33 @@
       ]
     }
   },
-  "lastUpdatedAt": "2026-11-04T08:47:04.003786-04:00",
+  "lastUpdatedAt": "2026-11-04T22:15:00-04:00",
   "primaryObjective": "Estabilizar y completar Bio Nexus Cloud; alinear PostgreSQL real con la baseline y cerrar el provisionamiento funcional antes de otros modos.",
-  "currentWorkstream": "cloud-platform-stabilization-and-provisioning",
+  "currentWorkstream": "local-development-and-production-database-separation",
   "currentCheckpoint": {
-    "id": "cloud-modes-and-real-database-reconciliation-20261101",
-    "at": "2026-11-01T21:51:19-04:00",
-    "status": "in-progress",
+    "id": "remove-backend-root-artifacts-20261104",
+    "at": "2026-11-04T22:15:00-04:00",
+    "status": "backend-cleanup-committed-and-pushed;frontend-ledger-replication-confirmed;history-preserved",
     "completed": [
-      "Analisis historico de Cloud y Private preservado.",
-      "Cloud confirmado como unica prioridad activa.",
-      "Diseño normalizado y baseline actual integrados en codigo.",
-      "Auditoria READ ONLY confirmo que PostgreSQL real esta atrasado respecto de la baseline."
+      "Se crearon bionexus_dev y bionexus_prod en PostgreSQL local desde una base vacia, con roles runtime separados.",
+      "install:first completo en ambas bases: 54 tablas, un propietario de plataforma, 11 releases globales y cero laboratorios/usuarios tenant.",
+      "El instalador valido en ambas bases la baseline tenant, access_slug, constraint, indice normalizado y conexion del rol runtime.",
+      "El script protegido comprobo ambos reemplazos; en la verificacion final bionexus ya no existia.",
+      "Contrato Frontend, 3 suites/16 pruebas tenant Backend y builds Backend/Frontend aprobados.",
+      "Se actualizaron el instalador, el flujo de migraciones, .env.example y la guia detallada de scripts; se valido el formato real de migration:show.",
+      "Eliminados del Backend los cuatro directorios y los dos certificados localhost solicitados, preservando el resto de la raiz.",
+      "Commit de limpieza aislado desde origin/main con solo las 14 eliminaciones, publicado en origin/main como 336dd5e45f4cda4ce996c4759b9e6fc41a191ced.",
+      "Pruebas tenant Backend (3 suites/16 pruebas), build Backend, parser de ocho scripts PowerShell y contrato tenant Frontend aprobados.",
+      "No se modificaron bases de datos ni se iniciaron o detuvieron servicios; no se reescribio historial.",
+      "El coordinador confirmo la replicacion byte a byte de la bitacora Backend en Frontend (1702317 bytes; SHA-256 B6DC0D9ABCB9E057A59F4E95D62061BD88C7EDD46408784992E58C216B9B6B5E) y su push normal en development como 4fe0451f0b906d4c9ffd4c5d330a78bb136fb5f4."
     ],
     "pending": [
-      "Realizar diff estructural integral de PostgreSQL real contra la baseline actual.",
-      "Respaldar y validar la alineacion sobre una copia temporal de la base real.",
-      "Alinear PostgreSQL real preservando datos.",
-      "Crear y ejecutar el harness funcional de provisionamiento Cloud.",
-      "Completar revision visual del panel administrador Cloud."
+      "Ejercitar explícitamente el rechazo de duplicados y el rollback transaccional del provisionamiento.",
+      "Revisar visualmente el panel administrador antes del cierre funcional.",
+      "Configurar PostgreSQL/secretos de produccion real en Railway; bionexus_prod local no es produccion desplegada.",
+      "Crear un respaldo comprobable antes de cualquier cambio de esquema en la base productiva real."
     ],
-    "nextAction": "Auditar integralmente todas las tablas, columnas, restricciones, indices y datos de PostgreSQL real contra la baseline actual."
+    "nextAction": "Ejercitar el rechazo de duplicados y rollback del provisionamiento; despues completar la revision visual del panel administrador."
   },
   "checkpointHistory": [
     {
@@ -27493,7 +28390,7 @@
       "serversManaged": false
     }
   ],
-  "nextAction": "Corregir e implementar el alcance por laboratorio del job del dolar, validar codigo y baseline en una base temporal, y solo despues sincronizar de forma controlada el esquema de bionexus real con respaldo previo.",
+  "nextAction": "Ejercitar el rechazo de duplicados y rollback del provisionamiento; despues completar la revision visual del panel administrador.",
   "bitacoraPolicy": {
     "readBeforeEveryOperation": true,
     "updateBothCopiesInSameOperation": true,
@@ -27509,8 +28406,9 @@
   },
   "primaryDatabase": {
     "engine": "PostgreSQL",
-    "status": "active-real",
-    "purpose": "Base de datos real de Bio Nexus"
+    "status": "local-development-installed",
+    "database": "bionexus_dev",
+    "purpose": "Base local para desarrollo y pruebas; no es la produccion desplegada"
   },
   "historicalDatabase": {
     "engine": "MySQL",
@@ -33197,17 +34095,24 @@
     }
   },
   "latestLocalCheckpoint": {
-    "id": "platform-administration-integrated-main-20261103",
-    "status": "integrated-and-features-removed",
-    "scope": "backend-and-frontend-main",
-    "summary": "Backend y Frontend quedaron integrados en main. La divergencia Frontend se resolvio rebasando la feature publicada sobre origin/main y luego aplicando fast-forward.",
-    "backendMainHead": "56372d0a07da2127c44768a0bdb1a1c3b557ebe4",
-    "frontendMainHead": "e0686304186e7d8e4ff932498f3ceadaaf2c27f6",
-    "database": "bionexus",
-    "legacyDatabase": "bionexus_legacy_20261103_172315",
+    "id": "remove-backend-root-artifacts-20261104",
+    "at": "2026-11-04T22:15:00-04:00",
+    "status": "backend-development-cleanup-committed-and-pushed;backend-main-cleanup-committed-and-pushed;frontend-ledger-byte-identity-verified",
+    "scope": "backend-development-and-main-root-artifact-cleanup",
+    "summary": "Eliminados unicamente .postman, postman, Audit, Auditoria-Backend-Extraccion y los dos certificados localhost. development conserva y compromete los cambios operativos pendientes; main contiene solo las 14 eliminaciones en un commit basado en origin/main. Pruebas focalizadas, build, parser PowerShell y contrato Frontend aprobados.",
+    "backendBranch": "development",
+    "frontendBranch": "development",
+    "backendMainCleanupCommit": "336dd5e45f4cda4ce996c4759b9e6fc41a191ced",
+    "backendMainPushed": true,
+    "backendDevelopmentCommitCreated": true,
+    "backendDevelopmentPushed": true,
+    "localMainFastForwarded": false,
     "databaseChanged": false,
     "servicesStarted": false,
-    "nextStep": "Iniciar Backend y Frontend con el inicializador del usuario. Validar Login del platform_owner, acceso protegido a /admin y alta del primer laboratorio; conservar la base legacy hasta aprobar esas pruebas."
+    "historyRewritten": false,
+    "userReportedDevelopmentCleanReinstallAndAdminSmokeTest": "El usuario confirmo ambos exitos; no se infieren consultas o cambios de base de datos para esta limpieza.",
+    "frontendLedgerByteIdentity": true,
+    "nextStep": "Ejercitar el rechazo de duplicados/rollback y completar la revision visual del panel administrador."
   },
   "closeGuardRecoveryCheckpoint": {
     "id": "closeguard-recovery-20261104-071107",

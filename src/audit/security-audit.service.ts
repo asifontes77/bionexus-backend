@@ -8,6 +8,7 @@ import { getSecurityAuditHttpContext } from './security-audit-context';
 
 export interface SecurityAuditWrite {
   actorUserId: number;
+  laboratoryId?: number;
   action: string;
   entityType: string;
   entityId?: number | string | null;
@@ -34,9 +35,19 @@ export class SecurityAuditService {
       throw new BadRequestException('AUDIT_ACTOR_INVALID');
     }
 
-    const repository = manager.getRepository(SecurityAuditLog);
     const httpContext = getSecurityAuditHttpContext();
+    const laboratoryId = input.laboratoryId ?? httpContext?.laboratoryId;
+    if (
+      typeof laboratoryId !== 'number' ||
+      !Number.isInteger(laboratoryId) ||
+      laboratoryId <= 0
+    ) {
+      throw new BadRequestException('AUDIT_LABORATORY_REQUIRED');
+    }
+
+    const repository = manager.getRepository(SecurityAuditLog);
     const audit = repository.create({
+      laboratoryId,
       actorUserId: input.actorUserId,
       action: this.requiredText(
         input.action,

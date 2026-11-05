@@ -396,6 +396,13 @@ CREATE INDEX "IX_dollar_value_laboratory_date" ON "dollar_value" ("laboratory_id
       ALTER TABLE "laboratory" ALTER COLUMN "printer_interface" DROP NOT NULL;
       ALTER TABLE "laboratory" ALTER COLUMN "license" DROP NOT NULL;
       ALTER TABLE "laboratory" ALTER COLUMN "receipt_format" DROP NOT NULL;
+      ALTER TABLE "laboratory" ADD COLUMN "access_slug" character varying(63) NOT NULL;
+      ALTER TABLE "laboratory" ADD CONSTRAINT "CK_laboratory_access_slug_format"
+        CHECK ("access_slug" = lower(btrim("access_slug"))
+          AND "access_slug" ~ '^[a-z0-9]+(-[a-z0-9]+)*$'
+          AND "access_slug" NOT IN ('www', 'api', 'admin'));
+      CREATE UNIQUE INDEX "UQ_laboratory_access_slug_normalized"
+        ON "laboratory" (lower(btrim("access_slug")));
       ALTER TABLE "laboratory" ADD CONSTRAINT "CK_laboratory_rif_not_blank" CHECK (btrim("rif") <> '');
       ALTER TABLE "laboratory" ADD CONSTRAINT "CK_laboratory_name_not_blank" CHECK (btrim("name") <> '');
       ALTER TABLE "laboratory" ADD CONSTRAINT "CK_laboratory_business_name_not_blank" CHECK (btrim("business_name") <> '');

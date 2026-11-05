@@ -34,7 +34,7 @@ async function bootstrap() {
     app.enableCors({
       origin: config.corsOrigins,
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-      allowedHeaders: 'Content-Type,Authorization,Accept',
+      allowedHeaders: 'Content-Type,Authorization,Accept,X-Bio-Nexus-Socket-Id',
       optionsSuccessStatus: 204,
     });
 

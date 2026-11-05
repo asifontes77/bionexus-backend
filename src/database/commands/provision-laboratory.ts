@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { resolveDatabaseOptions } from '../database.config';
@@ -12,6 +13,7 @@ import { CreatePlatformLaboratoryDto } from '../../platform/dto/create-platform-
 export interface ProvisionLaboratoryEnvironment {
   BIONEXUS_PROVISION_OWNER_USERNAME?: string;
   BIONEXUS_PROVISION_RIF?: string;
+  BIONEXUS_PROVISION_ACCESS_SLUG?: string;
   BIONEXUS_PROVISION_NAME?: string;
   BIONEXUS_PROVISION_BUSINESS_NAME?: string;
   BIONEXUS_PROVISION_ADDRESS?: string;
@@ -46,13 +48,14 @@ export function resolveProvisionLaboratoryInput(environment: ProvisionLaboratory
   return {
     platformOwnerUsername: required(environment, 'BIONEXUS_PROVISION_OWNER_USERNAME').toLowerCase(),
     dto: {
+      access_slug: required(environment, 'BIONEXUS_PROVISION_ACCESS_SLUG'),
       rif: required(environment, 'BIONEXUS_PROVISION_RIF'),
       name: required(environment, 'BIONEXUS_PROVISION_NAME'),
       businessName: required(environment, 'BIONEXUS_PROVISION_BUSINESS_NAME'),
       address: required(environment, 'BIONEXUS_PROVISION_ADDRESS'),
       phone: environment.BIONEXUS_PROVISION_PHONE?.trim() ?? '',
       email: environment.BIONEXUS_PROVISION_EMAIL?.trim() ?? '',
-      branchCode: required(environment, 'BIONEXUS_PROVISION_BRANCH_CODE'),
+      branchCode: environment.BIONEXUS_PROVISION_BRANCH_CODE?.trim() || undefined,
       branchName: required(environment, 'BIONEXUS_PROVISION_BRANCH_NAME'),
       administratorName: required(environment, 'BIONEXUS_PROVISION_ADMIN_NAME'),
       administratorUsername: required(environment, 'BIONEXUS_PROVISION_ADMIN_USERNAME'),
@@ -67,6 +70,7 @@ export function resolveProvisionLaboratoryInput(environment: ProvisionLaboratory
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    JwtModule.register({ global: true, secret: 'provision-laboratory-context-only' }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => resolveDatabaseOptions({
@@ -84,7 +88,10 @@ class ProvisionLaboratoryCommandModule {}
 
 export async function provisionLaboratoryFromEnvironment(environment: ProvisionLaboratoryEnvironment = process.env): Promise<Record<string, unknown>> {
   const input = resolveProvisionLaboratoryInput(environment);
-  const context = await NestFactory.createApplicationContext(ProvisionLaboratoryCommandModule, { logger: false });
+  const context = await NestFactory.createApplicationContext(ProvisionLaboratoryCommandModule, {
+    logger: false,
+    abortOnError: false,
+  });
   try {
     const dataSource = context.get(DataSource);
     const provisioning = context.get(PlatformProvisioningService);
@@ -94,7 +101,7 @@ export async function provisionLaboratoryFromEnvironment(environment: ProvisionL
     );
     const platformOwnerId = Number(owners[0]?.id ?? 0);
     if (!Number.isInteger(platformOwnerId) || platformOwnerId <= 0) throw new Error('ACTIVE_PLATFORM_OWNER_NOT_FOUND');
-    return provisioning.provision(input.dto, platformOwnerId);
+    return await provisioning.provision(input.dto, platformOwnerId);
   } finally {
     await context.close();
   }
@@ -105,7 +112,9 @@ async function main(): Promise<void> {
   process.stdout.write(JSON.stringify({
     success: true,
     laboratoryId: (result.laboratory as { id?: number })?.id,
+    access_slug: (result.laboratory as { access_slug?: string })?.access_slug,
     branchId: (result.mainBranch as { id?: number })?.id,
+    branchCode: (result.mainBranch as { code?: string })?.code,
     administratorId: (result.administrator as { id?: number })?.id,
     installedCatalogPackages: result.installedCatalogPackages,
   }) + '\n');

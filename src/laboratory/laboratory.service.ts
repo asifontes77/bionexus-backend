@@ -11,6 +11,7 @@ import { SecurityAuditService } from '../audit/security-audit.service';
 import { UpdateLaboratoryDto } from './dto/update-laboratorio.dto';
 import { CompleteLaboratoryEmailSettings, LaboratoryEmailSettingsDto } from './dto/test-laboratory-email.dto';
 import { Laboratory } from './laboratory.entity';
+import { normalizeLaboratoryAccessSlug } from './access-slug';
 
 type EmailSettings = Partial<LaboratoryEmailSettingsDto>;
 
@@ -41,6 +42,29 @@ export class LaboratoryService {
     }
 
     return laboratoryFound;
+  }
+
+  async findByAccessSlug(accessSlug: unknown): Promise<Laboratory | null> {
+    const normalizedSlug = normalizeLaboratoryAccessSlug(accessSlug);
+    if (!normalizedSlug) return null;
+
+    return this.laboratoryRepository.findOne({
+      where: { access_slug: normalizedSlug },
+      select: { id: true, access_slug: true, name: true },
+    });
+  }
+
+  async getTenantContextByAccessSlug(accessSlug: unknown): Promise<{
+    access_slug: string;
+    laboratory_name: string;
+  }> {
+    const laboratory = await this.findByAccessSlug(accessSlug);
+    if (!laboratory) throw new NotFoundException('TENANT_NOT_FOUND');
+
+    return {
+      access_slug: laboratory.access_slug,
+      laboratory_name: laboratory.name,
+    };
   }
 
   async getPublicLaboratory(id: number): Promise<PublicLaboratory> {

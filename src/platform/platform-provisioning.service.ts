@@ -4,6 +4,7 @@ import { DataSource, EntityManager } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { CreatePlatformLaboratoryDto } from './dto/create-platform-laboratory.dto';
 import { resolveGranularSeedPackages } from './seed-package-catalog';
+import { normalizeLaboratoryAccessSlug } from '../laboratory/access-slug';
 
 @Injectable()
 export class PlatformProvisioningService {
@@ -15,7 +16,7 @@ export class PlatformProvisioningService {
     return this.dataSource.transaction('SERIALIZABLE', async manager => {
       await manager.query('SELECT pg_advisory_xact_lock($1)', [81426001]);
       await this.ensureAvailable(manager,dto);
-      const laboratory=(await manager.query(`INSERT INTO laboratory (rif,name,business_name,address,phone_1,email,print_invoice,print_sample_take,invoice_number,voucher_number,creditnote_number,max_height_logo,max_width_logo,maximum_rows_report,rows_description_receipt,receipt_number,print_receipt) VALUES ($1,$2,$3,$4,$5,$6,false,false,0,0,0,170,170,38,10,0,false) RETURNING id,rif,name,business_name AS "businessName",address`,[dto.rif,dto.name,dto.businessName,dto.address,dto.phone||null,dto.email||null]))[0];
+      const laboratory=(await manager.query(`INSERT INTO laboratory (access_slug,rif,name,business_name,address,phone_1,email,print_invoice,print_sample_take,invoice_number,voucher_number,creditnote_number,max_height_logo,max_width_logo,maximum_rows_report,rows_description_receipt,receipt_number,print_receipt) VALUES ($1,$2,$3,$4,$5,$6,$7,false,false,0,0,0,170,170,38,10,0,false) RETURNING id,access_slug,rif,name,business_name AS "businessName",address`,[dto.access_slug,dto.rif,dto.name,dto.businessName,dto.address,dto.phone||null,dto.email||null]))[0];
       const branch=(await manager.query(`INSERT INTO laboratory_branches (laboratory_id,code,name,address,phone,email,is_main,is_active,display_order) VALUES ($1,$2,$3,$4,$5,$6,true,true,0) RETURNING id,code,name`,[laboratory.id,dto.branchCode,dto.branchName,dto.address,dto.phone||null,dto.email||null]))[0];
       const installedCatalogPackages = await this.tenantPackages.installSelected(manager, Number(laboratory.id), dto.seedPackages, platformOwnerId);
       const currency=(await manager.query(`SELECT id FROM currencies WHERE laboratory_id=$1 AND upper(btrim(code))='VES' AND is_active=true ORDER BY id LIMIT 1`,[laboratory.id]))[0];
@@ -31,15 +32,18 @@ export class PlatformProvisioningService {
   }
 
   private async ensureAvailable(manager:EntityManager,dto:ReturnType<PlatformProvisioningService['validate']>) {
-    const duplicate=(await manager.query(`SELECT EXISTS(SELECT 1 FROM laboratory WHERE upper(btrim(rif))=upper(btrim($1))) rif, EXISTS(SELECT 1 FROM users WHERE lower(btrim(user_name))=lower(btrim($2))) username`,[dto.rif,dto.administratorUsername]))[0];
+    const duplicate=(await manager.query(`SELECT EXISTS(SELECT 1 FROM laboratory WHERE upper(btrim(rif))=upper(btrim($1))) rif, EXISTS(SELECT 1 FROM laboratory WHERE lower(btrim(access_slug))=lower(btrim($2))) access_slug`,[dto.rif,dto.access_slug]))[0];
     if(duplicate.rif) throw new ConflictException('PLATFORM_PROVISIONING_RIF_EXISTS');
-    if(duplicate.username) throw new ConflictException('PLATFORM_PROVISIONING_USERNAME_EXISTS');
+    if(duplicate.access_slug) throw new ConflictException('PLATFORM_PROVISIONING_ACCESS_SLUG_EXISTS');
   }
 
   private validate(input:CreatePlatformLaboratoryDto) {
     const text=(value:unknown,max:number,code:string)=>{const normalized=typeof value==='string'?value.trim():'';if(!normalized||normalized.length>max)throw new BadRequestException(code);return normalized};
     const rif=text(input?.rif,20,'PLATFORM_PROVISIONING_RIF_REQUIRED').toUpperCase();
     if(!/^[VEJG]-?\d{7,9}-?\d$/i.test(rif)) throw new BadRequestException('PLATFORM_PROVISIONING_RIF_INVALID');
+    if (typeof input?.access_slug !== 'string' || !input.access_slug.trim()) throw new BadRequestException('PLATFORM_PROVISIONING_ACCESS_SLUG_REQUIRED');
+    const access_slug = normalizeLaboratoryAccessSlug(input.access_slug);
+    if (!access_slug) throw new BadRequestException('PLATFORM_PROVISIONING_ACCESS_SLUG_INVALID');
     const password=typeof input?.administratorPassword==='string'?input.administratorPassword:'';
     const passwordConfirmation=typeof input?.administratorPasswordConfirmation==='string'?input.administratorPasswordConfirmation:'';
     if(password!==passwordConfirmation) throw new BadRequestException('PLATFORM_PROVISIONING_PASSWORD_CONFIRMATION_MISMATCH');
@@ -47,7 +51,10 @@ export class PlatformProvisioningService {
     const requestedPackages = input.seedPackages ?? [];
     if (!Array.isArray(requestedPackages) || requestedPackages.some((value) => typeof value !== 'string')) throw new BadRequestException('PLATFORM_PROVISIONING_SEED_PACKAGES_INVALID');
     const seedPackages = resolveGranularSeedPackages(requestedPackages);
-    return {rif,name:text(input.name,50,'PLATFORM_PROVISIONING_NAME_REQUIRED'),businessName:text(input.businessName,100,'PLATFORM_PROVISIONING_BUSINESS_NAME_REQUIRED'),address:text(input.address,200,'PLATFORM_PROVISIONING_ADDRESS_REQUIRED'),phone:typeof input.phone==='string'?input.phone.trim():'',email:typeof input.email==='string'?input.email.trim().toLowerCase():'',branchCode:text(input.branchCode,30,'PLATFORM_PROVISIONING_BRANCH_CODE_REQUIRED').toUpperCase(),branchName:text(input.branchName,100,'PLATFORM_PROVISIONING_BRANCH_NAME_REQUIRED'),administratorName:text(input.administratorName,100,'PLATFORM_PROVISIONING_ADMIN_NAME_REQUIRED'),administratorUsername:text(input.administratorUsername,100,'PLATFORM_PROVISIONING_ADMIN_USERNAME_REQUIRED').toLowerCase(),administratorEmail:typeof input.administratorEmail==='string'?input.administratorEmail.trim().toLowerCase():'',administratorPassword:password,administratorPasswordConfirmation:passwordConfirmation,seedPackages};
+    const branchCode = input.branchCode == null || (typeof input.branchCode === 'string' && !input.branchCode.trim())
+      ? 'PRINCIPAL'
+      : text(input.branchCode, 30, 'PLATFORM_PROVISIONING_BRANCH_CODE_INVALID').toUpperCase();
+    return {access_slug,rif,name:text(input.name,50,'PLATFORM_PROVISIONING_NAME_REQUIRED'),businessName:text(input.businessName,100,'PLATFORM_PROVISIONING_BUSINESS_NAME_REQUIRED'),address:text(input.address,200,'PLATFORM_PROVISIONING_ADDRESS_REQUIRED'),phone:typeof input.phone==='string'?input.phone.trim():'',email:typeof input.email==='string'?input.email.trim().toLowerCase():'',branchCode,branchName:text(input.branchName,100,'PLATFORM_PROVISIONING_BRANCH_NAME_REQUIRED'),administratorName:text(input.administratorName,100,'PLATFORM_PROVISIONING_ADMIN_NAME_REQUIRED'),administratorUsername:text(input.administratorUsername,100,'PLATFORM_PROVISIONING_ADMIN_USERNAME_REQUIRED').toLowerCase(),administratorEmail:typeof input.administratorEmail==='string'?input.administratorEmail.trim().toLowerCase():'',administratorPassword:password,administratorPasswordConfirmation:passwordConfirmation,seedPackages};
   }
 
 }
