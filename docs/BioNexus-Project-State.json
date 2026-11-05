@@ -27261,33 +27261,31 @@
       ]
     }
   },
-  "lastUpdatedAt": "2026-11-04T22:15:00-04:00",
+  "lastUpdatedAt": "2026-11-04T23:21:00-04:00",
   "primaryObjective": "Estabilizar y completar Bio Nexus Cloud; alinear PostgreSQL real con la baseline y cerrar el provisionamiento funcional antes de otros modos.",
-  "currentWorkstream": "local-development-and-production-database-separation",
-  "currentCheckpoint": {
-    "id": "remove-backend-root-artifacts-20261104",
-    "at": "2026-11-04T22:15:00-04:00",
-    "status": "backend-cleanup-committed-and-pushed;frontend-ledger-replication-confirmed;history-preserved",
+  "currentWorkstream": "platform-laboratory-administration-cloud",
+  "currentCheckpoint":   {
+    "id": "platform-laboratory-administration-cloud-20261104",
+    "at": "2026-11-04T23:21:00-04:00",
+    "status": "implemented-in-isolated-worktrees;targeted-validation-passed;awaiting-review-and-rollout",
     "completed": [
-      "Se crearon bionexus_dev y bionexus_prod en PostgreSQL local desde una base vacia, con roles runtime separados.",
-      "install:first completo en ambas bases: 54 tablas, un propietario de plataforma, 11 releases globales y cero laboratorios/usuarios tenant.",
-      "El instalador valido en ambas bases la baseline tenant, access_slug, constraint, indice normalizado y conexion del rol runtime.",
-      "El script protegido comprobo ambos reemplazos; en la verificacion final bionexus ya no existia.",
-      "Contrato Frontend, 3 suites/16 pruebas tenant Backend y builds Backend/Frontend aprobados.",
-      "Se actualizaron el instalador, el flujo de migraciones, .env.example y la guia detallada de scripts; se valido el formato real de migration:show.",
-      "Eliminados del Backend los cuatro directorios y los dos certificados localhost solicitados, preservando el resto de la raiz.",
-      "Commit de limpieza aislado desde origin/main con solo las 14 eliminaciones, publicado en origin/main como 336dd5e45f4cda4ce996c4759b9e6fc41a191ced.",
-      "Pruebas tenant Backend (3 suites/16 pruebas), build Backend, parser de ocho scripts PowerShell y contrato tenant Frontend aprobados.",
-      "No se modificaron bases de datos ni se iniciaron o detuvieron servicios; no se reescribio historial.",
-      "El coordinador confirmo la replicacion byte a byte de la bitacora Backend en Frontend (1702317 bytes; SHA-256 B6DC0D9ABCB9E057A59F4E95D62061BD88C7EDD46408784992E58C216B9B6B5E) y su push normal en development como 4fe0451f0b906d4c9ffd4c5d330a78bb136fb5f4."
+      "Frontend: grid de laboratorios con columna de acciones fija e icon-only; diálogos para configuración/accesos, paquetes, sucursales y borrado con reautenticación del platform-owner.",
+      "Alta Cloud ahora requiere plan, estado y vigencia explícitos; perpetual_free no expira y exige motivo con auditoría server-side. No se inventa duración de trial ni se ofrecen Edge/Private.",
+      "Backend: endpoints protegidos para detalle/edición, paquetes y sucursales; borrado reautenticado solo para tenant vacío y esquema cuya seguridad puede demostrarse, sin purga general ni fallback.",
+      "Migración incremental 1793847600000-AddPlatformLaboratoryLifecycle añade lifecycle y platform_laboratory_audit_logs global; baseline existente intacta.",
+      "Auditoría de alta, cambios comerciales y borrado atribuida a platform_owner; el evento de borrado queda dentro de la transacción y los logs sobreviven como referencia histórica sin FK al laboratorio.",
+      "Backend: 6 suites/33 pruebas dirigidas, build, ESLint y git diff --check aprobados. Frontend: 7 contratos dirigidos, build y git diff --check aprobados; la suite completa reportó 27 fallos ajenos a laboratorios.",
+      "Las dos copias de esta bitácora quedan sincronizadas byte a byte. No hubo commits/push, migraciones, cambios de base de datos ni gestión de servicios."
     ],
     "pending": [
-      "Ejercitar explícitamente el rechazo de duplicados y el rollback transaccional del provisionamiento.",
-      "Revisar visualmente el panel administrador antes del cierre funcional.",
-      "Configurar PostgreSQL/secretos de produccion real en Railway; bionexus_prod local no es produccion desplegada.",
-      "Crear un respaldo comprobable antes de cualquier cambio de esquema en la base productiva real."
+      "Revisar ambos diffs aislados e integrar coordinadamente Backend y Frontend; validar visualmente el panel administrador.",
+      "Planificar y autorizar explícitamente el rollout de la migración incremental con respaldo verificable; no aplicarla como parte de esta entrega.",
+      "Mantener enforcement/licenciamiento completo y License Manager diferidos; Edge y Private no están habilitados."
     ],
-    "nextAction": "Ejercitar el rechazo de duplicados y rollback del provisionamiento; despues completar la revision visual del panel administrador."
+    "nextAction": "Revisar visualmente y coordinar la integración de ambos worktrees; preparar un plan de rollout con respaldo antes de aplicar la migración.",
+    "databaseQueried": false,
+    "databaseModified": false,
+    "serversManaged": false
   },
   "checkpointHistory": [
     {
@@ -28388,8 +28386,36 @@
       "databaseQueried": false,
       "databaseModified": false,
       "serversManaged": false
+    },
+    {
+      "timestamp": "2026-11-04T23:21:00-04:00",
+      "type": "platform-laboratory-administration-cloud",
+      "workstream": "platform-laboratory-administration-cloud",
+      "status": "implemented-in-isolated-worktrees;targeted-validation-passed;awaiting-review-and-rollout",
+      "completed": [
+        "Frontend: grid de laboratorios con columna de acciones fija e icon-only; diálogos para configuración/accesos, paquetes, sucursales y borrado con reautenticación del platform-owner.",
+        "Alta Cloud ahora requiere plan, estado y vigencia explícitos; perpetual_free no expira y exige motivo con auditoría server-side. No se inventa duración de trial ni se ofrecen Edge/Private.",
+        "Backend: endpoints protegidos para detalle/edición, paquetes y sucursales; borrado reautenticado solo para tenant vacío y esquema cuya seguridad puede demostrarse, sin purga general ni fallback.",
+        "Migración incremental 1793847600000-AddPlatformLaboratoryLifecycle añade lifecycle y platform_laboratory_audit_logs global; baseline existente intacta.",
+        "Auditoría de alta, cambios comerciales y borrado atribuida a platform_owner; el evento de borrado queda dentro de la transacción y los logs sobreviven como referencia histórica sin FK al laboratorio.",
+        "Backend: 6 suites/33 pruebas dirigidas, build, ESLint y git diff --check aprobados. Frontend: 7 contratos dirigidos, build y git diff --check aprobados; la suite completa reportó 27 fallos ajenos a laboratorios.",
+        "Las dos copias de esta bitácora quedan sincronizadas byte a byte. No hubo commits/push, migraciones, cambios de base de datos ni gestión de servicios."
+      ],
+      "current": [
+        "Frontend y Backend están en worktrees/ramas separados, sin commit ni push.",
+        "La migración incremental está creada pero no ejecutada; no se modificó ni consultó ninguna base de datos."
+      ],
+      "pending": [
+        "Revisar ambos diffs aislados e integrar coordinadamente Backend y Frontend; validar visualmente el panel administrador.",
+        "Planificar y autorizar explícitamente el rollout de la migración incremental con respaldo verificable; no aplicarla como parte de esta entrega.",
+        "Mantener enforcement/licenciamiento completo y License Manager diferidos; Edge y Private no están habilitados."
+      ],
+      "nextAction": "Revisar visualmente y coordinar la integración de ambos worktrees; preparar un plan de rollout con respaldo antes de aplicar la migración.",
+      "databaseQueried": false,
+      "databaseModified": false,
+      "serversManaged": false
     }
-  ],
+],
   "nextAction": "Ejercitar el rechazo de duplicados y rollback del provisionamiento; despues completar la revision visual del panel administrador.",
   "bitacoraPolicy": {
     "readBeforeEveryOperation": true,
