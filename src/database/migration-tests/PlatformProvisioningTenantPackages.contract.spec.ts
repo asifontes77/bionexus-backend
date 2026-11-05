@@ -9,7 +9,7 @@ describe('Platform provisioning tenant packages contract', () => {
   });
 
   it('keeps package installation inside the existing provisioning transaction', () => {
-    const transaction = provisioning.indexOf('this.dataSource.transaction');
+    const transaction = provisioning.indexOf('runSerializableTransaction(this.dataSource');
     const installation = provisioning.indexOf('tenantPackages.installSelected(', transaction);
     expect(transaction).toBeGreaterThanOrEqual(0);
     expect(installation).toBeGreaterThan(transaction);

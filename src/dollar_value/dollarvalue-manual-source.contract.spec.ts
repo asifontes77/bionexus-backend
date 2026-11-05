@@ -21,8 +21,12 @@ describe('DollarValue manual publication contract', () => {
     expect(entity).toContain("updateMethod: 'AUTOMATIC' | 'MANUAL' | 'UNKNOWN'");
   });
 
-  it('keeps exactly one baseline migration', () => {
+  it('keeps the original baseline and adds later schema changes as timestamped migrations', () => {
     const migrations = fs.readdirSync(path.join(root, 'src/database/migrations')).filter((name) => name.endsWith('.ts'));
-    expect(migrations).toEqual(['1790366400000-BioNexusBaseline.ts']);
+    expect(migrations).toEqual([
+      '1790366400000-BioNexusBaseline.ts',
+      '1793847600000-AddPlatformLaboratoryLifecycle.ts',
+      '1793862000000-AddPlatformSubscriptionCatalogAndBilling.ts',
+    ]);
   });
 });

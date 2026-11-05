@@ -107,6 +107,50 @@ describe('LaboratoryService', () => {
     expect(publicLaboratory.sendEmail.user).toBe('mail@example.com');
   });
 
+  it('omits commercial plan and subscription lifecycle fields from tenant responses', async () => {
+    const laboratory = Object.assign(createLaboratory(), {
+      plan_id: 7,
+      plan_code: 'basic',
+      plan_name: 'Basic',
+      plan_description: 'Commercial plan',
+      plan_price: '12.50',
+      plan_currency: 'USD',
+      billing_interval: 'monthly',
+      plan_limits_benefits: { users: 5 },
+      plan_grace_period_days: 5,
+      subscription_status: 'active',
+      service_starts_at: new Date('2026-10-30T00:00:00Z'),
+      service_expires_at: new Date('2027-10-30T00:00:00Z'),
+      grace_until: new Date('2027-11-04T00:00:00Z'),
+      perpetual_free_reason: 'Owner only',
+      perpetual_free_granted_at: new Date('2026-10-30T00:00:00Z'),
+      perpetual_free_granted_by: 70,
+    });
+    findOne.mockResolvedValue(laboratory);
+
+    const result = await service.getPublicLaboratory(1);
+    for (const field of [
+      'plan_id',
+      'plan_code',
+      'plan_name',
+      'plan_description',
+      'plan_price',
+      'plan_currency',
+      'billing_interval',
+      'plan_limits_benefits',
+      'plan_grace_period_days',
+      'subscription_status',
+      'service_starts_at',
+      'service_expires_at',
+      'grace_until',
+      'perpetual_free_reason',
+      'perpetual_free_granted_at',
+      'perpetual_free_granted_by',
+    ]) {
+      expect(result).not.toHaveProperty(field);
+    }
+  });
+
   it('no modifica la entidad original al crear la respuesta publica', async () => {
     const laboratory = createLaboratory();
     findOne.mockResolvedValue(laboratory);
@@ -263,8 +307,9 @@ describe('LaboratoryService', () => {
       user: string;
     };
 
-    expect(sendEmail.pass).toBe('secret-password');
+    expect(sendEmail.pass).toBe('');
     expect(sendEmail.user).toBe('new@example.com');
+    expect((laboratory.sendEmail as unknown as { pass: string }).pass).toBe('secret-password');
     expect(save).toHaveBeenCalledTimes(1);
   });
 
@@ -288,7 +333,8 @@ describe('LaboratoryService', () => {
       pass: string;
     };
 
-    expect(sendEmail.pass).toBe('new-secret-password');
+    expect(sendEmail.pass).toBe('');
+    expect((laboratory.sendEmail as unknown as { pass: string }).pass).toBe('new-secret-password');
     expect(save).toHaveBeenCalledTimes(1);
   });
   it.each([

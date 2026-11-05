@@ -3,8 +3,12 @@ import { readFileSync, readdirSync } from 'node:fs';
 describe('Catalog release foundation contract', () => {
   const baseline = readFileSync('src/database/migrations/1790366400000-BioNexusBaseline.ts', 'utf8');
 
-  it('keeps a single baseline migration', () => {
-    expect(readdirSync('src/database/migrations').filter(name => name.endsWith('.ts'))).toEqual(['1790366400000-BioNexusBaseline.ts']);
+  it('keeps the immutable baseline followed by timestamp-ordered lifecycle migrations', () => {
+    expect(readdirSync('src/database/migrations').filter(name => name.endsWith('.ts')).sort()).toEqual([
+      '1790366400000-BioNexusBaseline.ts',
+      '1793847600000-AddPlatformLaboratoryLifecycle.ts',
+      '1793862000000-AddPlatformSubscriptionCatalogAndBilling.ts',
+    ]);
   });
 
   it('defines immutable platform releases and tenant installations', () => {

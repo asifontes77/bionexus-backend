@@ -339,16 +339,29 @@ async function main() {
               EXISTS (SELECT 1 FROM pg_indexes
                       WHERE schemaname='public' AND tablename='laboratory'
                         AND indexname='UQ_laboratory_access_slug_normalized') AS slug_index,
-              EXISTS (SELECT 1 FROM public.migrations WHERE name='BioNexusBaseline1790366400000') AS baseline`
+              EXISTS (SELECT 1 FROM public.migrations WHERE name='BioNexusBaseline1790366400000') AS baseline,
+              ((SELECT count(*) FROM public.migrations
+                WHERE name IN ('BioNexusBaseline1790366400000',
+                               'AddPlatformLaboratoryLifecycle1793847600000',
+                               'AddPlatformSubscriptionCatalogAndBilling1793862000000')) = 3
+               AND to_regclass('public.platform_subscription_plans') IS NOT NULL
+               AND to_regclass('public.platform_subscriptions') IS NOT NULL
+               AND to_regclass('public.platform_subscription_payments') IS NOT NULL
+               AND to_regclass('public.platform_billing_audit_logs') IS NOT NULL
+               AND EXISTS (SELECT 1 FROM information_schema.columns
+                           WHERE table_schema='public' AND table_name='laboratory'
+                             AND column_name='plan_grace_period_days')) AS subscriptionSchemaReady`
     );
     if (state.rows[0].read_only !== 'on' || !state.rows[0].slug_column ||
-        !state.rows[0].slug_constraint || !state.rows[0].slug_index || !state.rows[0].baseline) {
+        !state.rows[0].slug_constraint || !state.rows[0].slug_index || !state.rows[0].baseline ||
+        !state.rows[0].subscriptionSchemaReady) {
       throw Object.assign(new Error('ENVIRONMENT_VALIDATION_FAILED'), { code: 'ENVIRONMENT_VALIDATION_FAILED' });
     }
     await client.query('ROLLBACK');
     process.stdout.write(JSON.stringify({
       success: true, database: state.rows[0].database, role: state.rows[0].role,
-      tenantSchemaReady: state.rows[0].slug_column, baselineRegistered: state.rows[0].baseline
+      tenantSchemaReady: state.rows[0].slug_column, baselineRegistered: state.rows[0].baseline,
+      subscriptionSchemaReady: state.rows[0].subscriptionSchemaReady
     }));
   } finally { await client.end(); }
 }

@@ -8,11 +8,22 @@ describe('Migration timestamp order', () => {
     .sort();
 
   it('mantiene exclusivamente el baseline inicial', () => {
-    expect(files).toEqual(['1790366400000-BioNexusBaseline.ts']);
+    expect(files).toEqual([
+      '1790366400000-BioNexusBaseline.ts',
+      '1793847600000-AddPlatformLaboratoryLifecycle.ts',
+      '1793862000000-AddPlatformSubscriptionCatalogAndBilling.ts',
+    ]);
   });
 
-  it('alinea el sufijo de la clase con su archivo', () => {
-    const source = readFileSync(join(directory, files[0]), 'utf8');
-    expect(source).toContain('BioNexusBaseline1790366400000');
+  it('alinea el sufijo de cada clase con su archivo', () => {
+    const classNames = [
+      'BioNexusBaseline1790366400000',
+      'AddPlatformLaboratoryLifecycle1793847600000',
+      'AddPlatformSubscriptionCatalogAndBilling1793862000000',
+    ];
+    for (const [index, className] of classNames.entries()) {
+      const source = readFileSync(join(directory, files[index]), 'utf8');
+      expect(source).toContain(className);
+    }
   });
 });

@@ -4,11 +4,10 @@ export class CreatePlatformLaboratoryDto {
   name: string;
   businessName: string;
   address: string;
-  plan_code: string;
+  plan_code?: string;
   subscription_status: 'trial' | 'active' | 'perpetual_free';
   service_starts_at: string;
   service_expires_at: string | null;
-  grace_until?: string | null;
   perpetual_free_reason?: string;
   commercial_notes?: string;
   phone?: string;

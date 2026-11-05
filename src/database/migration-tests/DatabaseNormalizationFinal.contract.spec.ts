@@ -28,9 +28,13 @@ describe('Database normalization final contract', () => {
     for (const constraint of constraints) expect(migration).toContain(constraint);
   });
 
-  /** Conserva una unica migracion baseline. */
-  it('keeps exactly one migration file', () => {
+  /** Conserva una baseline inmutable y las dos migraciones incrementales. */
+  it('keeps one baseline followed by versioned lifecycle migrations', () => {
     const migrations = readdirSync('src/database/migrations').filter((name) => name.endsWith('.ts'));
-    expect(migrations).toEqual(['1790366400000-BioNexusBaseline.ts']);
+    expect(migrations.sort()).toEqual([
+      '1790366400000-BioNexusBaseline.ts',
+      '1793847600000-AddPlatformLaboratoryLifecycle.ts',
+      '1793862000000-AddPlatformSubscriptionCatalogAndBilling.ts',
+    ]);
   });
 });

@@ -31,13 +31,15 @@ describe('first-install platform scope', () => {
     expect(REQUIRED_GRANULAR_CATALOG_PACKAGES).toHaveLength(11);
     expect(INITIAL_CATALOG_SCHEMA_VERSION).toBe('BioNexusBaseline1790366400000');
 
-    const freshInstall = { active_owners: 1, global_releases: 11, granular_releases: 11, laboratories: 0, users: 0 };
-    const upgradedInstall = { active_owners: 1, global_releases: 16, granular_releases: 11, laboratories: 0, users: 0 };
+    const freshInstall = { active_owners: 1, global_releases: 11, granular_releases: 11, laboratories: 0, users: 0, subscription_schema_ready: 1 };
+    const upgradedInstall = { active_owners: 1, global_releases: 16, granular_releases: 11, laboratories: 0, users: 0, subscription_schema_ready: 1 };
     const incompleteInstall = { ...upgradedInstall, granular_releases: 10 };
+    const incompleteSubscriptionSchema = { ...freshInstall, subscription_schema_ready: 0 };
 
     expect(isFirstInstallStateValid(freshInstall)).toBe(true);
     expect(isFirstInstallStateValid(upgradedInstall)).toBe(true);
     expect(isFirstInstallStateValid(incompleteInstall)).toBe(false);
+    expect(isFirstInstallStateValid(incompleteSubscriptionSchema)).toBe(false);
   });
 
   it('mantiene el contrato observable y la limpieza de la base creada por la ejecucion', () => {
@@ -49,6 +51,9 @@ describe('first-install platform scope', () => {
     expect(source).toContain("FROM laboratory) AS laboratories");
     expect(source).toContain("AS granular_releases");
     expect(source).toContain("package_code=ANY($1::text[])");
+    expect(source).toContain('AddPlatformSubscriptionCatalogAndBilling1793862000000');
+    expect(source).toContain("to_regclass('public.platform_subscription_payments')");
+    expect(source).toContain("runNpmScript('migration:run', environment)");
     expect(source).not.toContain('Number(result.global_releases)!==6');
     expect(source).not.toContain("FROM laboratories) AS laboratories");
   });

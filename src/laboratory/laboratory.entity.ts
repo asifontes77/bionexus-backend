@@ -15,6 +15,30 @@ export class Laboratory {
   @Column('varchar', { length: 80, nullable: true })
   plan_code: string | null;
 
+  @Column('int', { nullable: true })
+  plan_id: number | null;
+
+  @Column('varchar', { length: 120, nullable: true })
+  plan_name: string | null;
+
+  @Column('text', { nullable: true })
+  plan_description: string | null;
+
+  @Column('numeric', { precision: 14, scale: 2, nullable: true })
+  plan_price: string | null;
+
+  @Column('char', { length: 3, nullable: true })
+  plan_currency: string | null;
+
+  @Column('varchar', { length: 12, nullable: true })
+  billing_interval: string | null;
+
+  @Column('jsonb', { nullable: true })
+  plan_limits_benefits: Record<string, unknown> | null;
+
+  @Column('int', { default: 0 })
+  plan_grace_period_days: number;
+
   @Column('varchar', { length: 24, nullable: true })
   subscription_status: string | null;
 

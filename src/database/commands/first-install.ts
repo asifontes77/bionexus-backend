@@ -31,7 +31,8 @@ export function isFirstInstallStateValid(result: Record<string, unknown>): boole
   return Number(result.active_owners) === 1
     && Number(result.granular_releases) === REQUIRED_GRANULAR_CATALOG_PACKAGES.length
     && Number(result.laboratories) === 0
-    && Number(result.users) === 0;
+    && Number(result.users) === 0
+    && Number(result.subscription_schema_ready) === 1;
 }
 export function serializeInstallError(error: unknown, depth = 0): SerializedInstallError {
   if (depth > 5) return { name: 'Error', message: 'MAX_CAUSE_DEPTH_REACHED' };
@@ -89,7 +90,13 @@ export async function runFirstInstall(environment: NodeJS.ProcessEnv = process.e
     stage='global-catalogs'; emit('started'); const catalogs=await context.get(PlatformCatalogReleaseService).bootstrapInitialReleases(ownerId); emit('succeeded',{releaseVersion:catalogs.releaseVersion,registered:catalogs.registered.length});
     stage='validation'; emit('started');
     const checks=await context.get(DataSource).query(
-      `SELECT (SELECT count(*)::int FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE') AS tables,(SELECT count(*)::int FROM platform_owners WHERE is_active=true) AS active_owners,(SELECT count(*)::int FROM platform_catalog_releases WHERE status='published') AS global_releases,(SELECT count(DISTINCT package_code)::int FROM platform_catalog_releases WHERE status='published' AND minimum_schema_version=$2 AND package_code=ANY($1::text[])) AS granular_releases,(SELECT count(*)::int FROM laboratory) AS laboratories,(SELECT count(*)::int FROM users) AS users`,
+      `SELECT (SELECT count(*)::int FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE') AS tables,(SELECT count(*)::int FROM platform_owners WHERE is_active=true) AS active_owners,(SELECT count(*)::int FROM platform_catalog_releases WHERE status='published') AS global_releases,(SELECT count(DISTINCT package_code)::int FROM platform_catalog_releases WHERE status='published' AND minimum_schema_version=$2 AND package_code=ANY($1::text[])) AS granular_releases,(SELECT count(*)::int FROM laboratory) AS laboratories,(SELECT count(*)::int FROM users) AS users,
+       ((SELECT count(*) FROM migrations WHERE name IN ('BioNexusBaseline1790366400000','AddPlatformLaboratoryLifecycle1793847600000','AddPlatformSubscriptionCatalogAndBilling1793862000000'))=3
+         AND to_regclass('public.platform_subscription_plans') IS NOT NULL
+         AND to_regclass('public.platform_subscriptions') IS NOT NULL
+         AND to_regclass('public.platform_subscription_payments') IS NOT NULL
+         AND to_regclass('public.platform_billing_audit_logs') IS NOT NULL
+         AND EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='laboratory' AND column_name='plan_grace_period_days'))::int AS subscription_schema_ready`,
       [REQUIRED_GRANULAR_CATALOG_PACKAGES, INITIAL_CATALOG_SCHEMA_VERSION],
     );
     const result=checks[0]??{};

@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigModule } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { SubscriptionAccessService } from '../subscription/subscription-access.service';
 import { SecurityModule } from './security.module';
 
 describe('SecurityModule', () => {
@@ -8,7 +9,7 @@ describe('SecurityModule', () => {
   let jwtService: JwtService;
 
   beforeAll(async () => {
-    module = await Test.createTestingModule({
+    const builder = Test.createTestingModule({
       imports: [
         ConfigModule.forRoot({
           ignoreEnvFile: true,
@@ -21,7 +22,11 @@ describe('SecurityModule', () => {
         }),
         SecurityModule,
       ],
-    }).compile();
+    });
+    module = await builder
+      .overrideProvider(SubscriptionAccessService)
+      .useValue({ assertTenantCanAccess: jest.fn() })
+      .compile();
 
     jwtService = module.get<JwtService>(JwtService);
   });
@@ -44,8 +49,7 @@ describe('SecurityModule', () => {
   });
 
   it('debe fallar si SECRET no está configurada', async () => {
-    await expect(
-      Test.createTestingModule({
+    const builder = Test.createTestingModule({
         imports: [
           ConfigModule.forRoot({
             ignoreEnvFile: true,
@@ -53,7 +57,12 @@ describe('SecurityModule', () => {
           }),
           SecurityModule,
         ],
-      }).compile(),
+      });
+    await expect(
+      builder
+        .overrideProvider(SubscriptionAccessService)
+        .useValue({ assertTenantCanAccess: jest.fn() })
+        .compile(),
     ).rejects.toThrow('The SECRET environment variable is required.');
   });
 });

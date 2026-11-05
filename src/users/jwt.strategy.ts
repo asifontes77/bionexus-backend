@@ -2,10 +2,14 @@
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import { SubscriptionAccessService } from '../subscription/subscription-access.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(configService: ConfigService) {
+  constructor(
+    configService: ConfigService,
+    private readonly subscriptionAccess: SubscriptionAccessService,
+  ) {
     const secret = configService.get<string>('SECRET');
 
     if (!secret) {
@@ -24,6 +28,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     const laboratoryId = Number(payload.laboratoryId);
     if (identityType !== 'platform-owner' && (!Number.isInteger(laboratoryId) || laboratoryId <= 0)) {
       return null;
+    }
+    if (identityType !== 'platform-owner') {
+      await this.subscriptionAccess.assertTenantCanAccess(laboratoryId);
     }
     return {
       userId: payload.id,
