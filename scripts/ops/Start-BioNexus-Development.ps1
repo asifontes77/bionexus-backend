@@ -48,42 +48,8 @@ try {
     try {
         Push-Location $script:BioNexusBackendRoot
         try {
-            $probe = @'
-const { Client } = require('pg');
-async function main() {
-  const client = new Client({
-    host: process.env.DB_HOST, port: Number(process.env.DB_PORT), user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD, database: process.env.DB_DATABASE,
-    connectionTimeoutMillis: 10000, statement_timeout: 15000
-  });
-  await client.connect();
-  try {
-    await client.query('BEGIN TRANSACTION READ ONLY');
-    const result = await client.query(
-      `SELECT current_database() AS database, current_user AS role,
-              current_setting('transaction_read_only') AS read_only,
-              EXISTS (SELECT 1 FROM information_schema.columns
-                      WHERE table_schema='public' AND table_name='laboratory' AND column_name='access_slug') AS slug_column,
-              EXISTS (SELECT 1 FROM public.migrations
-                      WHERE name='BioNexusBaseline1790366400000') AS baseline`
-    );
-    if (result.rows[0].database !== 'bionexus_dev' ||
-        result.rows[0].role !== 'bionexus_dev_app' ||
-        result.rows[0].read_only !== 'on' ||
-        !result.rows[0].slug_column ||
-        !result.rows[0].baseline) {
-      throw Object.assign(new Error('DEVELOPMENT_DATABASE_NOT_READY'), { code: 'DEVELOPMENT_DATABASE_NOT_READY' });
-    }
-    await client.query('ROLLBACK');
-    process.stdout.write(JSON.stringify({ ready: true }));
-  } finally { await client.end(); }
-}
-main().catch(error => {
-  process.stderr.write(`Development preflight failed: ${error.code || 'ERROR'}\n`);
-  process.exitCode = 1;
-});
-'@
-            $state = Invoke-BioNexusNodeJson -Code $probe
+            $state = Get-BioNexusSchemaReadiness -Database 'bionexus_dev' -Role 'bionexus_dev_app'
+            Assert-BioNexusSchemaReady -State $state -Database 'bionexus_dev'
         }
         finally {
             Pop-Location
@@ -92,8 +58,6 @@ main().catch(error => {
     finally {
         Restore-BioNexusProcessEnvironment -Values $previous
     }
-    if (-not $state.ready) { throw 'El preflight de bionexus_dev no pasó; no inicié servicios.' }
-
     Assert-BioNexusPortAvailable -Port 3002 -ServiceName 'Backend de desarrollo'
     Assert-BioNexusPortAvailable -Port 8081 -ServiceName 'Frontend de desarrollo'
 

@@ -101,7 +101,7 @@ Para reinstalar, es necesario que el nombre de base correspondiente no exista. S
 
 ## 4. Script: `Start-BioNexus-Development.ps1` — iniciar el entorno de desarrollo
 
-**Para qué sirve:** valida de solo lectura que `bionexus_dev` y su rol runtime funcionen, luego abre Backend y Frontend en consolas separadas. Pasa al Backend las credenciales `bionexus_dev_app` desde el archivo DPAPI; no usa para la aplicación el usuario administrativo del `.env`. No modifica la base. Detén ambas consolas con `Ctrl+C`.
+**Para qué sirve:** valida de solo lectura que `bionexus_dev`, su rol runtime, el historial y los objetos de esquema tenant, lifecycle y billing requeridos estén presentes, luego abre Backend y Frontend en consolas separadas. Si falta alguno, no inicia servicios. Pasa al Backend las credenciales `bionexus_dev_app` desde el archivo DPAPI; no usa para la aplicación el usuario administrativo del `.env`. No modifica la base. Detén ambas consolas con `Ctrl+C`.
 
 **Comando:**
 
@@ -125,6 +125,25 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\ops\Invoke-Bi
 ```
 
 El script se niega a operar si hay archivos de migraciones sin commit. Las migraciones nuevas deben tener timestamp nuevo; nunca edites la baseline ya instalada. `bionexus_prod` es un ensayo local, por lo que su éxito no es autorización para migrar producción real. En Railway se debe respaldar y aplicar la misma migración mediante un proceso de despliegue separado.
+
+Tras `migration:show` y, cuando corresponda, después de ejecutar migraciones, el script verifica en una transacción de solo lectura la identidad de la base, las migraciones esperadas en el historial y las tablas y columnas requeridas. También exige que TypeORM haya cargado las migraciones baseline, lifecycle y billing. Si hay pendientes, puede aplicarlas normalmente; no informa éxito hasta que no queden pendientes y el contrato exista. Esto comprueba presencia, no todos los tipos, restricciones, permisos o datos del esquema.
+
+Para diagnosticar manualmente sin modificar el estado, conecta explícitamente a la base local que deseas inspeccionar y ejecuta esta consulta en una transacción de solo lectura:
+
+```sql
+BEGIN TRANSACTION READ ONLY;
+SELECT current_database() AS database,
+       EXISTS (SELECT 1 FROM public.migrations
+               WHERE name = 'AddPlatformSubscriptionCatalogAndBilling1793862000000') AS billing_migration_recorded,
+       to_regclass('public.platform_subscription_plans') AS plans,
+       to_regclass('public.platform_subscriptions') AS subscriptions,
+       to_regclass('public.platform_subscription_payments') AS payments,
+       to_regclass('public.platform_billing_audit_logs') AS billing_audit,
+       to_regclass('public.platform_laboratory_audit_logs') AS lifecycle_audit;
+ROLLBACK;
+```
+
+Si `public.migrations` no existe o no es accesible, la consulta falla en vez de declarar la base lista. Una migración que TypeORM no carga no aparece como pendiente; si está registrada pero faltan objetos, puede existir una discrepancia entre historial y DDL (por ejemplo, ejecución simulada o cambios posteriores). Son hipótesis, no un diagnóstico de la base del usuario. No vuelvas a ejecutar `install:first` ni repares el historial sin investigar y respaldar primero.
 
 ## 6. Script: `Remove-BioNexus-LegacyDatabase.ps1` — retirar solo `bionexus`
 

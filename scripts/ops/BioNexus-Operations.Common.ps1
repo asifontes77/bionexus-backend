@@ -138,6 +138,39 @@ function Invoke-BioNexusNodeJson {
     return ($output | ConvertFrom-Json)
 }
 
+function Get-BioNexusSchemaReadiness {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Database,
+        [string]$Role = ''
+    )
+
+    $probe = Join-Path $PSScriptRoot 'BioNexus-SchemaReadiness.cjs'
+    Push-Location $script:BioNexusBackendRoot
+    try {
+        $output = & node $probe $Database $Role
+        if ($LASTEXITCODE -ne 0) {
+            throw "No pude verificar el esquema de '$Database' en modo de solo lectura."
+        }
+        return ($output | ConvertFrom-Json)
+    }
+    finally {
+        Pop-Location
+    }
+}
+
+function Assert-BioNexusSchemaReady {
+    param(
+        [Parameter(Mandatory = $true)]
+        $State,
+        [Parameter(Mandatory = $true)]
+        [string]$Database
+    )
+    if (-not $State.ready) {
+        throw "Esquema o historial incompleto en '$Database': $($State.issues -join ', '). No se declaró listo."
+    }
+}
+
 function Start-BioNexusConsole {
     param(
         [Parameter(Mandatory = $true)]
