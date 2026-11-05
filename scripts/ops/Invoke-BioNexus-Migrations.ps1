@@ -33,6 +33,7 @@ function Get-BioNexusMigrationStatus {
             if ($LASTEXITCODE -ne 0) {
                 throw "TypeORM no pudo consultar el estado de migraciones para '$Database'."
             }
+            $schema = Get-BioNexusSchemaReadiness -Database $Database
         }
         finally {
             Pop-Location
@@ -45,7 +46,7 @@ function Get-BioNexusMigrationStatus {
     $text = ($output | ForEach-Object { [string]$_ }) -join [Environment]::NewLine
     $migrations = @(
         foreach ($line in ($text -split '\r?\n')) {
-            if ($line -match '^\s*\[(X| )\]\s+\d+\s+(.+?)\s*$') {
+            if ($line -match '^\s*\[(X| )\]\s+(?:\d+\s+)?(\S+)\s*$') {
                 [pscustomobject]@{
                     Applied = $Matches[1] -eq 'X'
                     Name = $Matches[2]
@@ -53,9 +54,15 @@ function Get-BioNexusMigrationStatus {
             }
         }
     )
-    if ($migrations.Count -eq 0 -or
-        -not ($migrations | Where-Object { $_.Name -eq 'BioNexusBaseline1790366400000' })) {
-        throw "No pude confirmar la baseline BioNexusBaseline1790366400000 en '$Database'. No se ejecutó ninguna migración."
+    $required = @(
+        'BioNexusBaseline1790366400000',
+        'AddPlatformLaboratoryLifecycle1793847600000',
+        'AddPlatformSubscriptionCatalogAndBilling1793862000000'
+    )
+    $loadedNames = @($migrations | ForEach-Object { $_.Name })
+    $notLoaded = @($required | Where-Object { $_ -notin $loadedNames })
+    if ($notLoaded.Count -gt 0) {
+        throw "TypeORM no cargó las migraciones esperadas en '$Database': $($notLoaded -join ', '). No se ejecutó ninguna migración."
     }
 
     return [pscustomobject]@{
@@ -63,6 +70,7 @@ function Get-BioNexusMigrationStatus {
         Migrations = $migrations
         Applied = @($migrations | Where-Object Applied)
         Pending = @($migrations | Where-Object { -not $_.Applied })
+        Schema = $schema
     }
 }
 
@@ -129,6 +137,7 @@ try {
     if ($EnvironmentName -eq 'Development') {
         $status = Get-BioNexusMigrationStatus -Database $targetDatabase
         if ($status.Pending.Count -eq 0) {
+            Assert-BioNexusSchemaReady -State $status.Schema -Database $targetDatabase
             Write-BioNexusLog "No hay migraciones pendientes en '$targetDatabase'." 'OK'
             return
         }
@@ -139,6 +148,7 @@ try {
         if ($verified.Pending.Count -gt 0) {
             throw "Después de ejecutar, siguen pendientes migraciones en '$targetDatabase': $($verified.Pending.Name -join ', ')."
         }
+        Assert-BioNexusSchemaReady -State $verified.Schema -Database $targetDatabase
         Write-BioNexusLog "Todas las migraciones quedaron aplicadas y verificadas en '$targetDatabase'." 'OK'
         return
     }
@@ -148,9 +158,11 @@ try {
     if ($development.Pending.Count -gt 0) {
         throw "Primero aplica y valida las migraciones en '$($targets.Development)'. Pendientes: $($development.Pending.Name -join ', ')."
     }
+    Assert-BioNexusSchemaReady -State $development.Schema -Database $targets.Development
 
     $production = Get-BioNexusMigrationStatus -Database $targetDatabase
     if ($production.Pending.Count -eq 0) {
+        Assert-BioNexusSchemaReady -State $production.Schema -Database $targetDatabase
         Write-BioNexusLog "No hay migraciones pendientes en '$targetDatabase'." 'OK'
         return
     }
@@ -177,6 +189,7 @@ try {
     if ($verified.Pending.Count -gt 0) {
         throw "Después de ejecutar, siguen pendientes migraciones en '$targetDatabase': $($verified.Pending.Name -join ', ')."
     }
+    Assert-BioNexusSchemaReady -State $verified.Schema -Database $targetDatabase
     Write-BioNexusLog "La promoción de migraciones a '$targetDatabase' terminó y se verificó correctamente." 'OK'
 }
 catch {
