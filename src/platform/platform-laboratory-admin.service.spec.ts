@@ -45,6 +45,19 @@ const deletionColumns = [
   ]),
 ];
 
+const deletionForeignKeys = [
+  {
+    childTable: 'platform_laboratory_audit_logs',
+    parentTable: 'platform_owners',
+    currentSchema: 'public',
+    childSchema: 'public',
+    parentSchema: 'public',
+    deleteAction: 'r',
+    childColumns: ['platform_owner_id'],
+    parentColumns: ['id'],
+  },
+];
+
 function createService(
   managerQuery = jest.fn(async (_sql: string, _parameters?: unknown[]) => {
     void _sql;
@@ -300,9 +313,7 @@ describe('PlatformLaboratoryAdminService', () => {
         ...deletionColumns,
         { table_name: 'invoice', column_name: 'laboratory_id' },
       ];
-      if (sql.includes('pg_constraint')) return [
-        { childTable: 'platform_laboratory_audit_logs', parentTable: 'platform_owners' },
-      ];
+      if (sql.includes('pg_constraint')) return deletionForeignKeys;
       if (sql.includes('FROM "invoice"')) return [{ count: 2 }];
       if (sql.includes('FROM "laboratory_branches"')) return [{ count: 1 }];
       if (sql.includes('FROM "users"')) return [{ count: 1 }];
@@ -322,6 +333,95 @@ describe('PlatformLaboratoryAdminService', () => {
           dependencies: [{ table: 'invoice', count: 2 }],
         },
       });
+      expect(query.mock.calls.some(([sql]) => String(sql).startsWith('DELETE FROM'))).toBe(false);
+    } finally {
+      compare.mockRestore();
+    }
+  });
+
+  it('blocks cross-tenant ON DELETE SET NULL references before deleting provisioning rows', async () => {
+    const query = jest.fn(async (sql: string, _parameters?: unknown[]) => {
+      void _parameters;
+      if (sql.includes('platform_owners')) return [{ password_hash: 'hash' }];
+      if (sql.includes('FROM laboratory WHERE id=$1')) return [laboratory];
+      if (sql.includes('information_schema.columns')) return [
+        ...deletionColumns,
+        { table_name: 'patient_admissions', column_name: 'laboratory_id' },
+      ];
+      if (sql.includes('pg_constraint')) return [
+        ...deletionForeignKeys,
+        {
+          childTable: 'patient_admissions',
+          parentTable: 'users',
+          currentSchema: 'public',
+          childSchema: 'public',
+          parentSchema: 'public',
+          deleteAction: 'n',
+          childColumns: ['delivery_id'],
+          parentColumns: ['id'],
+        },
+      ];
+      if (
+        sql.includes('"patient_admissions" referencing') &&
+        sql.includes('JOIN "users" referenced')
+      ) {
+        expect(sql).toContain('referencing."laboratory_id" IS DISTINCT FROM $1');
+        return [{ count: 1 }];
+      }
+      throw new Error('UNEXPECTED_SQL');
+    });
+    const compare = jest.spyOn(bcrypt, 'compare').mockResolvedValue(true);
+    try {
+      const { service } = createService(query);
+      await expect(service.deleteLaboratory(8, 70, 'correct-password')).rejects.toMatchObject({
+        response: {
+          code: 'PLATFORM_LABORATORY_DELETION_BLOCKED',
+          dependencies: [{
+            table: 'patient_admissions',
+            count: 1,
+            reason: 'cross_tenant_reference',
+            referencedTable: 'users',
+            deleteAction: 'n',
+          }],
+        },
+      });
+      expect(query.mock.calls.some(([sql]) =>
+        String(sql).startsWith('DELETE FROM') || String(sql).startsWith('INSERT INTO platform_laboratory_audit_logs'),
+      )).toBe(false);
+    } finally {
+      compare.mockRestore();
+    }
+  });
+
+  it('refuses deletion when a foreign-key delete action cannot be safely interpreted', async () => {
+    const query = jest.fn(async (sql: string, _parameters?: unknown[]) => {
+      void _parameters;
+      if (sql.includes('platform_owners')) return [{ password_hash: 'hash' }];
+      if (sql.includes('FROM laboratory WHERE id=$1')) return [laboratory];
+      if (sql.includes('information_schema.columns')) return [
+        ...deletionColumns,
+        { table_name: 'patient_admissions', column_name: 'laboratory_id' },
+      ];
+      if (sql.includes('pg_constraint')) return [
+        ...deletionForeignKeys,
+        {
+          childTable: 'patient_admissions',
+          parentTable: 'users',
+          currentSchema: 'public',
+          childSchema: 'public',
+          parentSchema: 'public',
+          deleteAction: 'unknown',
+          childColumns: ['delivery_id'],
+          parentColumns: ['id'],
+        },
+      ];
+      throw new Error('UNEXPECTED_SQL');
+    });
+    const compare = jest.spyOn(bcrypt, 'compare').mockResolvedValue(true);
+    try {
+      const { service } = createService(query);
+      await expect(service.deleteLaboratory(8, 70, 'correct-password'))
+        .rejects.toThrow('PLATFORM_LABORATORY_DELETION_SCHEMA_UNSAFE');
       expect(query.mock.calls.some(([sql]) => String(sql).startsWith('DELETE FROM'))).toBe(false);
     } finally {
       compare.mockRestore();
@@ -355,9 +455,7 @@ describe('PlatformLaboratoryAdminService', () => {
       if (sql.includes('platform_owners')) return [{ password_hash: 'hash' }];
       if (sql.includes('FROM laboratory WHERE id=$1')) return [laboratory];
       if (sql.includes('information_schema.columns')) return deletionColumns;
-      if (sql.includes('pg_constraint')) return [
-        { childTable: 'platform_laboratory_audit_logs', parentTable: 'platform_owners' },
-      ];
+      if (sql.includes('pg_constraint')) return deletionForeignKeys;
       if (sql.includes('FROM "laboratory_branches"')) return [{ count: 1 }];
       if (sql.includes('FROM "users"')) return [{ count: 1 }];
       if (sql.includes('FROM "security_roles"')) return [{ count: 1 }];
@@ -405,9 +503,7 @@ describe('PlatformLaboratoryAdminService', () => {
       if (sql.includes('platform_owners')) return [{ password_hash: 'hash' }];
       if (sql.includes('FROM laboratory WHERE id=$1')) return [laboratory];
       if (sql.includes('information_schema.columns')) return deletionColumns;
-      if (sql.includes('pg_constraint')) return [
-        { childTable: 'platform_laboratory_audit_logs', parentTable: 'platform_owners' },
-      ];
+      if (sql.includes('pg_constraint')) return deletionForeignKeys;
       if (sql.includes('FROM "laboratory_branches"')) return [{ count: 1 }];
       if (sql.includes('FROM "users"')) return [{ count: 1 }];
       if (sql.includes('FROM "security_roles"')) return [{ count: 1 }];

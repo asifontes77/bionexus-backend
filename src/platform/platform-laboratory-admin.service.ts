@@ -344,10 +344,10 @@ export class PlatformLaboratoryAdminService {
       if (!tableColumns.get(table)?.has('laboratory_id')) {
         throw new ConflictException('PLATFORM_LABORATORY_DELETION_SCHEMA_UNSAFE');
       }
-      const auditColumns = tableColumns.get('platform_laboratory_audit_logs');
-      if (!auditColumns?.has('laboratory_id') || !auditColumns.has('platform_owner_id')) {
-        throw new ConflictException('PLATFORM_LABORATORY_DELETION_SCHEMA_UNSAFE');
-      }
+    }
+    const auditColumns = tableColumns.get('platform_laboratory_audit_logs');
+    if (!auditColumns?.has('laboratory_id') || !auditColumns.has('platform_owner_id')) {
+      throw new ConflictException('PLATFORM_LABORATORY_DELETION_SCHEMA_UNSAFE');
     }
     for (const table of PACKAGE_TABLES) {
       const available = tableColumns.get(table);
@@ -364,8 +364,41 @@ export class PlatformLaboratoryAdminService {
     }
 
     const foreignKeys = await manager.query(
-      `SELECT child.relname AS "childTable",parent.relname AS "parentTable" FROM pg_constraint foreign_key JOIN pg_class child ON child.oid=foreign_key.conrelid JOIN pg_namespace child_schema ON child_schema.oid=child.relnamespace JOIN pg_class parent ON parent.oid=foreign_key.confrelid WHERE foreign_key.contype='f' AND child_schema.nspname=current_schema()`,
-    ) as Array<{ childTable: string; parentTable: string }>;
+      `SELECT child.relname AS "childTable",parent.relname AS "parentTable",
+       current_schema() AS "currentSchema",
+       child_schema.nspname AS "childSchema",parent_schema.nspname AS "parentSchema",
+        foreign_key.confdeltype AS "deleteAction",
+        ARRAY(
+          SELECT child_attribute.attname
+          FROM unnest(foreign_key.conkey) WITH ORDINALITY AS child_key(attnum,position)
+          JOIN pg_attribute child_attribute
+            ON child_attribute.attrelid=child.oid AND child_attribute.attnum=child_key.attnum
+          ORDER BY child_key.position
+        ) AS "childColumns",
+        ARRAY(
+          SELECT parent_attribute.attname
+          FROM unnest(foreign_key.confkey) WITH ORDINALITY AS parent_key(attnum,position)
+          JOIN pg_attribute parent_attribute
+            ON parent_attribute.attrelid=parent.oid AND parent_attribute.attnum=parent_key.attnum
+          ORDER BY parent_key.position
+        ) AS "parentColumns"
+       FROM pg_constraint foreign_key
+       JOIN pg_class child ON child.oid=foreign_key.conrelid
+       JOIN pg_namespace child_schema ON child_schema.oid=child.relnamespace
+       JOIN pg_class parent ON parent.oid=foreign_key.confrelid
+       JOIN pg_namespace parent_schema ON parent_schema.oid=parent.relnamespace
+       WHERE foreign_key.contype='f'
+         AND parent_schema.nspname=current_schema()`,
+    ) as Array<{
+      childTable: string;
+      parentTable: string;
+      currentSchema: string;
+      childSchema: string;
+      parentSchema: string;
+      deleteAction: string;
+      childColumns: string[];
+      parentColumns: string[];
+    }>;
     if (
       foreignKeys.some(({ childTable, parentTable }) =>
         childTable === 'platform_laboratory_audit_logs' && parentTable === 'laboratory',
@@ -377,11 +410,18 @@ export class PlatformLaboratoryAdminService {
       throw new ConflictException('PLATFORM_LABORATORY_DELETION_SCHEMA_UNSAFE');
     }
     for (const foreignKey of foreignKeys) {
+      if (foreignKey.parentSchema !== foreignKey.currentSchema) {
+        throw new ConflictException('PLATFORM_LABORATORY_DELETION_SCHEMA_UNSAFE');
+      }
       if ((foreignKey.parentTable === 'laboratory' || tableColumns.get(foreignKey.parentTable)?.has('laboratory_id'))
-        && !tableColumns.get(foreignKey.childTable)?.has('laboratory_id')) {
+        && (foreignKey.childSchema !== foreignKey.currentSchema || !tableColumns.get(foreignKey.childTable)?.has('laboratory_id'))) {
+        throw new ConflictException('PLATFORM_LABORATORY_DELETION_SCHEMA_UNSAFE');
+      }
+      if (!['a', 'r', 'c', 'n', 'd'].includes(foreignKey.deleteAction)) {
         throw new ConflictException('PLATFORM_LABORATORY_DELETION_SCHEMA_UNSAFE');
       }
     }
+    await this.assertNoCrossTenantReferences(manager, laboratoryId, foreignKeys, tableColumns);
 
     const dependencies: Array<{ table: string; count: number }> = [];
     for (const [table, availableColumns] of tableColumns) {
@@ -439,6 +479,90 @@ export class PlatformLaboratoryAdminService {
     }
     if (dependencies.length) {
       throw new ConflictException({ code: 'PLATFORM_LABORATORY_DELETION_BLOCKED', dependencies });
+    }
+  }
+
+  private async assertNoCrossTenantReferences(
+    manager: EntityManager,
+    laboratoryId: number,
+    foreignKeys: Array<{
+      childTable: string;
+      parentTable: string;
+      currentSchema: string;
+      childSchema: string;
+      parentSchema: string;
+      deleteAction: string;
+      childColumns: string[];
+      parentColumns: string[];
+    }>,
+    tableColumns: Map<string, Set<string>>,
+  ) {
+    const parentTablesToDelete = new Set([
+      ...SAFE_PROVISIONING_TABLES,
+      ...PACKAGE_TABLES,
+      'laboratory',
+    ]);
+    const dependencies: Array<Record<string, unknown>> = [];
+
+    for (const foreignKey of foreignKeys) {
+      if (!parentTablesToDelete.has(foreignKey.parentTable)) continue;
+      if (
+        foreignKey.childSchema !== foreignKey.currentSchema ||
+        foreignKey.parentSchema !== foreignKey.currentSchema
+      ) {
+        throw new ConflictException('PLATFORM_LABORATORY_DELETION_SCHEMA_UNSAFE');
+      }
+      if (
+        !Array.isArray(foreignKey.childColumns) ||
+        !Array.isArray(foreignKey.parentColumns) ||
+        foreignKey.childColumns.length === 0 ||
+        foreignKey.childColumns.length !== foreignKey.parentColumns.length
+      ) {
+        throw new ConflictException('PLATFORM_LABORATORY_DELETION_SCHEMA_UNSAFE');
+      }
+      const childColumns = tableColumns.get(foreignKey.childTable);
+      const parentColumns = tableColumns.get(foreignKey.parentTable);
+      if (
+        !childColumns?.has('laboratory_id') ||
+        (foreignKey.parentTable !== 'laboratory' && !parentColumns?.has('laboratory_id'))
+      ) {
+        throw new ConflictException('PLATFORM_LABORATORY_DELETION_SCHEMA_UNSAFE');
+      }
+
+      const quoteIdentifier = (identifier: string) => `"${identifier.replace(/"/g, '""')}"`;
+      const join = foreignKey.childColumns
+        .map((childColumn, index) =>
+          `referencing.${quoteIdentifier(childColumn)}=referenced.${quoteIdentifier(foreignKey.parentColumns[index])}`,
+        )
+        .join(' AND ');
+      const parentScope = foreignKey.parentTable === 'laboratory'
+        ? 'referenced."id"=$1'
+        : 'referenced."laboratory_id"=$1';
+      const references = await manager.query(
+        `SELECT COUNT(*)::int AS count
+         FROM ${quoteIdentifier(foreignKey.childTable)} referencing
+         JOIN ${quoteIdentifier(foreignKey.parentTable)} referenced ON ${join}
+         WHERE ${parentScope}
+           AND referencing."laboratory_id" IS DISTINCT FROM $1`,
+        [laboratoryId],
+      );
+      const count = Number(references[0]?.count ?? 0);
+      if (count > 0) {
+        dependencies.push({
+          table: foreignKey.childTable,
+          count,
+          reason: 'cross_tenant_reference',
+          referencedTable: foreignKey.parentTable,
+          deleteAction: foreignKey.deleteAction,
+        });
+      }
+    }
+
+    if (dependencies.length) {
+      throw new ConflictException({
+        code: 'PLATFORM_LABORATORY_DELETION_BLOCKED',
+        dependencies,
+      });
     }
   }
 
