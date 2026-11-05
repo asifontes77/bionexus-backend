@@ -11261,7 +11261,7 @@
         "technicalScope": "Commit con cambios pendientes preservados en development; commit aislado de eliminaciones basado en origin/main; pushes fast-forward sin force; ninguna reescritura de historia.",
         "changes": [
           "Eliminados .postman/resources.yaml y postman/globals/workspace.globals.yaml.",
-          "Eliminados los cuatro archivos bajo Audit y los siete archivos bajo Auditoria-Backend-Extraccion.",
+          "Eliminados los tres archivos bajo Audit y los siete archivos bajo Auditoria-Backend-Extraccion.",
           "Eliminados localhost+1.pem y localhost+1-key.pem sin leer ni imprimir su contenido.",
           "Preservados .env, .env.example, dist, docs, node_modules, public, scripts, src, test, configuraciones, package.json, package-lock.json y README.md.",
           "En main se incluyeron unicamente las 14 eliminaciones en el commit 336dd5e45f4cda4ce996c4759b9e6fc41a191ced; no se promovieron cambios funcionales de development."
@@ -11272,7 +11272,7 @@
           "npm run build Backend completado correctamente.",
           "Parser PowerShell: los ocho scripts de scripts/ops parsearon correctamente.",
           "Contrato tenant Frontend aprobado.",
-          "Confirmada ausencia de los directorios y certificados solicitados en ambos tips; git grep no encontro referencias activas a los certificados.",
+          "Confirmada ausencia de los directorios y certificados solicitados en ambos tips; git grep, excluyendo esta bitacora, no encontro referencias activas a los certificados.",
           "Commit main revisado: contiene solo 14 eliminaciones; push normal a origin/main completado."
         ],
         "results": {
