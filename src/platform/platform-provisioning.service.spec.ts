@@ -1,4 +1,5 @@
 import { PlatformProvisioningService } from './platform-provisioning.service';
+import { PlatformLaboratoryAuditService } from './platform-laboratory-audit.service';
 
 describe('PlatformProvisioningService', () => {
   it('uses one serializable transaction and installs the required tenant data', async () => {
@@ -21,14 +22,21 @@ describe('PlatformProvisioningService', () => {
       if (lower.startsWith('insert into security_role_permissions')) return undefined;
       if (lower.startsWith('insert into users')) return [{ id: 5, name: 'Admin', username: 'admin' }];
       if (lower.startsWith('insert into security_user_roles')) return undefined;
+      if (lower.startsWith('insert into platform_laboratory_audit_logs')) return undefined;
       throw new Error(`UNEXPECTED_SQL: ${normalized}`);
     });
     const manager = { query };
     const dataSource = { transaction: jest.fn(async (_level, work) => work(manager)) };
     const installSelected = jest.fn().mockResolvedValue([]);
-    const service = new PlatformProvisioningService(dataSource as never, { installSelected } as never);
+    const service = new PlatformProvisioningService(
+      dataSource as never,
+      { installSelected } as never,
+      new PlatformLaboratoryAuditService(),
+    );
     await expect(service.provision({
       access_slug: ' Lab A ', rif: 'J-12345678-9', name: 'Lab', businessName: 'Lab CA', address: 'Caracas',
+      plan_code: 'pilot', subscription_status: 'perpetual_free' as const, service_starts_at: '2026-10-30T00:00:00Z',
+      service_expires_at: null, perpetual_free_reason: 'Pilot grant',
       branchName: 'Principal', administratorName: 'Admin', administratorUsername: 'admin',
       administratorPassword: 'Strong!Pass123', administratorPasswordConfirmation: 'Strong!Pass123', seedPackages: [],
     }, 7001)).resolves.toEqual(expect.objectContaining({ laboratory: expect.objectContaining({ id: 1, access_slug: 'lab-a' }), mainBranch: expect.objectContaining({ id: 2, code: 'PRINCIPAL' }) }));
@@ -41,13 +49,18 @@ describe('PlatformProvisioningService', () => {
       .toContain('access_slug');
     expect(query.mock.calls.find(call => String(call[0]).toLowerCase().startsWith('select id from currencies'))?.[0])
       .toContain("upper(btrim(code))='VES' AND is_active=true");
+    const auditCall = query.mock.calls.find(call => String(call[0]).startsWith('INSERT INTO platform_laboratory_audit_logs'));
+    expect(auditCall?.[1]).toEqual(expect.arrayContaining([1, 7001, 'platform.laboratory.created']));
+    expect(String(auditCall?.[1]?.[4])).not.toContain('Strong!Pass123');
   });
 
   it('rejects a mismatched confirmation before opening a transaction', async () => {
     const dataSource = { transaction: jest.fn() };
-    const service = new PlatformProvisioningService(dataSource as never, { installSelected: jest.fn().mockResolvedValue([]) } as never);
+    const service = new PlatformProvisioningService(dataSource as never, { installSelected: jest.fn().mockResolvedValue([]) } as never, new PlatformLaboratoryAuditService());
     await expect(service.provision({
       access_slug: 'lab-a', rif: 'J-12345678-9', name: 'Lab', businessName: 'Lab CA', address: 'Caracas',
+      plan_code: 'pilot', subscription_status: 'perpetual_free' as const, service_starts_at: '2026-10-30T00:00:00Z',
+      service_expires_at: null, perpetual_free_reason: 'Pilot grant',
       branchName: 'Principal', administratorName: 'Admin', administratorUsername: 'admin',
       administratorPassword: 'Strong!Pass123', administratorPasswordConfirmation: 'Different!Pass123', seedPackages: [],
     } as never, 7001)).rejects.toThrow('PLATFORM_PROVISIONING_PASSWORD_CONFIRMATION_MISMATCH');
@@ -56,9 +69,11 @@ describe('PlatformProvisioningService', () => {
 
   it('rejects packages without approved snapshots before opening a transaction', async () => {
     const dataSource = { transaction: jest.fn() };
-    const service = new PlatformProvisioningService(dataSource as never, { installSelected: jest.fn() } as never);
+    const service = new PlatformProvisioningService(dataSource as never, { installSelected: jest.fn() } as never, new PlatformLaboratoryAuditService());
     await expect(service.provision({
       access_slug: 'lab-a', rif: 'J-12345678-9', name: 'Lab', businessName: 'Lab CA', address: 'Caracas',
+      plan_code: 'pilot', subscription_status: 'perpetual_free' as const, service_starts_at: '2026-10-30T00:00:00Z',
+      service_expires_at: null, perpetual_free_reason: 'Pilot grant',
       branchName: 'Principal', administratorName: 'Admin', administratorUsername: 'admin',
       administratorPassword: 'Strong!Pass123', administratorPasswordConfirmation: 'Strong!Pass123',
       seedPackages: ['special-tests'],
@@ -68,9 +83,11 @@ describe('PlatformProvisioningService', () => {
 
   it('requires and validates a normalized tenant access slug before opening a transaction', async () => {
     const dataSource = { transaction: jest.fn() };
-    const service = new PlatformProvisioningService(dataSource as never, { installSelected: jest.fn() } as never);
+    const service = new PlatformProvisioningService(dataSource as never, { installSelected: jest.fn() } as never, new PlatformLaboratoryAuditService());
     const input = {
       rif: 'J-12345678-9', name: 'Lab', businessName: 'Lab CA', address: 'Caracas',
+      plan_code: 'pilot', subscription_status: 'perpetual_free' as const, service_starts_at: '2026-10-30T00:00:00Z',
+      service_expires_at: null, perpetual_free_reason: 'Pilot grant',
       branchName: 'Principal', administratorName: 'Admin', administratorUsername: 'admin',
       administratorPassword: 'Strong!Pass123', administratorPasswordConfirmation: 'Strong!Pass123', seedPackages: [],
     };
@@ -95,13 +112,36 @@ describe('PlatformProvisioningService', () => {
     const service = new PlatformProvisioningService(
       dataSource as never,
       { installSelected: jest.fn() } as never,
+      new PlatformLaboratoryAuditService(),
     );
 
     await expect(service.provision({
       access_slug: ' Lab A ', rif: 'J-12345678-9', name: 'Lab', businessName: 'Lab CA', address: 'Caracas',
+      plan_code: 'pilot', subscription_status: 'perpetual_free', service_starts_at: '2026-10-30T00:00:00Z',
+      service_expires_at: null, perpetual_free_reason: 'Pilot grant',
       branchCode: 'MAIN', branchName: 'Principal', administratorName: 'Admin', administratorUsername: 'admin',
       administratorPassword: 'Strong!Pass123', administratorPasswordConfirmation: 'Strong!Pass123', seedPackages: [],
     }, 7001)).rejects.toThrow('PLATFORM_PROVISIONING_ACCESS_SLUG_EXISTS');
     expect(query).toHaveBeenCalledTimes(2);
+  });
+
+  it('requires explicit expiry for trial or active enrollment and supports an explicit perpetual grant', async () => {
+    const dataSource = { transaction: jest.fn() };
+    const service = new PlatformProvisioningService(dataSource as never, { installSelected: jest.fn() } as never, new PlatformLaboratoryAuditService());
+    const common = {
+      access_slug: 'lab-a', rif: 'J-12345678-9', name: 'Lab', businessName: 'Lab CA', address: 'Caracas',
+      plan_code: 'pilot', service_starts_at: '2026-10-30T00:00:00Z',
+      branchName: 'Principal', administratorName: 'Admin', administratorUsername: 'admin',
+      administratorPassword: 'Strong!Pass123', administratorPasswordConfirmation: 'Strong!Pass123',
+    };
+
+    await expect(service.provision({
+      ...common, subscription_status: 'trial', service_expires_at: null,
+    } as never, 7001)).rejects.toThrow('PLATFORM_SUBSCRIPTION_EXPIRY_REQUIRED');
+    await expect(service.provision({
+      ...common, subscription_status: 'perpetual_free', service_expires_at: null,
+      perpetual_free_reason: 'Approved pilot',
+    } as never, 7001)).resolves.toBeUndefined();
+    expect(dataSource.transaction).toHaveBeenCalledTimes(1);
   });
 });

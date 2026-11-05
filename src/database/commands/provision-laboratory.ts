@@ -19,6 +19,13 @@ export interface ProvisionLaboratoryEnvironment {
   BIONEXUS_PROVISION_ADDRESS?: string;
   BIONEXUS_PROVISION_PHONE?: string;
   BIONEXUS_PROVISION_EMAIL?: string;
+  BIONEXUS_PROVISION_PLAN_CODE?: string;
+  BIONEXUS_PROVISION_SUBSCRIPTION_STATUS?: string;
+  BIONEXUS_PROVISION_SERVICE_STARTS_AT?: string;
+  BIONEXUS_PROVISION_SERVICE_EXPIRES_AT?: string;
+  BIONEXUS_PROVISION_GRACE_UNTIL?: string;
+  BIONEXUS_PROVISION_PERPETUAL_FREE_REASON?: string;
+  BIONEXUS_PROVISION_COMMERCIAL_NOTES?: string;
   BIONEXUS_PROVISION_BRANCH_CODE?: string;
   BIONEXUS_PROVISION_BRANCH_NAME?: string;
   BIONEXUS_PROVISION_ADMIN_NAME?: string;
@@ -53,6 +60,13 @@ export function resolveProvisionLaboratoryInput(environment: ProvisionLaboratory
       name: required(environment, 'BIONEXUS_PROVISION_NAME'),
       businessName: required(environment, 'BIONEXUS_PROVISION_BUSINESS_NAME'),
       address: required(environment, 'BIONEXUS_PROVISION_ADDRESS'),
+      plan_code: required(environment, 'BIONEXUS_PROVISION_PLAN_CODE'),
+      subscription_status: required(environment, 'BIONEXUS_PROVISION_SUBSCRIPTION_STATUS') as CreatePlatformLaboratoryDto['subscription_status'],
+      service_starts_at: required(environment, 'BIONEXUS_PROVISION_SERVICE_STARTS_AT'),
+      service_expires_at: environment.BIONEXUS_PROVISION_SERVICE_EXPIRES_AT?.trim() || null,
+      grace_until: environment.BIONEXUS_PROVISION_GRACE_UNTIL?.trim() || null,
+      perpetual_free_reason: environment.BIONEXUS_PROVISION_PERPETUAL_FREE_REASON?.trim() || undefined,
+      commercial_notes: environment.BIONEXUS_PROVISION_COMMERCIAL_NOTES?.trim() || undefined,
       phone: environment.BIONEXUS_PROVISION_PHONE?.trim() ?? '',
       email: environment.BIONEXUS_PROVISION_EMAIL?.trim() ?? '',
       branchCode: environment.BIONEXUS_PROVISION_BRANCH_CODE?.trim() || undefined,

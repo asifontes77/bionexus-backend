@@ -40,9 +40,12 @@ describe('Laboratory provisioning contract', () => {
     expect(migration).toContain('UQ_security_roles_laboratory_code_normalized');
   });
 
-  /** Conserva una unica migracion baseline. */
-  it('keeps exactly one migration file', () => {
+  /** Conserva la baseline y agrega cambios posteriores en migraciones incrementales. */
+  it('keeps the original baseline and separately versions the lifecycle schema', () => {
     const migrations = readdirSync('src/database/migrations').filter((name) => name.endsWith('.ts'));
-    expect(migrations).toEqual(['1790366400000-BioNexusBaseline.ts']);
+    expect(migrations.sort()).toEqual([
+      '1790366400000-BioNexusBaseline.ts',
+      '1793847600000-AddPlatformLaboratoryLifecycle.ts',
+    ]);
   });
 });

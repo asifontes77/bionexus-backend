@@ -9,6 +9,45 @@ export class Laboratory {
   @Column('varchar', { length: 63 })
   access_slug: string;
 
+  @Column('varchar', { length: 20, default: 'cloud' })
+  service_mode: string;
+
+  @Column('varchar', { length: 80, nullable: true })
+  plan_code: string | null;
+
+  @Column('varchar', { length: 24, nullable: true })
+  subscription_status: string | null;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  service_starts_at: Date | null;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  service_expires_at: Date | null;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  grace_until: Date | null;
+
+  @Column({ type: 'text', nullable: true })
+  perpetual_free_reason: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  suspension_reason: string | null;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  suspended_at: Date | null;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  perpetual_free_granted_at: Date | null;
+
+  @Column('int', { nullable: true })
+  perpetual_free_granted_by: number | null;
+
+  @Column({ type: 'text', nullable: true })
+  commercial_notes: string | null;
+
+  @Column('boolean', { default: true })
+  is_active: boolean;
+
   @Column({ type: 'char', length: 20 })
   rif: string;
 
