@@ -14017,6 +14017,70 @@
         "Definir si EUR sera moneda adicional solamente o tambien BASE/LOCAL para conversiones.",
         "Cerrar Trial en 15 o 30 dias antes de implementar el modelo completo de planes."
       ]
+    },
+    {
+      "id": "platform-commercial-final-decisions-20261106",
+      "timestamp": "2026-11-06T00:06:00-04:00",
+      "status": "approved-for-implementation",
+      "decisions": {
+        "operationalCurrencyChange": {
+          "selectionAtProvisioning": true,
+          "allowedCodes": [
+            "VES",
+            "USD",
+            "EUR"
+          ],
+          "defaultCode": "USD",
+          "rule": "Puede cambiarse solo mientras el tenant no tenga transacciones monetarias.",
+          "locksAfter": [
+            "precios o tarifas",
+            "admisiones o ingresos",
+            "pagos",
+            "facturas",
+            "cuentas por cobrar",
+            "notas de credito",
+            "cierres de caja"
+          ],
+          "reason": "Evita reinterpretar importes historicos con una moneda diferente.",
+          "auditRequired": true
+        },
+        "currencyRoles": {
+          "baseCurrency": "USD",
+          "localCurrency": "VES",
+          "additionalCurrencies": [
+            "EUR"
+          ],
+          "operationalPrimary": "Seleccionable entre VES, USD o EUR mediante financial_primary_currency_id.",
+          "clarification": "Seleccionar EUR como moneda operativa principal no convierte EUR automaticamente en moneda BASE o LOCAL ni habilita conversiones EUR/USD/VES.",
+          "futureScope": "Cualquier conversion con EUR requiere una fase multimoneda independiente con tasas y reglas explicitas."
+        },
+        "trialPlan": {
+          "requiredSeed": true,
+          "planType": "trial",
+          "durationUnit": "day",
+          "durationCount": 15,
+          "price": "0.00",
+          "commercialCurrency": "USD",
+          "gracePeriodDays": 0,
+          "initialSubscriptionStatus": "trial",
+          "expirationAuthority": "Backend",
+          "expirationRule": "service_expires_at = service_starts_at + 15 dias",
+          "onExpiration": "suspended",
+          "passesThroughGrace": false
+        }
+      },
+      "implementationConstraints": [
+        "No aplicar el parche aislado de fechas anterior; implementar primero el modelo aprobado completo.",
+        "Consolidar cambios de esquema en la migracion baseline existente.",
+        "Actualizar snapshot del paquete currencies para incluir VES, USD y EUR activas.",
+        "Eliminar VES forzado del provisionamiento y resolver operationalCurrencyCode dentro del tenant.",
+        "Mantener moneda comercial del plan separada de la moneda operativa.",
+        "No modificar flujos BASE=USD y LOCAL=VES en esta primera etapa, salvo para impedir contradicciones con la moneda principal.",
+        "Agregar pruebas de alta VES, USD, EUR, moneda ausente, moneda inactiva y rollback.",
+        "Agregar pruebas de bloqueo de cambio de moneda despues de la primera transaccion monetaria.",
+        "Agregar seed y pruebas del Trial de 15 dias sin gracia."
+      ],
+      "nextAction": "Auditar y definir exactamente el detector central de transacciones monetarias y los archivos del snapshot currencies antes de modificar codigo."
     }
   ],
   "stateReplication": {
@@ -29957,27 +30021,30 @@
   "primaryObjective": "Estabilizar y completar Bio Nexus Cloud; alinear PostgreSQL real con la baseline y cerrar el provisionamiento funcional antes de otros modos.",
   "currentWorkstream": "platform-laboratory-administration-cloud",
   "currentCheckpoint": {
-    "id": "platform-operational-currency-decisions-20261106",
-    "at": "2026-11-06T00:01:01-04:00",
-    "status": "currency-audit-completed;business-decisions-pending",
+    "id": "platform-commercial-implementation-readiness-20261106",
+    "at": "2026-11-06T00:06:00-04:00",
+    "status": "business-decisions-approved;implementation-audit-pending",
     "completed": [
-      "Modelo comercial registrado.",
-      "Auditoria de currencies y financial_primary_currency_id completada.",
-      "VES forzado, ausencia de EUR y falta de selector de alta confirmados."
+      "Moneda operativa seleccionable VES/USD/EUR con USD predeterminado.",
+      "Cambio permitido solo antes de transacciones monetarias.",
+      "USD permanece BASE, VES permanece LOCAL y EUR queda adicional.",
+      "Trial aprobado en 15 dias, 0 USD y sin gracia."
     ],
     "current": [
-      "Definir si la moneda operativa sera inmutable despues del alta o editable solo mientras no existan transacciones monetarias.",
-      "Definir si EUR sera moneda adicional solamente o tambien BASE/LOCAL para conversiones.",
-      "Cerrar Trial en 15 o 30 dias antes de implementar el modelo completo de planes."
+      "Auditar detector de transacciones monetarias y snapshot currencies."
     ],
     "pending": [
-      "Actualizar snapshot obligatorio de currencies.",
-      "Agregar selector del alta y contrato Backend.",
-      "Eliminar VES forzado.",
-      "Agregar pruebas VES, USD, EUR y rollback.",
-      "Revisar supuestos BASE=USD y LOCAL=VES antes de cambiar flujos monetarios."
+      "No aplicar el parche aislado de fechas anterior; implementar primero el modelo aprobado completo.",
+      "Consolidar cambios de esquema en la migracion baseline existente.",
+      "Actualizar snapshot del paquete currencies para incluir VES, USD y EUR activas.",
+      "Eliminar VES forzado del provisionamiento y resolver operationalCurrencyCode dentro del tenant.",
+      "Mantener moneda comercial del plan separada de la moneda operativa.",
+      "No modificar flujos BASE=USD y LOCAL=VES en esta primera etapa, salvo para impedir contradicciones con la moneda principal.",
+      "Agregar pruebas de alta VES, USD, EUR, moneda ausente, moneda inactiva y rollback.",
+      "Agregar pruebas de bloqueo de cambio de moneda despues de la primera transaccion monetaria.",
+      "Agregar seed y pruebas del Trial de 15 dias sin gracia."
     ],
-    "nextAction": "Resolver las tres decisiones de negocio pendientes antes de modificar codigo, migracion baseline o snapshots.",
+    "nextAction": "Auditar y definir exactamente el detector central de transacciones monetarias y los archivos del snapshot currencies antes de modificar codigo.",
     "databaseQueried": false,
     "databaseModified": false,
     "serversManaged": false
