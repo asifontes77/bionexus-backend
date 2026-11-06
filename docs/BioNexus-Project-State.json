@@ -376,7 +376,8 @@
         "databaseModified": false,
         "serversManaged": false
       },
-      "nextAction": "Ejecutar un inventario de solo lectura del esquema PostgreSQL y compararlo con las entidades TypeORM y la baseline única."
+      "nextAction": "Ejecutar un inventario de solo lectura del esquema PostgreSQL y compararlo con las entidades TypeORM y la baseline única.",
+      "policyStatus": "superseded-by-database-migration-policy-updated-20261106"
     },
     {
       "id": "python-first-powershell-rule-20261028",
@@ -397,7 +398,8 @@
         "No dar por ejecutada ni cerrada la auditoría pgaudit anterior.",
         "Continuar la normalización contra PostgreSQL, las entidades TypeORM y la baseline única."
       ],
-      "nextAction": "Generar una auditoría PostgreSQL Python-first que use PowerShell solo para orquestación y que actualice las bitácoras al finalizar."
+      "nextAction": "Generar una auditoría PostgreSQL Python-first que use PowerShell solo para orquestación y que actualice las bitácoras al finalizar.",
+      "policyStatus": "superseded-by-database-migration-policy-updated-20261106"
     },
     {
       "id": "postgresql-python-first-readonly-audit-20261028",
@@ -475,7 +477,8 @@
       },
       "nextAction": "Generar la matriz detallada entidad-tabla-columna-FK-índice para cerrar diferencias de normalización en la baseline inicial.",
       "comparisonSuperseded": true,
-      "comparisonCorrection": "La comparación tabla-entidad anterior fue no concluyente: el parser no resolvió @Entity() sin nombre y produjo 51 tablas adicionales falsas."
+      "comparisonCorrection": "La comparación tabla-entidad anterior fue no concluyente: el parser no resolvió @Entity() sin nombre y produjo 51 tablas adicionales falsas.",
+      "policyStatus": "superseded-by-database-migration-policy-updated-20261106"
     },
     {
       "id": "postgresql-entity-table-matrix-correction-20261028",
@@ -593,7 +596,8 @@
         ],
         "entitiesWithDeclaredMissingColumns": []
       },
-      "nextAction": "Revisar únicamente mapeos no resueltos y diferencias reales antes de proponer cambios en la baseline."
+      "nextAction": "Revisar únicamente mapeos no resueltos y diferencias reales antes de proponer cambios en la baseline.",
+      "policyStatus": "superseded-by-database-migration-policy-updated-20261106"
     },
     {
       "id": "postgresql-confirmed-structural-differences-20261028",
@@ -682,7 +686,8 @@
         "codeModified": false,
         "serversManaged": false
       },
-      "nextAction": "Definir la corrección segura según el contrato funcional encontrado y consolidarla únicamente en la baseline inicial, preservando datos."
+      "nextAction": "Definir la corrección segura según el contrato funcional encontrado y consolidarla únicamente en la baseline inicial, preservando datos.",
+      "policyStatus": "superseded-by-database-migration-policy-updated-20261106"
     },
     {
       "id": "patient-exams-status-boolean-preflight-20261028",
@@ -711,7 +716,8 @@
         "codeModified": false,
         "serversManaged": false
       },
-      "nextAction": "Aplicar la conversión en PostgreSQL y consolidar el tipo boolean en la baseline inicial únicamente si booleanConversionRecommended es true."
+      "nextAction": "Aplicar la conversión en PostgreSQL y consolidar el tipo boolean en la baseline inicial únicamente si booleanConversionRecommended es true.",
+      "policyStatus": "superseded-by-database-migration-policy-updated-20261106"
     },
     {
       "id": "baseline-patient-exams-status-format-inspection-20261028",
@@ -755,7 +761,8 @@
         "databaseModified": true,
         "serversManaged": false
       },
-      "nextAction": "Ejecutar auditoría estructural final y cerrar normalización si no quedan diferencias."
+      "nextAction": "Ejecutar auditoría estructural final y cerrar normalización si no quedan diferencias.",
+      "policyStatus": "superseded-by-database-migration-policy-updated-20261106"
     },
     {
       "id": "postgresql-normalization-validation-2026-10-28T20:02:14.664207-04:00",
@@ -777,7 +784,8 @@
         "databaseModified": false,
         "serversManaged": false
       },
-      "nextAction": "Corregir la validacion fallida indicada en el detalle y repetir el cierre."
+      "nextAction": "Corregir la validacion fallida indicada en el detalle y repetir el cierre.",
+      "policyStatus": "superseded-by-database-migration-policy-updated-20261106"
     },
     {
       "id": "baseline-signature-inspection-20261028",
@@ -816,7 +824,8 @@
         "databaseModified": false,
         "serversManaged": false
       },
-      "nextAction": "Continuar contratos maestros pendientes, comenzando por Tarifas."
+      "nextAction": "Continuar contratos maestros pendientes, comenzando por Tarifas.",
+      "policyStatus": "superseded-by-database-migration-policy-updated-20261106"
     },
     {
       "id": "tariffs-integral-contract-review-20261028",
@@ -930,7 +939,8 @@
         "databaseModified": false,
         "serversManaged": false
       },
-      "nextAction": "Aplicar esta estructura completa en toda operación posterior, incluido el cierre contractual de Tarifas."
+      "nextAction": "Aplicar esta estructura completa en toda operación posterior, incluido el cierre contractual de Tarifas.",
+      "policyStatus": "superseded-by-database-migration-policy-updated-20261106"
     },
     {
       "id": "mandatory-next-script-delivery-20261028",
@@ -1073,7 +1083,8 @@
         "Aprobar o ajustar el alcance propuesto para particulares y clientes referidos.",
         "Aprobar o ajustar moneda, precisión y redondeo propuestos."
       ],
-      "nextAction": "Obtener aprobación o ajustes explícitos sobre las decisiones abiertas del contrato de Tarifas."
+      "nextAction": "Obtener aprobación o ajustes explícitos sobre las decisiones abiertas del contrato de Tarifas.",
+      "policyStatus": "superseded-by-database-migration-policy-updated-20261106"
     },
     {
       "id": "tariffs-contract-decision-20261028",
@@ -1201,7 +1212,8 @@
         "codeModified": false,
         "serversManaged": false
       },
-      "nextAction": "Ajustar o aprobar explícitamente el contrato."
+      "nextAction": "Ajustar o aprobar explícitamente el contrato.",
+      "policyStatus": "superseded-by-database-migration-policy-updated-20261106"
     },
     {
       "id": "tariffs-application-settings-authority-20261028",
@@ -8281,7 +8293,8 @@
         "nextAction": "Implementar identificacion tenant mediante codigo y URL canonica, consolidada en la baseline, sin iniciar servidores."
       },
       "databaseModified": false,
-      "serversManaged": false
+      "serversManaged": false,
+      "policyStatus": "superseded-by-database-migration-policy-updated-20261106"
     },
     {
       "id": "deployment-cloud-and-managed-edge-contract-approved",
@@ -8464,7 +8477,8 @@
         "nextAction": "Implementar conjuntamente access_slug y suscripcion Cloud minima, incluyendo perpetual_free para el piloto oficial, dentro de la baseline y sin migraciones incrementales ni servidores."
       },
       "databaseModified": false,
-      "serversManaged": false
+      "serversManaged": false,
+      "policyStatus": "superseded-by-database-migration-policy-updated-20261106"
     },
     {
       "id": "cloud-perpetual-free-pilot-status-approved",
@@ -8509,7 +8523,8 @@
         "nextAction": "Recuperar el inventario exacto aprobado de semillas desde la bitacora y fuentes, cerrar Antibioticos y Germenes en la baseline y aprovisionamiento, y luego retomar la fundacion Cloud."
       },
       "databaseModified": false,
-      "serversManaged": false
+      "serversManaged": false,
+      "policyStatus": "superseded-by-database-migration-policy-updated-20261106"
     },
     {
       "id": "approved-seed-data-single-baseline-contract",
@@ -8549,7 +8564,8 @@
         "nextAction": "Integrar las filas canonicas aprobadas en la baseline unica y conectar installSeedPackages al aprovisionamiento; validar desde PostgreSQL temporal vacio antes de retomar Cloud."
       },
       "databaseModified": false,
-      "serversManaged": false
+      "serversManaged": false,
+      "policyStatus": "superseded-by-database-migration-policy-updated-20261106"
     },
     {
       "id": "approved-seed-source-versioned-in-backend",
@@ -8580,7 +8596,8 @@
         "nextAction": "Conectar el recurso versionado a la baseline unica y a installSeedPackages; validar datos y conteos desde PostgreSQL temporal vacio."
       },
       "databaseModified": false,
-      "serversManaged": false
+      "serversManaged": false,
+      "policyStatus": "superseded-by-database-migration-policy-updated-20261106"
     },
     {
       "id": "administrable-seed-catalog-lifecycle-approved",
@@ -8612,7 +8629,8 @@
         "nextAction": "Diseñar e implementar primero el catalogo global administrable y su adopcion tenant; luego cablear las 12 tablas con filas efectivas y recuperar special_test_lab/special_test_items antes de validar la baseline vacia."
       },
       "databaseModified": false,
-      "serversManaged": false
+      "serversManaged": false,
+      "policyStatus": "superseded-by-database-migration-policy-updated-20261106"
     },
     {
       "id": "current-catalog-release-for-new-installations-approved",
@@ -8640,7 +8658,8 @@
         "nextAction": "Implementar publicaciones versionadas de catalogo y snapshot vigente; despues cablear installSeedPackages usando la ultima publicacion compatible, no el JSON inicial directamente."
       },
       "databaseModified": false,
-      "serversManaged": false
+      "serversManaged": false,
+      "policyStatus": "superseded-by-database-migration-policy-updated-20261106"
     },
     {
       "id": "catalog-release-foundation-implemented",
@@ -8673,7 +8692,8 @@
         "nextAction": "Recuperar exclusivamente las filas efectivas de special_test_lab y special_test_items y cerrar las 14 fuentes antes de construir snapshots."
       },
       "databaseModified": false,
-      "serversManaged": false
+      "serversManaged": false,
+      "policyStatus": "superseded-by-database-migration-policy-updated-20261106"
     },
     {
       "id": "post-pilot-visual-redesign-and-final-deployment-modes-approved",
@@ -8836,7 +8856,8 @@
         "nextAction": "Aplicar PlatformOwnerGuard a catalog-releases, registrar snapshots 1.0.0 y conectar installSeedPackages con la publicacion compatible dentro de la transaccion."
       },
       "databaseModified": false,
-      "serversManaged": false
+      "serversManaged": false,
+      "policyStatus": "superseded-by-database-migration-policy-updated-20261106"
     },
     {
       "id": "platform-catalog-initial-bootstrap-and-guard-implemented",
@@ -9042,7 +9063,8 @@
       },
       "databaseModified": false,
       "temporaryDatabaseModified": true,
-      "serversManaged": false
+      "serversManaged": false,
+      "policyStatus": "superseded-by-database-migration-policy-updated-20261106"
     },
     {
       "id": "catalog-materializer-physical-columns-20261031-204029",
@@ -9915,7 +9937,8 @@
         "approved": true,
         "realDatabaseModified": false
       },
-      "nextAction": "Retomar el bootstrap y validacion funcional de los seis paquetes globales sobre una base temporal nueva, sin reinstalar ni alterar bionexus real."
+      "nextAction": "Retomar el bootstrap y validacion funcional de los seis paquetes globales sobre una base temporal nueva, sin reinstalar ni alterar bionexus real.",
+      "policyStatus": "superseded-by-database-migration-policy-updated-20261106"
     },
     {
       "id": "six-global-packages-bootstrap-approved-20261102-000030",
@@ -10516,7 +10539,8 @@
           "rule": "La copia Frontend debe ser byte-idéntica y verificar SHA-256 tras cualquier actualización."
         }
       },
-      "nextAction": "La siguiente entrada valida el esquema nuevo en una base PostgreSQL desechable y aclara que no debe ejecutarse install:first contra bionexus."
+      "nextAction": "La siguiente entrada valida el esquema nuevo en una base PostgreSQL desechable y aclara que no debe ejecutarse install:first contra bionexus.",
+      "policyStatus": "superseded-by-database-migration-policy-updated-20261106"
     },
     {
       "id": "tenant-single-lab-access-code-20261104",
@@ -10568,7 +10592,8 @@
           "mainRepositoriesRemainClean": true
         }
       },
-      "nextAction": "Diagnosticar la salida no capturada del CLI de aprovisionamiento y validar codigo lsjt-01 con branchCode omitido en la base desechable; luego completar login/contexto tenant de extremo a extremo y sincronizar/verificar ambas bitacoras byte por byte."
+      "nextAction": "Diagnosticar la salida no capturada del CLI de aprovisionamiento y validar codigo lsjt-01 con branchCode omitido en la base desechable; luego completar login/contexto tenant de extremo a extremo y sincronizar/verificar ambas bitacoras byte por byte.",
+      "policyStatus": "superseded-by-database-migration-policy-updated-20261106"
     },
     {
       "id": "tenant-provisioning-e2e-validation-20261104",
@@ -10751,7 +10776,8 @@
           "postUpdateSha256": "Se verificará y reportará fuera del ledger para evitar una referencia hash autorreferencial."
         }
       },
-      "nextAction": "Definir proveedor/host de despliegue y preparar DNS wildcard + TLS + reverse proxy/SPA fallback; acordar por separado un plan de migración/backfill respaldado para bionexus antes de conectarla a la app nueva."
+      "nextAction": "Definir proveedor/host de despliegue y preparar DNS wildcard + TLS + reverse proxy/SPA fallback; acordar por separado un plan de migración/backfill respaldado para bionexus antes de conectarla a la app nueva.",
+      "policyStatus": "superseded-by-database-migration-policy-updated-20261106"
     },
     {
       "id": "operations-scripts-development-branches-cloudflare-20261104",
@@ -11011,7 +11037,8 @@
           "backendAndFrontendByteIdentical": true,
           "sha256RecordedExternally": true
         }
-      }
+      },
+      "policyStatus": "superseded-by-database-migration-policy-updated-20261106"
     },
     {
       "id": "separate-postgresql-environments-installed-20261104",
@@ -12593,7 +12620,8 @@
           "order": 5,
           "item": "Verificar auditoria de renovacion, extension, suspension, reactivacion y cancelacion."
         }
-      ]
+      ],
+      "policyStatus": "superseded-by-database-migration-policy-updated-20261106"
     },
     {
       "id": "platform-commercial-lifecycle-targeted-audit-20261105",
@@ -14184,6 +14212,45 @@
       },
       "featureDeleted": true,
       "copilotBranchesPreserved": true,
+      "databaseQueried": false,
+      "databaseModified": false,
+      "serversManaged": false
+    },
+    {
+      "id": "database-migration-policy-updated-20261106",
+      "timestamp": "2026-11-06T15:17:00-04:00",
+      "status": "approved-active-policy",
+      "summary": "Se reemplaza la regla temporal de una unica migracion baseline. Durante el desarrollo de Bio Nexus se permiten migraciones incrementales normales. Al final del proyecto se realizara una revision integral para decidir consolidacion, limpieza o mantenimiento del historial antes de la instalacion productiva definitiva.",
+      "policy": {
+        "incrementalMigrationsAllowedNow": true,
+        "singleBaselineRequiredNow": false,
+        "createMigrationPerSchemaChange": true,
+        "requirements": [
+          "nombre descriptivo y cronologico",
+          "Up y Down coherentes cuando aplique",
+          "validacion desde base vacia",
+          "validacion sobre una base con datos cuando el cambio pueda afectar datos",
+          "pruebas contractuales de migracion",
+          "no modificar PostgreSQL real sin paso explicito y respaldo"
+        ],
+        "finalProjectReviewRequired": true,
+        "finalReviewScope": [
+          "inventario de migraciones",
+          "dependencias y orden",
+          "redundancias",
+          "consolidacion eventual",
+          "fresh install",
+          "upgrade path con datos",
+          "rollback soportado",
+          "documentacion de release"
+        ]
+      },
+      "impactOnCurrentPlansWork": {
+        "newMigrationAllowed": true,
+        "baselineRewriteRequired": false,
+        "existingIncrementalMigrationsPreserved": true,
+        "nextAction": "Implementar el modelo de planes mediante una nueva migracion incremental, entidades, servicios, pruebas y Frontend."
+      },
       "databaseQueried": false,
       "databaseModified": false,
       "serversManaged": false
@@ -30127,25 +30194,24 @@
   "primaryObjective": "Estabilizar y completar Bio Nexus Cloud; alinear PostgreSQL real con la baseline y cerrar el provisionamiento funcional antes de otros modos.",
   "currentWorkstream": "platform-laboratory-administration-cloud",
   "currentCheckpoint": {
-    "id": "platform-commercial-plans-model-20261106",
-    "at": "2026-11-06T14:25:00-04:00",
-    "status": "currency-guard-integrated;plans-audit-next",
+    "id": "platform-commercial-plans-implementation-20261106",
+    "at": "2026-11-06T15:17:00-04:00",
+    "status": "migration-policy-updated;plans-implementation-ready",
     "completed": [
-      "Moneda operativa integrada.",
-      "Guard de cambio de moneda integrado."
+      "Politica de migraciones actualizada: se permiten migraciones incrementales.",
+      "Auditoria funcional del modelo de planes completada."
     ],
     "current": [
-      "Auditar modelo exacto de planes, duración y Trial antes de modificar baseline."
+      "Implementar plan_type, interval_unit, interval_count y Trial de 15 dias mediante una nueva migracion incremental."
     ],
     "pending": [
-      "plan_type trial/paid.",
-      "interval_unit day/month/year.",
-      "interval_count entero.",
-      "Trial 15 dias sin gracia.",
-      "Ocultar JSON libre limits_benefits.",
-      "Derivar estado y expiracion en Backend."
+      "Actualizar entidades y snapshots.",
+      "Derivar estado, expiracion y gracia en Backend.",
+      "Eliminar estado y expiracion manuales del alta normal.",
+      "Ocultar editor JSON libre de limits_benefits.",
+      "Validar migracion desde base vacia y con datos cuando aplique."
     ],
-    "nextAction": "Crear feature aislada desde development para auditar e implementar el modelo de planes.",
+    "nextAction": "Inspeccionar las migraciones incrementales existentes y crear la siguiente migracion para el modelo aprobado de planes, sin reescribir la baseline.",
     "databaseQueried": false,
     "databaseModified": false,
     "serversManaged": false
