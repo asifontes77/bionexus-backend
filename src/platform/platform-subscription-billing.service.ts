@@ -9,14 +9,17 @@ import { DataSource, EntityManager } from 'typeorm';
 import { PlatformPaymentProofStorageService, PaymentProofUpload } from './platform-payment-proof-storage.service';
 import { runSerializableTransaction } from './serializable-transaction';
 
-const PLAN_INTERVALS = ['monthly', 'yearly'] as const;
+const PLAN_TYPES = ['trial', 'paid'] as const;
+const PLAN_INTERVAL_UNITS = ['day', 'month', 'year'] as const;
 const PLAN_FIELDS = new Set([
   'code',
   'name',
   'description',
   'price',
   'currency',
-  'billingInterval',
+  'planType',
+  'intervalUnit',
+  'intervalCount',
   'gracePeriodDays',
   'limitsBenefits',
   'isActive',
@@ -28,7 +31,9 @@ export interface SubscriptionPlanInput {
   description?: unknown;
   price?: unknown;
   currency?: unknown;
-  billingInterval?: unknown;
+  planType?: unknown;
+  intervalUnit?: unknown;
+  intervalCount?: unknown;
   gracePeriodDays?: unknown;
   limitsBenefits?: unknown;
   isActive?: unknown;
@@ -38,7 +43,6 @@ export interface SubscriptionAssignmentInput {
   planCode?: unknown;
   status?: unknown;
   startsAt?: unknown;
-  expiresAt?: unknown;
   perpetualFreeReason?: unknown;
 }
 
@@ -67,7 +71,7 @@ export class PlatformSubscriptionBillingService {
 
   async listPlans(includeInactive = true) {
     return this.dataSource.query(
-      `SELECT id AS "planId",code,name,description,price,currency,billing_interval AS "billingInterval",
+      `SELECT id AS "planId",code,name,description,price,currency,billing_interval AS "billingInterval",plan_type AS "planType",interval_unit AS "intervalUnit",interval_count AS "intervalCount",
         grace_period_days AS "gracePeriodDays",limits_benefits AS "limitsBenefits",is_active AS "isActive",
         created_at AS "createdAt",updated_at AS "updatedAt"
        FROM platform_subscription_plans
@@ -83,9 +87,9 @@ export class PlatformSubscriptionBillingService {
       return await this.dataSource.transaction(async (manager) => {
         const rows = await manager.query(
           `INSERT INTO platform_subscription_plans
-            (code,name,description,price,currency,billing_interval,grace_period_days,limits_benefits,is_active)
-           VALUES ($1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9)
-           RETURNING id AS "planId",code,name,description,price,currency,billing_interval AS "billingInterval",
+            (code,name,description,price,currency,billing_interval,plan_type,interval_unit,interval_count,grace_period_days,limits_benefits,is_active)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11::jsonb,$12)
+           RETURNING id AS "planId",code,name,description,price,currency,billing_interval AS "billingInterval",plan_type AS "planType",interval_unit AS "intervalUnit",interval_count AS "intervalCount",
              grace_period_days AS "gracePeriodDays",limits_benefits AS "limitsBenefits",is_active AS "isActive",
              created_at AS "createdAt",updated_at AS "updatedAt"`,
           [
@@ -95,6 +99,9 @@ export class PlatformSubscriptionBillingService {
             plan.price,
             plan.currency,
             plan.billingInterval,
+            plan.planType,
+            plan.intervalUnit,
+            plan.intervalCount,
             plan.gracePeriodDays,
             JSON.stringify(plan.limitsBenefits),
             plan.isActive,
@@ -127,7 +134,7 @@ export class PlatformSubscriptionBillingService {
     try {
       return await this.dataSource.transaction(async (manager) => {
         const existingRows = await manager.query(
-          `SELECT id AS "planId",code,name,description,price,currency,billing_interval AS "billingInterval",
+          `SELECT id AS "planId",code,name,description,price,currency,billing_interval AS "billingInterval",plan_type AS "planType",interval_unit AS "intervalUnit",interval_count AS "intervalCount",
             grace_period_days AS "gracePeriodDays",limits_benefits AS "limitsBenefits",is_active AS "isActive"
            FROM platform_subscription_plans WHERE id=$1 FOR UPDATE`,
           [planId],
@@ -140,7 +147,9 @@ export class PlatformSubscriptionBillingService {
           description: 'description',
           price: 'price',
           currency: 'currency',
-          billingInterval: 'billing_interval',
+          planType: 'plan_type',
+          intervalUnit: 'interval_unit',
+          intervalCount: 'interval_count',
           gracePeriodDays: 'grace_period_days',
           limitsBenefits: 'limits_benefits',
           isActive: 'is_active',
@@ -157,7 +166,7 @@ export class PlatformSubscriptionBillingService {
         const updatedRows = await manager.query(
           `UPDATE platform_subscription_plans SET ${assignments.join(',')}
            WHERE id=$${values.length}
-           RETURNING id AS "planId",code,name,description,price,currency,billing_interval AS "billingInterval",
+           RETURNING id AS "planId",code,name,description,price,currency,billing_interval AS "billingInterval",plan_type AS "planType",interval_unit AS "intervalUnit",interval_count AS "intervalCount",
              grace_period_days AS "gracePeriodDays",limits_benefits AS "limitsBenefits",is_active AS "isActive",
              created_at AS "createdAt",updated_at AS "updatedAt"`,
           values,
@@ -183,7 +192,7 @@ export class PlatformSubscriptionBillingService {
     const rows = await this.dataSource.query(
       `SELECT id AS "subscriptionId",laboratory_id AS "laboratoryId",plan_id AS "planId",
         plan_code AS "planCode",plan_name AS "planName",plan_description AS "planDescription",
-        plan_price AS "planPrice",plan_currency AS "planCurrency",billing_interval AS "billingInterval",
+        plan_price AS "planPrice",plan_currency AS "planCurrency",billing_interval AS "billingInterval",plan_type AS "planType",interval_unit AS "intervalUnit",interval_count AS "intervalCount",plan_type AS "planType",interval_unit AS "intervalUnit",interval_count AS "intervalCount",
         plan_limits_benefits AS "limitsBenefits",grace_period_days AS "gracePeriodDays",
         status,starts_at AS "startsAt",expires_at AS "expiresAt",grace_until AS "graceUntil",
         perpetual_free_reason AS "perpetualFreeReason",perpetual_free_granted_at AS "perpetualFreeGrantedAt",
@@ -197,7 +206,7 @@ export class PlatformSubscriptionBillingService {
       `SELECT NULL::bigint AS "subscriptionId",id AS "laboratoryId",plan_id AS "planId",
         plan_code AS "planCode",plan_name AS "planName",
         plan_description AS "planDescription",plan_price AS "planPrice",plan_currency AS "planCurrency",
-        billing_interval AS "billingInterval",plan_limits_benefits AS "limitsBenefits",
+        billing_interval AS "billingInterval",plan_type AS "planType",interval_unit AS "intervalUnit",interval_count AS "intervalCount",plan_limits_benefits AS "limitsBenefits",
         plan_grace_period_days AS "gracePeriodDays",subscription_status AS status,
         service_starts_at AS "startsAt",service_expires_at AS "expiresAt",grace_until AS "graceUntil",
         perpetual_free_reason AS "perpetualFreeReason",perpetual_free_granted_at AS "perpetualFreeGrantedAt",
@@ -214,14 +223,13 @@ export class PlatformSubscriptionBillingService {
   async assignPlan(laboratoryId: number, input: SubscriptionAssignmentInput, ownerId: number) {
     this.validateOwnerId(ownerId);
     this.validateId(laboratoryId, 'PLATFORM_LABORATORY_ID_INVALID');
-    const status = input?.status;
-    if (!['trial', 'active', 'perpetual_free'].includes(status as string)) {
-      throw new BadRequestException('PLATFORM_SUBSCRIPTION_STATUS_INVALID');
+    const requestedStatus = input?.status;
+    if (requestedStatus !== undefined && requestedStatus !== 'perpetual_free') {
+      throw new BadRequestException('PLATFORM_SUBSCRIPTION_STATUS_DERIVED_FROM_PLAN');
     }
     const startsAt = this.parseTimestamp(input.startsAt, true, 'PLATFORM_SUBSCRIPTION_START_INVALID')!;
-    const perpetualFree = status === 'perpetual_free';
-    const expiresAt = this.parseTimestamp(input.expiresAt, !perpetualFree, 'PLATFORM_SUBSCRIPTION_EXPIRY_REQUIRED');
-    if (expiresAt && expiresAt <= startsAt) throw new BadRequestException('PLATFORM_SUBSCRIPTION_DATES_INVALID');
+    const perpetualFree = requestedStatus === 'perpetual_free';
+    let expiresAt: Date | null = null;
     const reason = perpetualFree ? this.requiredText(input.perpetualFreeReason, 2000, 'PLATFORM_PERPETUAL_FREE_REASON_REQUIRED') : null;
     const planCode = perpetualFree ? 'perpetual-free' : this.requiredText(input.planCode, 80, 'PLATFORM_SUBSCRIPTION_PLAN_REQUIRED').toLowerCase();
 
@@ -229,7 +237,7 @@ export class PlatformSubscriptionBillingService {
       const labs = await manager.query(`SELECT id FROM laboratory WHERE id=$1 FOR UPDATE`, [laboratoryId]);
       if (!labs[0]) throw new NotFoundException('PLATFORM_LABORATORY_NOT_FOUND');
       const planRows = perpetualFree ? [] : await manager.query(
-        `SELECT id,code,name,description,price,currency,billing_interval,grace_period_days,limits_benefits
+        `SELECT id,code,name,description,price,currency,billing_interval,plan_type,interval_unit,interval_count,grace_period_days,limits_benefits
          FROM platform_subscription_plans WHERE lower(btrim(code))=lower(btrim($1)) AND is_active=true FOR UPDATE`,
         [planCode],
       );
@@ -245,6 +253,8 @@ export class PlatformSubscriptionBillingService {
         grace_period_days: 0,
         limits_benefits: {},
       };
+      const derivedStatus = perpetualFree ? 'perpetual_free' : plan.plan_type === 'trial' ? 'trial' : 'active';
+      if (!perpetualFree) expiresAt = this.addPlanDuration(startsAt, plan.interval_unit, Number(plan.interval_count));
       const graceDays = perpetualFree ? 0 : Number(plan.grace_period_days);
       const graceUntil = !perpetualFree && expiresAt && graceDays > 0
         ? new Date(expiresAt.getTime() + graceDays * 86400000)
@@ -265,10 +275,10 @@ export class PlatformSubscriptionBillingService {
       );
       const created = await manager.query(
         `INSERT INTO platform_subscriptions
-          (laboratory_id,plan_id,plan_code,plan_name,plan_description,plan_price,plan_currency,billing_interval,
+          (laboratory_id,plan_id,plan_code,plan_name,plan_description,plan_price,plan_currency,billing_interval,plan_type,interval_unit,interval_count,
            plan_limits_benefits,grace_period_days,status,starts_at,expires_at,grace_until,
            perpetual_free_reason,perpetual_free_granted_at,perpetual_free_granted_by,created_by)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9::jsonb,$10,$11,$12,$13,$14,$15,
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12::jsonb,$13,$14,$15,$16,$17,$18,
            CASE WHEN $16::boolean THEN now() ELSE NULL END,
            CASE WHEN $16::boolean THEN $17::integer ELSE NULL END,$17)
          RETURNING id`,
@@ -281,9 +291,12 @@ export class PlatformSubscriptionBillingService {
           perpetualFree ? '0.00' : plan.price,
           plan.currency,
           plan.billing_interval,
+          perpetualFree ? null : plan.plan_type,
+          perpetualFree ? null : plan.interval_unit,
+          perpetualFree ? null : plan.interval_count,
           JSON.stringify(plan.limits_benefits ?? {}),
           graceDays,
-          status,
+          derivedStatus,
           startsAt,
           expiresAt,
           graceUntil,
@@ -294,10 +307,10 @@ export class PlatformSubscriptionBillingService {
       );
       await manager.query(
         `UPDATE laboratory SET plan_id=$2,plan_code=$3,plan_name=$4,plan_description=$5,plan_price=$6,
-          plan_currency=$7,billing_interval=$8,plan_limits_benefits=$9::jsonb,plan_grace_period_days=$10,
-          subscription_status=$11,service_starts_at=$12,service_expires_at=$13,grace_until=$14,
-          perpetual_free_reason=$15,perpetual_free_granted_at=CASE WHEN $16::boolean THEN now() ELSE NULL END,
-          perpetual_free_granted_by=CASE WHEN $16::boolean THEN $17::integer ELSE NULL END,
+          plan_currency=$7,billing_interval=$8,plan_type=$9,interval_unit=$10,interval_count=$11,plan_limits_benefits=$12::jsonb,plan_grace_period_days=$13,
+          subscription_status=$14,service_starts_at=$15,service_expires_at=$16,grace_until=$17,
+          perpetual_free_reason=$18,perpetual_free_granted_at=CASE WHEN $19::boolean THEN now() ELSE NULL END,
+          perpetual_free_granted_by=CASE WHEN $19::boolean THEN $20::integer ELSE NULL END,
           suspension_reason=NULL,suspended_at=NULL
          WHERE id=$1`,
         [
@@ -309,9 +322,12 @@ export class PlatformSubscriptionBillingService {
           perpetualFree ? '0.00' : plan.price,
           plan.currency,
           plan.billing_interval,
+          perpetualFree ? null : plan.plan_type,
+          perpetualFree ? null : plan.interval_unit,
+          perpetualFree ? null : plan.interval_count,
           JSON.stringify(plan.limits_benefits ?? {}),
           graceDays,
-          status,
+          derivedStatus,
           startsAt,
           expiresAt,
           graceUntil,
@@ -336,7 +352,7 @@ export class PlatformSubscriptionBillingService {
             planCurrency: plan.currency,
             billingInterval: plan.billing_interval,
             gracePeriodDays: graceDays,
-            status,
+            status: derivedStatus,
             startsAt,
             expiresAt,
             graceUntil,
@@ -603,12 +619,19 @@ export class PlatformSubscriptionBillingService {
       if (!/^[A-Z]{3}$/.test(currency)) throw new BadRequestException('PLATFORM_SUBSCRIPTION_PLAN_CURRENCY_INVALID');
       result.currency = currency;
     }
-    if (!partial || Object.prototype.hasOwnProperty.call(input, 'billingInterval')) {
-      if (!PLAN_INTERVALS.includes(input.billingInterval as (typeof PLAN_INTERVALS)[number])) {
-        throw new BadRequestException('PLATFORM_SUBSCRIPTION_PLAN_INTERVAL_INVALID');
-      }
-      result.billingInterval = input.billingInterval;
+    if (!partial || Object.prototype.hasOwnProperty.call(input, 'planType')) {
+      if (!PLAN_TYPES.includes(input.planType as (typeof PLAN_TYPES)[number])) throw new BadRequestException('PLATFORM_SUBSCRIPTION_PLAN_TYPE_INVALID');
+      result.planType = input.planType;
     }
+    if (!partial || Object.prototype.hasOwnProperty.call(input, 'intervalUnit')) {
+      if (!PLAN_INTERVAL_UNITS.includes(input.intervalUnit as (typeof PLAN_INTERVAL_UNITS)[number])) throw new BadRequestException('PLATFORM_SUBSCRIPTION_PLAN_INTERVAL_UNIT_INVALID');
+      result.intervalUnit = input.intervalUnit;
+    }
+    if (!partial || Object.prototype.hasOwnProperty.call(input, 'intervalCount')) {
+      if (!Number.isSafeInteger(input.intervalCount) || Number(input.intervalCount) <= 0) throw new BadRequestException('PLATFORM_SUBSCRIPTION_PLAN_INTERVAL_COUNT_INVALID');
+      result.intervalCount = input.intervalCount;
+    }
+    if (!partial) result.billingInterval = input.intervalUnit === 'year' ? 'yearly' : 'monthly';
     if (!partial || Object.prototype.hasOwnProperty.call(input, 'gracePeriodDays')) {
       if (!Number.isSafeInteger(input.gracePeriodDays) || Number(input.gracePeriodDays) < 0) {
         throw new BadRequestException('PLATFORM_SUBSCRIPTION_PLAN_GRACE_INVALID');
@@ -631,7 +654,10 @@ export class PlatformSubscriptionBillingService {
       description?: string | null;
       price?: string;
       currency?: string;
-      billingInterval?: string;
+      billingInterval?: 'monthly' | 'yearly';
+      planType?: 'trial' | 'paid';
+      intervalUnit?: 'day' | 'month' | 'year';
+      intervalCount?: number;
       gracePeriodDays?: number;
       limitsBenefits?: Record<string, unknown>;
       isActive?: boolean;
@@ -721,6 +747,9 @@ export class PlatformSubscriptionBillingService {
       price: plan.price,
       currency: plan.currency,
       billingInterval: plan.billingInterval,
+      planType: plan.planType,
+      intervalUnit: plan.intervalUnit,
+      intervalCount: plan.intervalCount,
       gracePeriodDays: plan.gracePeriodDays,
       isActive: plan.isActive,
     };
@@ -729,6 +758,9 @@ export class PlatformSubscriptionBillingService {
   private subscriptionAuditSnapshot(subscription: Record<string, unknown>) {
     return {
       planCode: subscription.plan_code ?? subscription.planCode,
+      planType: subscription.plan_type ?? subscription.planType,
+      intervalUnit: subscription.interval_unit ?? subscription.intervalUnit,
+      intervalCount: subscription.interval_count ?? subscription.intervalCount,
       status: subscription.status,
       startsAt: subscription.starts_at ?? subscription.startsAt,
       expiresAt: subscription.expires_at ?? subscription.expiresAt,
@@ -738,6 +770,17 @@ export class PlatformSubscriptionBillingService {
     };
   }
 
+  private addPlanDuration(startsAt: Date, unit: unknown, count: number): Date {
+    if (!PLAN_INTERVAL_UNITS.includes(unit as (typeof PLAN_INTERVAL_UNITS)[number]) || !Number.isSafeInteger(count) || count <= 0) {
+      throw new BadRequestException('PLATFORM_SUBSCRIPTION_PLAN_DURATION_INVALID');
+    }
+    const result = new Date(startsAt.getTime());
+    if (unit === 'day') result.setUTCDate(result.getUTCDate() + count);
+    else if (unit === 'month') result.setUTCMonth(result.getUTCMonth() + count);
+    else result.setUTCFullYear(result.getUTCFullYear() + count);
+    if (Number.isNaN(result.getTime())) throw new BadRequestException('PLATFORM_SUBSCRIPTION_PLAN_DURATION_INVALID');
+    return result;
+  }
   private parseTimestamp(value: unknown, required: boolean, code: string): Date | null {
     if (value == null || value === '') {
       if (required) throw new BadRequestException(code);

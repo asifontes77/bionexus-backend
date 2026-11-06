@@ -14278,6 +14278,48 @@
       "databaseQueried": false,
       "databaseModified": false,
       "serversManaged": false
+    },
+    {
+      "id": "commercial-plan-backend-catalog-assignment-20261106",
+      "timestamp": "2026-11-06T18:11:00-04:00",
+      "status": "implemented-validated-on-feature",
+      "summary": "El Backend funcional del catalogo y asignacion de planes fue actualizado para plan_type, interval_unit e interval_count. Los planes normales derivan status, expiracion y gracia; perpetual_free permanece separado.",
+      "contracts": {
+        "planTypes": [
+          "trial",
+          "paid"
+        ],
+        "intervalUnits": [
+          "day",
+          "month",
+          "year"
+        ],
+        "intervalCount": "positive-safe-integer",
+        "normalAssignmentInput": [
+          "planCode",
+          "startsAt"
+        ],
+        "manualNormalStatusRejected": true,
+        "manualExpiryRemoved": true,
+        "trialStatus": "trial",
+        "paidStatus": "active",
+        "durationAuthority": "Backend UTC calendar semantics",
+        "legacyBillingIntervalPreserved": true,
+        "perpetualFreeSeparate": true
+      },
+      "validatedExamples": {
+        "trial15": "start + 15 UTC days, grace 0",
+        "paidMonthly": "2026-10-30 -> 2026-11-30; grace through 2026-12-05"
+      },
+      "validation": {
+        "directedTests": 10,
+        "backendBuild": "approved",
+        "diffCheck": "approved"
+      },
+      "migrationApplied": false,
+      "databaseQueried": false,
+      "databaseModified": false,
+      "serversManaged": false
     }
   ],
   "stateReplication": {
@@ -30218,24 +30260,25 @@
   "primaryObjective": "Estabilizar y completar Bio Nexus Cloud; alinear PostgreSQL real con la baseline y cerrar el provisionamiento funcional antes de otros modos.",
   "currentWorkstream": "platform-laboratory-administration-cloud",
   "currentCheckpoint": {
-    "id": "commercial-plan-backend-implementation-20261106",
-    "at": "2026-11-06T15:49:00-04:00",
-    "status": "migration-published-not-applied;backend-functional-work-pending",
+    "id": "commercial-plan-provisioning-implementation-20261106",
+    "at": "2026-11-06T18:11:00-04:00",
+    "status": "billing-catalog-assignment-published;provisioning-pending",
     "completed": [
-      "Migracion incremental del modelo de planes implementada y validada.",
-      "Entidades y herramientas scripts/ops actualizadas."
+      "Migracion incremental publicada sin aplicar.",
+      "Catalogo y assignPlan derivan status, expiracion y gracia.",
+      "perpetual_free permanece separado."
     ],
     "current": [
-      "Actualizar DTOs y servicios de planes, provisionamiento y snapshots."
+      "Actualizar provisionamiento inicial, DTO y CLI para eliminar status y expiracion manuales del alta normal."
     ],
     "pending": [
-      "Derivar estado, expiracion y gracia en Backend.",
-      "Actualizar Frontend de Planes.",
-      "Eliminar estado y expiracion manuales del alta normal.",
+      "Propagar plan_type, interval_unit e interval_count al laboratorio y suscripcion inicial.",
+      "Actualizar pruebas de provisionamiento.",
+      "Actualizar Frontend de Planes y alta de Laboratorio.",
       "Ocultar editor JSON libre de limits_benefits.",
-      "Aplicar migracion con scripts/ops despues de completar el codigo funcional y hacer commit."
+      "Aplicar migracion con scripts/ops despues de completar, publicar y validar el codigo funcional."
     ],
-    "nextAction": "Continuar Backend funcional sin ejecutar aun la migracion.",
+    "nextAction": "Auditar y ajustar PlatformProvisioningService, CreatePlatformLaboratoryDto y provision-laboratory CLI.",
     "databaseQueried": false,
     "databaseModified": false,
     "serversManaged": false

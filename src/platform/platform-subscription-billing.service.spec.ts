@@ -32,7 +32,7 @@ describe('PlatformSubscriptionBillingService', () => {
       name: 'Basic',
       price: '12.50',
       currency: 'USD',
-      billingInterval: 'monthly',
+      planType: 'paid', intervalUnit: 'month', intervalCount: 1,
       gracePeriodDays: 5,
       limitsBenefits: { users: 5 },
       isActive: true,
@@ -49,13 +49,13 @@ describe('PlatformSubscriptionBillingService', () => {
       name: 'Basic',
       price: '12.50',
       currency: 'usd',
-      billingInterval: 'monthly',
+      planType: 'paid', intervalUnit: 'month', intervalCount: 1,
       gracePeriodDays: 5,
       limitsBenefits: { users: 5 },
     }, 70)).resolves.toBe(plan);
     expect(dataSource.transaction).toHaveBeenCalledTimes(1);
     expect(query.mock.calls[0][1]).toEqual([
-      'basic', 'Basic', null, '12.50', 'USD', 'monthly', 5, '{"users":5}', true,
+      'basic', 'Basic', null, '12.50', 'USD', 'monthly', 'paid', 'month', 1, 5, '{"users":5}', true,
     ]);
     expect(query.mock.calls[1][1]).toEqual(expect.arrayContaining([70, 'platform.subscription-plan.created']));
   });
@@ -68,12 +68,12 @@ describe('PlatformSubscriptionBillingService', () => {
       name: 'Basic',
       price: '1.00',
       currency: 'USD',
-      billingInterval: 'monthly',
+      planType: 'paid', intervalUnit: 'month', intervalCount: 1,
       gracePeriodDays: 0,
       limitsBenefits: {},
     };
-    await expect(service.createPlan({ ...common, billingInterval: 'weekly' }, 70))
-      .rejects.toThrow(new BadRequestException('PLATFORM_SUBSCRIPTION_PLAN_INTERVAL_INVALID'));
+    await expect(service.createPlan({ ...common, intervalUnit: 'week' }, 70))
+      .rejects.toThrow(new BadRequestException('PLATFORM_SUBSCRIPTION_PLAN_INTERVAL_UNIT_INVALID'));
     await expect(service.createPlan({ ...common, currency: 'US' }, 70))
       .rejects.toThrow(new BadRequestException('PLATFORM_SUBSCRIPTION_PLAN_CURRENCY_INVALID'));
     await expect(service.createPlan({ ...common, gracePeriodDays: -1 }, 70))
@@ -89,7 +89,7 @@ describe('PlatformSubscriptionBillingService', () => {
       if (sql.includes('FROM platform_subscription_plans')) {
         return [{
           id: 7, code: 'basic', name: 'Basic', description: 'Plan description', price: '12.50',
-          currency: 'USD', billing_interval: 'monthly', grace_period_days: 5, limits_benefits: { users: 5 },
+          currency: 'USD', billing_interval: 'monthly', plan_type: 'paid', interval_unit: 'month', interval_count: 1, grace_period_days: 5, limits_benefits: { users: 5 },
         }];
       }
       if (sql.startsWith('SELECT id,plan_code AS "planCode"')) return [];
@@ -104,9 +104,7 @@ describe('PlatformSubscriptionBillingService', () => {
 
     await expect(service.assignPlan(8, {
       planCode: 'BASIC',
-      status: 'active',
       startsAt: '2026-10-30T00:00:00Z',
-      expiresAt: '2027-10-30T00:00:00Z',
     }, 70)).resolves.toEqual({
       subscription: expect.objectContaining({ subscriptionId: '12', planId: 7, planCode: 'basic' }),
     });
@@ -115,8 +113,45 @@ describe('PlatformSubscriptionBillingService', () => {
     expect(insert?.[1]).toEqual(expect.arrayContaining([
       8, 7, 'basic', 'Basic', 'Plan description', '12.50', 'USD', 'monthly', '{"users":5}', 5,
     ]));
-    expect(insert?.[1]?.[13]).toEqual(new Date('2027-11-04T00:00:00Z'));
+    const serializedDates = insert?.[1]
+      ?.map((value) => {
+        if (value instanceof Date) return value.toISOString();
+        if (typeof value !== 'string') return null;
+        const parsed = new Date(value);
+        return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
+      })
+      .filter((value): value is string => value !== null) ?? [];
+    expect(serializedDates).toContain('2026-11-30T00:00:00.000Z');
+    expect(serializedDates).toContain('2026-12-05T00:00:00.000Z');
     expect(query.mock.calls.some(([sql]) => String(sql).includes('SET is_current=false,ended_at=now()'))).toBe(true);
+  });
+
+  it('rejects manual trial or active status because normal status is derived from the plan', async () => {
+    const { service, dataSource } = makeService(jest.fn());
+    await expect(service.assignPlan(8, {
+      planCode: 'trial-15', status: 'trial', startsAt: '2026-11-06T00:00:00Z',
+    }, 70)).rejects.toThrow('PLATFORM_SUBSCRIPTION_STATUS_DERIVED_FROM_PLAN');
+    await expect(service.assignPlan(8, {
+      planCode: 'basic', status: 'active', startsAt: '2026-11-06T00:00:00Z',
+    }, 70)).rejects.toThrow('PLATFORM_SUBSCRIPTION_STATUS_DERIVED_FROM_PLAN');
+    expect(dataSource.transaction).not.toHaveBeenCalled();
+  });
+
+  it('derives trial status and 15-day expiry from the selected plan', async () => {
+    const query: QueryMock = jest.fn(async (sql: string) => {
+      if (sql.startsWith('SELECT id FROM laboratory')) return [{ id: 8 }];
+      if (sql.includes('FROM platform_subscription_plans')) return [{ id: 9, code: 'trial-15', name: 'Trial 15 días', description: null, price: '0.00', currency: 'USD', billing_interval: 'monthly', plan_type: 'trial', interval_unit: 'day', interval_count: 15, grace_period_days: 0, limits_benefits: {} }];
+      if (sql.startsWith('SELECT id,plan_code AS "planCode"')) return [];
+      if (sql.startsWith('INSERT INTO platform_subscriptions')) return [{ id: '21' }];
+      if (sql.startsWith('SELECT id AS "subscriptionId"')) return [{ subscriptionId: '21', status: 'trial', expiresAt: new Date('2026-11-21T00:00:00Z') }];
+      if (sql.startsWith('UPDATE') || sql.startsWith('INSERT INTO platform_billing_audit_logs')) return [];
+      throw new Error(`UNEXPECTED_SQL: ${sql}`);
+    });
+    const { service } = makeService(query);
+    await service.assignPlan(8, { planCode: 'trial-15', startsAt: '2026-11-06T00:00:00Z' }, 70);
+    const insert = query.mock.calls.find(([sql]) => String(sql).startsWith('INSERT INTO platform_subscriptions'));
+    expect(insert?.[1]).toEqual(expect.arrayContaining(['trial', 'day', 15]));
+    expect(insert?.[1]?.some((value) => value instanceof Date && value.toISOString() === '2026-11-21T00:00:00.000Z')).toBe(true);
   });
 
   it('assigns perpetual-free without a catalog plan and requires a reason', async () => {
@@ -142,8 +177,10 @@ describe('PlatformSubscriptionBillingService', () => {
     });
     const insert = query.mock.calls.find(([sql]) => String(sql).startsWith('INSERT INTO platform_subscriptions'));
     expect(insert?.[1]).toEqual(expect.arrayContaining(['perpetual-free', 'Perpetual free', '0.00', 'VES', 0]));
-    expect(insert?.[1]?.[12]).toBeNull();
-    expect(insert?.[1]?.[13]).toBeNull();
+    const startsAtIndex = insert?.[1]?.findIndex((value) => value instanceof Date && value.toISOString() === '2026-10-30T00:00:00.000Z') ?? -1;
+    expect(startsAtIndex).toBeGreaterThanOrEqual(0);
+    expect(insert?.[1]?.[startsAtIndex + 1]).toBeNull();
+    expect(insert?.[1]?.[startsAtIndex + 2]).toBeNull();
   });
 
   it('audits valid status transitions with owner actor and rejects forbidden transitions', async () => {
