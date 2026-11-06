@@ -12594,6 +12594,1268 @@
           "item": "Verificar auditoria de renovacion, extension, suspension, reactivacion y cancelacion."
         }
       ]
+    },
+    {
+      "id": "platform-commercial-lifecycle-targeted-audit-20261105",
+      "timestamp": "2026-11-05T22:20:00-04:00",
+      "status": "targeted-static-audit-completed",
+      "summaryCounts": {
+        "confirmed-defect": 1,
+        "implemented": 7,
+        "missing": 1,
+        "partial": 6
+      },
+      "findings": [
+        {
+          "key": "dates-error",
+          "title": "PLATFORM_SUBSCRIPTION_DATES_INVALID",
+          "status": "confirmed-defect",
+          "assessment": "Backend rechaza expiresAt <= startsAt. Debe compararse el payload real de Registro con el dialog de Suscripcion y sus conversiones UTC.",
+          "evidence": [
+            {
+              "file": "src/laboratory/laboratory.entity.ts",
+              "line": 46,
+              "text": "service_starts_at: Date | null;"
+            },
+            {
+              "file": "src/laboratory/laboratory.entity.ts",
+              "line": 49,
+              "text": "service_expires_at: Date | null;"
+            },
+            {
+              "file": "src/laboratory/laboratory.service.spec.ts",
+              "line": 122,
+              "text": "service_starts_at: new Date('2026-10-30T00:00:00Z'),"
+            },
+            {
+              "file": "src/laboratory/laboratory.service.spec.ts",
+              "line": 123,
+              "text": "service_expires_at: new Date('2027-10-30T00:00:00Z'),"
+            },
+            {
+              "file": "src/laboratory/laboratory.service.spec.ts",
+              "line": 143,
+              "text": "'service_starts_at',"
+            },
+            {
+              "file": "src/laboratory/laboratory.service.spec.ts",
+              "line": 144,
+              "text": "'service_expires_at',"
+            },
+            {
+              "file": "src/laboratory/laboratory.service.ts",
+              "line": 32,
+              "text": "| 'service_starts_at'"
+            },
+            {
+              "file": "src/laboratory/laboratory.service.ts",
+              "line": 33,
+              "text": "| 'service_expires_at'"
+            },
+            {
+              "file": "src/laboratory/laboratory.service.ts",
+              "line": 389,
+              "text": "service_starts_at: omittedServiceStartsAt,"
+            },
+            {
+              "file": "src/laboratory/laboratory.service.ts",
+              "line": 390,
+              "text": "service_expires_at: omittedServiceExpiresAt,"
+            },
+            {
+              "file": "src/laboratory/laboratory.service.ts",
+              "line": 411,
+              "text": "void omittedServiceStartsAt;"
+            },
+            {
+              "file": "src/laboratory/laboratory.service.ts",
+              "line": 412,
+              "text": "void omittedServiceExpiresAt;"
+            },
+            {
+              "file": "src/license/license.entity.ts",
+              "line": 18,
+              "text": "expiresAt: Date;"
+            },
+            {
+              "file": "src/platform/platform-laboratory-admin.service.spec.ts",
+              "line": 19,
+              "text": "service_starts_at: new Date('2026-10-30T00:00:00Z'),"
+            },
+            {
+              "file": "src/platform/platform-laboratory-admin.service.spec.ts",
+              "line": 20,
+              "text": "service_expires_at: new Date('2027-10-30T00:00:00Z'),"
+            },
+            {
+              "file": "src/platform/platform-laboratory-admin.service.spec.ts",
+              "line": 161,
+              "text": "service_expires_at: '2028-10-30T00:00:00Z',"
+            }
+          ]
+        },
+        {
+          "key": "statuses",
+          "title": "Catalogo de estados",
+          "status": "implemented",
+          "assessment": "{'trial': True, 'active': True, 'grace': True, 'suspended': True, 'cancelled': True, 'perpetual_free': True}",
+          "evidence": [
+            {
+              "file": "src/laboratory/laboratory.entity.ts",
+              "line": 43,
+              "text": "subscription_status: string | null;"
+            },
+            {
+              "file": "src/laboratory/laboratory.service.spec.ts",
+              "line": 121,
+              "text": "subscription_status: 'active',"
+            },
+            {
+              "file": "src/laboratory/laboratory.service.spec.ts",
+              "line": 142,
+              "text": "'subscription_status',"
+            },
+            {
+              "file": "src/laboratory/laboratory.service.ts",
+              "line": 31,
+              "text": "| 'subscription_status'"
+            },
+            {
+              "file": "src/laboratory/laboratory.service.ts",
+              "line": 388,
+              "text": "subscription_status: omittedSubscriptionStatus,"
+            },
+            {
+              "file": "src/platform/platform-laboratory-admin.service.spec.ts",
+              "line": 18,
+              "text": "subscription_status: 'active',"
+            },
+            {
+              "file": "src/platform/platform-laboratory-admin.service.spec.ts",
+              "line": 130,
+              "text": "if (sql.startsWith('UPDATE laboratory')) return [{ ...laboratory, subscription_status: 'suspended' }];"
+            },
+            {
+              "file": "src/platform/platform-laboratory-admin.service.spec.ts",
+              "line": 136,
+              "text": "subscription_status: 'suspended',"
+            },
+            {
+              "file": "src/platform/platform-laboratory-admin.service.spec.ts",
+              "line": 145,
+              "text": "subscription_status: 'suspended',"
+            },
+            {
+              "file": "src/platform/platform-laboratory-admin.service.spec.ts",
+              "line": 153,
+              "text": "return [{ ...suspendedLaboratory, subscription_status: 'active' }];"
+            },
+            {
+              "file": "src/platform/platform-laboratory-admin.service.spec.ts",
+              "line": 160,
+              "text": "subscription_status: 'active',"
+            },
+            {
+              "file": "src/platform/platform-laboratory-admin.service.spec.ts",
+              "line": 171,
+              "text": "subscription_status: 'perpetual_free',"
+            },
+            {
+              "file": "src/platform/platform-laboratory-admin.service.ts",
+              "line": 278,
+              "text": "subscriptionStatus: laboratory.subscription_status,"
+            },
+            {
+              "file": "src/platform/platform-laboratory-admin.service.ts",
+              "line": 571,
+              "text": "return `id,access_slug,service_mode,rif,name,business_name,address,phone_1,email,is_active,plan_id,plan_code,plan_name,plan_description,plan_price,plan_currency,billing_interval,plan_limits_benefits,plan_grace_period_days,subscription_status,service_starts_at,service_expires_at,grace_until,perpetual_free_reason,perpetual_free_granted_at,perpetual_free_granted_by,suspension_reason,suspended_at,commercial_notes`;"
+            },
+            {
+              "file": "src/platform/platform-laboratory-admin.service.ts",
+              "line": 578,
+              "text": "subscriptionStatus: laboratory.subscription_status,"
+            },
+            {
+              "file": "src/platform/platform-laboratory-audit.service.spec.ts",
+              "line": 14,
+              "text": "metadata: { subscriptionStatus: 'suspended' },"
+            }
+          ]
+        },
+        {
+          "key": "auto-lifecycle",
+          "title": "Transicion automatica trial/active a grace y suspended",
+          "status": "implemented",
+          "assessment": "transition=True, automation=True, tests=True",
+          "evidence": [
+            {
+              "file": "src/exam-price-adjustment.contract.spec.ts",
+              "line": 1,
+              "text": "import * as fs from 'fs';import * as path from 'path';const read=(p:string)=>fs.readFileSync(path.join(process.cwd(),p),'utf8');"
+            },
+            {
+              "file": "src/exam-price-adjustment.contract.spec.ts",
+              "line": 2,
+              "text": "describe('Exam catalog price adjustment advanced scope',()=>{const controller=read('src/exam_lists/examlists.controller.ts'),service=read('src/exam_lists/examlists.service.ts'),dto=read('src/exam_lists/dto/price-adjustment.dto.ts');it('mantiene endpoint dedicado antes de id y exige update',()=>{expect(controller).toContain(\"@RequirePermissions('exam-catalog.update') @Patch('price-adjustment')\");expect(controller.indexOf(\"@Patch('price-adjustment')\")).toBeLessThan(controller.indexOf(\"@Patch(':id')\"))});it('recibe una lista final de examenes sin depender de un grupo',()=>{expect(dto).toContain('examIds: number[]');expect(dto).not.toContain('groupId');expect(dto).not.toContain('scope');expect(service).not.toContain('input.groupId');expect(service).not.toContain('scope=body.scope')});it('admite hasta 2000 examenes unicos de varios grupos',()=>{expect(service).toContain('body.examIds.length>2000');expect(service).toContain('new Set(examIds).size!==examIds.length');expect(service).toContain(\"where('exam.id IN (:...ids)'\");expect(service).toContain(\"setLock('pessimistic_write')\")});it('deriva grupos y audita alcance real',()=>{for(const token of ['groupIds=Array.from','groupCount:groupIds.length','examCount:input.examIds.length','examIds:input.examIds.slice(0,100)',\"action:'exam-catalog.prices-adjusted'\"])expect(service).toContain(token)});it('conserva aumento, disminucion y limites',()=>{expect(service).toContain(\"operation==='decrease'&&percentage>100\");expect(service).toContain(\"operation==='increase'&&percentage>1000\");expect(service).toContain('next<0')});it('sincroniza precios modulares y legacy',()=>{for(const token of ['ExamTariffPrice','Tariff','LEGACY_([1-6])','exam[field]=next'])expect(service).toContain(token)})});"
+            },
+            {
+              "file": "src/dollar_value/dollarvalue-automation.service.ts",
+              "line": 14,
+              "text": "onModuleInit():void{this.logger.log('DollarValue scheduler initialized. IntervalMs=60000');this.timer = setInterval(this.tickAllForTimer.bind(this), 60000); this.timer.unref()}"
+            },
+            {
+              "file": "src/dollar_value/dollarvalue-automation.service.ts",
+              "line": 17,
+              "text": "async updateConfig(laboratoryId:number,body:Record<string,unknown>,actorUserId:number){this.id(laboratoryId);this.actor(actorUserId);const allowed=['enabled','run_time'];if(Object.keys(body??{}).some(x=>!allowed.includes(x)))throw new BadRequestException('DOLLAR_AUTOMATION_FIELD_UNKNOWN');const config=await this.ensureConfig(laboratoryId);if(body.enabled!==undefined&&typeof body.enabled!=='boolean')throw new BadRequestException('DOLLAR_AUTOMATION_ENABLED_INVALID');if(body.run_time!==undefined&&(typeof body.run_time!=='string'||!/^([01]\\d|2[0-3]):[0-5]\\d$/.test(body.run_time)))throw new BadRequestException('DOLLAR_AUTOMATION_TIME_INVALID');const changed=config.enabled!==body.enabled&&body.enabled!==undefined||config.run_time!==body.run_time&&body.run_time!==undefined;Object.assign(config,body);if(changed)config.last_scheduled_date=null;return this.configRepo.save(config)}"
+            },
+            {
+              "file": "src/dollar_value/dollarvalue-automation.service.ts",
+              "line": 18,
+              "text": "async executeNow(laboratoryId:number,actorUserId:number){this.id(laboratoryId);this.actor(actorUserId);return this.execute(laboratoryId,actorUserId)}"
+            },
+            {
+              "file": "src/dollar_value/dollarvalue-automation.service.ts",
+              "line": 21,
+              "text": "private async tick(config:DollarvalueAutomation){if(this.running.has(config.laboratoryId))return;const parts=new Intl.DateTimeFormat('en-CA',{timeZone:config.time_zone,weekday:'short',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false,hourCycle:'h23'}).formatToParts(new Date());const get=(type:string)=>parts.find(part=>part.type===type)?.value??'';const day = `${get('year')}-${get('month')}-${get('day')}`; const time = `${get('hour')}:${get('minute')}`; if (['Sat','Sun'].includes(get('weekday')) || time < config.run_time || config.last_scheduled_date === day) return;config.last_scheduled_date = day;await this.configRepo.save(config);await this.execute(config.laboratoryId,null)}"
+            },
+            {
+              "file": "src/dollar_value/dollarvalue-automation.service.ts",
+              "line": 24,
+              "text": "private id(value:number){if(!Number.isInteger(value)||value<=0)throw new BadRequestException('LABORATORY_ID_INVALID')}"
+            },
+            {
+              "file": "src/dollar_value/dollarvalue-automation.service.ts",
+              "line": 25,
+              "text": "private actor(value:number){if(!Number.isInteger(value)||value<=0)throw new BadRequestException('DOLLAR_AUTOMATION_ACTOR_REQUIRED')}"
+            },
+            {
+              "file": "src/dollar_value/dollarvalue-scheduler-date.contract.spec.ts",
+              "line": 1,
+              "text": "import * as fs from 'node:fs'; import * as path from 'node:path'; describe('DollarValue scheduler date contract',()=>{const root=path.resolve(__dirname,'../..');const read=(f:string)=>fs.readFileSync(path.join(root,f),'utf8');it('recovers a missed minute once per date',()=>{const x=read('src/dollar_value/dollarvalue-automation.service.ts');expect(x).toContain('time < config.run_time');expect(x).toContain('config.last_scheduled_date === day');expect(x).toContain('config.last_scheduled_date = day');});it('stores date only',()=>{const x=read('src/dollar_value/dollarvalue-automation.service.ts');expect(x).toContain('date: fetched.effectiveDate');expect(x).not.toContain('T12:00:00-04:00');});});"
+            },
+            {
+              "file": "src/laboratory/laboratory.service.spec.ts",
+              "line": 124,
+              "text": "grace_until: new Date('2027-11-04T00:00:00Z'),"
+            },
+            {
+              "file": "src/laboratory/laboratory.service.spec.ts",
+              "line": 145,
+              "text": "'grace_until',"
+            },
+            {
+              "file": "src/platform/platform-laboratory-admin.service.spec.ts",
+              "line": 21,
+              "text": "grace_until: null,"
+            },
+            {
+              "file": "src/platform/platform-laboratory-admin.service.spec.ts",
+              "line": 130,
+              "text": "if (sql.startsWith('UPDATE laboratory')) return [{ ...laboratory, subscription_status: 'suspended' }];"
+            },
+            {
+              "file": "src/platform/platform-laboratory-admin.service.spec.ts",
+              "line": 136,
+              "text": "subscription_status: 'suspended',"
+            },
+            {
+              "file": "src/platform/platform-laboratory-admin.service.spec.ts",
+              "line": 143,
+              "text": "const suspendedLaboratory = {"
+            },
+            {
+              "file": "src/platform/platform-laboratory-admin.service.spec.ts",
+              "line": 145,
+              "text": "subscription_status: 'suspended',"
+            }
+          ]
+        },
+        {
+          "key": "grace-zero",
+          "title": "Caso grace=0",
+          "status": "missing",
+          "assessment": "Debe saltar directamente a suspended al vencer.",
+          "evidence": []
+        },
+        {
+          "key": "central-policy",
+          "title": "Guard o politica central",
+          "status": "implemented",
+          "assessment": "central_guard=True",
+          "evidence": [
+            {
+              "file": "src/exam-ordering-contract.spec.ts",
+              "line": 30,
+              "text": "it('registra auditoria y evita el guardado individual legacy', () => {"
+            },
+            {
+              "file": "src/antibiotic/antibiotic.controller.ts",
+              "line": 1,
+              "text": "import { Body, Controller, ForbiddenException, Get, Param, ParseIntPipe, Patch, Post, Req, UseGuards } from '@nestjs/common';"
+            },
+            {
+              "file": "src/antibiotic/antibiotic.controller.ts",
+              "line": 5,
+              "text": "import { PermissionGuard } from '../authorization/guards/permission.guard';"
+            },
+            {
+              "file": "src/antibiotic/antibiotic.controller.ts",
+              "line": 6,
+              "text": "import { JwtUserGuard } from '../users/jwt-user.guard';"
+            },
+            {
+              "file": "src/antibiotic/antibiotic.controller.ts",
+              "line": 15,
+              "text": "@UseGuards(JwtUserGuard, PermissionGuard)"
+            },
+            {
+              "file": "src/antibiotic/antibiotic.controller.ts",
+              "line": 20,
+              "text": "@UseGuards(JwtUserGuard, PermissionGuard)"
+            },
+            {
+              "file": "src/antibiotic/antibiotic.controller.ts",
+              "line": 25,
+              "text": "@UseGuards(JwtUserGuard, PermissionGuard)"
+            },
+            {
+              "file": "src/antibiotic/antibiotic.controller.ts",
+              "line": 30,
+              "text": "@UseGuards(JwtUserGuard, PermissionGuard)"
+            },
+            {
+              "file": "src/antibiotic/antibiotic.controller.ts",
+              "line": 37,
+              "text": "@UseGuards(JwtUserGuard)"
+            },
+            {
+              "file": "src/application-settings/application-settings.controller.ts",
+              "line": 1,
+              "text": "import { Body, Controller, Get, Headers, Param, ParseIntPipe, Patch, Req, UseGuards } from '@nestjs/common';"
+            },
+            {
+              "file": "src/application-settings/application-settings.controller.ts",
+              "line": 4,
+              "text": "import { PermissionGuard } from '../authorization/guards/permission.guard';"
+            },
+            {
+              "file": "src/application-settings/application-settings.controller.ts",
+              "line": 5,
+              "text": "import { JwtUserGuard } from '../users/jwt-user.guard';"
+            },
+            {
+              "file": "src/application-settings/application-settings.controller.ts",
+              "line": 12,
+              "text": "@UseGuards(JwtUserGuard)"
+            },
+            {
+              "file": "src/application-settings/application-settings.controller.ts",
+              "line": 13,
+              "text": "@Get('session/:id')"
+            },
+            {
+              "file": "src/application-settings/application-settings.controller.ts",
+              "line": 14,
+              "text": "getSessionPolicy(@Param('id', ParseIntPipe) id: number) { return this.service.getSessionPolicy(id); }"
+            },
+            {
+              "file": "src/application-settings/application-settings.controller.ts",
+              "line": 15,
+              "text": "@UseGuards(JwtUserGuard, PermissionGuard)"
+            }
+          ]
+        },
+        {
+          "key": "suspended-session",
+          "title": "Bloqueo e invalidacion de sesiones suspended",
+          "status": "partial",
+          "assessment": "session_block=False",
+          "evidence": [
+            {
+              "file": "src/exam-ordering-contract.spec.ts",
+              "line": 30,
+              "text": "it('registra auditoria y evita el guardado individual legacy', () => {"
+            },
+            {
+              "file": "src/antibiotic/antibiotic.controller.ts",
+              "line": 1,
+              "text": "import { Body, Controller, ForbiddenException, Get, Param, ParseIntPipe, Patch, Post, Req, UseGuards } from '@nestjs/common';"
+            },
+            {
+              "file": "src/antibiotic/antibiotic.controller.ts",
+              "line": 5,
+              "text": "import { PermissionGuard } from '../authorization/guards/permission.guard';"
+            },
+            {
+              "file": "src/antibiotic/antibiotic.controller.ts",
+              "line": 6,
+              "text": "import { JwtUserGuard } from '../users/jwt-user.guard';"
+            },
+            {
+              "file": "src/antibiotic/antibiotic.controller.ts",
+              "line": 15,
+              "text": "@UseGuards(JwtUserGuard, PermissionGuard)"
+            },
+            {
+              "file": "src/antibiotic/antibiotic.controller.ts",
+              "line": 20,
+              "text": "@UseGuards(JwtUserGuard, PermissionGuard)"
+            },
+            {
+              "file": "src/antibiotic/antibiotic.controller.ts",
+              "line": 25,
+              "text": "@UseGuards(JwtUserGuard, PermissionGuard)"
+            },
+            {
+              "file": "src/antibiotic/antibiotic.controller.ts",
+              "line": 30,
+              "text": "@UseGuards(JwtUserGuard, PermissionGuard)"
+            },
+            {
+              "file": "src/antibiotic/antibiotic.controller.ts",
+              "line": 37,
+              "text": "@UseGuards(JwtUserGuard)"
+            },
+            {
+              "file": "src/application-settings/application-settings.controller.ts",
+              "line": 1,
+              "text": "import { Body, Controller, Get, Headers, Param, ParseIntPipe, Patch, Req, UseGuards } from '@nestjs/common';"
+            },
+            {
+              "file": "src/application-settings/application-settings.controller.ts",
+              "line": 4,
+              "text": "import { PermissionGuard } from '../authorization/guards/permission.guard';"
+            },
+            {
+              "file": "src/application-settings/application-settings.controller.ts",
+              "line": 5,
+              "text": "import { JwtUserGuard } from '../users/jwt-user.guard';"
+            },
+            {
+              "file": "src/application-settings/application-settings.controller.ts",
+              "line": 12,
+              "text": "@UseGuards(JwtUserGuard)"
+            },
+            {
+              "file": "src/application-settings/application-settings.controller.ts",
+              "line": 13,
+              "text": "@Get('session/:id')"
+            },
+            {
+              "file": "src/application-settings/application-settings.controller.ts",
+              "line": 14,
+              "text": "getSessionPolicy(@Param('id', ParseIntPipe) id: number) { return this.service.getSessionPolicy(id); }"
+            },
+            {
+              "file": "src/application-settings/application-settings.controller.ts",
+              "line": 15,
+              "text": "@UseGuards(JwtUserGuard, PermissionGuard)"
+            }
+          ]
+        },
+        {
+          "key": "suspended-screen",
+          "title": "Pantalla controlada suspended",
+          "status": "partial",
+          "assessment": "Debe mostrar estado general y contacto, sin operacion normal.",
+          "evidence": [
+            {
+              "file": "src/contracts/laboratoryConfigurationCurrentStandards.contract.spec.mjs",
+              "line": 13,
+              "text": "it(\"usa SectionPanel sin paneles visuales redundantes\",()=>{const logo=readFileSync(\"src/components/laboratory/LaboratoryLogoPanel.vue\",\"utf8\");assert.equal((general.match(/<BioNexusSectionPanel/g)||[]).length,3);assert.equal((logo.match(/<BioNexusSectionPanel/g)||[]).length,1);for(const token of [\"Identificación\",\"Contacto\",\"Código QR de contacto\",\"#actions\"])assert.ok(general.includes(token),token);assert.ok(logo.includes('title=\"Logo del laboratorio\"'));assert.ok(!general.includes('class=\"bio-nexus-panel laboratory-panel\"'));assert.ok(!logo.includes('class=\"bio-nexus-panel laboratory-panel logo-panel\"'))});"
+            },
+            {
+              "file": "src/contracts/laboratoryNavigationQr.contract.mjs",
+              "line": 7,
+              "text": "for(const text of ['Configurar QR','Configura los datos de contacto que se usarán para generar el QR institucional.','La inserción del QR en resultados o documentos se habilitará posteriormente desde Documentos y plantillas.'])assert.ok(panel.includes(text),'QR_'+text);"
+            },
+            {
+              "file": "src/contracts/platformBilling.contract.spec.mjs",
+              "line": 72,
+              "text": "for (const status of ['trial', 'active', 'grace', 'suspended', 'cancelled']) {"
+            },
+            {
+              "file": "src/contracts/specialTestStateRefresh.contract.spec.mjs",
+              "line": 26,
+              "text": "it(\"aísla saveState y no depende de una recarga bloqueada mientras saving está activo\", () => {"
+            },
+            {
+              "file": "src/contracts/userRolesStandards.contract.spec.mjs",
+              "line": 7,
+              "text": "test(\"preserva roles inactivos visibles y bloqueados\",()=>{for(const token of ['inactiveAssignedCount','role.isActive ? \"Activo\" : \"Desactivado\"','!role.isActive || !canEdit || !canAssign || saving','user?.hidden'])assert.ok(dialog.includes(token),token);});"
+            },
+            {
+              "file": "src/models/laboratory.js",
+              "line": 61,
+              "text": "if (qr.email && !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(qr.email.trim())) errors['settingQR.email'] = 'Ingrese un correo de contacto válido.';"
+            },
+            {
+              "file": "src/models/laboratory.js",
+              "line": 62,
+              "text": "if (qr.phone && !/^(?:\\+?\\d{1,3}|\\(\\+?\\d{1,3}\\))[\\d\\s()-]{5,19}$/.test(qr.phone.trim())) errors['settingQR.phone'] = 'Ingrese un teléfono de contacto válido.';"
+            },
+            {
+              "file": "src/router/index.js",
+              "line": 240,
+              "text": "{ title: \"Identidad\", description: \"Logo, razón social, RIF, domicilio, teléfonos y datos de contacto.\", routeName: \"configuration-laboratory\", status: \"available\" },"
+            },
+            {
+              "file": "src/services/laboratoryService.js",
+              "line": 63,
+              "text": "LABORATORY_QR_EMAIL_INVALID: 'Ingrese un correo de contacto válido.',"
+            },
+            {
+              "file": "src/services/laboratoryService.js",
+              "line": 64,
+              "text": "LABORATORY_QR_PHONE_INVALID: 'Ingrese un teléfono de contacto válido.',"
+            },
+            {
+              "file": "src/views/PatientAdmissionView.vue",
+              "line": 1,
+              "text": "<template><main class=\"patient-admission-view\"><div class=\"patient-admission-navigation\"><BioNexusTabs v-model=\"activeTab\" :tabs=\"tabs\" aria-label=\"Fases del ingreso\" id-prefix=\"patient-admission\"/></div><section class=\"bio-nexus-panel admission-panel\"><section v-show=\"activeTab==='patient'\" role=\"tabpanel\"><BioNexusSectionPanel title=\"Datos del paciente\" icon=\"person\" description=\"Registra la identificación, contacto y condiciones del ingreso.\" variant=\"accent\"><div v-if=\"errorMessage\" class=\"bio-nexus-message bio-nexus-message-error\">{{errorMessage}}</div><div class=\"form-grid\"><div class=\"identity-row\"><BioNexusFormField class=\"identity-type\" label=\"Tipo\" field-id=\"pa-code\"><BioNexusSearchableSelect id=\"pa-code\" v-model=\"draft.verification_code\" :options=\"patientVerificationCodeOptions\" value-key=\"value\" label-key=\"label\" :searchable=\"false\" /></BioNexusFormField><PatientAutocomplete class=\"identity-document\" v-model=\"draft.document_number\" label=\"Documento\" id=\"pa-document\" :error=\"documentError\" :maxlength=\"10\" @blur=\"documentTouched=true\" @select=\"selectPatient\"/><PatientAutocomplete class=\"identity-name\" v-model=\"draft.name\" label=\"Nombre y apellidos\" id=\"pa-name\" :error=\"nameError\" required @blur=\"nameTouched=true\" @select=\"selectPatient\"/></div><BioNexusFormField label=\"Fecha de nacimiento\" field-id=\"pa-birth\"><BioNexusRegionalDateInput id=\"pa-birth\" v-model=\"draft.birth_date\" min=\"1890-01-01\" :max=\"today\" @update:model-value=\"refreshAge\"/></BioNexusFormField><BioNexusFormField label=\"Edad\" field-id=\"pa-age\"><input id=\"pa-age\" v-model.number=\"draft.age\" class=\"bio-nexus-field calculated-field\" type=\"number\" min=\"0\" readonly aria-readonly=\"true\" tabindex=\"-1\" /></BioNexusFormField><BioNexusFormField label=\"Unidad\" field-id=\"pa-unit\"><input id=\"pa-unit\" :value=\"ageUnitLabel\" class=\"bio-nexus-field calculated-field\" type=\"text\" readonly aria-readonly=\"true\" tabindex=\"-1\" /></BioNexusFormField><BioNexusFormField label=\"Sexo\" field-id=\"pa-sex\"><BioNexusSearchableSelect id=\"pa-sex\" v-model=\"draft.sex\" :options=\"patientSexOptions\" value-key=\"value\" label-key=\"label\" :searchable=\"false\" /></BioNexusFormField><BioNexusFormField label=\"Muestra\" field-id=\"pa-sample\"><BioNexusSearchableSelect id=\"pa-sample\" v-model=\"draft.sample\" :options=\"patientSampleOptions\" value-key=\"value\" label-key=\"label\" :searchable=\"false\" /></BioNexusFormField><BioNexusFormField label=\"Tipo de muestra\" field-id=\"pa-sample-type\"><BioNexusSearchableSelect id=\"pa-sample-type\" v-model=\"draft.sample_type\" :options=\"sampleTypes\" value-key=\"description\" label-key=\"description\" placeholder=\"Seleccione\" search-placeholder=\"Buscar tipo de muestra...\" empty-text=\"Sin tipos de muestra coincidentes\" /></BioNexusFormField><BioNexusFormField label=\"Teléfono\" field-id=\"pa-phone\"><input id=\"pa-phone\" v-model.trim=\"draft.phone\" class=\"bio-nexus-field\" maxlength=\"20\"/></BioNexusFormField><BioNexusFormField label=\"Referido por\" field-id=\"pa-client\"><BioNexusSearchableSelect id=\"pa-client\" v-model=\"draft.client_id\" :options=\"clients\" value-key=\"id\" label-key=\"business_name\" search-placeholder=\"Buscar referido...\" empty-text=\"Sin referidos coincidentes\" /></BioNexusFormField><BioNexusFormField label=\"Sugerido por\" field-id=\"pa-suggested\"><input id=\"pa-suggested\" v-model.trim=\"draft.suggested\" class=\"bio-nexus-field\" maxlength=\"60\"/></BioNexusFormField><BioNexusCheckbox v-model=\"draft.urgent\" class=\"admission-check\" label=\"Ingreso urgente\" /><BioNexusCheckbox v-model=\"draft.email_sent\" class=\"admission-check\" label=\"Enviar resultados por correo\" /><BioNexusFormField v-if=\"draft.email_sent\" label=\"Correo\" field-id=\"pa-email\" :error=\"emailError\"><input id=\"pa-email\" v-model.trim=\"draft.email\" class=\"bio-nexus-field\" type=\"email\"/></BioNexusFormField><BioNexusFormField class=\"span-2\" label=\"Domicilio\" field-id=\"pa-address\"><textarea id=\"pa-address\" v-model.trim=\"draft.address\" class=\"bio-nexus-field textarea\" maxlength=\"250\"></textarea></BioNexusFormField><BioNexusFormField label=\"Observación\" field-id=\"pa-observation\"><textarea id=\"pa-observation\" v-model.trim=\"draft.observation\" class=\"bio-nexus-field textarea\" maxlength=\"100\"></textarea></BioNexusFormField></div></BioNexusSectionPanel></section><section v-if=\"activeTab==='exams'\" role=\"tabpanel\"><PatientAdmissionExamsStep v-model=\"selectedExams\" v-model:tariff-id=\"draft.tariff_id\" :client-id=\"Number(draft.client_id)||1\" :tariffs=\"tariffs\" @summary-change=\"updateExamSummary\" /></section><section v-show=\"activeTab==='payment'\" role=\"tabpanel\"><PatientAdmissionPaymentStep :patient=\"draft\" :exams=\"selectedExams\" :summary=\"examSummary\" :tariff-id=\"Number(draft.tariff_id)||null\" @closed=\"handleClosed\" /></section><section v-show=\"activeTab==='summary'\" class=\"phase-placeholder\"><strong>Resumen</strong><p>Revisión final antes de registrar.</p></section><footer><button class=\"bio-nexus-action bio-nexus-action-secondary\" :disabled=\"!dirty\" @click=\"resetDraft\"><BioNexusActionIcon action=\"cancel\"/>Descartar</button></footer></section></main></template><script setup>"
+            },
+            {
+              "file": "src/views/PatientReceiptDocumentDesignerView.vue",
+              "line": 54,
+              "text": "<button v-for=\"item in [...extraElements].reverse()\" :key=\"item.id\" type=\"button\" class=\"layer-row\" :class=\"{active:selectedIds.includes(item.id)}\" @click=\"selectElement(item.id,$event.shiftKey||$event.ctrlKey||$event.metaKey)\"><span>{{ elementLabel(item.type) }}</span><small>{{ item.locked ? 'Bloqueado' : item.type==='group' ? item.children.length+' elementos' : 'Elemento visual' }}</small></button>"
+            },
+            {
+              "file": "src/components/laboratory/LaboratoryGeneralPanel.vue",
+              "line": 12,
+              "text": "<BioNexusSectionPanel title=\"Contacto\" icon=\"contact_phone\" description=\"Configura los medios de contacto institucionales del laboratorio.\" variant=\"accent\">"
+            },
+            {
+              "file": "src/components/laboratory/LaboratoryGeneralPanel.vue",
+              "line": 14,
+              "text": "<BioNexusFormField v-for=\"field in contactFields\" :key=\"field.key\" :label=\"field.label\" :field-id=\"'lab-'+field.key\" :required=\"field.required\" :error=\"errors[field.key] || ''\" :help=\"field.max ? String(model[field.key] || '').length + ' de ' + field.max + ' caracteres' : ''\">"
+            },
+            {
+              "file": "src/components/laboratory/LaboratoryGeneralPanel.vue",
+              "line": 20,
+              "text": "<BioNexusSectionPanel title=\"Código QR de contacto\" icon=\"qr_code_2\" description=\"Configura los datos de contacto que se usarán para generar el QR institucional.\" variant=\"accent\">"
+            },
+            {
+              "file": "src/components/laboratory/LaboratoryGeneralPanel.vue",
+              "line": 37,
+              "text": "const contactFields=Object.freeze([{key:'email',label:'Correo institucional',max:100,required:true,type:'email'},{key:'url',label:'Sitio web',max:100},{key:'phone_1',label:'Teléfono principal',max:20,required:true},{key:'phone_2',label:'Teléfono alterno',max:20},{key:'mask_phone',label:'Máscara de teléfono',max:20,required:true}])"
+            }
+          ]
+        },
+        {
+          "key": "cancelled-separation",
+          "title": "cancelled separado de is_active",
+          "status": "implemented",
+          "assessment": "La coexistencia requiere pruebas que modificar uno no altere el otro.",
+          "evidence": [
+            {
+              "file": "src/routine-description-unique.contract.spec.ts",
+              "line": 10,
+              "text": "it('consolidates persistence protection in the baseline',()=>{ expect(schema).toContain('upper(btrim((description)::text))'); expect(schema).toContain('UX_exam_routines_description'); expect(schema).toContain('CREATE UNIQUE INDEX \"UX_exam_routines_description\"'); expect(schema).toContain('is_active'); });"
+            },
+            {
+              "file": "src/audit/security-audit-role-events.spec.ts",
+              "line": 93,
+              "text": "isActive: false,"
+            },
+            {
+              "file": "src/audit/security-audit-role-events.spec.ts",
+              "line": 100,
+              "text": "isActive: false,"
+            },
+            {
+              "file": "src/audit/security-audit-role-events.spec.ts",
+              "line": 113,
+              "text": "changedFields: ['name', 'isActive'],"
+            },
+            {
+              "file": "src/audit/security-audit-role-events.spec.ts",
+              "line": 163,
+              "text": "isActive: true,"
+            },
+            {
+              "file": "src/authorization/authorization-administration.controller.spec.ts",
+              "line": 71,
+              "text": "isActive: true,"
+            },
+            {
+              "file": "src/authorization/authorization-administration.controller.spec.ts",
+              "line": 82,
+              "text": "isActive: true,"
+            },
+            {
+              "file": "src/authorization/authorization-administration.controller.spec.ts",
+              "line": 159,
+              "text": "isActive: true,"
+            },
+            {
+              "file": "src/authorization/authorization-administration.controller.spec.ts",
+              "line": 167,
+              "text": "isActive: true,"
+            },
+            {
+              "file": "src/authorization/authorization-administration.controller.spec.ts",
+              "line": 307,
+              "text": "isActive: true,"
+            },
+            {
+              "file": "src/authorization/authorization-administration.controller.spec.ts",
+              "line": 331,
+              "text": "isActive: true,"
+            },
+            {
+              "file": "src/authorization/authorization-administration.controller.spec.ts",
+              "line": 357,
+              "text": "isActive: true,"
+            },
+            {
+              "file": "src/authorization/authorization-administration.controller.spec.ts",
+              "line": 385,
+              "text": "isActive: true,"
+            },
+            {
+              "file": "src/authorization/authorization-administration.controller.spec.ts",
+              "line": 446,
+              "text": "isActive: false,"
+            },
+            {
+              "file": "src/authorization/authorization-administration.role-permissions-read.controller.spec.ts",
+              "line": 86,
+              "text": "isActive: boolean,"
+            },
+            {
+              "file": "src/authorization/authorization-administration.role-permissions-read.controller.spec.ts",
+              "line": 94,
+              "text": "isActive,"
+            }
+          ]
+        },
+        {
+          "key": "perpetual-null",
+          "title": "perpetual_free con expiracion y gracia NULL",
+          "status": "implemented",
+          "assessment": "null_rule=True, tests=True",
+          "evidence": [
+            {
+              "file": "src/laboratory/laboratory.entity.ts",
+              "line": 49,
+              "text": "service_expires_at: Date | null;"
+            },
+            {
+              "file": "src/laboratory/laboratory.entity.ts",
+              "line": 52,
+              "text": "grace_until: Date | null;"
+            },
+            {
+              "file": "src/laboratory/laboratory.entity.ts",
+              "line": 55,
+              "text": "perpetual_free_reason: string | null;"
+            },
+            {
+              "file": "src/laboratory/laboratory.entity.ts",
+              "line": 64,
+              "text": "perpetual_free_granted_at: Date | null;"
+            },
+            {
+              "file": "src/laboratory/laboratory.entity.ts",
+              "line": 67,
+              "text": "perpetual_free_granted_by: number | null;"
+            },
+            {
+              "file": "src/laboratory/laboratory.service.spec.ts",
+              "line": 125,
+              "text": "perpetual_free_reason: 'Owner only',"
+            },
+            {
+              "file": "src/laboratory/laboratory.service.spec.ts",
+              "line": 126,
+              "text": "perpetual_free_granted_at: new Date('2026-10-30T00:00:00Z'),"
+            },
+            {
+              "file": "src/laboratory/laboratory.service.spec.ts",
+              "line": 127,
+              "text": "perpetual_free_granted_by: 70,"
+            },
+            {
+              "file": "src/laboratory/laboratory.service.spec.ts",
+              "line": 146,
+              "text": "'perpetual_free_reason',"
+            },
+            {
+              "file": "src/laboratory/laboratory.service.spec.ts",
+              "line": 147,
+              "text": "'perpetual_free_granted_at',"
+            },
+            {
+              "file": "src/laboratory/laboratory.service.spec.ts",
+              "line": 148,
+              "text": "'perpetual_free_granted_by',"
+            },
+            {
+              "file": "src/laboratory/laboratory.service.ts",
+              "line": 35,
+              "text": "| 'perpetual_free_reason'"
+            },
+            {
+              "file": "src/laboratory/laboratory.service.ts",
+              "line": 36,
+              "text": "| 'perpetual_free_granted_at'"
+            },
+            {
+              "file": "src/laboratory/laboratory.service.ts",
+              "line": 37,
+              "text": "| 'perpetual_free_granted_by'"
+            },
+            {
+              "file": "src/laboratory/laboratory.service.ts",
+              "line": 392,
+              "text": "perpetual_free_reason: omittedPerpetualFreeReason,"
+            },
+            {
+              "file": "src/laboratory/laboratory.service.ts",
+              "line": 393,
+              "text": "perpetual_free_granted_at: omittedPerpetualFreeGrantedAt,"
+            }
+          ]
+        },
+        {
+          "key": "perpetual-metadata",
+          "title": "Metadatos perpetual_free",
+          "status": "implemented",
+          "assessment": "metadata=True, tests=True",
+          "evidence": [
+            {
+              "file": "src/laboratory/laboratory.entity.ts",
+              "line": 49,
+              "text": "service_expires_at: Date | null;"
+            },
+            {
+              "file": "src/laboratory/laboratory.entity.ts",
+              "line": 52,
+              "text": "grace_until: Date | null;"
+            },
+            {
+              "file": "src/laboratory/laboratory.entity.ts",
+              "line": 55,
+              "text": "perpetual_free_reason: string | null;"
+            },
+            {
+              "file": "src/laboratory/laboratory.entity.ts",
+              "line": 64,
+              "text": "perpetual_free_granted_at: Date | null;"
+            },
+            {
+              "file": "src/laboratory/laboratory.entity.ts",
+              "line": 67,
+              "text": "perpetual_free_granted_by: number | null;"
+            },
+            {
+              "file": "src/laboratory/laboratory.service.spec.ts",
+              "line": 125,
+              "text": "perpetual_free_reason: 'Owner only',"
+            },
+            {
+              "file": "src/laboratory/laboratory.service.spec.ts",
+              "line": 126,
+              "text": "perpetual_free_granted_at: new Date('2026-10-30T00:00:00Z'),"
+            },
+            {
+              "file": "src/laboratory/laboratory.service.spec.ts",
+              "line": 127,
+              "text": "perpetual_free_granted_by: 70,"
+            },
+            {
+              "file": "src/laboratory/laboratory.service.spec.ts",
+              "line": 146,
+              "text": "'perpetual_free_reason',"
+            },
+            {
+              "file": "src/laboratory/laboratory.service.spec.ts",
+              "line": 147,
+              "text": "'perpetual_free_granted_at',"
+            },
+            {
+              "file": "src/laboratory/laboratory.service.spec.ts",
+              "line": 148,
+              "text": "'perpetual_free_granted_by',"
+            },
+            {
+              "file": "src/laboratory/laboratory.service.ts",
+              "line": 35,
+              "text": "| 'perpetual_free_reason'"
+            },
+            {
+              "file": "src/laboratory/laboratory.service.ts",
+              "line": 36,
+              "text": "| 'perpetual_free_granted_at'"
+            },
+            {
+              "file": "src/laboratory/laboratory.service.ts",
+              "line": 37,
+              "text": "| 'perpetual_free_granted_by'"
+            },
+            {
+              "file": "src/laboratory/laboratory.service.ts",
+              "line": 392,
+              "text": "perpetual_free_reason: omittedPerpetualFreeReason,"
+            },
+            {
+              "file": "src/laboratory/laboratory.service.ts",
+              "line": 393,
+              "text": "perpetual_free_granted_at: omittedPerpetualFreeGrantedAt,"
+            }
+          ]
+        },
+        {
+          "key": "owner-only",
+          "title": "perpetual_free solo platform-owner",
+          "status": "implemented",
+          "assessment": "negative_tests=True",
+          "evidence": [
+            {
+              "file": "scripts/test-authorization-migration.js",
+              "line": 102,
+              "text": "roles varchar(100) NOT NULL DEFAULT 'user',"
+            },
+            {
+              "file": "scripts/test-authorization-migration.js",
+              "line": 112,
+              "text": "INSERT INTO users (name, roles, hide_user)"
+            },
+            {
+              "file": "scripts/test-authorization-migration.js",
+              "line": 138,
+              "text": "const roles = await queryRunner.query(`"
+            },
+            {
+              "file": "scripts/test-authorization-migration.js",
+              "line": 140,
+              "text": "FROM security_roles"
+            },
+            {
+              "file": "scripts/test-authorization-migration.js",
+              "line": 144,
+              "text": "const permissions = await queryRunner.query(`"
+            },
+            {
+              "file": "scripts/test-authorization-migration.js",
+              "line": 146,
+              "text": "FROM security_permissions"
+            },
+            {
+              "file": "scripts/test-authorization-migration.js",
+              "line": 150,
+              "text": "const rolePermissions = await queryRunner.query(`"
+            },
+            {
+              "file": "scripts/test-authorization-migration.js",
+              "line": 152,
+              "text": "role.code AS roleCode,"
+            },
+            {
+              "file": "scripts/test-authorization-migration.js",
+              "line": 153,
+              "text": "COUNT(*) AS permissionCount"
+            },
+            {
+              "file": "scripts/test-authorization-migration.js",
+              "line": 154,
+              "text": "FROM security_role_permissions assignment"
+            },
+            {
+              "file": "scripts/test-authorization-migration.js",
+              "line": 155,
+              "text": "INNER JOIN security_roles role"
+            },
+            {
+              "file": "scripts/test-authorization-migration.js",
+              "line": 156,
+              "text": "ON role.id = assignment.role_id"
+            },
+            {
+              "file": "scripts/test-authorization-migration.js",
+              "line": 157,
+              "text": "GROUP BY role.code"
+            },
+            {
+              "file": "scripts/test-authorization-migration.js",
+              "line": 158,
+              "text": "ORDER BY role.code"
+            },
+            {
+              "file": "scripts/test-authorization-migration.js",
+              "line": 161,
+              "text": "const userRoles = await queryRunner.query(`"
+            },
+            {
+              "file": "scripts/test-authorization-migration.js",
+              "line": 165,
+              "text": "role.code"
+            }
+          ]
+        },
+        {
+          "key": "transition-audit",
+          "title": "Auditoria de transiciones comerciales",
+          "status": "partial",
+          "assessment": "specific_tests=False",
+          "evidence": [
+            {
+              "file": "eslint.config.mjs",
+              "line": 12,
+              "text": "'Auditoria-Backend-Extraccion/**',"
+            },
+            {
+              "file": "scripts/test-authorization-migration.js",
+              "line": 197,
+              "text": "cancellationPermissions: assignments.annular === 1,"
+            },
+            {
+              "file": "src/exam-catalog-abbreviation-unique.contract.spec.ts",
+              "line": 19,
+              "text": "it('converts concurrent unique index errors to a controlled conflict',()=>{"
+            },
+            {
+              "file": "src/exam-ordering-contract.spec.ts",
+              "line": 30,
+              "text": "it('registra auditoria y evita el guardado individual legacy', () => {"
+            },
+            {
+              "file": "src/exam-price-adjustment.contract.spec.ts",
+              "line": 2,
+              "text": "describe('Exam catalog price adjustment advanced scope',()=>{const controller=read('src/exam_lists/examlists.controller.ts'),service=read('src/exam_lists/examlists.service.ts'),dto=read('src/exam_lists/dto/price-adjustment.dto.ts');it('mantiene endpoint dedicado antes de id y exige update',()=>{expect(controller).toContain(\"@RequirePermissions('exam-catalog.update') @Patch('price-adjustment')\");expect(controller.indexOf(\"@Patch('price-adjustment')\")).toBeLessThan(controller.indexOf(\"@Patch(':id')\"))});it('recibe una lista final de examenes sin depender de un grupo',()=>{expect(dto).toContain('examIds: number[]');expect(dto).not.toContain('groupId');expect(dto).not.toContain('scope');expect(service).not.toContain('input.groupId');expect(service).not.toContain('scope=body.scope')});it('admite hasta 2000 examenes unicos de varios grupos',()=>{expect(service).toContain('body.examIds.length>2000');expect(service).toContain('new Set(examIds).size!==examIds.length');expect(service).toContain(\"where('exam.id IN (:...ids)'\");expect(service).toContain(\"setLock('pessimistic_write')\")});it('deriva grupos y audita alcance real',()=>{for(const token of ['groupIds=Array.from','groupCount:groupIds.length','examCount:input.examIds.length','examIds:input.examIds.slice(0,100)',\"action:'exam-catalog.prices-adjusted'\"])expect(service).toContain(token)});it('conserva aumento, disminucion y limites',()=>{expect(service).toContain(\"operation==='decrease'&&percentage>100\");expect(service).toContain(\"operation==='increase'&&percentage>1000\");expect(service).toContain('next<0')});it('sincroniza precios modulares y legacy',()=>{for(const token of ['ExamTariffPrice','Tariff','LEGACY_([1-6])','exam[field]=next'])expect(service).toContain(token)})});"
+            },
+            {
+              "file": "src/antibiotic/antibiotic-audit-module.contract.spec.ts",
+              "line": 2,
+              "text": "describe('Antibiotic audit module contract', () => {"
+            },
+            {
+              "file": "src/antibiotic/antibiotic-audit-module.contract.spec.ts",
+              "line": 4,
+              "text": "it('provides SecurityAuditService through SecurityAuditModule', () => {"
+            },
+            {
+              "file": "src/antibiotic/antibiotic-audit-module.contract.spec.ts",
+              "line": 5,
+              "text": "expect(module).toContain(\"import { SecurityAuditModule } from '../audit/security-audit.module';\");"
+            },
+            {
+              "file": "src/antibiotic/antibiotic-audit-module.contract.spec.ts",
+              "line": 6,
+              "text": "expect(module).toContain('AuthorizationModule, SecurityAuditModule');"
+            },
+            {
+              "file": "src/antibiotic/antibiotic.controller.ts",
+              "line": 2,
+              "text": "import { getSecurityAuditActorUserId, SecurityAuthenticatedRequest } from '../audit/security-audit-context';"
+            },
+            {
+              "file": "src/antibiotic/antibiotic.controller.ts",
+              "line": 34,
+              "text": "return this.antibioticService.createAntibiotic(body, getSecurityAuditActorUserId(request) ?? undefined);"
+            },
+            {
+              "file": "src/antibiotic/antibiotic.controller.ts",
+              "line": 40,
+              "text": "const actorUserId = getSecurityAuditActorUserId(request);"
+            },
+            {
+              "file": "src/antibiotic/antibiotic.module.ts",
+              "line": 4,
+              "text": "import { SecurityAuditModule } from '../audit/security-audit.module';"
+            },
+            {
+              "file": "src/antibiotic/antibiotic.module.ts",
+              "line": 10,
+              "text": "@Module({ imports: [TypeOrmModule.forFeature([Antibiotic]), UsersModule, AuthorizationModule, SecurityAuditModule], controllers: [AntibioticController], providers: [AntibioticService] })"
+            },
+            {
+              "file": "src/antibiotic/antibiotic.service.ts",
+              "line": 4,
+              "text": "import { SecurityAuditService } from '../audit/security-audit.service';"
+            },
+            {
+              "file": "src/antibiotic/antibiotic.service.ts",
+              "line": 11,
+              "text": "constructor(@InjectRepository(Antibiotic) private readonly repository: Repository<Antibiotic>, @Optional() private readonly dataSource?: DataSource, @Optional() private readonly audit?: SecurityAuditService) {}"
+            }
+          ]
+        },
+        {
+          "key": "public-redaction",
+          "title": "APIs publicas no revelan concesion",
+          "status": "partial",
+          "assessment": "potential_leak=False, redaction_test=False",
+          "evidence": [
+            {
+              "file": "src/app.controller.spec.ts",
+              "line": 19,
+              "text": "describe('servePublicFile', () => {"
+            },
+            {
+              "file": "src/app.controller.spec.ts",
+              "line": 20,
+              "text": "it('debe enviar el archivo solicitado desde el directorio public', () => {"
+            },
+            {
+              "file": "src/app.controller.spec.ts",
+              "line": 25,
+              "text": "appController.servePublicFile('assets/example.txt', response);"
+            },
+            {
+              "file": "src/app.controller.spec.ts",
+              "line": 29,
+              "text": "join(__dirname, '..', 'public', 'assets/example.txt'),"
+            },
+            {
+              "file": "src/app.controller.ts",
+              "line": 6,
+              "text": "@Controller('public')"
+            },
+            {
+              "file": "src/app.controller.ts",
+              "line": 10,
+              "text": "@Get('{*filePath}')"
+            },
+            {
+              "file": "src/app.controller.ts",
+              "line": 11,
+              "text": "servePublicFile("
+            },
+            {
+              "file": "src/app.controller.ts",
+              "line": 18,
+              "text": "const file = join(__dirname, '..', 'public', relativePath);"
+            },
+            {
+              "file": "src/app.module.ts",
+              "line": 97,
+              "text": "rootPath: join(__dirname, '..', 'public'),"
+            },
+            {
+              "file": "src/app.module.ts",
+              "line": 98,
+              "text": "exclude: ['/api/{*any}'],"
+            },
+            {
+              "file": "src/app.module.ts",
+              "line": 108,
+              "text": "return app;"
+            },
+            {
+              "file": "src/exam-domain-runtime.contract.spec.ts",
+              "line": 8,
+              "text": "expect(taxService).toContain('SELECT COUNT(*) AS referenceCount FROM exam_catalog WHERE tax_id = ?');"
+            },
+            {
+              "file": "src/exam-domain-runtime.contract.spec.ts",
+              "line": 20,
+              "text": "expect(service).not.toContain(\".addSelect('exam.examlistsId'\");"
+            },
+            {
+              "file": "src/exam-ordering-contract.spec.ts",
+              "line": 9,
+              "text": "expect(source).toContain('return this.service.reorder');"
+            },
+            {
+              "file": "test/app.e2e-spec.ts",
+              "line": 28,
+              "text": ".get('/api/public/bionexus.svg')"
+            },
+            {
+              "file": "test/app.e2e-spec.ts",
+              "line": 47,
+              "text": "const outputPath = join(process.cwd(), 'public', 'images', fileName);"
+            }
+          ]
+        },
+        {
+          "key": "technical-block",
+          "title": "is_active no altera perpetual_free",
+          "status": "partial",
+          "assessment": "specific_tests=False",
+          "evidence": [
+            {
+              "file": "src/exam-ordering-contract.spec.ts",
+              "line": 8,
+              "text": "expect(source).toContain(\"@RequirePermissions('exam-catalog.update') @Patch('reorder')\");"
+            },
+            {
+              "file": "src/exam-ordering-contract.spec.ts",
+              "line": 13,
+              "text": "expect(source).toContain(\"@RequirePermissions('exam-catalog.update') @Patch('reorder')\");"
+            },
+            {
+              "file": "src/exam-price-adjustment.contract.spec.ts",
+              "line": 2,
+              "text": "describe('Exam catalog price adjustment advanced scope',()=>{const controller=read('src/exam_lists/examlists.controller.ts'),service=read('src/exam_lists/examlists.service.ts'),dto=read('src/exam_lists/dto/price-adjustment.dto.ts');it('mantiene endpoint dedicado antes de id y exige update',()=>{expect(controller).toContain(\"@RequirePermissions('exam-catalog.update') @Patch('price-adjustment')\");expect(controller.indexOf(\"@Patch('price-adjustment')\")).toBeLessThan(controller.indexOf(\"@Patch(':id')\"))});it('recibe una lista final de examenes sin depender de un grupo',()=>{expect(dto).toContain('examIds: number[]');expect(dto).not.toContain('groupId');expect(dto).not.toContain('scope');expect(service).not.toContain('input.groupId');expect(service).not.toContain('scope=body.scope')});it('admite hasta 2000 examenes unicos de varios grupos',()=>{expect(service).toContain('body.examIds.length>2000');expect(service).toContain('new Set(examIds).size!==examIds.length');expect(service).toContain(\"where('exam.id IN (:...ids)'\");expect(service).toContain(\"setLock('pessimistic_write')\")});it('deriva grupos y audita alcance real',()=>{for(const token of ['groupIds=Array.from','groupCount:groupIds.length','examCount:input.examIds.length','examIds:input.examIds.slice(0,100)',\"action:'exam-catalog.prices-adjusted'\"])expect(service).toContain(token)});it('conserva aumento, disminucion y limites',()=>{expect(service).toContain(\"operation==='decrease'&&percentage>100\");expect(service).toContain(\"operation==='increase'&&percentage>1000\");expect(service).toContain('next<0')});it('sincroniza precios modulares y legacy',()=>{for(const token of ['ExamTariffPrice','Tariff','LEGACY_([1-6])','exam[field]=next'])expect(service).toContain(token)})});"
+            },
+            {
+              "file": "src/main.ts",
+              "line": 36,
+              "text": "methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',"
+            },
+            {
+              "file": "src/routine-description-unique.contract.spec.ts",
+              "line": 10,
+              "text": "it('consolidates persistence protection in the baseline',()=>{ expect(schema).toContain('upper(btrim((description)::text))'); expect(schema).toContain('UX_exam_routines_description'); expect(schema).toContain('CREATE UNIQUE INDEX \"UX_exam_routines_description\"'); expect(schema).toContain('is_active'); });"
+            },
+            {
+              "file": "src/antibiotic/antibiotic.controller.ts",
+              "line": 1,
+              "text": "import { Body, Controller, ForbiddenException, Get, Param, ParseIntPipe, Patch, Post, Req, UseGuards } from '@nestjs/common';"
+            },
+            {
+              "file": "src/antibiotic/antibiotic.controller.ts",
+              "line": 38,
+              "text": "@Patch(':id')"
+            },
+            {
+              "file": "src/application-settings/application-settings.controller.ts",
+              "line": 1,
+              "text": "import { Body, Controller, Get, Headers, Param, ParseIntPipe, Patch, Req, UseGuards } from '@nestjs/common';"
+            },
+            {
+              "file": "src/application-settings/application-settings.controller.ts",
+              "line": 21,
+              "text": "@Patch(':id')"
+            },
+            {
+              "file": "src/audit/security-audit-role-events.spec.ts",
+              "line": 93,
+              "text": "isActive: false,"
+            },
+            {
+              "file": "src/audit/security-audit-role-events.spec.ts",
+              "line": 100,
+              "text": "isActive: false,"
+            },
+            {
+              "file": "src/audit/security-audit-role-events.spec.ts",
+              "line": 113,
+              "text": "changedFields: ['name', 'isActive'],"
+            },
+            {
+              "file": "src/audit/security-audit-role-events.spec.ts",
+              "line": 163,
+              "text": "isActive: true,"
+            },
+            {
+              "file": "src/authorization/authorization-administration.controller.spec.ts",
+              "line": 71,
+              "text": "isActive: true,"
+            },
+            {
+              "file": "src/authorization/authorization-administration.controller.spec.ts",
+              "line": 82,
+              "text": "isActive: true,"
+            },
+            {
+              "file": "src/authorization/authorization-administration.controller.spec.ts",
+              "line": 159,
+              "text": "isActive: true,"
+            }
+          ]
+        },
+        {
+          "key": "security",
+          "title": "Seguridad preservada en perpetual_free",
+          "status": "partial",
+          "assessment": "specific_tests=False",
+          "evidence": [
+            {
+              "file": "scripts/test-authorization-migration.js",
+              "line": 102,
+              "text": "roles varchar(100) NOT NULL DEFAULT 'user',"
+            },
+            {
+              "file": "scripts/test-authorization-migration.js",
+              "line": 112,
+              "text": "INSERT INTO users (name, roles, hide_user)"
+            },
+            {
+              "file": "scripts/test-authorization-migration.js",
+              "line": 138,
+              "text": "const roles = await queryRunner.query(`"
+            },
+            {
+              "file": "scripts/test-authorization-migration.js",
+              "line": 140,
+              "text": "FROM security_roles"
+            },
+            {
+              "file": "scripts/test-authorization-migration.js",
+              "line": 144,
+              "text": "const permissions = await queryRunner.query(`"
+            },
+            {
+              "file": "scripts/test-authorization-migration.js",
+              "line": 146,
+              "text": "FROM security_permissions"
+            },
+            {
+              "file": "scripts/test-authorization-migration.js",
+              "line": 150,
+              "text": "const rolePermissions = await queryRunner.query(`"
+            },
+            {
+              "file": "scripts/test-authorization-migration.js",
+              "line": 152,
+              "text": "role.code AS roleCode,"
+            },
+            {
+              "file": "scripts/test-authorization-migration.js",
+              "line": 153,
+              "text": "COUNT(*) AS permissionCount"
+            },
+            {
+              "file": "scripts/test-authorization-migration.js",
+              "line": 154,
+              "text": "FROM security_role_permissions assignment"
+            },
+            {
+              "file": "scripts/test-authorization-migration.js",
+              "line": 155,
+              "text": "INNER JOIN security_roles role"
+            },
+            {
+              "file": "scripts/test-authorization-migration.js",
+              "line": 156,
+              "text": "ON role.id = assignment.role_id"
+            },
+            {
+              "file": "scripts/test-authorization-migration.js",
+              "line": 157,
+              "text": "GROUP BY role.code"
+            },
+            {
+              "file": "scripts/test-authorization-migration.js",
+              "line": 158,
+              "text": "ORDER BY role.code"
+            },
+            {
+              "file": "scripts/test-authorization-migration.js",
+              "line": 161,
+              "text": "const userRoles = await queryRunner.query(`"
+            },
+            {
+              "file": "scripts/test-authorization-migration.js",
+              "line": 165,
+              "text": "role.code"
+            }
+          ]
+        }
+      ],
+      "priorities": [
+        "Trazar y corregir PLATFORM_SUBSCRIPTION_DATES_INVALID entre PlatformLaboratoryDialog, DTO y platform-provisioning.service.",
+        "Agregar pruebas contractuales para alta trial, active y perpetual_free con UTC y límites de fechas.",
+        "Cerrar proceso automático grace/suspended y prueba grace=0.",
+        "Cerrar guard central, bloqueo de sesiones y pantalla suspended.",
+        "Cerrar owner-only, redacción pública y auditoría de perpetual_free."
+      ],
+      "databaseQueried": false,
+      "databaseModified": false,
+      "serversManaged": false
     }
   ],
   "stateReplication": {
@@ -28534,24 +29796,22 @@
   "primaryObjective": "Estabilizar y completar Bio Nexus Cloud; alinear PostgreSQL real con la baseline y cerrar el provisionamiento funcional antes de otros modos.",
   "currentWorkstream": "platform-laboratory-administration-cloud",
   "currentCheckpoint": {
-    "id": "platform-commercial-lifecycle-remediation-20261105",
-    "at": "2026-11-05T22:13:00-04:00",
-    "status": "static-audit-completed;remediation-pending",
+    "id": "platform-subscription-dates-remediation-20261105",
+    "at": "2026-11-05T22:20:00-04:00",
+    "status": "targeted-audit-completed;dates-fix-pending",
     "completed": [
-      "Fase visual administrativa integrada en development.",
-      "Auditoria estatica del lifecycle comercial completada."
+      "Auditoria dirigida de codigo fuente completada excluyendo docs, lockfiles y dependencias."
     ],
     "current": [
-      "Corregir PLATFORM_SUBSCRIPTION_DATES_INVALID desde payload hasta persistencia."
+      "Trazar y corregir PLATFORM_SUBSCRIPTION_DATES_INVALID entre PlatformLaboratoryDialog, DTO y platform-provisioning.service."
     ],
     "pending": [
-      "Corregir PLATFORM_SUBSCRIPTION_DATES_INVALID y agregar pruebas de alta trial/active/perpetual_free.",
-      "Probar proceso automatico active/trial -> grace -> suspended, incluido grace=0.",
-      "Probar guard central, bloqueo de sesiones y pantalla suspended.",
-      "Cerrar seguridad perpetual_free: owner-only, metadatos, revocacion/conversion, redaccion publica.",
-      "Verificar auditoria de renovacion, extension, suspension, reactivacion y cancelacion."
+      "Agregar pruebas contractuales para alta trial, active y perpetual_free con UTC y límites de fechas.",
+      "Cerrar proceso automático grace/suspended y prueba grace=0.",
+      "Cerrar guard central, bloqueo de sesiones y pantalla suspended.",
+      "Cerrar owner-only, redacción pública y auditoría de perpetual_free."
     ],
-    "nextAction": "Crear feature aislada para corregir primero fechas y pruebas de alta trial/active/perpetual_free; no tocar PostgreSQL hasta validar migraciones y pruebas.",
+    "nextAction": "Crear feature aislada para corregir fechas y pruebas de alta; mantener PostgreSQL y servicios sin cambios hasta validar.",
     "databaseQueried": false,
     "databaseModified": false,
     "serversManaged": false
