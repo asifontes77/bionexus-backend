@@ -17,7 +17,7 @@ describe('PlatformProvisioningService', () => {
       }
       if (lower.includes('from information_schema.columns')) return [{ column_name: 'code', is_identity: 'NO' }];
       if (lower.startsWith('insert into "')) return undefined;
-      if (lower.startsWith('select id from currencies')) return [{ id: 3 }];
+      if (lower.startsWith('select id,upper(btrim(code)) as code from currencies')) return [{ id: 3, code: String(parameters?.[1] ?? 'USD') }];
       if (lower.startsWith('insert into application_settings')) return undefined;
       if (lower.startsWith('insert into security_roles')) return [{ id: 4 }];
       if (lower.startsWith('insert into security_role_permissions')) return undefined;
@@ -35,7 +35,7 @@ describe('PlatformProvisioningService', () => {
       new PlatformLaboratoryAuditService(),
     );
     await expect(service.provision({
-      access_slug: ' Lab A ', rif: 'J-12345678-9', name: 'Lab', businessName: 'Lab CA', address: 'Caracas',
+      access_slug: ' Lab A ', rif: 'J-12345678-9', name: 'Lab', businessName: 'Lab CA', address: 'Caracas', operational_currency_code: 'USD' as const,
       plan_code: 'pilot', subscription_status: 'perpetual_free' as const, service_starts_at: '2026-10-30T00:00:00Z',
       service_expires_at: null, perpetual_free_reason: 'Pilot grant',
       branchName: 'Principal', administratorName: 'Admin', administratorUsername: 'admin',
@@ -53,8 +53,9 @@ describe('PlatformProvisioningService', () => {
     expect((String(laboratoryInsert?.[0]).match(/\$17\b/g) ?? [])).toHaveLength(1);
     expect(laboratoryInsert?.[1]?.[16]).toBe('perpetual_free');
     expect(query.mock.calls.some(call => String(call[0]).toLowerCase().startsWith('insert into platform_subscriptions'))).toBe(true);
-    expect(query.mock.calls.find(call => String(call[0]).toLowerCase().startsWith('select id from currencies'))?.[0])
-      .toContain("upper(btrim(code))='VES' AND is_active=true");
+    expect(query.mock.calls.find(call => String(call[0]).toLowerCase().startsWith('select id,upper(btrim(code)) as code from currencies'))?.[0])
+      .toContain('upper(btrim(code))=$2 AND is_active=true');
+    expect(query.mock.calls.find(call => String(call[0]).toLowerCase().startsWith('select id,upper(btrim(code)) as code from currencies'))?.[1]).toEqual([1, 'USD']);
     const auditCall = query.mock.calls.find(call => String(call[0]).startsWith('INSERT INTO platform_laboratory_audit_logs'));
     expect(auditCall?.[1]).toEqual(expect.arrayContaining([1, 7001, 'platform.laboratory.created']));
     expect(String(auditCall?.[1]?.[4])).not.toContain('Strong!Pass123');
@@ -64,7 +65,7 @@ describe('PlatformProvisioningService', () => {
     const dataSource = { transaction: jest.fn() };
     const service = new PlatformProvisioningService(dataSource as never, { installSelected: jest.fn().mockResolvedValue([]) } as never, new PlatformLaboratoryAuditService());
     await expect(service.provision({
-      access_slug: 'lab-a', rif: 'J-12345678-9', name: 'Lab', businessName: 'Lab CA', address: 'Caracas',
+      access_slug: 'lab-a', rif: 'J-12345678-9', name: 'Lab', businessName: 'Lab CA', address: 'Caracas', operational_currency_code: 'USD' as const,
       plan_code: 'pilot', subscription_status: 'perpetual_free' as const, service_starts_at: '2026-10-30T00:00:00Z',
       service_expires_at: null, perpetual_free_reason: 'Pilot grant',
       branchName: 'Principal', administratorName: 'Admin', administratorUsername: 'admin',
@@ -77,7 +78,7 @@ describe('PlatformProvisioningService', () => {
     const dataSource = { transaction: jest.fn() };
     const service = new PlatformProvisioningService(dataSource as never, { installSelected: jest.fn() } as never, new PlatformLaboratoryAuditService());
     await expect(service.provision({
-      access_slug: 'lab-a', rif: 'J-12345678-9', name: 'Lab', businessName: 'Lab CA', address: 'Caracas',
+      access_slug: 'lab-a', rif: 'J-12345678-9', name: 'Lab', businessName: 'Lab CA', address: 'Caracas', operational_currency_code: 'USD' as const,
       plan_code: 'pilot', subscription_status: 'perpetual_free' as const, service_starts_at: '2026-10-30T00:00:00Z',
       service_expires_at: null, perpetual_free_reason: 'Pilot grant',
       branchName: 'Principal', administratorName: 'Admin', administratorUsername: 'admin',
@@ -91,7 +92,7 @@ describe('PlatformProvisioningService', () => {
     const dataSource = { transaction: jest.fn() };
     const service = new PlatformProvisioningService(dataSource as never, { installSelected: jest.fn() } as never, new PlatformLaboratoryAuditService());
     const input = {
-      rif: 'J-12345678-9', name: 'Lab', businessName: 'Lab CA', address: 'Caracas',
+      rif: 'J-12345678-9', name: 'Lab', businessName: 'Lab CA', address: 'Caracas', operational_currency_code: 'USD' as const,
       plan_code: 'pilot', subscription_status: 'perpetual_free' as const, service_starts_at: '2026-10-30T00:00:00Z',
       service_expires_at: null, perpetual_free_reason: 'Pilot grant',
       branchName: 'Principal', administratorName: 'Admin', administratorUsername: 'admin',
@@ -106,7 +107,7 @@ describe('PlatformProvisioningService', () => {
   });
 
   it('rejects a globally duplicated access slug before inserting a laboratory', async () => {
-    const query = jest.fn(async (sql: string) => {
+    const query = jest.fn(async (sql: string, parameters?: unknown[]) => {
       if (String(sql).toLowerCase().includes('pg_advisory_xact_lock')) return undefined;
       if (String(sql).toLowerCase().includes('exists(select 1 from laboratory')) {
         return [{ rif: false, access_slug: true }];
@@ -122,7 +123,7 @@ describe('PlatformProvisioningService', () => {
     );
 
     await expect(service.provision({
-      access_slug: ' Lab A ', rif: 'J-12345678-9', name: 'Lab', businessName: 'Lab CA', address: 'Caracas',
+      access_slug: ' Lab A ', rif: 'J-12345678-9', name: 'Lab', businessName: 'Lab CA', address: 'Caracas', operational_currency_code: 'USD' as const,
       plan_code: 'pilot', subscription_status: 'perpetual_free', service_starts_at: '2026-10-30T00:00:00Z',
       service_expires_at: null, perpetual_free_reason: 'Pilot grant',
       branchCode: 'MAIN', branchName: 'Principal', administratorName: 'Admin', administratorUsername: 'admin',
@@ -135,7 +136,7 @@ describe('PlatformProvisioningService', () => {
     const dataSource = { transaction: jest.fn() };
     const service = new PlatformProvisioningService(dataSource as never, { installSelected: jest.fn() } as never, new PlatformLaboratoryAuditService());
     const common = {
-      access_slug: 'lab-a', rif: 'J-12345678-9', name: 'Lab', businessName: 'Lab CA', address: 'Caracas',
+      access_slug: 'lab-a', rif: 'J-12345678-9', name: 'Lab', businessName: 'Lab CA', address: 'Caracas', operational_currency_code: 'USD' as const,
       plan_code: 'pilot', service_starts_at: '2026-10-30T00:00:00Z',
       branchName: 'Principal', administratorName: 'Admin', administratorUsername: 'admin',
       administratorPassword: 'Strong!Pass123', administratorPasswordConfirmation: 'Strong!Pass123',
@@ -152,7 +153,7 @@ describe('PlatformProvisioningService', () => {
   });
 
   it('requires an active catalog plan for paid or trial enrollment and snapshots it in the tenant transaction', async () => {
-    const query: jest.Mock<Promise<unknown>, [sql: string, parameters?: unknown[]]> = jest.fn(async (sql: string) => {
+    const query: jest.Mock<Promise<unknown>, [sql: string, parameters?: unknown[]]> = jest.fn(async (sql: string, parameters?: unknown[]) => {
       const lower = sql.toLowerCase();
       if (lower.includes('pg_advisory_xact_lock')) return undefined;
       if (lower.includes('exists(select 1 from laboratory')) return [{ rif: false, access_slug: false }];
@@ -167,7 +168,7 @@ describe('PlatformProvisioningService', () => {
       if (lower.startsWith('insert into laboratory_branches')) return [{ id: 2, code: 'PRINCIPAL', name: 'Principal' }];
       if (lower.includes('from information_schema.columns')) return [{ column_name: 'code', is_identity: 'NO' }];
       if (lower.startsWith('insert into "')) return undefined;
-      if (lower.startsWith('select id from currencies')) return [{ id: 3 }];
+      if (lower.startsWith('select id,upper(btrim(code)) as code from currencies')) return [{ id: 3, code: String(parameters?.[1] ?? 'USD') }];
       if (lower.startsWith('insert into application_settings')) return undefined;
       if (lower.startsWith('insert into security_roles')) return [{ id: 4 }];
       if (lower.startsWith('insert into security_role_permissions')) return undefined;
@@ -183,7 +184,7 @@ describe('PlatformProvisioningService', () => {
       new PlatformLaboratoryAuditService(),
     );
     await service.provision({
-      access_slug: 'lab-a', rif: 'J-12345678-9', name: 'Lab', businessName: 'Lab CA', address: 'Caracas',
+      access_slug: 'lab-a', rif: 'J-12345678-9', name: 'Lab', businessName: 'Lab CA', address: 'Caracas', operational_currency_code: 'USD' as const,
       plan_code: 'BASIC', subscription_status: 'active', service_starts_at: '2026-10-30T00:00:00Z',
       service_expires_at: '2027-10-30T00:00:00Z', branchName: 'Principal', administratorName: 'Admin',
       administratorUsername: 'admin', administratorPassword: 'Strong!Pass123',
@@ -195,6 +196,54 @@ describe('PlatformProvisioningService', () => {
     ]));
     expect(insert?.[1]?.[13]).toBe('2027-11-04T00:00:00.000Z');
     expect(dataSource.transaction).toHaveBeenCalledWith('SERIALIZABLE', expect.any(Function));
+  });
+
+  it.each(['VES','USD','EUR'] as const)('resolves the selected active operational currency %s inside the provisioning transaction', async (operationalCurrencyCode) => {
+    const currencyQueries: unknown[][] = [];
+    const query = jest.fn(async (sql: string, parameters?: unknown[]) => {
+      const lower = String(sql).replace(/\s+/g, ' ').trim().toLowerCase();
+      if (lower.includes('pg_advisory_xact_lock')) return undefined;
+      if (lower.includes('exists(select 1 from laboratory')) return [{ rif: false, access_slug: false }];
+      if (lower.includes('from platform_subscription_plans')) return [{ id: 3, code: 'basic', name: 'Basic', description: null, price: '10.00', currency: 'USD', billing_interval: 'monthly', grace_period_days: 0, limits_benefits: {} }];
+      if (lower.startsWith('insert into laboratory')) return [{ id: 1, access_slug: 'lab-a' }];
+      if (lower.startsWith('insert into platform_subscriptions')) return undefined;
+      if (lower.startsWith('insert into laboratory_branches')) return [{ id: 2, code: 'PRINCIPAL', name: 'Principal' }];
+      if (lower.includes('from information_schema.columns')) return [{ column_name: 'code', is_identity: 'NO' }];
+      if (lower.startsWith('insert into "')) return undefined;
+      if (lower.startsWith('select id,upper(btrim(code)) as code from currencies')) { currencyQueries.push(parameters ?? []); return [{ id: 3, code: operationalCurrencyCode }]; }
+      if (lower.startsWith('insert into application_settings')) return undefined;
+      if (lower.startsWith('insert into security_roles')) return [{ id: 4 }];
+      if (lower.startsWith('insert into security_role_permissions')) return undefined;
+      if (lower.startsWith('insert into users')) return [{ id: 5, name: 'Admin', username: 'admin' }];
+      if (lower.startsWith('insert into security_user_roles') || lower.startsWith('insert into platform_laboratory_audit_logs')) return undefined;
+      throw new Error(`UNEXPECTED_SQL: ${sql}`);
+    });
+    const manager = { query };
+    const service = new PlatformProvisioningService(
+      { transaction: jest.fn(async (_level, work) => work(manager)) } as never,
+      { installSelected: jest.fn().mockResolvedValue([]) } as never,
+      new PlatformLaboratoryAuditService(),
+    );
+    await service.provision({
+      access_slug: 'lab-a', rif: 'J-12345678-9', name: 'Lab', businessName: 'Lab CA', address: 'Caracas',
+      operational_currency_code: operationalCurrencyCode, plan_code: 'basic', subscription_status: 'active',
+      service_starts_at: '2026-11-06T00:00:00Z', service_expires_at: '2026-12-06T00:00:00Z',
+      branchName: 'Principal', administratorName: 'Admin', administratorUsername: 'admin',
+      administratorPassword: 'Strong!Pass123', administratorPasswordConfirmation: 'Strong!Pass123',
+    }, 7001);
+    expect(currencyQueries).toEqual([[1, operationalCurrencyCode]]);
+  });
+
+  it('rejects an invalid operational currency before opening a transaction', async () => {
+    const dataSource = { transaction: jest.fn() };
+    const service = new PlatformProvisioningService(dataSource as never, { installSelected: jest.fn() } as never, new PlatformLaboratoryAuditService());
+    await expect(service.provision({
+      access_slug: 'lab-a', rif: 'J-12345678-9', name: 'Lab', businessName: 'Lab CA', address: 'Caracas',
+      operational_currency_code: 'GBP', subscription_status: 'perpetual_free', service_starts_at: '2026-11-06T00:00:00Z',
+      service_expires_at: null, perpetual_free_reason: 'Pilot', branchName: 'Principal', administratorName: 'Admin',
+      administratorUsername: 'admin', administratorPassword: 'Strong!Pass123', administratorPasswordConfirmation: 'Strong!Pass123',
+    } as never, 7001)).rejects.toThrow('PLATFORM_PROVISIONING_OPERATIONAL_CURRENCY_INVALID');
+    expect(dataSource.transaction).not.toHaveBeenCalled();
   });
 
   it('retries one serialization failure and returns an explicit conflict after the bounded retry', async () => {
@@ -209,7 +258,7 @@ describe('PlatformProvisioningService', () => {
       new PlatformLaboratoryAuditService(),
     );
     await expect(service.provision({
-      access_slug: 'lab-a', rif: 'J-12345678-9', name: 'Lab', businessName: 'Lab CA', address: 'Caracas',
+      access_slug: 'lab-a', rif: 'J-12345678-9', name: 'Lab', businessName: 'Lab CA', address: 'Caracas', operational_currency_code: 'USD' as const,
       subscription_status: 'perpetual_free', service_starts_at: '2026-10-30T00:00:00Z',
       service_expires_at: null,
       perpetual_free_reason: 'Owner grant', branchName: 'Principal', administratorName: 'Admin',

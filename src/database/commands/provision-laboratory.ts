@@ -21,6 +21,7 @@ export interface ProvisionLaboratoryEnvironment {
   BIONEXUS_PROVISION_EMAIL?: string;
   BIONEXUS_PROVISION_PLAN_CODE?: string;
   BIONEXUS_PROVISION_SUBSCRIPTION_STATUS?: string;
+  BIONEXUS_PROVISION_OPERATIONAL_CURRENCY_CODE?: string;
   BIONEXUS_PROVISION_SERVICE_STARTS_AT?: string;
   BIONEXUS_PROVISION_SERVICE_EXPIRES_AT?: string;
   BIONEXUS_PROVISION_PERPETUAL_FREE_REASON?: string;
@@ -38,6 +39,12 @@ export interface ProvisionLaboratoryCommandInput {
   platformOwnerUsername: string;
   dto: CreatePlatformLaboratoryDto;
 }
+
+const operationalCurrencyCode = (environment: ProvisionLaboratoryEnvironment): 'VES' | 'USD' | 'EUR' => {
+  const code = (environment.BIONEXUS_PROVISION_OPERATIONAL_CURRENCY_CODE ?? 'USD').trim().toUpperCase();
+  if (!['VES', 'USD', 'EUR'].includes(code)) throw new Error('BIONEXUS_PROVISION_OPERATIONAL_CURRENCY_CODE_INVALID');
+  return code as 'VES' | 'USD' | 'EUR';
+};
 
 const required = (environment: ProvisionLaboratoryEnvironment, name: keyof ProvisionLaboratoryEnvironment): string => {
   const value = environment[name]?.trim();
@@ -65,6 +72,7 @@ export function resolveProvisionLaboratoryInput(environment: ProvisionLaboratory
       address: required(environment, 'BIONEXUS_PROVISION_ADDRESS'),
       plan_code: planCode,
       subscription_status: subscriptionStatus,
+      operational_currency_code: operationalCurrencyCode(environment),
       service_starts_at: required(environment, 'BIONEXUS_PROVISION_SERVICE_STARTS_AT'),
       service_expires_at: environment.BIONEXUS_PROVISION_SERVICE_EXPIRES_AT?.trim() || null,
       perpetual_free_reason: environment.BIONEXUS_PROVISION_PERPETUAL_FREE_REASON?.trim() || undefined,

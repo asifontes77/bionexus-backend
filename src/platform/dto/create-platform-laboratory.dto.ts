@@ -4,6 +4,7 @@ export class CreatePlatformLaboratoryDto {
   name: string;
   businessName: string;
   address: string;
+  operational_currency_code: 'VES' | 'USD' | 'EUR';
   plan_code?: string;
   subscription_status: 'trial' | 'active' | 'perpetual_free';
   service_starts_at: string;

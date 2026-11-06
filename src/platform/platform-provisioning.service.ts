@@ -89,8 +89,8 @@ export class PlatformProvisioningService {
       );
       const branch=(await manager.query(`INSERT INTO laboratory_branches (laboratory_id,code,name,address,phone,email,is_main,is_active,display_order) VALUES ($1,$2,$3,$4,$5,$6,true,true,0) RETURNING id,code,name`,[laboratory.id,dto.branchCode,dto.branchName,dto.address,dto.phone||null,dto.email||null]))[0];
       const installedCatalogPackages = await this.tenantPackages.installSelected(manager, Number(laboratory.id), dto.seedPackages, platformOwnerId);
-      const currency=(await manager.query(`SELECT id FROM currencies WHERE laboratory_id=$1 AND upper(btrim(code))='VES' AND is_active=true ORDER BY id LIMIT 1`,[laboratory.id]))[0];
-      if(!currency) throw new BadRequestException('PLATFORM_PROVISIONING_VES_CURRENCY_REQUIRED');
+      const currency=(await manager.query(`SELECT id,upper(btrim(code)) AS code FROM currencies WHERE laboratory_id=$1 AND upper(btrim(code))=$2 AND is_active=true ORDER BY id LIMIT 1`,[laboratory.id,dto.operationalCurrencyCode]))[0];
+      if(!currency) throw new BadRequestException('PLATFORM_PROVISIONING_OPERATIONAL_CURRENCY_NOT_AVAILABLE');
       await manager.query(`INSERT INTO application_settings (laboratory_id,financial_primary_currency_id,voucher_format,receipt_format,head_html,body_html,page_html,workshee_format,printer_type,printer_interface) VALUES ($1,$2,'','','','','','','','')`,[laboratory.id,currency.id]);
       const role=(await manager.query(`INSERT INTO security_roles (laboratory_id,code,name,description,is_system,is_active) VALUES ($1,'administrator','Administrador','Administrador inicial del laboratorio',true,true) RETURNING id`,[laboratory.id]))[0];
       await manager.query(`INSERT INTO security_role_permissions (laboratory_id,role_id,permission_id) SELECT $1,$2,p.id FROM security_permissions p WHERE p.is_active=true`,[laboratory.id,role.id]);
@@ -109,6 +109,7 @@ export class PlatformProvisioningService {
           serviceStartsAt: dto.serviceStartsAt,
           serviceExpiresAt: dto.serviceExpiresAt,
           graceUntil,
+          operationalCurrencyCode: dto.operationalCurrencyCode,
           planSnapshot: {
             planId: plan.id,
             code: plan.code,
@@ -143,6 +144,9 @@ export class PlatformProvisioningService {
     const passwordConfirmation=typeof input?.administratorPasswordConfirmation==='string'?input.administratorPasswordConfirmation:'';
     if(password!==passwordConfirmation) throw new BadRequestException('PLATFORM_PROVISIONING_PASSWORD_CONFIRMATION_MISMATCH');
     if(password.length<12||!/[A-Z]/.test(password)||!/[a-z]/.test(password)||!/[0-9]/.test(password)||!(/[^A-Za-z0-9]/.test(password))) throw new BadRequestException('PLATFORM_PROVISIONING_PASSWORD_INVALID');
+    const requestedOperationalCurrencyCode = typeof input?.operational_currency_code === 'string' ? input.operational_currency_code.trim().toUpperCase() : '';
+    if (!['VES','USD','EUR'].includes(requestedOperationalCurrencyCode)) throw new BadRequestException('PLATFORM_PROVISIONING_OPERATIONAL_CURRENCY_INVALID');
+    const operationalCurrencyCode = requestedOperationalCurrencyCode as 'VES' | 'USD' | 'EUR';
     const subscription = this.validateSubscription(input, platformOwnerId);
     const requestedPackages = input.seedPackages ?? [];
     if (!Array.isArray(requestedPackages) || requestedPackages.some((value) => typeof value !== 'string')) throw new BadRequestException('PLATFORM_PROVISIONING_SEED_PACKAGES_INVALID');
@@ -150,7 +154,7 @@ export class PlatformProvisioningService {
     const branchCode = input.branchCode == null || (typeof input.branchCode === 'string' && !input.branchCode.trim())
       ? 'PRINCIPAL'
       : text(input.branchCode, 30, 'PLATFORM_PROVISIONING_BRANCH_CODE_INVALID').toUpperCase();
-    return {access_slug,rif,name:text(input.name,50,'PLATFORM_PROVISIONING_NAME_REQUIRED'),businessName:text(input.businessName,100,'PLATFORM_PROVISIONING_BUSINESS_NAME_REQUIRED'),address:text(input.address,200,'PLATFORM_PROVISIONING_ADDRESS_REQUIRED'),phone:typeof input.phone==='string'?input.phone.trim():'',email:typeof input.email==='string'?input.email.trim().toLowerCase():'',branchCode,branchName:text(input.branchName,100,'PLATFORM_PROVISIONING_BRANCH_NAME_REQUIRED'),administratorName:text(input.administratorName,100,'PLATFORM_PROVISIONING_ADMIN_NAME_REQUIRED'),administratorUsername:text(input.administratorUsername,100,'PLATFORM_PROVISIONING_ADMIN_USERNAME_REQUIRED').toLowerCase(),administratorEmail:typeof input.administratorEmail==='string'?input.administratorEmail.trim().toLowerCase():'',administratorPassword:password,administratorPasswordConfirmation:passwordConfirmation,seedPackages,...subscription};
+    return {access_slug,rif,name:text(input.name,50,'PLATFORM_PROVISIONING_NAME_REQUIRED'),businessName:text(input.businessName,100,'PLATFORM_PROVISIONING_BUSINESS_NAME_REQUIRED'),address:text(input.address,200,'PLATFORM_PROVISIONING_ADDRESS_REQUIRED'),phone:typeof input.phone==='string'?input.phone.trim():'',email:typeof input.email==='string'?input.email.trim().toLowerCase():'',branchCode,branchName:text(input.branchName,100,'PLATFORM_PROVISIONING_BRANCH_NAME_REQUIRED'),administratorName:text(input.administratorName,100,'PLATFORM_PROVISIONING_ADMIN_NAME_REQUIRED'),administratorUsername:text(input.administratorUsername,100,'PLATFORM_PROVISIONING_ADMIN_USERNAME_REQUIRED').toLowerCase(),administratorEmail:typeof input.administratorEmail==='string'?input.administratorEmail.trim().toLowerCase():'',administratorPassword:password,administratorPasswordConfirmation:passwordConfirmation,operationalCurrencyCode,seedPackages,...subscription};
   }
 
   private validateSubscription(input: CreatePlatformLaboratoryDto, ownerId: number) {

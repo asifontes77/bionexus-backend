@@ -14081,6 +14081,37 @@
         "Agregar seed y pruebas del Trial de 15 dias sin gracia."
       ],
       "nextAction": "Auditar y definir exactamente el detector central de transacciones monetarias y los archivos del snapshot currencies antes de modificar codigo."
+    },
+    {
+      "id": "platform-operational-currency-provisioning-implemented-20261106",
+      "timestamp": "2026-11-06T09:15:00-04:00",
+      "status": "implemented-and-validated-on-feature",
+      "summary": "El alta de laboratorio permite seleccionar moneda operativa VES, USD o EUR, con USD predeterminada. Frontend, servicio HTTP, DTO, provisionamiento transaccional, comando CLI y pruebas fueron actualizados. El VES forzado fue eliminado.",
+      "contracts": {
+        "supportedCodes": [
+          "VES",
+          "USD",
+          "EUR"
+        ],
+        "defaultUi": "USD",
+        "defaultCli": "USD",
+        "frontendField": "operationalCurrencyCode",
+        "backendField": "operational_currency_code",
+        "cliEnvironment": "BIONEXUS_PROVISION_OPERATIONAL_CURRENCY_CODE",
+        "unavailableError": "PLATFORM_PROVISIONING_OPERATIONAL_CURRENCY_NOT_AVAILABLE",
+        "invalidError": "PLATFORM_PROVISIONING_OPERATIONAL_CURRENCY_INVALID",
+        "transaction": "SERIALIZABLE; la moneda activa se resuelve despues de instalar currencies y antes de crear application_settings."
+      },
+      "validation": {
+        "frontendContracts": 7,
+        "backendDirectedTests": 12,
+        "frontendBuild": "approved",
+        "backendBuild": "approved",
+        "diffCheck": "approved"
+      },
+      "databaseQueried": false,
+      "databaseModified": false,
+      "serversManaged": false
     }
   ],
   "stateReplication": {
@@ -30021,30 +30052,25 @@
   "primaryObjective": "Estabilizar y completar Bio Nexus Cloud; alinear PostgreSQL real con la baseline y cerrar el provisionamiento funcional antes de otros modos.",
   "currentWorkstream": "platform-laboratory-administration-cloud",
   "currentCheckpoint": {
-    "id": "platform-commercial-implementation-readiness-20261106",
-    "at": "2026-11-06T00:06:00-04:00",
-    "status": "business-decisions-approved;implementation-audit-pending",
+    "id": "platform-financial-primary-currency-guard-20261106",
+    "at": "2026-11-06T09:15:00-04:00",
+    "status": "operational-currency-provisioning-published;currency-change-guard-pending",
     "completed": [
-      "Moneda operativa seleccionable VES/USD/EUR con USD predeterminado.",
-      "Cambio permitido solo antes de transacciones monetarias.",
-      "USD permanece BASE, VES permanece LOCAL y EUR queda adicional.",
-      "Trial aprobado en 15 dias, 0 USD y sin gracia."
+      "Selector VES/USD/EUR en alta con USD predeterminada.",
+      "Resolucion transaccional de moneda activa instalada.",
+      "Comando CLI actualizado.",
+      "12 pruebas Backend, contratos y builds aprobados."
     ],
     "current": [
-      "Auditar detector de transacciones monetarias y snapshot currencies."
+      "Implementar guard central que bloquee cambiar financial_primary_currency_id cuando exista actividad monetaria."
     ],
     "pending": [
-      "No aplicar el parche aislado de fechas anterior; implementar primero el modelo aprobado completo.",
-      "Consolidar cambios de esquema en la migracion baseline existente.",
-      "Actualizar snapshot del paquete currencies para incluir VES, USD y EUR activas.",
-      "Eliminar VES forzado del provisionamiento y resolver operationalCurrencyCode dentro del tenant.",
-      "Mantener moneda comercial del plan separada de la moneda operativa.",
-      "No modificar flujos BASE=USD y LOCAL=VES en esta primera etapa, salvo para impedir contradicciones con la moneda principal.",
-      "Agregar pruebas de alta VES, USD, EUR, moneda ausente, moneda inactiva y rollback.",
-      "Agregar pruebas de bloqueo de cambio de moneda despues de la primera transaccion monetaria.",
-      "Agregar seed y pruebas del Trial de 15 dias sin gracia."
+      "Crear servicio detector reutilizable.",
+      "Crear suite application-settings.service.spec.ts.",
+      "Auditar cambio de moneda y razones bloqueantes.",
+      "Publicar guard sin tocar BASE=USD ni LOCAL=VES."
     ],
-    "nextAction": "Auditar y definir exactamente el detector central de transacciones monetarias y los archivos del snapshot currencies antes de modificar codigo.",
+    "nextAction": "Inspeccionar contratos de ApplicationSettingsService y aplicar el guard central sobre tablas monetarias comprobadas.",
     "databaseQueried": false,
     "databaseModified": false,
     "serversManaged": false
