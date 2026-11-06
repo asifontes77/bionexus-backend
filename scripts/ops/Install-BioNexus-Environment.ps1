@@ -343,14 +343,18 @@ async function main() {
               ((SELECT count(*) FROM public.migrations
                 WHERE name IN ('BioNexusBaseline1790366400000',
                                'AddPlatformLaboratoryLifecycle1793847600000',
-                               'AddPlatformSubscriptionCatalogAndBilling1793862000000')) = 3
+                               'AddPlatformSubscriptionCatalogAndBilling1793862000000',
+                               'AddCommercialPlanModel1793862001000')) = 4
                AND to_regclass('public.platform_subscription_plans') IS NOT NULL
                AND to_regclass('public.platform_subscriptions') IS NOT NULL
                AND to_regclass('public.platform_subscription_payments') IS NOT NULL
                AND to_regclass('public.platform_billing_audit_logs') IS NOT NULL
                AND EXISTS (SELECT 1 FROM information_schema.columns
                            WHERE table_schema='public' AND table_name='laboratory'
-                             AND column_name='plan_grace_period_days')) AS subscriptionSchemaReady`
+                             AND column_name='plan_grace_period_days')
+               AND EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='laboratory' AND column_name='plan_type')
+               AND EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='laboratory' AND column_name='interval_unit')
+               AND EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='laboratory' AND column_name='interval_count')) AS subscriptionSchemaReady`
     );
     if (state.rows[0].read_only !== 'on' || !state.rows[0].slug_column ||
         !state.rows[0].slug_constraint || !state.rows[0].slug_index || !state.rows[0].baseline ||

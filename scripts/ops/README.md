@@ -124,7 +124,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\ops\Invoke-Bi
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\ops\Invoke-BioNexus-Migrations.ps1" -EnvironmentName Production
 ```
 
-El script se niega a operar si hay archivos de migraciones sin commit. Las migraciones nuevas deben tener timestamp nuevo; nunca edites la baseline ya instalada. `bionexus_prod` es un ensayo local, por lo que su éxito no es autorización para migrar producción real. En Railway se debe respaldar y aplicar la misma migración mediante un proceso de despliegue separado.
+El script se niega a operar si hay archivos de migraciones sin commit. Las migraciones nuevas deben tener timestamp nuevo; nunca edites la baseline ya instalada. La migración comercial `AddCommercialPlanModel1793862001000` agrega `plan_type`, `interval_unit` e `interval_count`, y debe aplicarse primero en `bionexus_dev` mediante este flujo protegido. `bionexus_prod` es un ensayo local, por lo que su éxito no es autorización para migrar producción real. En Railway se debe respaldar y aplicar la misma migración mediante un proceso de despliegue separado.
 
 Tras `migration:show` y, cuando corresponda, después de ejecutar migraciones, el script verifica en una transacción de solo lectura la identidad de la base, las migraciones esperadas en el historial y las tablas y columnas requeridas. También exige que TypeORM haya cargado las migraciones baseline, lifecycle y billing. Si hay pendientes, puede aplicarlas normalmente; no informa éxito hasta que no queden pendientes y el contrato exista. Esto comprueba presencia, no todos los tipos, restricciones, permisos o datos del esquema.
 

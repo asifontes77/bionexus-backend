@@ -32,6 +32,12 @@ export class Laboratory {
 
   @Column('varchar', { length: 12, nullable: true })
   billing_interval: string | null;
+  @Column('varchar', { length: 12, nullable: true })
+  plan_type: 'trial' | 'paid' | null;
+  @Column('varchar', { length: 12, nullable: true })
+  interval_unit: 'day' | 'month' | 'year' | null;
+  @Column('int', { nullable: true })
+  interval_count: number | null;
 
   @Column('jsonb', { nullable: true })
   plan_limits_benefits: Record<string, unknown> | null;

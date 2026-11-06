@@ -91,7 +91,7 @@ export async function runFirstInstall(environment: NodeJS.ProcessEnv = process.e
     stage='validation'; emit('started');
     const checks=await context.get(DataSource).query(
       `SELECT (SELECT count(*)::int FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE') AS tables,(SELECT count(*)::int FROM platform_owners WHERE is_active=true) AS active_owners,(SELECT count(*)::int FROM platform_catalog_releases WHERE status='published') AS global_releases,(SELECT count(DISTINCT package_code)::int FROM platform_catalog_releases WHERE status='published' AND minimum_schema_version=$2 AND package_code=ANY($1::text[])) AS granular_releases,(SELECT count(*)::int FROM laboratory) AS laboratories,(SELECT count(*)::int FROM users) AS users,
-       ((SELECT count(*) FROM migrations WHERE name IN ('BioNexusBaseline1790366400000','AddPlatformLaboratoryLifecycle1793847600000','AddPlatformSubscriptionCatalogAndBilling1793862000000'))=3
+       ((SELECT count(*) FROM migrations WHERE name IN ('BioNexusBaseline1790366400000','AddPlatformLaboratoryLifecycle1793847600000','AddPlatformSubscriptionCatalogAndBilling1793862000000', 'AddCommercialPlanModel1793862001000'))=3
          AND to_regclass('public.platform_subscription_plans') IS NOT NULL
          AND to_regclass('public.platform_subscriptions') IS NOT NULL
          AND to_regclass('public.platform_subscription_payments') IS NOT NULL

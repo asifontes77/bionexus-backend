@@ -29,6 +29,12 @@ export class PlatformSubscription {
 
   @Column('varchar', { length: 12, nullable: true })
   billing_interval: 'monthly' | 'yearly' | null;
+  @Column('varchar', { length: 12, nullable: true })
+  plan_type: 'trial' | 'paid' | null;
+  @Column('varchar', { length: 12, nullable: true })
+  interval_unit: 'day' | 'month' | 'year' | null;
+  @Column('int', { nullable: true })
+  interval_count: number | null;
 
   @Column('jsonb', { default: () => "'{}'::jsonb" })
   plan_limits_benefits: Record<string, unknown>;

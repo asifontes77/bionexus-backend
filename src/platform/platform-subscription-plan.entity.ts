@@ -22,6 +22,12 @@ export class PlatformSubscriptionPlan {
 
   @Column('varchar', { length: 12 })
   billing_interval: 'monthly' | 'yearly';
+  @Column('varchar', { length: 12 })
+  plan_type: 'trial' | 'paid';
+  @Column('varchar', { length: 12 })
+  interval_unit: 'day' | 'month' | 'year';
+  @Column('int')
+  interval_count: number;
 
   @Column('int', { default: 0 })
   grace_period_days: number;

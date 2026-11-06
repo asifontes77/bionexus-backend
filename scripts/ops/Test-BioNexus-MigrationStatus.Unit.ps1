@@ -32,17 +32,19 @@ function Assert-True([bool]$Value, [string]$Message) {
 $script:showOutput = @(
     '[X] 1 BioNexusBaseline1790366400000',
     '[ ] AddPlatformLaboratoryLifecycle1793847600000',
-    '[ ] AddPlatformSubscriptionCatalogAndBilling1793862000000'
+    '[ ] AddPlatformSubscriptionCatalogAndBilling1793862000000',
+    '[ ] AddCommercialPlanModel1793862001000'
 )
 $status = Get-BioNexusMigrationStatus -Database 'bionexus_dev'
-Assert-True ($status.Pending.Count -eq 2) 'TypeORM debe reconocer migraciones pendientes sin numero.'
+Assert-True ($status.Pending.Count -eq 3) 'TypeORM debe reconocer migraciones pendientes sin numero.'
 Assert-True ($status.Applied.Count -eq 1) 'No se reconocio la baseline aplicada.'
 Assert-True ($script:probeCount -eq 1) 'No se consulto el esquema despues de migration:show.'
 
 $script:showOutput = @(
     '[X] 1 BioNexusBaseline1790366400000',
     '[X] 2 AddPlatformLaboratoryLifecycle1793847600000',
-    '[X] 3 AddPlatformSubscriptionCatalogAndBilling1793862000000'
+    '[X] 3 AddPlatformSubscriptionCatalogAndBilling1793862000000',
+    '[X] 4 AddCommercialPlanModel1793862001000'
 )
 $status = Get-BioNexusMigrationStatus -Database 'bionexus_dev'
 Assert-True ($status.Pending.Count -eq 0) 'No se reconocieron todas las migraciones aplicadas.'

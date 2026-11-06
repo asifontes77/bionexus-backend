@@ -57,7 +57,8 @@ function Get-BioNexusMigrationStatus {
     $required = @(
         'BioNexusBaseline1790366400000',
         'AddPlatformLaboratoryLifecycle1793847600000',
-        'AddPlatformSubscriptionCatalogAndBilling1793862000000'
+        'AddPlatformSubscriptionCatalogAndBilling1793862000000',
+        'AddCommercialPlanModel1793862001000'
     )
     $loadedNames = @($migrations | ForEach-Object { $_.Name })
     $notLoaded = @($required | Where-Object { $_ -notin $loadedNames })

@@ -4,6 +4,7 @@ const requiredMigrations = [
   'BioNexusBaseline1790366400000',
   'AddPlatformLaboratoryLifecycle1793847600000',
   'AddPlatformSubscriptionCatalogAndBilling1793862000000',
+  'AddCommercialPlanModel1793862001000',
 ];
 const requiredTables = [
   'laboratory',
@@ -19,7 +20,8 @@ const laboratoryColumns = [
   'perpetual_free_reason', 'perpetual_free_granted_at', 'perpetual_free_granted_by',
   'suspension_reason', 'suspended_at', 'commercial_notes', 'is_active',
   'plan_id', 'plan_name', 'plan_description', 'plan_price', 'plan_currency',
-  'billing_interval', 'plan_limits_benefits', 'plan_grace_period_days',
+  'billing_interval', 'plan_type', 'interval_unit', 'interval_count',
+  'plan_limits_benefits', 'plan_grace_period_days',
 ];
 
 async function inspectSchema(client, expectedDatabase, expectedRole) {

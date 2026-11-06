@@ -14254,6 +14254,30 @@
       "databaseQueried": false,
       "databaseModified": false,
       "serversManaged": false
+    },
+    {
+      "id": "commercial-plan-model-migration-validated-20261106",
+      "timestamp": "2026-11-06T15:49:00-04:00",
+      "status": "implemented-validated-not-applied",
+      "summary": "La migracion incremental AddCommercialPlanModel1793862001000 fue implementada y validada sin ejecutarse. Agrega plan_type, interval_unit e interval_count a planes, suscripciones y laboratorio; incluye backfill, constraints y seed trial-15. Se actualizaron las herramientas scripts/ops.",
+      "migration": "AddCommercialPlanModel1793862001000",
+      "trialSeed": {
+        "code": "trial-15",
+        "durationDays": 15,
+        "price": "0.00",
+        "currency": "USD",
+        "gracePeriodDays": 0
+      },
+      "validation": {
+        "migrationContracts": "approved",
+        "opsTests": "approved",
+        "backendBuild": "approved",
+        "diffCheck": "approved"
+      },
+      "migrationApplied": false,
+      "databaseQueried": false,
+      "databaseModified": false,
+      "serversManaged": false
     }
   ],
   "stateReplication": {
@@ -30194,24 +30218,24 @@
   "primaryObjective": "Estabilizar y completar Bio Nexus Cloud; alinear PostgreSQL real con la baseline y cerrar el provisionamiento funcional antes de otros modos.",
   "currentWorkstream": "platform-laboratory-administration-cloud",
   "currentCheckpoint": {
-    "id": "platform-commercial-plans-implementation-20261106",
-    "at": "2026-11-06T15:17:00-04:00",
-    "status": "migration-policy-updated;plans-implementation-ready",
+    "id": "commercial-plan-backend-implementation-20261106",
+    "at": "2026-11-06T15:49:00-04:00",
+    "status": "migration-published-not-applied;backend-functional-work-pending",
     "completed": [
-      "Politica de migraciones actualizada: se permiten migraciones incrementales.",
-      "Auditoria funcional del modelo de planes completada."
+      "Migracion incremental del modelo de planes implementada y validada.",
+      "Entidades y herramientas scripts/ops actualizadas."
     ],
     "current": [
-      "Implementar plan_type, interval_unit, interval_count y Trial de 15 dias mediante una nueva migracion incremental."
+      "Actualizar DTOs y servicios de planes, provisionamiento y snapshots."
     ],
     "pending": [
-      "Actualizar entidades y snapshots.",
       "Derivar estado, expiracion y gracia en Backend.",
+      "Actualizar Frontend de Planes.",
       "Eliminar estado y expiracion manuales del alta normal.",
       "Ocultar editor JSON libre de limits_benefits.",
-      "Validar migracion desde base vacia y con datos cuando aplique."
+      "Aplicar migracion con scripts/ops despues de completar el codigo funcional y hacer commit."
     ],
-    "nextAction": "Inspeccionar las migraciones incrementales existentes y crear la siguiente migracion para el modelo aprobado de planes, sin reescribir la baseline.",
+    "nextAction": "Continuar Backend funcional sin ejecutar aun la migracion.",
     "databaseQueried": false,
     "databaseModified": false,
     "serversManaged": false
