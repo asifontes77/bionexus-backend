@@ -10480,7 +10480,11 @@
           "field": "access_slug",
           "normalization": "trim, lowercase, whitespace-to-hyphen; slug ASCII DNS-safe hasta 63 caracteres",
           "uniqueness": "global en laboratory",
-          "reservedSlugs": ["www", "api", "admin"],
+          "reservedSlugs": [
+            "www",
+            "api",
+            "admin"
+          ],
           "reservedSlugBehavior": "rechazados por normalizador de aplicación y constraint CHECK de baseline; el host api.bionexus.app se ignora al comparar tenant-host mismatch",
           "tenantDomainEnvironment": "BIONEXUS_TENANT_DOMAIN opcional; default bionexus.app, documentado en .env.example"
         },
@@ -10589,7 +10593,9 @@
             "branchCode": "PRINCIPAL",
             "administratorId": 1,
             "administratorUsername": "tenant_admin_test",
-            "installedCatalogPackages": ["currencies"],
+            "installedCatalogPackages": [
+              "currencies"
+            ],
             "request_password": true
           },
           "temporaryAdministratorPassword": "Generada aleatoriamente solo para validar login; no se guardo ni divulgo."
@@ -11119,96 +11125,96 @@
       }
     },
     {
-        "id": "clean-install-and-migration-ops-20261104",
-        "at": "2026-11-04T20:03:00-04:00",
-        "operation": "prepare-portable-clean-install-and-migration-scripts",
-        "status": "scripts-updated-and-validated;awaiting-user-clean-reinstall-and-ui-smoke-test",
-        "summary": "Se actualizaron los scripts de instalacion desde cero y migraciones, la guia operativa en español y la plantilla PostgreSQL. El instalador solicita las contraseñas elegidas para el propietario y el rol runtime, protege el secreto del rol con DPAPI y permite reutilizar el rol dedicado si solo se borro la base. El flujo de migraciones valida primero Development y luego permite promover solo migraciones ya aplicadas a la base local de ensayo Production.",
-        "scope": {
-          "objective": "Dejar documentado y validado un procedimiento portable y repetible para reinstalar las bases locales vacias y aplicar migraciones primero en Development y luego en el ensayo local Production.",
-          "context": "El usuario eliminara manualmente bionexus_dev y bionexus_prod para repetir la instalacion desde cero. Railway sigue siendo independiente y no se migro ni modifico.",
-          "repositories": {
-            "backendBranch": "development",
-            "backendWorkingTreeHasChanges": true,
-            "frontendBranch": "development",
-            "frontendWorkingTreeChanges": "solo copia sincronizada de la bitacora",
-            "commitCreated": false,
-            "push": false
-          },
-          "reviewedSources": [
-            "scripts/ops/Install-BioNexus-Environment.ps1",
-            "scripts/ops/Invoke-BioNexus-Migrations.ps1",
-            "scripts/ops/Start-BioNexus-Development.ps1",
-            "scripts/ops/BioNexus-Operations.Common.ps1",
-            "scripts/ops/Test-BioNexus-Ready.ps1",
-            "scripts/ops/README.md",
-            ".env.example",
-            "docs/BioNexus-Project-State.json en ambos repositorios",
-            "salida real de npm run migration:show en bionexus_dev y bionexus_prod"
-          ],
-          "functionalScope": "Instalacion limpia con contraseñas elegidas por el usuario, uso administrativo del .env solo para operaciones de mantenimiento, rol runtime no administrativo con secreto DPAPI y promocion local protegida de migraciones.",
-          "technicalScope": "Scripts PowerShell con rutas calculadas desde PSScriptRoot, PostgreSQL, TypeORM, install:first sobre base vacia, comprobacion de estados de migracion y replicacion byte a byte de bitacoras.",
-          "changes": [
-            "Install-BioNexus-Environment.ps1 solicita las contraseñas de propietario y rol runtime de forma oculta; exige 20 caracteres para el rol app, guarda el secreto protegido con DPAPI y actualiza el rol dedicado existente cuando se reinstala tras borrar solo la base.",
-            "Se agrego Invoke-BioNexus-Migrations.ps1 para aplicar migraciones comprometidas y probadas primero en bionexus_dev, luego promover solo las ya aplicadas en Development a bionexus_prod local con confirmacion literal.",
-            "Se corrigio el parser de migration:show para tratar el numero de TypeORM como posicion de listado e identificar migraciones por su nombre exacto.",
-            "Se amplio scripts/ops/README.md con la guia de instalacion desde cero, comandos y proposito individual de cada script, credenciales, portabilidad, migraciones y separacion entre ensayo local y Railway.",
-            "Se actualizo .env.example a valores iniciales PostgreSQL y se sincronizaron las dos bitacoras."
-          ],
-          "validations": [
-            "Test-BioNexus-Ready.ps1: bitacoras JSON validas e identicas, contrato tenant Frontend PASS, 3 suites y 16 pruebas tenant Backend PASS, builds Backend y Frontend PASS, y git diff --check PASS.",
-            "El parser PowerShell aprobo todos los scripts de scripts/ops.",
-            "Los modos -WhatIf de instalacion y migraciones para Development y Production indicaron que no consultaron ni modificaron bases.",
-            "Invoke-BioNexus-Migrations.ps1 consulto ambos entornos: no hay migraciones pendientes en bionexus_dev ni bionexus_prod.",
-            "npm run migration:show devolvio en ambas bases [X] 1 BioNexusBaseline1790366400000; la consulta fue de solo lectura.",
-            "Test-BioNexus-Ready.ps1 se ejecuto invocandolo por ruta absoluta desde fuera de ambos repositorios."
-          ],
-          "results": {
-            "developmentMigrationStatus": "sin migraciones pendientes; baseline BioNexusBaseline1790366400000 aplicada",
-            "productionRehearsalMigrationStatus": "sin migraciones pendientes; baseline BioNexusBaseline1790366400000 aplicada",
-            "applicationBuilds": "Backend y Frontend completados correctamente",
-            "databaseModified": false,
-            "serversStarted": false,
-            "ledgersByteIdentical": true
-          },
-          "decisions": [
-            "El usuario elige y guarda por separado las contraseñas de bionexus_dev_app y bionexus_prod_app; los prompts son ocultos y el archivo DPAPI funciona solo para el mismo usuario Windows y equipo.",
-            "El .env local conserva la cuenta administrativa para crear bases/roles y ejecutar migraciones; Start-BioNexus-Development.ps1 entrega a la aplicacion el rol runtime bionexus_dev_app.",
-            "La instalacion vacia ejecuta install:first mediante el instalador; no debe ejecutarse manualmente sobre una base ya instalada.",
-            "bionexus_prod es un ensayo local y no es la produccion de Railway."
-          ],
-          "risks": [
-            "Los secretos DPAPI no se trasladan a otro equipo ni sirven para Railway.",
-            "La validacion de estado de migraciones no prueba aun el flujo visual de login, /admin ni la creacion de un laboratorio.",
-            "El frontend compilo con advertencias de dependencia por eval directo y tamaño de algunos chunks; el build termino correctamente."
-          ],
-          "exclusions": [
-            "No se eliminaron ni recrearon bases, ni se altero el esquema o se aplicaron migraciones.",
-            "No se iniciaron servicios Backend o Frontend.",
-            "No se configuraron DNS, TLS, proxy ni PostgreSQL en Railway.",
-            "No se creo commit ni se hizo push."
-          ],
-          "pending": [
-            "El usuario eliminara manualmente solo bionexus_dev y bionexus_prod antes de reinstalar; puede dejar los roles dedicados, que el instalador reconfigura con la contraseña elegida.",
-            "Ejecutar Install-BioNexus-Environment.ps1 para Development y despues validar login del propietario, /admin y alta de laboratorio con Start-BioNexus-Development.ps1.",
-            "Configurar y validar por separado la base, secretos, dominio wildcard, TLS y proxy de la produccion real en Railway."
-          ],
-          "nextAction": "Seguir scripts/ops/README.md desde la instalacion desde cero: borrar manualmente las dos bases locales, instalar Development con Install-BioNexus-Environment.ps1 y luego validar login y provisionamiento tenant; no ejecutar install:first por separado.",
-          "databaseStatus": {
-            "engine": "PostgreSQL local",
-            "readOnlyMigrationChecks": true,
-            "development": "bionexus_dev permanece instalada; baseline aplicada y sin pendientes",
-            "productionRehearsal": "bionexus_prod permanece instalada; baseline aplicada y sin pendientes",
-            "databaseModifiedDuringThisOperation": false
-          },
-          "serverStatus": {
-            "startedOrRestarted": false
-          },
-          "replication": {
-            "backendAndFrontendByteIdentical": true,
-            "sha256RecordedExternally": true
-          }
+      "id": "clean-install-and-migration-ops-20261104",
+      "at": "2026-11-04T20:03:00-04:00",
+      "operation": "prepare-portable-clean-install-and-migration-scripts",
+      "status": "scripts-updated-and-validated;awaiting-user-clean-reinstall-and-ui-smoke-test",
+      "summary": "Se actualizaron los scripts de instalacion desde cero y migraciones, la guia operativa en español y la plantilla PostgreSQL. El instalador solicita las contraseñas elegidas para el propietario y el rol runtime, protege el secreto del rol con DPAPI y permite reutilizar el rol dedicado si solo se borro la base. El flujo de migraciones valida primero Development y luego permite promover solo migraciones ya aplicadas a la base local de ensayo Production.",
+      "scope": {
+        "objective": "Dejar documentado y validado un procedimiento portable y repetible para reinstalar las bases locales vacias y aplicar migraciones primero en Development y luego en el ensayo local Production.",
+        "context": "El usuario eliminara manualmente bionexus_dev y bionexus_prod para repetir la instalacion desde cero. Railway sigue siendo independiente y no se migro ni modifico.",
+        "repositories": {
+          "backendBranch": "development",
+          "backendWorkingTreeHasChanges": true,
+          "frontendBranch": "development",
+          "frontendWorkingTreeChanges": "solo copia sincronizada de la bitacora",
+          "commitCreated": false,
+          "push": false
+        },
+        "reviewedSources": [
+          "scripts/ops/Install-BioNexus-Environment.ps1",
+          "scripts/ops/Invoke-BioNexus-Migrations.ps1",
+          "scripts/ops/Start-BioNexus-Development.ps1",
+          "scripts/ops/BioNexus-Operations.Common.ps1",
+          "scripts/ops/Test-BioNexus-Ready.ps1",
+          "scripts/ops/README.md",
+          ".env.example",
+          "docs/BioNexus-Project-State.json en ambos repositorios",
+          "salida real de npm run migration:show en bionexus_dev y bionexus_prod"
+        ],
+        "functionalScope": "Instalacion limpia con contraseñas elegidas por el usuario, uso administrativo del .env solo para operaciones de mantenimiento, rol runtime no administrativo con secreto DPAPI y promocion local protegida de migraciones.",
+        "technicalScope": "Scripts PowerShell con rutas calculadas desde PSScriptRoot, PostgreSQL, TypeORM, install:first sobre base vacia, comprobacion de estados de migracion y replicacion byte a byte de bitacoras.",
+        "changes": [
+          "Install-BioNexus-Environment.ps1 solicita las contraseñas de propietario y rol runtime de forma oculta; exige 20 caracteres para el rol app, guarda el secreto protegido con DPAPI y actualiza el rol dedicado existente cuando se reinstala tras borrar solo la base.",
+          "Se agrego Invoke-BioNexus-Migrations.ps1 para aplicar migraciones comprometidas y probadas primero en bionexus_dev, luego promover solo las ya aplicadas en Development a bionexus_prod local con confirmacion literal.",
+          "Se corrigio el parser de migration:show para tratar el numero de TypeORM como posicion de listado e identificar migraciones por su nombre exacto.",
+          "Se amplio scripts/ops/README.md con la guia de instalacion desde cero, comandos y proposito individual de cada script, credenciales, portabilidad, migraciones y separacion entre ensayo local y Railway.",
+          "Se actualizo .env.example a valores iniciales PostgreSQL y se sincronizaron las dos bitacoras."
+        ],
+        "validations": [
+          "Test-BioNexus-Ready.ps1: bitacoras JSON validas e identicas, contrato tenant Frontend PASS, 3 suites y 16 pruebas tenant Backend PASS, builds Backend y Frontend PASS, y git diff --check PASS.",
+          "El parser PowerShell aprobo todos los scripts de scripts/ops.",
+          "Los modos -WhatIf de instalacion y migraciones para Development y Production indicaron que no consultaron ni modificaron bases.",
+          "Invoke-BioNexus-Migrations.ps1 consulto ambos entornos: no hay migraciones pendientes en bionexus_dev ni bionexus_prod.",
+          "npm run migration:show devolvio en ambas bases [X] 1 BioNexusBaseline1790366400000; la consulta fue de solo lectura.",
+          "Test-BioNexus-Ready.ps1 se ejecuto invocandolo por ruta absoluta desde fuera de ambos repositorios."
+        ],
+        "results": {
+          "developmentMigrationStatus": "sin migraciones pendientes; baseline BioNexusBaseline1790366400000 aplicada",
+          "productionRehearsalMigrationStatus": "sin migraciones pendientes; baseline BioNexusBaseline1790366400000 aplicada",
+          "applicationBuilds": "Backend y Frontend completados correctamente",
+          "databaseModified": false,
+          "serversStarted": false,
+          "ledgersByteIdentical": true
+        },
+        "decisions": [
+          "El usuario elige y guarda por separado las contraseñas de bionexus_dev_app y bionexus_prod_app; los prompts son ocultos y el archivo DPAPI funciona solo para el mismo usuario Windows y equipo.",
+          "El .env local conserva la cuenta administrativa para crear bases/roles y ejecutar migraciones; Start-BioNexus-Development.ps1 entrega a la aplicacion el rol runtime bionexus_dev_app.",
+          "La instalacion vacia ejecuta install:first mediante el instalador; no debe ejecutarse manualmente sobre una base ya instalada.",
+          "bionexus_prod es un ensayo local y no es la produccion de Railway."
+        ],
+        "risks": [
+          "Los secretos DPAPI no se trasladan a otro equipo ni sirven para Railway.",
+          "La validacion de estado de migraciones no prueba aun el flujo visual de login, /admin ni la creacion de un laboratorio.",
+          "El frontend compilo con advertencias de dependencia por eval directo y tamaño de algunos chunks; el build termino correctamente."
+        ],
+        "exclusions": [
+          "No se eliminaron ni recrearon bases, ni se altero el esquema o se aplicaron migraciones.",
+          "No se iniciaron servicios Backend o Frontend.",
+          "No se configuraron DNS, TLS, proxy ni PostgreSQL en Railway.",
+          "No se creo commit ni se hizo push."
+        ],
+        "pending": [
+          "El usuario eliminara manualmente solo bionexus_dev y bionexus_prod antes de reinstalar; puede dejar los roles dedicados, que el instalador reconfigura con la contraseña elegida.",
+          "Ejecutar Install-BioNexus-Environment.ps1 para Development y despues validar login del propietario, /admin y alta de laboratorio con Start-BioNexus-Development.ps1.",
+          "Configurar y validar por separado la base, secretos, dominio wildcard, TLS y proxy de la produccion real en Railway."
+        ],
+        "nextAction": "Seguir scripts/ops/README.md desde la instalacion desde cero: borrar manualmente las dos bases locales, instalar Development con Install-BioNexus-Environment.ps1 y luego validar login y provisionamiento tenant; no ejecutar install:first por separado.",
+        "databaseStatus": {
+          "engine": "PostgreSQL local",
+          "readOnlyMigrationChecks": true,
+          "development": "bionexus_dev permanece instalada; baseline aplicada y sin pendientes",
+          "productionRehearsal": "bionexus_prod permanece instalada; baseline aplicada y sin pendientes",
+          "databaseModifiedDuringThisOperation": false
+        },
+        "serverStatus": {
+          "startedOrRestarted": false
+        },
+        "replication": {
+          "backendAndFrontendByteIdentical": true,
+          "sha256RecordedExternally": true
         }
+      }
     },
     {
       "id": "remove-backend-root-artifacts-20261104",
@@ -11367,6 +11373,22 @@
         "serversManaged": false
       },
       "nextAction": "Revisar y corregir primero el shell administrativo y luego Dashboard, Laboratorios, Planes, Pagos y dialogs, bloque por bloque, con build, contratos y revision visual antes de aprobar cada bloque."
+    },
+    {
+      "id": "platform-admin-visual-phase-completed-20261105",
+      "timestamp": "2026-11-05T22:04:33-04:00",
+      "status": "technically-approved",
+      "summary": "Fase visual administrativa completada y validada. Se detecto PLATFORM_SUBSCRIPTION_DATES_INVALID durante el registro funcional de un laboratorio; se abre una auditoria integral independiente del lifecycle comercial.",
+      "completed": [
+        "Shell, Dashboard, Laboratorios, Planes, Pagos y dialogs administrativos normalizados con componentes Bio Nexus.",
+        "Contratos administrativos, git diff --check y build Frontend aprobados.",
+        "Components.css permanece sin cambios."
+      ],
+      "functionalFinding": {
+        "code": "PLATFORM_SUBSCRIPTION_DATES_INVALID",
+        "databaseModifiedByClosure": false
+      },
+      "nextAction": "Auditar trial, active, grace, suspended, cancelled y perpetual_free en Frontend, Backend, migraciones, jobs, guards, sesiones, auditoria y APIs publicas."
     }
   ],
   "stateReplication": {
@@ -27306,27 +27328,29 @@
   "lastUpdatedAt": "2026-11-04T23:21:00-04:00",
   "primaryObjective": "Estabilizar y completar Bio Nexus Cloud; alinear PostgreSQL real con la baseline y cerrar el provisionamiento funcional antes de otros modos.",
   "currentWorkstream": "platform-laboratory-administration-cloud",
-  "currentCheckpoint":   {
-    "id": "platform-admin-visual-redesign-20261105",
-    "at": "2026-11-05T10:01:05-04:00",
-    "status": "integrated-development;visual-review-in-progress",
+  "currentCheckpoint": {
+    "id": "platform-commercial-lifecycle-audit-20261105",
+    "at": "2026-11-05T22:04:33-04:00",
+    "status": "admin-visual-completed;commercial-audit-pending",
     "completed": [
-      "Frontend development limpio y sincronizado en d7391c2; administracion de laboratorios y shell/dashboard/billing integrados por pull request.",
-      "Backend development limpio y sincronizado en c2cdf2f; API de laboratorios, suscripciones, billing y validacion operativa integradas por pull request.",
-      "Bitacoras gemelas consultadas y auditoria visual del administrador completada en modo solo lectura.",
-      "Se confirma que el trabajo inmediato sera local, sin instrucciones para GitHub Copilot."
+      "Shell, Dashboard, Laboratorios, Planes, Pagos y dialogs administrativos normalizados con componentes Bio Nexus.",
+      "Contratos administrativos, git diff --check y build Frontend aprobados.",
+      "Components.css permanece sin cambios."
     ],
     "current": [
-      "Fase de actualizacion visual del administrador usando componentes y patrones Bio Nexus ya aprobados.",
-      "Primero se normalizara AdminLayout y el patron compartido de pagina administrativa; despues se revisaran Dashboard, Laboratorios, Planes, Pagos y dialogs."
+      "Integrar la fase visual en development.",
+      "Investigar PLATFORM_SUBSCRIPTION_DATES_INVALID sin modificar datos."
     ],
     "pending": [
-      "Revisar visualmente cada bloque antes de aprobarlo.",
-      "Reemplazar controles nativos cuando exista componente compartido oficial.",
-      "No aplicar migraciones ni modificar PostgreSQL durante el trabajo visual.",
-      "Mantener pendiente el rollout respaldado de las migraciones 1793847600000 y 1793862000000."
+      "Validar fechas UTC obligatorias para trial y active.",
+      "Validar active/trial a grace y grace a suspended.",
+      "Validar sesiones bloqueadas en suspended.",
+      "Validar cancelled separado de is_active.",
+      "Validar perpetual_free con expiracion y gracia NULL, metadatos y auditoria.",
+      "Validar autorizacion exclusiva platform-owner y no exposicion publica.",
+      "Validar politica central del Backend."
     ],
-    "nextAction": "Inspeccionar el catalogo exacto de componentes compartidos y ejecutar el primer bloque visual sobre AdminLayout sin cambiar funcionalidad.",
+    "nextAction": "Auditar trial, active, grace, suspended, cancelled y perpetual_free en Frontend, Backend, migraciones, jobs, guards, sesiones, auditoria y APIs publicas.",
     "databaseQueried": false,
     "databaseModified": false,
     "serversManaged": false
@@ -28459,7 +28483,7 @@
       "databaseModified": false,
       "serversManaged": false
     }
-],
+  ],
   "nextAction": "Ejercitar el rechazo de duplicados y rollback del provisionamiento; despues completar la revision visual del panel administrador.",
   "bitacoraPolicy": {
     "readBeforeEveryOperation": true,
