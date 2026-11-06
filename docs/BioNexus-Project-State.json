@@ -14138,6 +14138,40 @@
       "databaseQueried": false,
       "databaseModified": false,
       "serversManaged": false
+    },
+    {
+      "id": "financial-primary-currency-guard-implemented-20261106",
+      "timestamp": "2026-11-06T13:12:00-04:00",
+      "status": "implemented-and-validated-on-feature",
+      "summary": "Se implemento un guard transaccional que impide cambiar financial_primary_currency_id cuando existe actividad monetaria persistida. Solo se ejecuta si el ID cambia y devuelve categorias bloqueantes sin datos sensibles.",
+      "blockingCategories": [
+        "tariff_prices",
+        "admissions",
+        "payments",
+        "invoices",
+        "receivables",
+        "credit_notes",
+        "cash_closures"
+      ],
+      "errorCode": "APPLICATION_SETTINGS_FINANCIAL_CURRENCY_LOCKED",
+      "contracts": {
+        "insideExistingTransaction": true,
+        "onlyWhenCurrencyChanges": true,
+        "noSensitiveData": true,
+        "schemaChanged": false,
+        "baseUsdUnchanged": true,
+        "localVesUnchanged": true
+      },
+      "validation": {
+        "guardTests": "approved",
+        "applicationSettingsTests": "approved",
+        "frontendBuild": "approved",
+        "backendBuild": "approved",
+        "diffCheck": "approved"
+      },
+      "databaseQueried": false,
+      "databaseModified": false,
+      "serversManaged": false
     }
   ],
   "stateReplication": {
@@ -30078,24 +30112,23 @@
   "primaryObjective": "Estabilizar y completar Bio Nexus Cloud; alinear PostgreSQL real con la baseline y cerrar el provisionamiento funcional antes de otros modos.",
   "currentWorkstream": "platform-laboratory-administration-cloud",
   "currentCheckpoint": {
-    "id": "platform-financial-primary-currency-guard-20261106",
-    "at": "2026-11-06T09:30:00-04:00",
-    "status": "operational-currency-integrated;currency-change-guard-pending",
+    "id": "platform-commercial-plans-model-20261106",
+    "at": "2026-11-06T13:12:00-04:00",
+    "status": "currency-guard-published;plans-model-pending",
     "completed": [
-      "Moneda operativa VES/USD/EUR integrada en development.",
-      "Feature eliminada local y remotamente.",
-      "Ramas asifontes77 preservadas.",
-      "integration-development-to-main preservada porque esta activa en un worktree de Copilot."
+      "Moneda operativa VES/USD/EUR integrada.",
+      "Guard de cambio de moneda principal implementado y validado."
     ],
     "current": [
-      "Implementar guard central para impedir cambios de moneda principal cuando exista actividad monetaria."
+      "Implementar modelo aprobado de planes: plan_type, interval_unit, interval_count y Trial de 15 dias sin gracia."
     ],
     "pending": [
-      "Crear servicio detector reutilizable.",
-      "Crear pruebas de ApplicationSettingsService.",
-      "Auditar razones bloqueantes sin exponer datos sensibles."
+      "Ocultar editor JSON libre de limits_benefits.",
+      "Derivar estado inicial y expiracion en Backend.",
+      "Eliminar estado y expiracion manuales del alta.",
+      "Implementar lifecycle automatico y guard comercial."
     ],
-    "nextAction": "Crear una feature aislada nueva desde development para implementar el guard de cambio de moneda principal.",
+    "nextAction": "Auditar contratos exactos de planes y baseline antes de modificar esquema o codigo.",
     "databaseQueried": false,
     "databaseModified": false,
     "serversManaged": false
