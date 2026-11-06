@@ -14112,6 +14112,32 @@
       "databaseQueried": false,
       "databaseModified": false,
       "serversManaged": false
+    },
+    {
+      "id": "platform-operational-currency-integrated-20261106",
+      "timestamp": "2026-11-06T09:30:00-04:00",
+      "status": "integrated-in-development",
+      "summary": "La moneda operativa VES, USD o EUR fue integrada por fast-forward en development en Frontend y Backend. La feature fue eliminada local y remotamente en ambos repositorios.",
+      "commits": {
+        "frontend": "41df0ebedfcde17c7f8f88c14ad60aceb4401995",
+        "backend": "fc1cedadc42c47e78587114bcfd837bf6c9f3710"
+      },
+      "branchCleanup": {
+        "feature/platform-subscription-dates-fix": "deleted-local-and-remote-both-repositories",
+        "integration-development-to-main": "preserved-active-copilot-worktree",
+        "integrationDevelopmentToMainAlreadyInMain": true,
+        "reason": "La rama esta activa en un worktree de Copilot. No se elimina ni se remueve el worktree mientras Copilot la utiliza.",
+        "asifontes77Branches": "preserved"
+      },
+      "validation": {
+        "backendDirectedTests": 12,
+        "frontendContracts": 7,
+        "builds": "approved",
+        "diffCheck": "approved"
+      },
+      "databaseQueried": false,
+      "databaseModified": false,
+      "serversManaged": false
     }
   ],
   "stateReplication": {
@@ -30053,24 +30079,23 @@
   "currentWorkstream": "platform-laboratory-administration-cloud",
   "currentCheckpoint": {
     "id": "platform-financial-primary-currency-guard-20261106",
-    "at": "2026-11-06T09:15:00-04:00",
-    "status": "operational-currency-provisioning-published;currency-change-guard-pending",
+    "at": "2026-11-06T09:30:00-04:00",
+    "status": "operational-currency-integrated;currency-change-guard-pending",
     "completed": [
-      "Selector VES/USD/EUR en alta con USD predeterminada.",
-      "Resolucion transaccional de moneda activa instalada.",
-      "Comando CLI actualizado.",
-      "12 pruebas Backend, contratos y builds aprobados."
+      "Moneda operativa VES/USD/EUR integrada en development.",
+      "Feature eliminada local y remotamente.",
+      "Ramas asifontes77 preservadas.",
+      "integration-development-to-main preservada porque esta activa en un worktree de Copilot."
     ],
     "current": [
-      "Implementar guard central que bloquee cambiar financial_primary_currency_id cuando exista actividad monetaria."
+      "Implementar guard central para impedir cambios de moneda principal cuando exista actividad monetaria."
     ],
     "pending": [
       "Crear servicio detector reutilizable.",
-      "Crear suite application-settings.service.spec.ts.",
-      "Auditar cambio de moneda y razones bloqueantes.",
-      "Publicar guard sin tocar BASE=USD ni LOCAL=VES."
+      "Crear pruebas de ApplicationSettingsService.",
+      "Auditar razones bloqueantes sin exponer datos sensibles."
     ],
-    "nextAction": "Inspeccionar contratos de ApplicationSettingsService y aplicar el guard central sobre tablas monetarias comprobadas.",
+    "nextAction": "Crear una feature aislada nueva desde development para implementar el guard de cambio de moneda principal.",
     "databaseQueried": false,
     "databaseModified": false,
     "serversManaged": false
