@@ -14172,6 +14172,21 @@
       "databaseQueried": false,
       "databaseModified": false,
       "serversManaged": false
+    },
+    {
+      "id": "financial-primary-currency-guard-integrated-20261106",
+      "timestamp": "2026-11-06T14:25:00-04:00",
+      "status": "integrated-in-development",
+      "summary": "El guard de cambio de moneda financiera principal fue integrado en development en Frontend y Backend. La feature fue eliminada local y remotamente.",
+      "commits": {
+        "frontend": "b6fefccd601211680794e68ba8ea7fa599ae0c72",
+        "backend": "7fc1499d5178152a3d45ee00204f459842b3bfbc"
+      },
+      "featureDeleted": true,
+      "copilotBranchesPreserved": true,
+      "databaseQueried": false,
+      "databaseModified": false,
+      "serversManaged": false
     }
   ],
   "stateReplication": {
@@ -30113,22 +30128,24 @@
   "currentWorkstream": "platform-laboratory-administration-cloud",
   "currentCheckpoint": {
     "id": "platform-commercial-plans-model-20261106",
-    "at": "2026-11-06T13:12:00-04:00",
-    "status": "currency-guard-published;plans-model-pending",
+    "at": "2026-11-06T14:25:00-04:00",
+    "status": "currency-guard-integrated;plans-audit-next",
     "completed": [
-      "Moneda operativa VES/USD/EUR integrada.",
-      "Guard de cambio de moneda principal implementado y validado."
+      "Moneda operativa integrada.",
+      "Guard de cambio de moneda integrado."
     ],
     "current": [
-      "Implementar modelo aprobado de planes: plan_type, interval_unit, interval_count y Trial de 15 dias sin gracia."
+      "Auditar modelo exacto de planes, duración y Trial antes de modificar baseline."
     ],
     "pending": [
-      "Ocultar editor JSON libre de limits_benefits.",
-      "Derivar estado inicial y expiracion en Backend.",
-      "Eliminar estado y expiracion manuales del alta.",
-      "Implementar lifecycle automatico y guard comercial."
+      "plan_type trial/paid.",
+      "interval_unit day/month/year.",
+      "interval_count entero.",
+      "Trial 15 dias sin gracia.",
+      "Ocultar JSON libre limits_benefits.",
+      "Derivar estado y expiracion en Backend."
     ],
-    "nextAction": "Auditar contratos exactos de planes y baseline antes de modificar esquema o codigo.",
+    "nextAction": "Crear feature aislada desde development para auditar e implementar el modelo de planes.",
     "databaseQueried": false,
     "databaseModified": false,
     "serversManaged": false
