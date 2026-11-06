@@ -11389,6 +11389,1211 @@
         "databaseModifiedByClosure": false
       },
       "nextAction": "Auditar trial, active, grace, suspended, cancelled y perpetual_free en Frontend, Backend, migraciones, jobs, guards, sesiones, auditoria y APIs publicas."
+    },
+    {
+      "id": "platform-commercial-lifecycle-static-audit-20261105",
+      "timestamp": "2026-11-05T22:13:00-04:00",
+      "status": "completed-with-gaps",
+      "contractStatuses": [
+        "trial",
+        "active",
+        "grace",
+        "suspended",
+        "cancelled",
+        "perpetual_free"
+      ],
+      "summaryCounts": {
+        "implemented": 3,
+        "partial": 11,
+        "confirmed-defect": 1
+      },
+      "checks": [
+        {
+          "id": "status-catalog",
+          "title": "Catalogo de estados",
+          "status": "implemented",
+          "assessment": "Coincidencias: {'trial': 41, 'active': 8705, 'grace': 276, 'suspended': 67, 'cancelled': 33, 'perpetual_free': 220}",
+          "evidence": [
+            {
+              "side": "Frontend",
+              "file": "package-lock.json",
+              "line": 883,
+              "text": "\"graceful-fs\": \"^4.2.0\","
+            },
+            {
+              "side": "Frontend",
+              "file": "package-lock.json",
+              "line": 1503,
+              "text": "\"graceful-fs\": \"^4.1.2\","
+            },
+            {
+              "side": "Frontend",
+              "file": "package-lock.json",
+              "line": 1533,
+              "text": "\"node_modules/graceful-fs\": {"
+            },
+            {
+              "side": "Frontend",
+              "file": "package-lock.json",
+              "line": 1535,
+              "text": "\"resolved\": \"https://registry.npmmirror.com/graceful-fs/-/graceful-fs-4.2.11.tgz\","
+            },
+            {
+              "side": "Frontend",
+              "file": "package-lock.json",
+              "line": 2887,
+              "text": "\"graceful-fs\": \"^4.2.2\","
+            },
+            {
+              "side": "Frontend",
+              "file": "package-lock.json",
+              "line": 3194,
+              "text": "\"graceful-fs\": \"^4.2.0\","
+            },
+            {
+              "side": "Frontend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 46,
+              "text": "\"activeEngine\": \"PostgreSQL\","
+            },
+            {
+              "side": "Frontend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 47,
+              "text": "\"activeDatabase\": \"bionexus_dev\","
+            },
+            {
+              "side": "Frontend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 48,
+              "text": "\"activeStatus\": \"base local de desarrollo instalada y validada\","
+            },
+            {
+              "side": "Frontend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 66,
+              "text": "\"mysqlIsActive\": false,"
+            },
+            {
+              "side": "Frontend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 96,
+              "text": "\"activeDatabaseEngine\": \"PostgreSQL\","
+            },
+            {
+              "side": "Frontend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 370,
+              "text": "\"activeDatabase\": \"PostgreSQL\","
+            }
+          ]
+        },
+        {
+          "id": "trial-dates",
+          "title": "trial requiere inicio y expiracion UTC",
+          "status": "partial",
+          "assessment": "Existen campos y validaciones, pero el error PLATFORM_SUBSCRIPTION_DATES_INVALID demuestra que el contrato extremo a extremo no esta aprobado.",
+          "evidence": [
+            {
+              "side": "Frontend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 8412,
+              "text": "\"subscription_status con estados trial, active, grace, suspended y cancelled.\","
+            },
+            {
+              "side": "Frontend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 8413,
+              "text": "\"service_starts_at y service_expires_at en UTC.\","
+            },
+            {
+              "side": "Frontend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 8419,
+              "text": "\"service_expires_at y grace_until deben permanecer NULL cuando subscription_status sea perpetual_free.\","
+            },
+            {
+              "side": "Frontend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 8424,
+              "text": "\"El alta puede iniciar en trial o active, siempre con vigencia explicita.\","
+            },
+            {
+              "side": "Frontend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 8476,
+              "text": "\"El nombre tecnico sera perpetual_free para distinguirlo de active, trial y futuras promociones temporales.\","
+            },
+            {
+              "side": "Frontend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 8477,
+              "text": "\"No requiere service_expires_at ni grace_until.\","
+            },
+            {
+              "side": "Frontend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 10822,
+              "text": "\"planCaveat\": \"Railway Trial permite un custom domain por servicio; el apex actual más wildcard puede requerir un plan con límite de al menos dos dominios.\","
+            },
+            {
+              "side": "Frontend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 11381,
+              "text": "\"summary\": \"Fase visual administrativa completada y validada. Se detecto PLATFORM_SUBSCRIPTION_DATES_INVALID durante el registro funcional de un laboratorio; se abre una auditoria integral independiente del lifecycle comercial.\","
+            },
+            {
+              "side": "Frontend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 11388,
+              "text": "\"code\": \"PLATFORM_SUBSCRIPTION_DATES_INVALID\","
+            },
+            {
+              "side": "Frontend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 11391,
+              "text": "\"nextAction\": \"Auditar trial, active, grace, suspended, cancelled y perpetual_free en Frontend, Backend, migraciones, jobs, guards, sesiones, auditoria y APIs publicas.\""
+            },
+            {
+              "side": "Frontend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 27342,
+              "text": "\"Investigar PLATFORM_SUBSCRIPTION_DATES_INVALID sin modificar datos.\""
+            },
+            {
+              "side": "Frontend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 27345,
+              "text": "\"Validar fechas UTC obligatorias para trial y active.\","
+            }
+          ]
+        },
+        {
+          "id": "active-dates",
+          "title": "active requiere vigencia explicita",
+          "status": "partial",
+          "assessment": "Hay infraestructura de fechas; falta demostrar renovacion, extension y UTC extremo a extremo.",
+          "evidence": [
+            {
+              "side": "Frontend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 46,
+              "text": "\"activeEngine\": \"PostgreSQL\","
+            },
+            {
+              "side": "Frontend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 47,
+              "text": "\"activeDatabase\": \"bionexus_dev\","
+            },
+            {
+              "side": "Frontend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 48,
+              "text": "\"activeStatus\": \"base local de desarrollo instalada y validada\","
+            },
+            {
+              "side": "Frontend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 66,
+              "text": "\"mysqlIsActive\": false,"
+            },
+            {
+              "side": "Frontend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 96,
+              "text": "\"activeDatabaseEngine\": \"PostgreSQL\","
+            },
+            {
+              "side": "Frontend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 370,
+              "text": "\"activeDatabase\": \"PostgreSQL\","
+            },
+            {
+              "side": "Frontend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 834,
+              "text": "\"activeStatus\": true,"
+            },
+            {
+              "side": "Frontend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 2223,
+              "text": "\"matched\": \"function selectReportFieldCell(field){const coords=jspreadsheet.helpers.getCoordsFromCellName(field?.cell)||[],x=Number(coords[0]),y=Number(coords[1]);if(!Number.isInteger(x)||!Number.isInteger(y)){globalThis.alert(\\\"El campo no tiene una celda valida asociada.\\\");return}multiSelectedCells.value=[];selectedRange.value=[x,y,x,y];selectionActive.value=true;try{worksheet.value?.resetSelection?.();worksheet.value?.updateSelectionFromCoords?.(x,y,x,y)}catch{}paintPersistentSelection();syn"
+            },
+            {
+              "side": "Frontend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 2231,
+              "text": "\"text\": \"async function open(record){exam.value=record;tab.value=\\\"design\\\";selectedRange.value=null;selectionActive.value=false;multiSelectedCells.value=[];dialog.value?.open();await nextTick();createSheet(loadState());clearInitialSelection()}function createSheet(value){destroySheet();normalizeEmptySheetColumns(value);rowHeightStore.value=(value.grid.rows||[]).map(height=>Number.parseInt(height,10)||32);fieldStore=clonePlain(value.fields||{});moduleStore=clonePlain(value.modules||{});spreadshee"
+            },
+            {
+              "side": "Frontend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 2235,
+              "text": "\"text\": \"function cellName(x,y){let name=\\\"\\\";for(let n=x+1;n>0;n=Math.floor((n-1)/26))name=String.fromCharCode(65+(n-1)%26)+name;return `${name}${y+1}`}function currentStyle(name,key){return String(worksheet.value?.getStyle?.(name,key)||\\\"\\\").trim().toLowerCase()}function hasVisibleBorder(value){const normalized=String(value||\\\"\\\").trim().toLowerCase();return Boolean(normalized&&!normalized.includes(\\\"none\\\")&&!normalized.startsWith(\\\"0 \\\")&&normalized!==\\\"0\\\")}function borderState(name){const "
+            },
+            {
+              "side": "Frontend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 2239,
+              "text": "\"text\": \"function selectReportFieldCell(field){const coords=jspreadsheet.helpers.getCoordsFromCellName(field?.cell)||[],x=Number(coords[0]),y=Number(coords[1]);if(!Number.isInteger(x)||!Number.isInteger(y)){globalThis.alert(\\\"El campo no tiene una celda valida asociada.\\\");return}multiSelectedCells.value=[];selectedRange.value=[x,y,x,y];selectionActive.value=true;try{worksheet.value?.resetSelection?.();worksheet.value?.updateSelectionFromCoords?.(x,y,x,y)}catch{}paintPersistentSelection();syncTo"
+            },
+            {
+              "side": "Frontend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 2818,
+              "text": "\"matched\": \"function round(v){return Math.round((Number(v)+Number.EPSILON)*100)/100}function price(exam){return Number(resolvedPrices.value.get(Number(exam.id)))||0}function tax(exam){return taxes.value.find(x=>Number(x.id)===Number(exam.tax_id))||{description:\\\"Exo\\\",value:0}}function routineAvailableCount(r){return(r.registered_exams||[]).filter(x=>x.active!==false&&!selectedIds.value.has(Number(x.examId))).length}\","
+            }
+          ]
+        },
+        {
+          "id": "grace-transition",
+          "title": "Transicion a grace y luego suspended",
+          "status": "implemented",
+          "assessment": "Se requiere distinguir calculo/persistencia de ejecucion automatica y probar grace=0.",
+          "evidence": [
+            {
+              "side": "Backend",
+              "file": "package-lock.json",
+              "line": 1086,
+              "text": "\"integrity\": \"sha512-aLSROkEwirotxZ1pBaP8tugXRFCxW94gwrQLxXfrZsKkfjOYC1aRvAZuhpJOb5cu4IBTJdsCigUlf2iCOu4ZDQ==\","
+            },
+            {
+              "side": "Backend",
+              "file": "package-lock.json",
+              "line": 4543,
+              "text": "\"integrity\": \"sha512-/Nf7TyzTx6S3yRJObOAV7956r8cr2+Oj8AC5dt8wSP3BQAoeX58NoHyCU8P8zGkNXStjTSi6fzO6F0pBdcYbEg==\","
+            },
+            {
+              "side": "Backend",
+              "file": "package-lock.json",
+              "line": 10948,
+              "text": "\"integrity\": \"sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==\","
+            },
+            {
+              "side": "Backend",
+              "file": "package-lock.json",
+              "line": 10966,
+              "text": "\"integrity\": \"sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==\","
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 35,
+              "text": "\"Bitacora Backend/Frontend sincronizada byte a byte; commit publicado normalmente en origin/development.\""
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 7137,
+              "text": "\"No introducir helper asincrono por moneda si todas las columnas destino conservan escala 2\""
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 8290,
+              "text": "\"summary\": \"Bio Nexus ofrecera modalidad Cloud y modalidad Edge administrada con operacion local y sincronizacion segura; no se crearan subdominios manuales por laboratorio.\","
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 8301,
+              "text": "\"Plan Edge administrado: appliance o servicio instalado en infraestructura del cliente con Frontend, Backend, PostgreSQL local y motor de sincronizacion.\","
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 8309,
+              "text": "\"Las eliminaciones sincronizadas usan tombstones y no borrado fisico inmediato.\","
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 8312,
+              "text": "\"Cada laboratorio se sincroniza con credenciales de maquina rotables y alcance tenant; nunca con credenciales de usuario final.\""
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 8321,
+              "text": "\"Todo acceso y sincronizacion conserva laboratory_id, permisos, auditoria y proteccion contra replay.\""
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 8350,
+              "text": "\"UUID global para entidades que deban sincronizarse; no depender de IDs autoincrementales entre nodos.\","
+            }
+          ]
+        },
+        {
+          "id": "suspended-access",
+          "title": "suspended bloquea operacion y sesiones",
+          "status": "partial",
+          "assessment": "Debe demostrarse bloqueo central, pantalla controlada e invalidacion de sesiones existentes.",
+          "evidence": [
+            {
+              "side": "Backend",
+              "file": "package-lock.json",
+              "line": 15,
+              "text": "\"@nestjs/jwt\": \"11.0.2\","
+            },
+            {
+              "side": "Backend",
+              "file": "package-lock.json",
+              "line": 28,
+              "text": "\"passport-jwt\": \"^4.0.1\","
+            },
+            {
+              "side": "Backend",
+              "file": "package-lock.json",
+              "line": 44,
+              "text": "\"@types/passport-jwt\": \"^4.0.1\","
+            },
+            {
+              "side": "Backend",
+              "file": "package-lock.json",
+              "line": 201,
+              "text": "\"js-tokens\": \"^4.0.0\","
+            },
+            {
+              "side": "Backend",
+              "file": "package-lock.json",
+              "line": 1801,
+              "text": "\"deprecated\": \"Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me\","
+            },
+            {
+              "side": "Backend",
+              "file": "package-lock.json",
+              "line": 2197,
+              "text": "\"node_modules/@nestjs/jwt\": {"
+            },
+            {
+              "side": "Backend",
+              "file": "package-lock.json",
+              "line": 2199,
+              "text": "\"resolved\": \"https://registry.npmmirror.com/@nestjs/jwt/-/jwt-11.0.2.tgz\","
+            },
+            {
+              "side": "Backend",
+              "file": "package-lock.json",
+              "line": 2203,
+              "text": "\"@types/jsonwebtoken\": \"9.0.10\","
+            },
+            {
+              "side": "Backend",
+              "file": "package-lock.json",
+              "line": 2204,
+              "text": "\"jsonwebtoken\": \"9.0.3\""
+            },
+            {
+              "side": "Backend",
+              "file": "package-lock.json",
+              "line": 2749,
+              "text": "\"node_modules/@tokenizer/inflate\": {"
+            },
+            {
+              "side": "Backend",
+              "file": "package-lock.json",
+              "line": 2751,
+              "text": "\"resolved\": \"https://registry.npmmirror.com/@tokenizer/inflate/-/inflate-0.4.1.tgz\","
+            },
+            {
+              "side": "Backend",
+              "file": "package-lock.json",
+              "line": 2756,
+              "text": "\"token-types\": \"^6.1.1\""
+            }
+          ]
+        },
+        {
+          "id": "cancelled-is-active",
+          "title": "cancelled separado de is_active",
+          "status": "partial",
+          "assessment": "La coexistencia de ambos campos no prueba separacion en todas las politicas; requiere tests de autorizacion.",
+          "evidence": [
+            {
+              "side": "Frontend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 8412,
+              "text": "\"subscription_status con estados trial, active, grace, suspended y cancelled.\","
+            },
+            {
+              "side": "Frontend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 8417,
+              "text": "\"is_active operativo separado del estado comercial para no mezclar desactivacion tecnica con falta de pago.\","
+            },
+            {
+              "side": "Frontend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 8418,
+              "text": "\"subscription_status incorpora perpetual_free para laboratorios autorizados sin costo y sin vencimiento.\","
+            },
+            {
+              "side": "Frontend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 8419,
+              "text": "\"service_expires_at y grace_until deben permanecer NULL cuando subscription_status sea perpetual_free.\","
+            },
+            {
+              "side": "Frontend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 8435,
+              "text": "\"El laboratorio piloto oficial de Bio Nexus se registrara con subscription_status perpetual_free y vigencia comercial indefinida.\""
+            },
+            {
+              "side": "Frontend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 8439,
+              "text": "\"subscription_status autoriza comercialmente el servicio Cloud.\","
+            },
+            {
+              "side": "Frontend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 8459,
+              "text": "\"Agregar politica central de acceso por subscription_status.\","
+            },
+            {
+              "side": "Frontend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 8481,
+              "text": "\"Puede bloquearse tecnicamente por seguridad o mantenimiento mediante is_active sin alterar el historial comercial.\","
+            },
+            {
+              "side": "Frontend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 8608,
+              "text": "\"is_active/effective_from/effective_to para ciclo de vida sin borrado destructivo.\","
+            },
+            {
+              "side": "Frontend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 11362,
+              "text": "\"subscription_status y perpetual_free\","
+            },
+            {
+              "side": "Frontend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 11391,
+              "text": "\"nextAction\": \"Auditar trial, active, grace, suspended, cancelled y perpetual_free en Frontend, Backend, migraciones, jobs, guards, sesiones, auditoria y APIs publicas.\""
+            },
+            {
+              "side": "Frontend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 11716,
+              "text": "\"name\": \"is_active\","
+            }
+          ]
+        },
+        {
+          "id": "perpetual-null",
+          "title": "perpetual_free mantiene expiracion y gracia NULL",
+          "status": "partial",
+          "assessment": "Debe comprobarse en alta, conversion, procesos automaticos y persistencia real.",
+          "evidence": [
+            {
+              "side": "Backend",
+              "file": "package-lock.json",
+              "line": 540,
+              "text": "\"node_modules/@babel/plugin-syntax-nullish-coalescing-operator\": {"
+            },
+            {
+              "side": "Backend",
+              "file": "package-lock.json",
+              "line": 542,
+              "text": "\"resolved\": \"https://registry.npmmirror.com/@babel/plugin-syntax-nullish-coalescing-operator/-/plugin-syntax-nullish-coalescing-operator-7.8.3.tgz\","
+            },
+            {
+              "side": "Backend",
+              "file": "package-lock.json",
+              "line": 4287,
+              "text": "\"@babel/plugin-syntax-nullish-coalescing-operator\": \"^7.8.3\","
+            },
+            {
+              "side": "Backend",
+              "file": "tsconfig.json",
+              "line": 15,
+              "text": "\"strictNullChecks\": false,"
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 91,
+              "text": "\"normalizationRule\": \"Completar y validar PK, FK, acciones referenciales, UNIQUE, CHECK, NOT NULL, defaults, indices, identidades y alcance por laboratory_id dentro de la misma BioNexusBaseline.\","
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 123,
+              "text": "\"notNullClausesDetected\": 381,"
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 610,
+              "text": "\"nullableMismatches\": 0,"
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 647,
+              "text": "\"declaredType\": null,"
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 648,
+              "text": "\"declaredNullable\": null,"
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 651,
+              "text": "\"nullable\": false,"
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 660,
+              "text": "\"nullableMismatches\": [],"
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 695,
+              "text": "\"nullable\": \"NO\","
+            }
+          ]
+        },
+        {
+          "id": "perpetual-metadata",
+          "title": "Metadatos obligatorios perpetual_free",
+          "status": "implemented",
+          "assessment": "Se verifican presencia y validadores; falta confirmar datos reales y auditoria de revocacion/conversion.",
+          "evidence": [
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 8420,
+              "text": "\"perpetual_free_reason es obligatorio para justificar la concesion comercial permanente.\","
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 8421,
+              "text": "\"perpetual_free_granted_at y perpetual_free_granted_by registran fecha UTC y propietario de plataforma que otorgo la concesion.\""
+            },
+            {
+              "side": "Backend",
+              "file": "src/laboratory/laboratory.entity.ts",
+              "line": 55,
+              "text": "perpetual_free_reason: string | null;"
+            },
+            {
+              "side": "Backend",
+              "file": "src/laboratory/laboratory.entity.ts",
+              "line": 64,
+              "text": "perpetual_free_granted_at: Date | null;"
+            },
+            {
+              "side": "Backend",
+              "file": "src/laboratory/laboratory.entity.ts",
+              "line": 67,
+              "text": "perpetual_free_granted_by: number | null;"
+            },
+            {
+              "side": "Backend",
+              "file": "src/laboratory/laboratory.service.spec.ts",
+              "line": 125,
+              "text": "perpetual_free_reason: 'Owner only',"
+            },
+            {
+              "side": "Backend",
+              "file": "src/laboratory/laboratory.service.spec.ts",
+              "line": 126,
+              "text": "perpetual_free_granted_at: new Date('2026-10-30T00:00:00Z'),"
+            },
+            {
+              "side": "Backend",
+              "file": "src/laboratory/laboratory.service.spec.ts",
+              "line": 127,
+              "text": "perpetual_free_granted_by: 70,"
+            },
+            {
+              "side": "Backend",
+              "file": "src/laboratory/laboratory.service.spec.ts",
+              "line": 146,
+              "text": "'perpetual_free_reason',"
+            },
+            {
+              "side": "Backend",
+              "file": "src/laboratory/laboratory.service.spec.ts",
+              "line": 147,
+              "text": "'perpetual_free_granted_at',"
+            },
+            {
+              "side": "Backend",
+              "file": "src/laboratory/laboratory.service.spec.ts",
+              "line": 148,
+              "text": "'perpetual_free_granted_by',"
+            },
+            {
+              "side": "Backend",
+              "file": "src/laboratory/laboratory.service.ts",
+              "line": 35,
+              "text": "| 'perpetual_free_reason'"
+            }
+          ]
+        },
+        {
+          "id": "owner-only",
+          "title": "Solo platform-owner administra perpetual_free",
+          "status": "partial",
+          "assessment": "Debe existir autorizacion central y pruebas negativas para administradores tenant.",
+          "evidence": [
+            {
+              "side": "Backend",
+              "file": "package-lock.json",
+              "line": 4934,
+              "text": "\"integrity\": \"sha512-D76uU73ulSXrD1UXF4KE2TMxVVwhsnCgfAyTg9k8P6KGZjlXKrOLe4dJQKI3Bxi5wjesZoFXJWElNWBjPZMbhg==\","
+            },
+            {
+              "side": "Backend",
+              "file": "package.json",
+              "line": 29,
+              "text": "\"bootstrap:platform-owner\": \"node -r ts-node/register -r tsconfig-paths/register src/database/commands/bootstrap-platform-owner.ts\","
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 52,
+              "text": "\"applicationRole\": \"bionexus_dev_app\","
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 57,
+              "text": "\"applicationRole\": \"bionexus_prod_app\","
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 124,
+              "text": "\"securityPermissionSeedsDetected\": 62,"
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 341,
+              "text": "\"bootstrap:platform-owner\": \"node -r ts-node/register -r tsconfig-paths/register src/database/commands/bootstrap-platform-owner.ts\""
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 388,
+              "text": "\"powershellRole\": \"orchestration-only\","
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 458,
+              "text": "\"platform_owners\","
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 461,
+              "text": "\"security_permissions\","
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 462,
+              "text": "\"security_role_permissions\","
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 463,
+              "text": "\"security_roles\","
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 464,
+              "text": "\"security_user_permission_overrides\","
+            }
+          ]
+        },
+        {
+          "id": "public-redaction",
+          "title": "APIs publicas no revelan perpetual_free",
+          "status": "partial",
+          "assessment": "La ausencia no puede probarse solo por busqueda; se requiere inventario de DTOs publicos y pruebas de serializacion.",
+          "evidence": [
+            {
+              "side": "Backend",
+              "file": "package-lock.json",
+              "line": 169,
+              "text": "\"@inquirer/select\": \"^4.0.9\""
+            },
+            {
+              "side": "Backend",
+              "file": "package-lock.json",
+              "line": 1244,
+              "text": "\"@inquirer/select\": \"^4.4.2\""
+            },
+            {
+              "side": "Backend",
+              "file": "package-lock.json",
+              "line": 1305,
+              "text": "\"node_modules/@inquirer/select\": {"
+            },
+            {
+              "side": "Backend",
+              "file": "package-lock.json",
+              "line": 1307,
+              "text": "\"resolved\": \"https://registry.npmmirror.com/@inquirer/select/-/select-4.4.2.tgz\","
+            },
+            {
+              "side": "Backend",
+              "file": "package-lock.json",
+              "line": 1801,
+              "text": "\"deprecated\": \"Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me\","
+            },
+            {
+              "side": "Backend",
+              "file": "package-lock.json",
+              "line": 6962,
+              "text": "\"deprecated\": \"Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me\","
+            },
+            {
+              "side": "Backend",
+              "file": "package-lock.json",
+              "line": 7344,
+              "text": "\"deprecated\": \"Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me\","
+            },
+            {
+              "side": "Backend",
+              "file": "package-lock.json",
+              "line": 7414,
+              "text": "\"integrity\": \"sha512-vjQb1sACEiv13DKJMDToJpzVW0joCsIQrmbg0fi7CyOOt+g9jTuQl2A216pWRBYhOVt53XbL/2LbMKg1BECWOw==\","
+            },
+            {
+              "side": "Backend",
+              "file": "package-lock.json",
+              "line": 8858,
+              "text": "\"typed-query-selector\": \"^2.12.2\""
+            },
+            {
+              "side": "Backend",
+              "file": "package-lock.json",
+              "line": 8876,
+              "text": "\"typed-query-selector\": \"^2.12.2\","
+            },
+            {
+              "side": "Backend",
+              "file": "package-lock.json",
+              "line": 10299,
+              "text": "\"node_modules/typed-query-selector\": {"
+            },
+            {
+              "side": "Backend",
+              "file": "package-lock.json",
+              "line": 10301,
+              "text": "\"resolved\": \"https://registry.npmmirror.com/typed-query-selector/-/typed-query-selector-2.12.2.tgz\","
+            }
+          ]
+        },
+        {
+          "id": "security-preserved",
+          "title": "Seguridad permanece para perpetual_free",
+          "status": "partial",
+          "assessment": "Existen controles generales; falta test especifico para perpetual_free.",
+          "evidence": [
+            {
+              "side": "Backend",
+              "file": "eslint.config.mjs",
+              "line": 12,
+              "text": "'Auditoria-Backend-Extraccion/**',"
+            },
+            {
+              "side": "Backend",
+              "file": "package-lock.json",
+              "line": 4934,
+              "text": "\"integrity\": \"sha512-D76uU73ulSXrD1UXF4KE2TMxVVwhsnCgfAyTg9k8P6KGZjlXKrOLe4dJQKI3Bxi5wjesZoFXJWElNWBjPZMbhg==\","
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 52,
+              "text": "\"applicationRole\": \"bionexus_dev_app\","
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 57,
+              "text": "\"applicationRole\": \"bionexus_prod_app\","
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 114,
+              "text": "\"installerAudit\": {"
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 115,
+              "text": "\"source\": \"C:\\\\Users\\\\Alexis\\\\Desktop\\\\BioNexus-Aux\\\\reports\\\\3-installeraudit-20261028-085231.txt\","
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 124,
+              "text": "\"securityPermissionSeedsDetected\": 62,"
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 133,
+              "text": "\"Catalogo de 14 tablas depurado y auditado\","
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 142,
+              "text": "\"Auditoria contractual completada para las 16 tablas maestras; propuesta pendiente de aprobacion tabla por tabla\","
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 143,
+              "text": "\"Contrato tenant aprobado para Monedas: definicion canonica global y configuracion por laboratorio\","
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 144,
+              "text": "\"Regla universal aprobada: todo laboratorio puede crear y administrar todos sus maestros con aislamiento tenant\","
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 145,
+              "text": "\"Contrato tenant aprobado para Impuestos: creacion y edicion completa por laboratorio\","
+            }
+          ]
+        },
+        {
+          "id": "central-policy",
+          "title": "Politica comercial central Backend",
+          "status": "partial",
+          "assessment": "Debe identificarse un unico punto de decision usado por rutas protegidas y procesos automaticos.",
+          "evidence": [
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 44,
+              "text": "\"migrationPolicy\": \"Usar baseline solo para bases vacias; cambios futuros mediante migraciones incrementales con timestamp nuevo.\","
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 169,
+              "text": "\"Los reportes se guardan directamente en C:\\\\\\\\Users\\\\\\\\Alexis\\\\\\\\Desktop\\\\\\\\BioNexus-Aux\\\\\\\\reports sin subcarpetas.\","
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 812,
+              "text": "\"downPolicy\": \"BIONEXUS_BASELINE_DOWN_NOT_AVAILABLE\","
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 1014,
+              "text": "\"migrationPolicy\": \"Una única BioNexusBaseline sin migraciones incrementales durante la fundación.\","
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 1015,
+              "text": "\"scriptPolicy\": \"PowerShell como orquestador y Python para operaciones complejas.\""
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 1119,
+              "text": "\"migrationPolicy\": \"Baseline única\""
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 1240,
+              "text": "\"scriptPolicy\": \"Python-first\""
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 7053,
+              "text": "\"displayDecimals\": \"currencies.decimal_places, limitado por la precision efectivamente persistible cuando el valor se guarda.\","
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 8251,
+              "text": "\"Nunca se guardan contrasena, refresh token legible por JavaScript, roles, permisos ni laboratory_id confiable en localStorage.\","
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 8347,
+              "text": "\"compatibilityGuardrails\": ["
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 8372,
+              "text": "\"nextAction\": \"Implementar ahora tenant routing por access_slug para Cloud, preservando los guardrails Cloud-first registrados.\""
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 8403,
+              "text": "\"id\": \"cloud-subscription-lifecycle-contract-approved\","
+            }
+          ]
+        },
+        {
+          "id": "audit-events",
+          "title": "Auditoria de renovacion, extension, suspension y reactivacion",
+          "status": "partial",
+          "assessment": "La presencia de auditoria general no demuestra cobertura de cada transicion.",
+          "evidence": [
+            {
+              "side": "Backend",
+              "file": "eslint.config.mjs",
+              "line": 12,
+              "text": "'Auditoria-Backend-Extraccion/**',"
+            },
+            {
+              "side": "Backend",
+              "file": "package.json",
+              "line": 82,
+              "text": "\"moduleFileExtensions\": ["
+            },
+            {
+              "side": "Backend",
+              "file": "tsconfig.build.json",
+              "line": 2,
+              "text": "\"extends\": \"./tsconfig.json\","
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 114,
+              "text": "\"installerAudit\": {"
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 115,
+              "text": "\"source\": \"C:\\\\Users\\\\Alexis\\\\Desktop\\\\BioNexus-Aux\\\\reports\\\\3-installeraudit-20261028-085231.txt\","
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 133,
+              "text": "\"Catalogo de 14 tablas depurado y auditado\","
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 142,
+              "text": "\"Auditoria contractual completada para las 16 tablas maestras; propuesta pendiente de aprobacion tabla por tabla\","
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 154,
+              "text": "\"Provisionamiento del laboratorio RIF J-29514507-1 reportado por el usuario; auditoría SQL BEGIN READ ONLY/ROLLBACK en bionexus encontró 11 paquetes installed v1.0.0 con releases publicados/schema compatible y checksums coincidentes, conteos y relaciones tenant correctos, VES activo en application_settings, admin/permisos completos y cero source_global_id duplicados. No cubre rechazo de segunda solicitud ni rollback transaccional; revisión visual pendiente.\""
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 187,
+              "text": "\"Toda auditoría de normalización debe contrastar entidades TypeORM y la baseline única contra PostgreSQL mediante information_schema y pg_catalog.\","
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 202,
+              "text": "\"result\": \"Bitacora persistente creada desde la auditoria del instalador y las decisiones aprobadas.\","
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 203,
+              "text": "\"evidence\": \"C:\\\\Users\\\\Alexis\\\\Desktop\\\\BioNexus-Aux\\\\reports\\\\3-installeraudit-20261028-085231.txt\","
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 251,
+              "text": "\"operation\": \"master-table-contract-audit-completed\","
+            }
+          ]
+        },
+        {
+          "id": "technical-block",
+          "title": "is_active puede bloquear sin alterar perpetual_free",
+          "status": "partial",
+          "assessment": "Requiere prueba que preserve subscription_status y metadatos al desactivar tecnicamente.",
+          "evidence": [
+            {
+              "side": "Backend",
+              "file": "package-lock.json",
+              "line": 1801,
+              "text": "\"deprecated\": \"Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me\","
+            },
+            {
+              "side": "Backend",
+              "file": "package-lock.json",
+              "line": 4463,
+              "text": "\"update-browserslist-db\": \"^1.2.3\""
+            },
+            {
+              "side": "Backend",
+              "file": "package-lock.json",
+              "line": 6962,
+              "text": "\"deprecated\": \"Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me\","
+            },
+            {
+              "side": "Backend",
+              "file": "package-lock.json",
+              "line": 7344,
+              "text": "\"deprecated\": \"Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me\","
+            },
+            {
+              "side": "Backend",
+              "file": "package-lock.json",
+              "line": 10678,
+              "text": "\"node_modules/update-browserslist-db\": {"
+            },
+            {
+              "side": "Backend",
+              "file": "package-lock.json",
+              "line": 10680,
+              "text": "\"resolved\": \"https://registry.npmmirror.com/update-browserslist-db/-/update-browserslist-db-1.2.3.tgz\","
+            },
+            {
+              "side": "Backend",
+              "file": "package-lock.json",
+              "line": 10703,
+              "text": "\"update-browserslist-db\": \"cli.js\""
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 5,
+              "text": "\"updatedAt\": \"2026-11-04T22:15:00-04:00\","
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 13,
+              "text": "\"updateAfterSuccessfulTechnicalStep\": true,"
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 16,
+              "text": "\"updateAfterEveryApprovedDecisionOrCompletedStep\": true,"
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 17,
+              "text": "\"updateBothCopiesAtomically\": true,"
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 18,
+              "text": "\"failIfUpdateWouldLeaveCopiesDifferent\": true"
+            }
+          ]
+        },
+        {
+          "id": "observed-error",
+          "title": "PLATFORM_SUBSCRIPTION_DATES_INVALID",
+          "status": "confirmed-defect",
+          "assessment": "Error reproducido en registro manual; bloquea considerar aprobado trial/active. Se requiere trazar payload, conversión UTC y regla Backend.",
+          "evidence": [
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 11381,
+              "text": "\"summary\": \"Fase visual administrativa completada y validada. Se detecto PLATFORM_SUBSCRIPTION_DATES_INVALID durante el registro funcional de un laboratorio; se abre una auditoria integral independiente del lifecycle comercial.\","
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 11388,
+              "text": "\"code\": \"PLATFORM_SUBSCRIPTION_DATES_INVALID\","
+            },
+            {
+              "side": "Backend",
+              "file": "docs/BioNexus-Project-State.json",
+              "line": 27342,
+              "text": "\"Investigar PLATFORM_SUBSCRIPTION_DATES_INVALID sin modificar datos.\""
+            },
+            {
+              "side": "Backend",
+              "file": "src/platform/platform-provisioning.service.ts",
+              "line": 179,
+              "text": "throw new BadRequestException('PLATFORM_SUBSCRIPTION_DATES_INVALID');"
+            },
+            {
+              "side": "Backend",
+              "file": "src/platform/platform-subscription-billing.service.ts",
+              "line": 224,
+              "text": "if (expiresAt && expiresAt <= startsAt) throw new BadRequestException('PLATFORM_SUBSCRIPTION_DATES_INVALID');"
+            }
+          ]
+        }
+      ],
+      "limitations": [
+        "Auditoria estatica; no consulto PostgreSQL ni ejecuto jobs.",
+        "No modifico datos ni servicios.",
+        "implemented significa evidencia de codigo suficiente, no aprobacion productiva."
+      ],
+      "priorities": [
+        {
+          "order": 1,
+          "item": "Corregir PLATFORM_SUBSCRIPTION_DATES_INVALID y agregar pruebas de alta trial/active/perpetual_free."
+        },
+        {
+          "order": 2,
+          "item": "Probar proceso automatico active/trial -> grace -> suspended, incluido grace=0."
+        },
+        {
+          "order": 3,
+          "item": "Probar guard central, bloqueo de sesiones y pantalla suspended."
+        },
+        {
+          "order": 4,
+          "item": "Cerrar seguridad perpetual_free: owner-only, metadatos, revocacion/conversion, redaccion publica."
+        },
+        {
+          "order": 5,
+          "item": "Verificar auditoria de renovacion, extension, suspension, reactivacion y cancelacion."
+        }
+      ]
     }
   ],
   "stateReplication": {
@@ -27329,28 +28534,24 @@
   "primaryObjective": "Estabilizar y completar Bio Nexus Cloud; alinear PostgreSQL real con la baseline y cerrar el provisionamiento funcional antes de otros modos.",
   "currentWorkstream": "platform-laboratory-administration-cloud",
   "currentCheckpoint": {
-    "id": "platform-commercial-lifecycle-audit-20261105",
-    "at": "2026-11-05T22:04:33-04:00",
-    "status": "admin-visual-completed;commercial-audit-pending",
+    "id": "platform-commercial-lifecycle-remediation-20261105",
+    "at": "2026-11-05T22:13:00-04:00",
+    "status": "static-audit-completed;remediation-pending",
     "completed": [
-      "Shell, Dashboard, Laboratorios, Planes, Pagos y dialogs administrativos normalizados con componentes Bio Nexus.",
-      "Contratos administrativos, git diff --check y build Frontend aprobados.",
-      "Components.css permanece sin cambios."
+      "Fase visual administrativa integrada en development.",
+      "Auditoria estatica del lifecycle comercial completada."
     ],
     "current": [
-      "Integrar la fase visual en development.",
-      "Investigar PLATFORM_SUBSCRIPTION_DATES_INVALID sin modificar datos."
+      "Corregir PLATFORM_SUBSCRIPTION_DATES_INVALID desde payload hasta persistencia."
     ],
     "pending": [
-      "Validar fechas UTC obligatorias para trial y active.",
-      "Validar active/trial a grace y grace a suspended.",
-      "Validar sesiones bloqueadas en suspended.",
-      "Validar cancelled separado de is_active.",
-      "Validar perpetual_free con expiracion y gracia NULL, metadatos y auditoria.",
-      "Validar autorizacion exclusiva platform-owner y no exposicion publica.",
-      "Validar politica central del Backend."
+      "Corregir PLATFORM_SUBSCRIPTION_DATES_INVALID y agregar pruebas de alta trial/active/perpetual_free.",
+      "Probar proceso automatico active/trial -> grace -> suspended, incluido grace=0.",
+      "Probar guard central, bloqueo de sesiones y pantalla suspended.",
+      "Cerrar seguridad perpetual_free: owner-only, metadatos, revocacion/conversion, redaccion publica.",
+      "Verificar auditoria de renovacion, extension, suspension, reactivacion y cancelacion."
     ],
-    "nextAction": "Auditar trial, active, grace, suspended, cancelled y perpetual_free en Frontend, Backend, migraciones, jobs, guards, sesiones, auditoria y APIs publicas.",
+    "nextAction": "Crear feature aislada para corregir primero fechas y pruebas de alta trial/active/perpetual_free; no tocar PostgreSQL hasta validar migraciones y pruebas.",
     "databaseQueried": false,
     "databaseModified": false,
     "serversManaged": false
