@@ -13856,6 +13856,121 @@
       "databaseQueried": false,
       "databaseModified": false,
       "serversManaged": false
+    },
+    {
+      "id": "platform-commercial-model-approved-20261105",
+      "timestamp": "2026-11-05T23:39:00-04:00",
+      "status": "approved-for-implementation",
+      "summary": "Se aprueba separar plan, suscripcion, estado tecnico y moneda operativa. El alta del laboratorio solicitara moneda operativa VES, USD o EUR y esa seleccion se resolvera contra currencies para guardar application_settings.financial_primary_currency_id. El plan conserva una moneda comercial independiente para el precio de Bio Nexus.",
+      "decisions": {
+        "stateModel": {
+          "planIsActive": "Indica si el plan esta disponible para nuevas asignaciones. No suspende suscripciones existentes.",
+          "subscriptionStatus": "Es el estado comercial del contrato del laboratorio: trial, active, grace, suspended, cancelled o perpetual_free.",
+          "laboratoryIsActive": "Es el bloqueo tecnico u operativo del laboratorio y prevalece para permitir operacion.",
+          "precedence": [
+            "laboratory.is_active",
+            "subscription.status y vigencia",
+            "autenticacion, tenant, roles y permisos"
+          ]
+        },
+        "operationalCurrency": {
+          "selectionAtProvisioning": true,
+          "allowedCodes": [
+            "VES",
+            "USD",
+            "EUR"
+          ],
+          "defaultCode": "USD",
+          "source": "Tabla currencies instalada por el paquete obligatorio currencies.",
+          "persistence": "application_settings.financial_primary_currency_id",
+          "scope": "Todos los importes funcionales del tenant se interpretan y registran en esta moneda operativa.",
+          "transactionRule": "Instalar currencies, resolver el codigo activo seleccionado y guardar su id dentro de la misma transaccion; rollback si no existe o esta inactivo."
+        },
+        "commercialPlanCurrency": {
+          "independentFromOperationalCurrency": true,
+          "purpose": "Moneda del precio que Bio Nexus cobra al laboratorio.",
+          "input": "Selector desde catalogo central de monedas comerciales, no texto libre.",
+          "defaultCode": "USD",
+          "snapshotRequired": true
+        },
+        "plans": {
+          "planType": [
+            "trial",
+            "paid"
+          ],
+          "availabilityField": "is_active",
+          "durationModel": {
+            "intervalUnit": [
+              "day",
+              "month",
+              "year"
+            ],
+            "intervalCount": "entero mayor que cero"
+          },
+          "gracePeriodDays": "entero mayor o igual que cero; cero suspende al vencer sin pasar por grace.",
+          "trialSeed": {
+            "required": true,
+            "durationPendingDecision": "15 o 30 dias",
+            "currency": "USD",
+            "price": 0,
+            "graceRecommended": 0
+          },
+          "limitsBenefits": "Conservar JSONB y snapshots, pero ocultar el editor JSON libre hasta definir capacidades realmente aplicadas y controles tipados."
+        },
+        "laboratoryProvisioning": {
+          "userInputs": [
+            "datos generales",
+            "moneda operativa",
+            "plan activo",
+            "fecha de inicio"
+          ],
+          "removeInputs": [
+            "selector manual de subscription_status",
+            "fecha de expiracion manual"
+          ],
+          "derivedByBackend": [
+            "estado inicial desde plan_type",
+            "service_expires_at desde inicio y duracion",
+            "grace_until desde expiracion y grace_period_days",
+            "snapshot de plan y moneda comercial"
+          ],
+          "normalInitialStatus": {
+            "trial": "trial",
+            "paid": "active"
+          }
+        },
+        "perpetualFree": {
+          "normalPlanOption": false,
+          "separatePrivilegedAction": true,
+          "actor": "platform-owner",
+          "requiredMetadata": [
+            "perpetual_free_reason",
+            "perpetual_free_granted_at",
+            "perpetual_free_granted_by"
+          ],
+          "serviceExpiresAt": null,
+          "graceUntil": null,
+          "publicRedactionRequired": true,
+          "technicalBlockingPreservesGrant": true
+        },
+        "dateAuthority": "El Backend calcula las fechas comerciales. El Frontend solo presenta calculos y no es autoridad sobre service_expires_at ni grace_until."
+      },
+      "implementationOrder": [
+        "Auditar currencies, paquete currencies, application_settings y el VES forzado actual.",
+        "Cerrar decision de duracion Trial: 15 o 30 dias.",
+        "Definir capacidades reales antes de reemplazar limits_benefits JSON por formulario estructurado.",
+        "Consolidar cambios de esquema en la migracion baseline existente.",
+        "Implementar contratos Backend y pruebas.",
+        "Actualizar Frontend de Planes y Registrar laboratorio.",
+        "Implementar job idempotente, guard central, sesiones y pantalla suspended.",
+        "Validar base vacia y copia con datos antes de consolidar y publicar."
+      ],
+      "constraints": {
+        "databaseQueried": false,
+        "databaseModified": false,
+        "serversManaged": false,
+        "doNotApplyPreviousDatesPatchUntilModelImplemented": true
+      }
     }
   ],
   "stateReplication": {
@@ -29796,22 +29911,29 @@
   "primaryObjective": "Estabilizar y completar Bio Nexus Cloud; alinear PostgreSQL real con la baseline y cerrar el provisionamiento funcional antes de otros modos.",
   "currentWorkstream": "platform-laboratory-administration-cloud",
   "currentCheckpoint": {
-    "id": "platform-subscription-dates-remediation-20261105",
-    "at": "2026-11-05T22:20:00-04:00",
-    "status": "targeted-audit-completed;dates-fix-pending",
+    "id": "platform-commercial-model-implementation-20261105",
+    "at": "2026-11-05T23:39:00-04:00",
+    "status": "functional-model-approved;implementation-pending",
     "completed": [
-      "Auditoria dirigida de codigo fuente completada excluyendo docs, lockfiles y dependencias."
+      "Modelo de estados simplificado y aprobado.",
+      "Seleccion de moneda operativa VES/USD/EUR aprobada para el alta.",
+      "Separacion de moneda operativa y moneda comercial aprobada.",
+      "Expiracion manual y selector manual de estado removidos del modelo objetivo."
     ],
     "current": [
-      "Trazar y corregir PLATFORM_SUBSCRIPTION_DATES_INVALID entre PlatformLaboratoryDialog, DTO y platform-provisioning.service."
+      "Auditar implementacion real de currencies y financial_primary_currency_id antes de modificar codigo."
     ],
     "pending": [
-      "Agregar pruebas contractuales para alta trial, active y perpetual_free con UTC y límites de fechas.",
-      "Cerrar proceso automático grace/suspended y prueba grace=0.",
-      "Cerrar guard central, bloqueo de sesiones y pantalla suspended.",
-      "Cerrar owner-only, redacción pública y auditoría de perpetual_free."
+      "Auditar currencies, paquete currencies, application_settings y el VES forzado actual.",
+      "Cerrar decision de duracion Trial: 15 o 30 dias.",
+      "Definir capacidades reales antes de reemplazar limits_benefits JSON por formulario estructurado.",
+      "Consolidar cambios de esquema en la migracion baseline existente.",
+      "Implementar contratos Backend y pruebas.",
+      "Actualizar Frontend de Planes y Registrar laboratorio.",
+      "Implementar job idempotente, guard central, sesiones y pantalla suspended.",
+      "Validar base vacia y copia con datos antes de consolidar y publicar."
     ],
-    "nextAction": "Crear feature aislada para corregir fechas y pruebas de alta; mantener PostgreSQL y servicios sin cambios hasta validar.",
+    "nextAction": "Ejecutar auditoria de moneda y paquetes; presentar resultados antes de modificar codigo o esquema.",
     "databaseQueried": false,
     "databaseModified": false,
     "serversManaged": false
