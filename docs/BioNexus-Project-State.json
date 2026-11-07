@@ -14345,6 +14345,25 @@
       "databaseQueried": false,
       "databaseModified": false,
       "serversManaged": false
+    },
+    {
+      "id": "commercial-plan-derived-provisioning-20261107",
+      "timestamp": "2026-11-07T01:44:00-04:00",
+      "status": "implemented-validated-on-feature",
+      "summary": "El alta normal usa plan, inicio y moneda operativa; Backend deriva status, expiracion y gracia. Se eliminaron siete fixtures legacy perpetual_free y los bypasses asociados. perpetual_free permanece solo en Billing privilegiado.",
+      "validation": {
+        "structuralAudit": "approved",
+        "legacyFixtures": 0,
+        "doubleNever": 0,
+        "backendTests": "approved",
+        "frontendContracts": "approved",
+        "builds": "approved",
+        "diffCheck": "approved"
+      },
+      "migrationApplied": false,
+      "databaseQueried": false,
+      "databaseModified": false,
+      "serversManaged": false
     }
   ],
   "stateReplication": {
@@ -30285,25 +30304,22 @@
   "primaryObjective": "Estabilizar y completar Bio Nexus Cloud; alinear PostgreSQL real con la baseline y cerrar el provisionamiento funcional antes de otros modos.",
   "currentWorkstream": "platform-laboratory-administration-cloud",
   "currentCheckpoint": {
-    "id": "commercial-plan-provisioning-implementation-20261106",
-    "at": "2026-11-06T18:22:00-04:00",
-    "status": "audit-completed;implementation-next",
+    "id": "commercial-plan-frontend-management-20261107",
+    "at": "2026-11-07T01:44:00-04:00",
+    "status": "derived-provisioning-published;frontend-plan-management-pending",
     "completed": [
-      "Backend de catalogo y assignPlan publicado con 10 pruebas.",
-      "Bitacoras gemelas revisadas.",
-      "Contratos de provisionamiento, DTO, CLI y Frontend auditados."
+      "Migracion comercial publicada sin aplicar.",
+      "Catalogo, asignacion y provisionamiento derivan estado y vigencia.",
+      "Deuda legacy perpetual_free eliminada de pruebas de provisionamiento."
     ],
     "current": [
-      "Eliminar estado y expiracion manuales del alta normal y derivarlos desde el plan."
+      "Actualizar UI de Planes para planType, intervalUnit e intervalCount y ocultar JSON libre limits_benefits."
     ],
     "pending": [
-      "Propagar plan_type, interval_unit e interval_count a snapshots iniciales.",
-      "Mantener perpetual_free en flujo privilegiado separado.",
-      "Actualizar pruebas Backend y contratos Frontend.",
-      "Actualizar UI de Planes y ocultar JSON libre limits_benefits.",
-      "Aplicar migracion mediante scripts/ops despues de completar y publicar todo el codigo."
+      "Validacion visual de Planes.",
+      "Aplicar migracion con scripts/ops despues de completar todo el codigo."
     ],
-    "nextAction": "Implementar provisionamiento inicial derivado en Backend, DTO, CLI, cliente HTTP y dialog, sin aplicar la migracion todavia.",
+    "nextAction": "Auditar y actualizar Frontend de administracion de planes.",
     "databaseQueried": false,
     "databaseModified": false,
     "serversManaged": false

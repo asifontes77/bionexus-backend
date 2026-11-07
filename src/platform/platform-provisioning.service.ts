@@ -22,69 +22,61 @@ export class PlatformProvisioningService {
     return runSerializableTransaction(this.dataSource, 'PLATFORM_PROVISIONING_CONCURRENT_RETRY_REQUIRED', async manager => {
       await manager.query('SELECT pg_advisory_xact_lock($1)', [81426001]);
       await this.ensureAvailable(manager,dto);
-      const plans = dto.subscriptionStatus === 'perpetual_free' ? [] : await manager.query(
-        `SELECT id,code,name,description,price,currency,billing_interval,grace_period_days,limits_benefits
+      const plans = await manager.query(
+        `SELECT id,code,name,description,price,currency,billing_interval,plan_type,interval_unit,interval_count,grace_period_days,limits_benefits
          FROM platform_subscription_plans
          WHERE lower(btrim(code))=lower(btrim($1)) AND is_active=true
          FOR SHARE`,
         [dto.planCode],
       );
-      if (dto.subscriptionStatus !== 'perpetual_free' && !plans[0]) {
+      if (!plans[0]) {
         throw new NotFoundException('PLATFORM_SUBSCRIPTION_PLAN_NOT_FOUND_OR_INACTIVE');
       }
-      const plan = plans[0] ?? {
-        id: null,
-        code: 'perpetual-free',
-        name: 'Perpetual free',
-        description: null,
-        price: '0.00',
-        currency: 'VES',
-        billing_interval: null,
-        grace_period_days: 0,
-        limits_benefits: {},
-      };
+      const plan = plans[0];
+      const subscriptionStatus = plan.plan_type === 'trial' ? 'trial' : 'active';
+      const serviceExpiresAt = this.addPlanDuration(dto.serviceStartsAt, plan.interval_unit, Number(plan.interval_count));
       const gracePeriodDays = Number(plan.grace_period_days);
-      const graceUntil = dto.subscriptionStatus !== 'perpetual_free' && dto.serviceExpiresAt && gracePeriodDays > 0
-        ? new Date(new Date(dto.serviceExpiresAt).getTime() + gracePeriodDays * 86400000).toISOString()
+      const graceUntil = gracePeriodDays > 0
+        ? new Date(new Date(serviceExpiresAt).getTime() + gracePeriodDays * 86400000).toISOString()
         : null;
-      const perpetualFree = dto.subscriptionStatus === 'perpetual_free';
+      const perpetualFree = false;
       const laboratory=(await manager.query(
         `INSERT INTO laboratory
           (access_slug,rif,name,business_name,address,phone_1,email,service_mode,plan_id,plan_code,plan_name,
-           plan_description,plan_price,plan_currency,billing_interval,plan_limits_benefits,plan_grace_period_days,
+           plan_description,plan_price,plan_currency,billing_interval,plan_type,interval_unit,interval_count,plan_limits_benefits,plan_grace_period_days,
            subscription_status,service_starts_at,service_expires_at,grace_until,perpetual_free_reason,
            perpetual_free_granted_at,perpetual_free_granted_by,commercial_notes,
            print_invoice,print_sample_take,invoice_number,voucher_number,creditnote_number,max_height_logo,
            max_width_logo,maximum_rows_report,rows_description_receipt,receipt_number,print_receipt)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,'cloud',$8,$9,$10,$11,$12,$13,$14,$15::jsonb,$16,
-           $17,$18,$19,$20,$21,CASE WHEN $22::boolean THEN now() ELSE NULL END,
-           CASE WHEN $22::boolean THEN $23::integer ELSE NULL END,$24,
+         VALUES ($1,$2,$3,$4,$5,$6,$7,'cloud',$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18::jsonb,$19,
+           $20,$21,$22,$23,$24,CASE WHEN $25::boolean THEN now() ELSE NULL END,
+           CASE WHEN $25::boolean THEN $26::integer ELSE NULL END,$27,
            false,false,0,0,0,170,170,38,10,0,false)
          RETURNING id,access_slug,rif,name,business_name AS "businessName",address,service_mode,plan_id,
-           plan_code,plan_name,plan_description,plan_price,plan_currency,billing_interval,
+           plan_code,plan_name,plan_description,plan_price,plan_currency,billing_interval,plan_type,interval_unit,interval_count,
            plan_limits_benefits AS "planLimitsBenefits",plan_grace_period_days AS "planGracePeriodDays",
            subscription_status,service_starts_at,service_expires_at,grace_until,is_active`,
         [
           dto.access_slug,dto.rif,dto.name,dto.businessName,dto.address,dto.phone||null,dto.email||null,
           plan.id,plan.code,plan.name,plan.description,perpetualFree ? '0.00' : plan.price,
-          plan.currency,plan.billing_interval,JSON.stringify(plan.limits_benefits ?? {}),gracePeriodDays,
-          dto.subscriptionStatus,dto.serviceStartsAt,dto.serviceExpiresAt,graceUntil,
-          perpetualFree ? dto.perpetualFreeReason : null,perpetualFree,platformOwnerId,dto.commercialNotes,
+          plan.currency,plan.billing_interval,plan.plan_type,plan.interval_unit,plan.interval_count,JSON.stringify(plan.limits_benefits ?? {}),gracePeriodDays,
+          subscriptionStatus,dto.serviceStartsAt,serviceExpiresAt,graceUntil,
+          null,false,platformOwnerId,dto.commercialNotes,
         ],
       ))[0];
       await manager.query(
         `INSERT INTO platform_subscriptions
-          (laboratory_id,plan_id,plan_code,plan_name,plan_description,plan_price,plan_currency,billing_interval,
+          (laboratory_id,plan_id,plan_code,plan_name,plan_description,plan_price,plan_currency,billing_interval,plan_type,interval_unit,interval_count,
            plan_limits_benefits,grace_period_days,status,starts_at,expires_at,grace_until,perpetual_free_reason,
            perpetual_free_granted_at,perpetual_free_granted_by,created_by)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9::jsonb,$10,$11,$12,$13,$14,$15,
-           CASE WHEN $16::boolean THEN now() ELSE NULL END,
-           CASE WHEN $16::boolean THEN $17::integer ELSE NULL END,$17)`,
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12::jsonb,$13,$14,$15,$16,$17,$18,
+           CASE WHEN $19::boolean THEN now() ELSE NULL END,
+           CASE WHEN $19::boolean THEN $20::integer ELSE NULL END,$20)`,
         [
           laboratory.id,plan.id,plan.code,plan.name,plan.description,perpetualFree ? '0.00' : plan.price,
-          plan.currency,plan.billing_interval,JSON.stringify(plan.limits_benefits ?? {}),gracePeriodDays,
-          dto.subscriptionStatus,dto.serviceStartsAt,dto.serviceExpiresAt,graceUntil,
-          perpetualFree ? dto.perpetualFreeReason : null,perpetualFree,platformOwnerId,
+          plan.currency,plan.billing_interval,plan.plan_type,plan.interval_unit,plan.interval_count,JSON.stringify(plan.limits_benefits ?? {}),gracePeriodDays,
+          subscriptionStatus,dto.serviceStartsAt,serviceExpiresAt,graceUntil,
+          null,false,platformOwnerId,
         ],
       );
       const branch=(await manager.query(`INSERT INTO laboratory_branches (laboratory_id,code,name,address,phone,email,is_main,is_active,display_order) VALUES ($1,$2,$3,$4,$5,$6,true,true,0) RETURNING id,code,name`,[laboratory.id,dto.branchCode,dto.branchName,dto.address,dto.phone||null,dto.email||null]))[0];
@@ -105,9 +97,9 @@ export class PlatformProvisioningService {
         metadata: {
           accessSlug: laboratory.access_slug,
           planCode: dto.planCode,
-          subscriptionStatus: dto.subscriptionStatus,
+          subscriptionStatus,
           serviceStartsAt: dto.serviceStartsAt,
-          serviceExpiresAt: dto.serviceExpiresAt,
+          serviceExpiresAt,
           graceUntil,
           operationalCurrencyCode: dto.operationalCurrencyCode,
           planSnapshot: {
@@ -117,10 +109,13 @@ export class PlatformProvisioningService {
             price: perpetualFree ? '0.00' : plan.price,
             currency: plan.currency,
             billingInterval: plan.billing_interval,
+            planType: plan.plan_type,
+            intervalUnit: plan.interval_unit,
+            intervalCount: plan.interval_count,
             gracePeriodDays,
             limitsBenefits: plan.limits_benefits ?? {},
           },
-          perpetualFreeReason: dto.perpetualFreeReason,
+          perpetualFreeReason: null,
         },
       });
       return { laboratory, mainBranch:branch, administrator:{id:user.id,name:user.name,username:user.username}, installedCatalogPackages };
@@ -157,41 +152,28 @@ export class PlatformProvisioningService {
     return {access_slug,rif,name:text(input.name,50,'PLATFORM_PROVISIONING_NAME_REQUIRED'),businessName:text(input.businessName,100,'PLATFORM_PROVISIONING_BUSINESS_NAME_REQUIRED'),address:text(input.address,200,'PLATFORM_PROVISIONING_ADDRESS_REQUIRED'),phone:typeof input.phone==='string'?input.phone.trim():'',email:typeof input.email==='string'?input.email.trim().toLowerCase():'',branchCode,branchName:text(input.branchName,100,'PLATFORM_PROVISIONING_BRANCH_NAME_REQUIRED'),administratorName:text(input.administratorName,100,'PLATFORM_PROVISIONING_ADMIN_NAME_REQUIRED'),administratorUsername:text(input.administratorUsername,100,'PLATFORM_PROVISIONING_ADMIN_USERNAME_REQUIRED').toLowerCase(),administratorEmail:typeof input.administratorEmail==='string'?input.administratorEmail.trim().toLowerCase():'',administratorPassword:password,administratorPasswordConfirmation:passwordConfirmation,operationalCurrencyCode,seedPackages,...subscription};
   }
 
+  private addPlanDuration(startsAtValue: string, unit: unknown, count: number): string {
+    if (!['day', 'month', 'year'].includes(String(unit)) || !Number.isSafeInteger(count) || count <= 0) {
+      throw new BadRequestException('PLATFORM_SUBSCRIPTION_PLAN_DURATION_INVALID');
+    }
+    const result = new Date(startsAtValue);
+    if (unit === 'day') result.setUTCDate(result.getUTCDate() + count);
+    else if (unit === 'month') result.setUTCMonth(result.getUTCMonth() + count);
+    else result.setUTCFullYear(result.getUTCFullYear() + count);
+    return result.toISOString();
+  }
   private validateSubscription(input: CreatePlatformLaboratoryDto, ownerId: number) {
-    const subscriptionStatus = input?.subscription_status;
-    if (!['trial', 'active', 'perpetual_free'].includes(subscriptionStatus)) {
-      throw new BadRequestException('PLATFORM_SUBSCRIPTION_STATUS_INVALID');
-    }
     const requestedPlanCode = typeof input?.plan_code === 'string' ? input.plan_code.trim() : '';
-    const planCode = subscriptionStatus === 'perpetual_free'
-      ? 'perpetual-free'
-      : requestedPlanCode.toLowerCase();
+    const planCode = requestedPlanCode.toLowerCase();
     if (!planCode || planCode.length > 80) throw new BadRequestException('PLATFORM_SUBSCRIPTION_PLAN_REQUIRED');
-    const timestamp = (value: unknown, required: boolean, code: string): string | null => {
-      if (value == null || value === '') {
-        if (required) throw new BadRequestException(code);
-        return null;
-      }
-      if (typeof value !== 'string' || !/(?:Z|[+-]\d{2}:\d{2})$/i.test(value)) throw new BadRequestException(code);
-      const parsed = new Date(value);
-      if (Number.isNaN(parsed.getTime())) throw new BadRequestException(code);
-      return parsed.toISOString();
-    };
-    const serviceStartsAt = timestamp(input.service_starts_at, true, 'PLATFORM_SUBSCRIPTION_START_INVALID');
-    const serviceExpiresAt = timestamp(input.service_expires_at, subscriptionStatus !== 'perpetual_free', 'PLATFORM_SUBSCRIPTION_EXPIRY_REQUIRED');
-    if (serviceExpiresAt && new Date(serviceExpiresAt) <= new Date(serviceStartsAt!)) {
-      throw new BadRequestException('PLATFORM_SUBSCRIPTION_DATES_INVALID');
+    if (typeof input.service_starts_at !== 'string' || !/(?:Z|[+-]\d{2}:\d{2})$/i.test(input.service_starts_at)) {
+      throw new BadRequestException('PLATFORM_SUBSCRIPTION_START_INVALID');
     }
-    const perpetualFreeReason = typeof input.perpetual_free_reason === 'string' ? input.perpetual_free_reason.trim() : '';
-    if (subscriptionStatus === 'perpetual_free' && !perpetualFreeReason) {
-      throw new BadRequestException('PLATFORM_PERPETUAL_FREE_REASON_REQUIRED');
-    }
+    const startsAt = new Date(input.service_starts_at);
+    if (Number.isNaN(startsAt.getTime())) throw new BadRequestException('PLATFORM_SUBSCRIPTION_START_INVALID');
     return {
       planCode,
-      subscriptionStatus,
-      serviceStartsAt,
-      serviceExpiresAt,
-      perpetualFreeReason: subscriptionStatus === 'perpetual_free' ? perpetualFreeReason : null,
+      serviceStartsAt: startsAt.toISOString(),
       commercialNotes: typeof input.commercial_notes === 'string' ? input.commercial_notes.trim() || null : null,
       platformOwnerId: ownerId,
     };

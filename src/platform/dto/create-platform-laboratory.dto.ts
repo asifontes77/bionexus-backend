@@ -6,10 +6,7 @@ export class CreatePlatformLaboratoryDto {
   address: string;
   operational_currency_code: 'VES' | 'USD' | 'EUR';
   plan_code?: string;
-  subscription_status: 'trial' | 'active' | 'perpetual_free';
   service_starts_at: string;
-  service_expires_at: string | null;
-  perpetual_free_reason?: string;
   commercial_notes?: string;
   phone?: string;
   email?: string;

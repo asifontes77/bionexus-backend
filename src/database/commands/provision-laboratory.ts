@@ -20,11 +20,8 @@ export interface ProvisionLaboratoryEnvironment {
   BIONEXUS_PROVISION_PHONE?: string;
   BIONEXUS_PROVISION_EMAIL?: string;
   BIONEXUS_PROVISION_PLAN_CODE?: string;
-  BIONEXUS_PROVISION_SUBSCRIPTION_STATUS?: string;
   BIONEXUS_PROVISION_OPERATIONAL_CURRENCY_CODE?: string;
   BIONEXUS_PROVISION_SERVICE_STARTS_AT?: string;
-  BIONEXUS_PROVISION_SERVICE_EXPIRES_AT?: string;
-  BIONEXUS_PROVISION_PERPETUAL_FREE_REASON?: string;
   BIONEXUS_PROVISION_COMMERCIAL_NOTES?: string;
   BIONEXUS_PROVISION_BRANCH_CODE?: string;
   BIONEXUS_PROVISION_BRANCH_NAME?: string;
@@ -54,10 +51,7 @@ const required = (environment: ProvisionLaboratoryEnvironment, name: keyof Provi
 
 export function resolveProvisionLaboratoryInput(environment: ProvisionLaboratoryEnvironment): ProvisionLaboratoryCommandInput {
   const password = required(environment, 'BIONEXUS_PROVISION_ADMIN_PASSWORD');
-  const subscriptionStatus = required(environment, 'BIONEXUS_PROVISION_SUBSCRIPTION_STATUS') as CreatePlatformLaboratoryDto['subscription_status'];
-  const planCode = subscriptionStatus === 'perpetual_free'
-    ? environment.BIONEXUS_PROVISION_PLAN_CODE?.trim() || undefined
-    : required(environment, 'BIONEXUS_PROVISION_PLAN_CODE');
+  const planCode = required(environment, 'BIONEXUS_PROVISION_PLAN_CODE');
   const seedPackages = (environment.BIONEXUS_PROVISION_SEED_PACKAGES ?? '')
     .split(',')
     .map((value) => value.trim().toLowerCase())
@@ -71,11 +65,8 @@ export function resolveProvisionLaboratoryInput(environment: ProvisionLaboratory
       businessName: required(environment, 'BIONEXUS_PROVISION_BUSINESS_NAME'),
       address: required(environment, 'BIONEXUS_PROVISION_ADDRESS'),
       plan_code: planCode,
-      subscription_status: subscriptionStatus,
       operational_currency_code: operationalCurrencyCode(environment),
       service_starts_at: required(environment, 'BIONEXUS_PROVISION_SERVICE_STARTS_AT'),
-      service_expires_at: environment.BIONEXUS_PROVISION_SERVICE_EXPIRES_AT?.trim() || null,
-      perpetual_free_reason: environment.BIONEXUS_PROVISION_PERPETUAL_FREE_REASON?.trim() || undefined,
       commercial_notes: environment.BIONEXUS_PROVISION_COMMERCIAL_NOTES?.trim() || undefined,
       phone: environment.BIONEXUS_PROVISION_PHONE?.trim() ?? '',
       email: environment.BIONEXUS_PROVISION_EMAIL?.trim() ?? '',
