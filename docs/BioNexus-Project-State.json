@@ -14364,6 +14364,50 @@
       "databaseQueried": false,
       "databaseModified": false,
       "serversManaged": false
+    },
+    {
+      "id": "commercial-plan-frontend-audit-20261107",
+      "timestamp": "2026-11-07T01:55:00-04:00",
+      "status": "audit-completed-implementation-pending",
+      "summary": "Se audito la administracion Frontend de planes despues de publicar el provisionamiento derivado. El formulario aun usa billingInterval, no expone planType/intervalUnit/intervalCount, mantiene el editor JSON libre de limitsBenefits y las vistas no muestran tipo o duracion tipada.",
+      "findings": {
+        "formUsesBillingInterval": true,
+        "formUsesPlanType": false,
+        "formUsesIntervalUnit": false,
+        "formUsesIntervalCount": false,
+        "formHasFreeJsonEditor": true,
+        "detailShowsTypedDuration": false,
+        "gridShowsTypedDuration": false,
+        "clientSendsTypedDuration": false,
+        "contractProtectsTypedDuration": false,
+        "trialVisible": false
+      },
+      "approvedTarget": {
+        "planType": [
+          "trial",
+          "paid"
+        ],
+        "intervalUnit": [
+          "day",
+          "month",
+          "year"
+        ],
+        "intervalCount": "positive integer",
+        "trial15": {
+          "planType": "trial",
+          "intervalUnit": "day",
+          "intervalCount": 15,
+          "price": "0.00",
+          "currency": "USD",
+          "gracePeriodDays": 0
+        },
+        "billingIntervalEditable": false,
+        "freeLimitsBenefitsJsonEditor": false
+      },
+      "databaseQueried": false,
+      "databaseModified": false,
+      "migrationApplied": false,
+      "serversManaged": false
     }
   ],
   "stateReplication": {
@@ -30305,23 +30349,32 @@
   "currentWorkstream": "platform-laboratory-administration-cloud",
   "currentCheckpoint": {
     "id": "commercial-plan-frontend-management-20261107",
-    "at": "2026-11-07T01:44:00-04:00",
-    "status": "derived-provisioning-published;frontend-plan-management-pending",
+    "at": "2026-11-07T01:55:00-04:00",
+    "status": "frontend-audit-recorded;typed-plan-ui-pending",
     "completed": [
-      "Migracion comercial publicada sin aplicar.",
-      "Catalogo, asignacion y provisionamiento derivan estado y vigencia.",
-      "Deuda legacy perpetual_free eliminada de pruebas de provisionamiento."
+      "Politica de migraciones incrementales aprobada y registrada.",
+      "Migracion AddCommercialPlanModel1793862001000 implementada, validada y publicada sin aplicar.",
+      "Backend de catalogo y asignacion deriva status, expiracion y gracia.",
+      "Provisionamiento inicial derivado publicado sin contrato legacy perpetual_free.",
+      "22 pruebas Backend, 7 contratos Frontend y ambos builds aprobados en el cierre anterior.",
+      "Administracion Frontend de Planes auditada."
     ],
     "current": [
-      "Actualizar UI de Planes para planType, intervalUnit e intervalCount y ocultar JSON libre limits_benefits."
+      "Implementar UI tipada de Planes con planType, intervalUnit e intervalCount."
     ],
     "pending": [
-      "Validacion visual de Planes.",
-      "Aplicar migracion con scripts/ops despues de completar todo el codigo."
+      "Reemplazar periodicidad editable por tipo, cantidad y unidad.",
+      "Ocultar editor JSON libre de limitsBenefits.",
+      "Actualizar grid y detalle con tipo y duracion legibles.",
+      "Actualizar cliente HTTP y contratos Frontend.",
+      "Realizar revision visual del modulo Planes.",
+      "Aplicar la migracion mediante scripts/ops solo despues de completar y publicar el codigo funcional.",
+      "Integrar en development y eliminar la feature cuando todo el bloque quede aprobado."
     ],
-    "nextAction": "Auditar y actualizar Frontend de administracion de planes.",
+    "nextAction": "Implementar y validar el Frontend tipado de administracion de planes sin aplicar aun la migracion.",
     "databaseQueried": false,
     "databaseModified": false,
+    "migrationApplied": false,
     "serversManaged": false
   },
   "checkpointHistory": [
