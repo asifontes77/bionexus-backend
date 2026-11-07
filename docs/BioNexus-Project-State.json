@@ -14492,6 +14492,44 @@
       "databaseQueried": false,
       "databaseModified": false,
       "serversManaged": false
+    },
+    {
+      "id": "operations-interactive-orchestrator-plan-20261107",
+      "timestamp": "2026-11-07T19:20:00-04:00",
+      "status": "approved-plan-pending-implementation",
+      "summary": "Se aprobo crear un orquestador interactivo en espanol que permita seleccionar operaciones y llame a las herramientas especializadas existentes sin modificar sus responsabilidades.",
+      "orchestrator": {
+        "name": "Start-BioNexus-Operations.ps1",
+        "location": "scripts/ops",
+        "interaction": "menu numerado e interactivo en consola",
+        "noParametersRequiredForNormalUse": true,
+        "existingToolsRemainIndependent": true,
+        "operations": [
+          "Validar preparacion del codigo",
+          "Simular respaldo",
+          "Crear respaldo",
+          "Simular migraciones Development",
+          "Aplicar migraciones Development",
+          "Validar esquema Development",
+          "Instalar entorno limpio permitido",
+          "Simular promocion a Production local",
+          "Promover esquema a Production local",
+          "Salir"
+        ],
+        "rules": [
+          "Mostrar entorno, base y carpeta de respaldo antes de ejecutar.",
+          "Solicitar confirmacion explicita para operaciones que modifican bases.",
+          "No duplicar logica de backup, migracion, readiness o promocion.",
+          "Invocar cada herramienta mediante rutas absolutas derivadas de PSScriptRoot.",
+          "Propagar codigos de salida y detener secuencias si un paso falla.",
+          "No ocultar confirmaciones reforzadas de Production.",
+          "No iniciar ni detener Backend o Frontend.",
+          "Mensajes, ayuda y errores exclusivamente en espanol UTF-8."
+        ]
+      },
+      "databaseQueried": false,
+      "databaseModified": false,
+      "serversManaged": false
     }
   ],
   "stateReplication": {
@@ -30453,9 +30491,10 @@
       "Implementar Backup-BioNexus-Environment.ps1 con carpeta predeterminada resuelta desde el Escritorio real del usuario y parametro OutputDirectory.",
       "Centralizar UTF-8 y mensajes en espanol en BioNexus-Operations.Common.ps1 y documentarlo en README.md.",
       "Implementar Promote-BioNexus-Database.ps1 como orquestador seguro de migraciones a bionexus_prod local, sin copiar datos transaccionales de Development.",
-      "Crear pruebas unitarias y contratos para las nuevas herramientas antes de usarlas."
+      "Crear pruebas unitarias y contratos para las nuevas herramientas antes de usarlas.",
+      "Implementar Start-BioNexus-Operations.ps1 como menu interactivo que orquesta las herramientas ops sin modificar las existentes."
     ],
-    "nextAction": "Implementar y probar primero Backup-BioNexus-Environment.ps1 y la normalizacion UTF-8; despues crear el orquestador de promocion local.",
+    "nextAction": "Implementar primero UTF-8 centralizado, Backup-BioNexus-Environment.ps1 y sus pruebas; luego agregar Start-BioNexus-Operations.ps1 y finalmente Promote-BioNexus-Database.ps1.",
     "migrationApplied": false,
     "databaseQueried": false,
     "databaseModified": false,
