@@ -1,8 +1,19 @@
-﻿import { HttpStatus } from '@nestjs/common';
+import { HttpStatus } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from './users.service';
 
 describe('UsersService login credentials', () => {
+  const originalTenantDomain = process.env.BIONEXUS_TENANT_DOMAIN;
+
+  beforeEach(() => {
+    delete process.env.BIONEXUS_TENANT_DOMAIN;
+  });
+
+  afterAll(() => {
+    if (originalTenantDomain === undefined) delete process.env.BIONEXUS_TENANT_DOMAIN;
+    else process.env.BIONEXUS_TENANT_DOMAIN = originalTenantDomain;
+  });
+
   function createService(user: unknown, laboratoryId = 7) {
     const repository = { findOne: jest.fn().mockResolvedValue(user) };
     const laboratory = {
