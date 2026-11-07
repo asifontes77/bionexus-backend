@@ -14424,6 +14424,74 @@
       "migrationApplied": false,
       "databaseModified": false,
       "serversManaged": false
+    },
+    {
+      "id": "database-operations-tools-plan-20261107",
+      "timestamp": "2026-11-07T18:54:00-04:00",
+      "status": "approved-plan-pending-implementation",
+      "summary": "Se aprobo incorporar herramientas permanentes de respaldo y promocion protegida de base de datos. Los respaldos no se guardaran en la carpeta temporal BioNexus-Aux/reports ni dentro del repositorio Git.",
+      "backupTool": {
+        "name": "Backup-BioNexus-Environment.ps1",
+        "defaultDirectory": "<Escritorio real del usuario>\\BioNexus Backup",
+        "defaultDirectoryResolution": "[Environment]::GetFolderPath([Environment+SpecialFolder]::Desktop)",
+        "customDirectoryParameter": "OutputDirectory",
+        "implementationRule": "$desktop=[Environment]::GetFolderPath([Environment+SpecialFolder]::Desktop); $defaultOutputDirectory=Join-Path $desktop 'BioNexus Backup'",
+        "allowedEnvironments": [
+          "Development",
+          "Production"
+        ],
+        "formats": [
+          "plain SQL",
+          "resumen TXT",
+          "log LOG"
+        ],
+        "gitStorageAllowed": false,
+        "reasonsNotInGit": [
+          "puede contener datos personales y credenciales materializadas",
+          "archivos grandes y binarios/logicos cambiantes",
+          "Git no es un sistema de retencion ni restauracion de bases"
+        ],
+        "requiredProtections": [
+          "WhatIf",
+          "Confirm",
+          "no overwrite",
+          "SHA-256",
+          "inventario read-only",
+          "sin secretos en logs"
+        ]
+      },
+      "promotionTool": {
+        "name": "Promote-BioNexus-Database.ps1",
+        "purpose": "Orquestar la promocion del esquema aprobado a bionexus_prod local.",
+        "schemaMethod": "Aplicar las mismas migraciones committed mediante Invoke-BioNexus-Migrations.ps1 -EnvironmentName Production.",
+        "dataPolicy": "No copiar datos transaccionales ni laboratorios desde Development a Production. Seeds y catalogos versionados viajan en migraciones; cualquier carga de datos adicional requiere una herramienta y aprobacion separadas.",
+        "requiredSequence": [
+          "Test-BioNexus-Ready",
+          "validar Development sin pendientes",
+          "respaldar Production",
+          "inventario previo Production",
+          "confirmacion textual reforzada",
+          "aplicar migraciones Production",
+          "SchemaReadiness read-only",
+          "comparacion posterior"
+        ],
+        "railwayIncluded": false
+      },
+      "languagePolicy": {
+        "language": "espanol",
+        "scope": [
+          "mensajes",
+          "ayuda",
+          "confirmaciones",
+          "errores",
+          "README",
+          "logs de alto nivel"
+        ],
+        "encoding": "UTF-8 sin BOM para scripts y configuracion centralizada de consola/procesos secundarios"
+      },
+      "databaseQueried": false,
+      "databaseModified": false,
+      "serversManaged": false
     }
   ],
   "stateReplication": {
@@ -30371,7 +30439,8 @@
       "Migracion comercial publicada sin aplicar.",
       "Backend y provisionamiento derivados publicados.",
       "Frontend tipado de Planes implementado y validado.",
-      "Editor JSON libre de limitsBenefits oculto."
+      "Editor JSON libre de limitsBenefits oculto.",
+      "Plan operativo aprobado para respaldo configurable, promocion protegida de BD y mensajes en espanol UTF-8."
     ],
     "current": [
       "Realizar revision visual del modulo Planes antes de aplicar la migracion."
@@ -30380,9 +30449,13 @@
       "Corregir hallazgos visuales si existen.",
       "Aplicar migracion mediante scripts/ops en bionexus_dev.",
       "Validar datos, Trial 15 dias y esquema.",
-      "Publicar cierre, integrar en development y eliminar feature."
+      "Publicar cierre, integrar en development y eliminar feature.",
+      "Implementar Backup-BioNexus-Environment.ps1 con carpeta predeterminada resuelta desde el Escritorio real del usuario y parametro OutputDirectory.",
+      "Centralizar UTF-8 y mensajes en espanol en BioNexus-Operations.Common.ps1 y documentarlo en README.md.",
+      "Implementar Promote-BioNexus-Database.ps1 como orquestador seguro de migraciones a bionexus_prod local, sin copiar datos transaccionales de Development.",
+      "Crear pruebas unitarias y contratos para las nuevas herramientas antes de usarlas."
     ],
-    "nextAction": "Iniciar el Frontend con el inicializador del usuario y revisar visualmente Planes; los scripts no gestionan servidores.",
+    "nextAction": "Implementar y probar primero Backup-BioNexus-Environment.ps1 y la normalizacion UTF-8; despues crear el orquestador de promocion local.",
     "migrationApplied": false,
     "databaseQueried": false,
     "databaseModified": false,
