@@ -14558,27 +14558,31 @@
     },
     {
       "id": "commercial-plans-ops-correction-published-20261108",
-      "at": "2026-11-08T12:42:05.799217-04:00",
+      "at": "2026-11-08T13:35:59.107185-04:00",
       "type": "publication",
-      "status": "committed-pending-push",
-      "summary": "Correcciones del modelo comercial, contratos de migraciones incrementales y restauracion del modulo comun de scripts ops validadas y confirmadas en Git.",
+      "status": "published",
+      "summary": "Correcciones del modelo comercial, contratos de migraciones incrementales y restauracion del modulo comun de scripts ops publicadas en Backend y Frontend.",
       "repository": {
         "branch": "feature/commercial-plans-model",
-        "backendCodeCommit": "44f88da813396de2eff6a8b3ca9c5fb6a340e114"
+        "backendCommit": "0e415de47e6f99bd3995dfffa2f0a937e57297a6",
+        "frontendCommitBeforeFinalState": "b5303ce2f50ddad15781af795fa4b10a0ba26e4e",
+        "backendSafetyBranch": "safety/commercial-plans-before-republish-20261108-133550",
+        "localAndRemoteSynchronized": true
       },
       "validation": {
         "fullBackendSuite": "passed",
         "backendBuild": "passed",
         "operationsToolsTests": "passed",
         "schemaReadinessTests": "passed",
-        "gitDiffCheck": "passed"
+        "gitDiffCheck": "passed",
+        "treePreservedDuringRelocation": true
       },
       "database": {
         "queried": false,
         "modified": false,
         "migrationsExecuted": false
       },
-      "nextAction": "Publicar ambos repositorios y despues guiar a Alexis en las herramientas ops para respaldo, migration:show, revision y migration:run sobre bionexus_dev."
+      "nextAction": "Alexis ejecutara guiado las herramientas ops: pruebas, respaldo de bionexus_dev, migration:show, revision y solo despues migration:run."
     }
   ],
   "stateReplication": {
