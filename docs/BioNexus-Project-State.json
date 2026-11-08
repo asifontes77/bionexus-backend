@@ -14530,6 +14530,55 @@
       "databaseQueried": false,
       "databaseModified": false,
       "serversManaged": false
+    },
+    {
+      "id": "ops-common-dependencies-restored-20261108",
+      "at": "2026-11-08T12:33:34.798355-04:00",
+      "type": "operations-tooling-repair",
+      "status": "validated-not-published",
+      "summary": "Se recuperaron las diez funciones historicas eliminadas accidentalmente de BioNexus-Operations.Common.ps1, conservando las siete funciones nuevas del modulo protegido.",
+      "cause": "El commit a0cbf15e4be86c570d0e8d20a0dd818e7c17834d reemplazo el modulo comun y retiro dependencias que seguian siendo usadas por scripts ops.",
+      "validation": {
+        "powerShellSyntax": "passed",
+        "migrationStatusUnit": "passed",
+        "operationsUnit": "passed",
+        "schemaReadinessNodeTests": "passed",
+        "fullBackendSuite": "passed",
+        "backendBuild": "passed",
+        "gitDiffCheck": "passed",
+        "databaseQueried": false,
+        "databaseModified": false,
+        "migrationsExecuted": false
+      },
+      "repository": {
+        "branch": "feature/commercial-plans-model",
+        "headBeforeCommit": "a0cbf15e4be86c570d0e8d20a0dd818e7c17834d"
+      },
+      "nextAction": "Crear commit y publicar la feature; despues guiar a Alexis en respaldo, migration:show, revision y migration:run sobre bionexus_dev."
+    },
+    {
+      "id": "commercial-plans-ops-correction-published-20261108",
+      "at": "2026-11-08T12:42:05.799217-04:00",
+      "type": "publication",
+      "status": "committed-pending-push",
+      "summary": "Correcciones del modelo comercial, contratos de migraciones incrementales y restauracion del modulo comun de scripts ops validadas y confirmadas en Git.",
+      "repository": {
+        "branch": "feature/commercial-plans-model",
+        "backendCodeCommit": "44f88da813396de2eff6a8b3ca9c5fb6a340e114"
+      },
+      "validation": {
+        "fullBackendSuite": "passed",
+        "backendBuild": "passed",
+        "operationsToolsTests": "passed",
+        "schemaReadinessTests": "passed",
+        "gitDiffCheck": "passed"
+      },
+      "database": {
+        "queried": false,
+        "modified": false,
+        "migrationsExecuted": false
+      },
+      "nextAction": "Publicar ambos repositorios y despues guiar a Alexis en las herramientas ops para respaldo, migration:show, revision y migration:run sobre bionexus_dev."
     }
   ],
   "stateReplication": {
