@@ -12,9 +12,25 @@ $function = $ast.Find({
         $node.Name -eq 'Get-BioNexusMigrationStatus'
 }, $true)
 Invoke-Expression $function.Extent.Text
+$script:BioNexusBackendRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..\..')).Path
 
 $script:adminEnvironment = @{ DB_DATABASE = 'unused' }
 $script:probeCount = 0
+function Set-BioNexusProcessEnvironment {
+    param([hashtable]$Values)
+    $previous = @{}
+    foreach ($key in $Values.Keys) {
+        $previous[$key] = [Environment]::GetEnvironmentVariable($key, 'Process')
+        [Environment]::SetEnvironmentVariable($key, [string]$Values[$key], 'Process')
+    }
+    return $previous
+}
+function Restore-BioNexusProcessEnvironment {
+    param([hashtable]$Values)
+    foreach ($key in $Values.Keys) {
+        [Environment]::SetEnvironmentVariable($key, $Values[$key], 'Process')
+    }
+}
 function Get-BioNexusSchemaReadiness {
     param([string]$Database)
     if ($env:DB_DATABASE -ne $Database) { throw 'La consulta no usa la base seleccionada.' }

@@ -20,6 +20,6 @@ describe('Platform tenant runtime contract', () => {
     expect(provisioning).toContain('installedCatalogPackages');
   });
   it('resolves VES inside the new laboratory', () => {
-    expect(provisioning).toContain("WHERE laboratory_id=$1 AND upper(btrim(code))='VES' AND is_active=true");
+    expect(provisioning).toContain("WHERE laboratory_id=$1 AND upper(btrim(code))=$2 AND is_active=true");
   });
 });

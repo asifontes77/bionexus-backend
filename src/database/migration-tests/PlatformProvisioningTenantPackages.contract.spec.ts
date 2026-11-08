@@ -27,7 +27,7 @@ describe('Platform provisioning tenant packages contract', () => {
   });
 
   it('requires an active tenant-scoped VES currency before creating application settings', () => {
-    const currencyLookup = provisioning.indexOf("WHERE laboratory_id=$1 AND upper(btrim(code))='VES' AND is_active=true");
+    const currencyLookup = provisioning.indexOf("WHERE laboratory_id=$1 AND upper(btrim(code))=$2 AND is_active=true");
     const settingsInsert = provisioning.indexOf('INSERT INTO application_settings');
     expect(currencyLookup).toBeGreaterThanOrEqual(0);
     expect(settingsInsert).toBeGreaterThan(currencyLookup);

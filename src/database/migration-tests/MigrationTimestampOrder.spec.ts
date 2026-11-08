@@ -7,11 +7,12 @@ describe('Migration timestamp order', () => {
     .filter((file) => /^\d+-.*\.ts$/.test(file))
     .sort();
 
-  it('mantiene exclusivamente el baseline inicial', () => {
+  it('mantiene el orden cronologico de las migraciones aprobadas', () => {
     expect(files).toEqual([
       '1790366400000-BioNexusBaseline.ts',
       '1793847600000-AddPlatformLaboratoryLifecycle.ts',
       '1793862000000-AddPlatformSubscriptionCatalogAndBilling.ts',
+      '1793862001000-AddCommercialPlanModel.ts',
     ]);
   });
 
@@ -20,6 +21,7 @@ describe('Migration timestamp order', () => {
       'BioNexusBaseline1790366400000',
       'AddPlatformLaboratoryLifecycle1793847600000',
       'AddPlatformSubscriptionCatalogAndBilling1793862000000',
+      'AddCommercialPlanModel1793862001000',
     ];
     for (const [index, className] of classNames.entries()) {
       const source = readFileSync(join(directory, files[index]), 'utf8');

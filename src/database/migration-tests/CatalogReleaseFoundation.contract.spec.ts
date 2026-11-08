@@ -8,6 +8,7 @@ describe('Catalog release foundation contract', () => {
       '1790366400000-BioNexusBaseline.ts',
       '1793847600000-AddPlatformLaboratoryLifecycle.ts',
       '1793862000000-AddPlatformSubscriptionCatalogAndBilling.ts',
+      '1793862001000-AddCommercialPlanModel.ts',
     ]);
   });
 

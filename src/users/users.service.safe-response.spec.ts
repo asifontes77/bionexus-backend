@@ -1,4 +1,4 @@
-﻿import { HttpException } from '@nestjs/common';
+import { HttpException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { Repository } from 'typeorm';
@@ -11,7 +11,7 @@ describe('UsersService safe responses', () => {
   let service: UsersService;
   let usersRepository: RepositoryMock;
   let jwtService: { sign: jest.Mock };
-  let laboratoryService: { getLaboratory: jest.Mock };
+  let laboratoryService: { findByAccessSlug: jest.Mock; getLaboratory: jest.Mock };
   let licenseService: { validateLicenseKey: jest.Mock };
 
   beforeEach(() => {
@@ -28,6 +28,7 @@ describe('UsersService safe responses', () => {
     };
 
     laboratoryService = {
+      findByAccessSlug: jest.fn().mockResolvedValue({ id: 1, access_slug: 'test-laboratory' }),
       getLaboratory: jest.fn(),
     };
 
@@ -152,6 +153,7 @@ describe('UsersService safe responses', () => {
     configureLogin();
 
     const result = await service.getUserSession({
+      access_slug: 'test-laboratory',
       user_name: 'test.user',
       password: 'password-value',
     });
@@ -178,6 +180,7 @@ describe('UsersService safe responses', () => {
       configureLogin();
 
       const result = await service.getUserSession({
+        access_slug: 'test-laboratory',
         user_name: 'test.user',
         password: 'password-value',
       });

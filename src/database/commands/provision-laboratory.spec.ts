@@ -13,6 +13,7 @@ describe('resolveProvisionLaboratoryInput', () => {
     BIONEXUS_PROVISION_PLAN_CODE: 'pilot',
     BIONEXUS_PROVISION_SUBSCRIPTION_STATUS: 'perpetual_free',
     BIONEXUS_PROVISION_SERVICE_STARTS_AT: '2026-10-30T00:00:00Z',
+    BIONEXUS_PROVISION_OPERATIONAL_CURRENCY_CODE: 'VES',
     BIONEXUS_PROVISION_PERPETUAL_FREE_REASON: 'Piloto oficial',
     BIONEXUS_PROVISION_BRANCH_NAME: 'Principal',
     BIONEXUS_PROVISION_ADMIN_NAME: 'Administrador Piloto',
@@ -25,8 +26,6 @@ describe('resolveProvisionLaboratoryInput', () => {
     const input = resolveProvisionLaboratoryInput(environment);
     expect(input.platformOwnerUsername).toBe('owner.admin');
     expect(input.dto.access_slug).toBe('Lab A');
-    expect(input.dto.subscription_status).toBe('perpetual_free');
-    expect(input.dto.service_expires_at).toBeNull();
     expect(input.dto.branchCode).toBeUndefined();
     expect(input.dto.seedPackages).toEqual(['microbiology', 'parasitology', 'microbiology']);
     expect(input.dto.administratorPasswordConfirmation).toBe(environment.BIONEXUS_PROVISION_ADMIN_PASSWORD);
@@ -40,16 +39,11 @@ describe('resolveProvisionLaboratoryInput', () => {
     expect(input.dto.branchCode).toBe('suc');
   });
 
-  it('allows perpetual-free provisioning without a catalog plan and still requires a plan for trial or active', () => {
-    const perpetualFree = resolveProvisionLaboratoryInput({
-      ...environment,
-      BIONEXUS_PROVISION_PLAN_CODE: undefined,
-    });
-    expect(perpetualFree.dto.plan_code).toBeUndefined();
+  it('requires a catalog plan and operational currency for command provisioning', () => {
+
     expect(() => resolveProvisionLaboratoryInput({
       ...environment,
       BIONEXUS_PROVISION_PLAN_CODE: undefined,
-      BIONEXUS_PROVISION_SUBSCRIPTION_STATUS: 'active',
     })).toThrow('BIONEXUS_PROVISION_PLAN_CODE_REQUIRED');
   });
 

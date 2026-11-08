@@ -27,8 +27,8 @@ describe('Platform laboratory lifecycle baseline contract', () => {
   });
 
   it('creates permanent grants with server-owned audit identity and does not infer a mixed-type status bind', () => {
-    expect(provisioning).toContain('CASE WHEN $22::boolean THEN now()');
-    expect(provisioning).toContain('CASE WHEN $22::boolean THEN $23::integer');
+    expect(provisioning).toContain('CASE WHEN $25::boolean THEN now()');
+    expect(provisioning).toContain('CASE WHEN $25::boolean THEN $26::integer');
     expect(provisioning).not.toContain("$9='perpetual_free'");
     expect(provisioning).not.toContain('LicenseService');
   });
