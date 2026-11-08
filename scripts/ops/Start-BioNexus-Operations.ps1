@@ -6,6 +6,38 @@ function Run([string]$File, [hashtable]$Arguments = @{}) {
         Write-BioNexusMessage ERROR "La operacion fallo con codigo $LASTEXITCODE."
     }
 }
+
+function Select-BioNexusBackupDirectory {
+    $defaultDirectory = Get-BioNexusDefaultBackupDirectory
+    Write-Host ''
+    Write-Host "Destino predeterminado detectado: $defaultDirectory" -ForegroundColor Cyan
+    Write-Host '1. Usar destino predeterminado'
+    Write-Host '2. Especificar otra carpeta absoluta'
+    Write-Host '0. Cancelar'
+    $destinationChoice = (Read-Host 'Selecciona el destino del respaldo').Trim()
+    switch ($destinationChoice) {
+        '1' { return $defaultDirectory }
+        '2' {
+            $customDirectory = (Read-Host 'Escribe la ruta absoluta de la carpeta').Trim().Trim('"')
+            if ([string]::IsNullOrWhiteSpace($customDirectory)) { throw 'La ruta alternativa no puede estar vacia.' }
+            if (-not [System.IO.Path]::IsPathRooted($customDirectory)) { throw 'La ruta alternativa debe ser absoluta.' }
+            return [System.IO.Path]::GetFullPath($customDirectory)
+        }
+        '0' { return $null }
+        default { throw 'Seleccion de destino no valida.' }
+    }
+}
+function Run-BioNexusDevelopmentBackup {
+    param([switch]$WhatIfMode)
+    $outputDirectory = Select-BioNexusBackupDirectory
+    if ([string]::IsNullOrWhiteSpace($outputDirectory)) {
+        Write-BioNexusMessage WARN 'Operacion de respaldo cancelada por el usuario.'
+        return
+    }
+    $arguments = @{ EnvironmentName = 'Development'; OutputDirectory = $outputDirectory }
+    if ($WhatIfMode) { $arguments['WhatIf'] = $true } else { $arguments['Confirm'] = $true }
+    Run 'Backup-BioNexus-Environment.ps1' $arguments
+}
 do {
     cls; Write-Host 'BIO NEXUS - HERRAMIENTAS OPERATIVAS' -ForegroundColor Cyan
     Write-Host '1. Validar preparacion del codigo'; Write-Host '2. Simular respaldo Development'; Write-Host '3. Crear respaldo Development'; Write-Host '4. Simular migraciones Development'; Write-Host '5. Aplicar migraciones Development'; Write-Host '6. Instalar entorno limpio permitido'; Write-Host '7. Simular promocion a Production local'; Write-Host '8. Promover esquema a Production local'; Write-Host '0. Salir'
@@ -15,10 +47,10 @@ do {
             Run 'Test-BioNexus-Ready.ps1'
         }
         '2' {
-            Run 'Backup-BioNexus-Environment.ps1' @{EnvironmentName = 'Development'; WhatIf = $true }
+            Run-BioNexusDevelopmentBackup -WhatIfMode
         }
         '3' {
-            Run 'Backup-BioNexus-Environment.ps1' @{EnvironmentName = 'Development'; Confirm = $true }
+            Run-BioNexusDevelopmentBackup
         }
         '4' {
             Run 'Invoke-BioNexus-Migrations.ps1' @{EnvironmentName = 'Development'; WhatIf = $true }

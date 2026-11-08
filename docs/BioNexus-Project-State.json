@@ -14583,6 +14583,25 @@
         "migrationsExecuted": false
       },
       "nextAction": "Alexis ejecutara guiado las herramientas ops: pruebas, respaldo de bionexus_dev, migration:show, revision y solo despues migration:run."
+    },
+    {
+      "id": "ops-backup-destination-selector-20261108",
+      "at": "2026-11-08T14:28:27.589210-04:00",
+      "type": "operations-tooling",
+      "status": "validated-not-published",
+      "summary": "El menu permite usar el Escritorio detectado, escribir otra ruta absoluta o cancelar; pasa OutputDirectory a WhatIf y respaldo real.",
+      "validation": {
+        "offlineTests": "passed",
+        "schemaReadinessTests": "passed",
+        "gitDiffCheck": "passed",
+        "backupExecuted": false,
+        "databaseQueried": false
+      },
+      "repository": {
+        "branch": "feature/commercial-plans-model",
+        "headBeforeCommit": "179703fdd209aeae6126a01d8025fe5c83fde74f"
+      },
+      "nextAction": "Publicar y repetir manualmente la simulacion desde el menu."
     }
   ],
   "stateReplication": {

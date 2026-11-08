@@ -218,7 +218,7 @@ Referencias: [dominios personalizados y wildcard en Railway](https://docs.railwa
 
 Ejecuta `Start-BioNexus-Operations.ps1` para seleccionar operaciones sin memorizar parametros. El menu llama las herramientas especializadas y conserva sus confirmaciones.
 
-`Backup-BioNexus-Environment.ps1` crea un respaldo Plain SQL, resumen, log, SHA-256 e inventario read-only. Si no se indica `-OutputDirectory`, usa `<Escritorio real del usuario>\BioNexus Backup`. Nunca guardes respaldos dentro de Git.
+`Backup-BioNexus-Environment.ps1` crea un respaldo Plain SQL, resumen, log, SHA-256 e inventario read-only. Si no se indica `-OutputDirectory`, usa `<Escritorio real del usuario>\BioNexus Backup`. Nunca guardes respaldos dentro de Git. El menu interactivo permite usar esa carpeta detectada, escribir otra ruta absoluta o cancelar; pasa la seleccion como `-OutputDirectory` tanto a `WhatIf` como al respaldo real.
 
 `Promote-BioNexus-Database.ps1` promueve el esquema a `bionexus_prod` local mediante migraciones committed. No copia laboratorios ni datos transaccionales desde Development y no incluye Railway.
 

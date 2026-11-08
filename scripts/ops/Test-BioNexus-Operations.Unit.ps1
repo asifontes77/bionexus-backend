@@ -66,3 +66,12 @@ if ($LASTEXITCODE -ne 0) {
     throw 'La simulacion WhatIf termino con codigo ' + $LASTEXITCODE
 }
 Write-Host 'Contratos de herramientas operativas aprobados.' -ForegroundColor Green
+
+
+$menuScript = Join-Path $PSScriptRoot 'Start-BioNexus-Operations.ps1'
+$menuContent = Get-Content -LiteralPath $menuScript -Raw
+foreach ($expected in @('Select-BioNexusBackupDirectory', 'Run-BioNexusDevelopmentBackup', 'Get-BioNexusDefaultBackupDirectory', "OutputDirectory = `$outputDirectory", 'Run-BioNexusDevelopmentBackup -WhatIfMode')) {
+    if ($menuContent -notlike "*$expected*") {
+        throw "El menu debe conservar el contrato de destino: $expected"
+    }
+}
