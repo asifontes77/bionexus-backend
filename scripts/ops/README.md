@@ -214,3 +214,12 @@ El registro `*.bionexus.app` no aparece en la captura previa. La dirección del 
 El apex `bionexus.app`, `www.bionexus.app` y `*.bionexus.app` son configuraciones distintas; `www` no es necesario para los laboratorios. El plan de Railway puede limitar el número de dominios personalizados por servicio; verifica el límite actual antes de añadir el wildcard junto al apex.
 
 Referencias: [dominios personalizados y wildcard en Railway](https://docs.railway.com/networking/domains/working-with-domains) y [registros wildcard en Cloudflare](https://developers.cloudflare.com/dns/manage-dns-records/reference/wildcard-dns-records/).
+## Menu interactivo y respaldo permanente
+
+Ejecuta `Start-BioNexus-Operations.ps1` para seleccionar operaciones sin memorizar parametros. El menu llama las herramientas especializadas y conserva sus confirmaciones.
+
+`Backup-BioNexus-Environment.ps1` crea un respaldo Plain SQL, resumen, log, SHA-256 e inventario read-only. Si no se indica `-OutputDirectory`, usa `<Escritorio real del usuario>\BioNexus Backup`. Nunca guardes respaldos dentro de Git.
+
+`Promote-BioNexus-Database.ps1` promueve el esquema a `bionexus_prod` local mediante migraciones committed. No copia laboratorios ni datos transaccionales desde Development y no incluye Railway.
+
+Todas las herramientas muestran mensajes en espanol y configuran UTF-8 centralmente mediante `BioNexus-Operations.Common.ps1`.
