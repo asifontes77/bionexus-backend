@@ -14602,6 +14602,25 @@
         "headBeforeCommit": "179703fdd209aeae6126a01d8025fe5c83fde74f"
       },
       "nextAction": "Publicar y repetir manualmente la simulacion desde el menu."
+    },
+    {
+      "id": "ops-readme-menu-first-normalization-20261108",
+      "at": "2026-11-09T07:25:21.630564-04:00",
+      "type": "operations-documentation",
+      "status": "validated-not-published",
+      "summary": "README de scripts ops normalizado con Start-BioNexus-Operations.ps1 como script 1, comando PowerShell y numeracion consecutiva del 1 al 12.",
+      "validation": {
+        "readmeStructure": "passed",
+        "commandFormatting": "passed",
+        "menuLogicChanged": false,
+        "gitDiffCheck": "passed",
+        "databaseQueried": false
+      },
+      "repository": {
+        "branch": "feature/commercial-plans-model",
+        "headBeforeCommit": "a26ece55333b69b11549e75b9f0c58acde7c0a67"
+      },
+      "nextAction": "Publicar y continuar el flujo manual desde el menu interactivo."
     }
   ],
   "stateReplication": {

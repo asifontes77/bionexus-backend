@@ -41,7 +41,22 @@ Los scripts operativos usan nombres de base fijos y seguros: `bionexus_dev` y `b
 
 Las contraseñas de aplicación se almacenan cifradas con Windows DPAPI en `%LOCALAPPDATA%\BioNexus\database-credentials\<Environment>.xml`, fuera del repositorio. Solo el mismo usuario de Windows en el mismo equipo puede descifrarlas. Para usar Railway, guarda los secretos de producción en Railway; el DPAPI local no se puede trasladar allí.
 
-## 1. Script: `Test-BioNexus-Ready.ps1` — comprobar antes de probar
+## 1. Script: `Start-BioNexus-Operations.ps1` — menú interactivo de operaciones
+**Para qué sirve:** permite seleccionar operaciones sin memorizar parámetros. El menú llama las herramientas especializadas, conserva sus confirmaciones y permite elegir el destino del respaldo.
+**Comando:**
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\ops\Start-BioNexus-Operations.ps1"
+```
+
+
+
+`Backup-BioNexus-Environment.ps1` crea un respaldo Plain SQL, resumen, log, SHA-256 e inventario read-only. Si no se indica `-OutputDirectory`, usa `<Escritorio real del usuario>\BioNexus Backup`. Nunca guardes respaldos dentro de Git. El menu interactivo permite usar esa carpeta detectada, escribir otra ruta absoluta o cancelar; pasa la seleccion como `-OutputDirectory` tanto a `WhatIf` como al respaldo real.
+
+`Promote-BioNexus-Database.ps1` promueve el esquema a `bionexus_prod` local mediante migraciones committed. No copia laboratorios ni datos transaccionales desde Development y no incluye Railway.
+
+Todas las herramientas muestran mensajes en espanol y configuran UTF-8 centralmente mediante `BioNexus-Operations.Common.ps1`.
+
+## 2. Script: `Test-BioNexus-Ready.ps1` — comprobar antes de probar
 
 **Para qué sirve:** valida que las bitácoras sean JSON válido e idénticas, ejecuta el contrato tenant Frontend y las pruebas tenant Backend, compila ambas aplicaciones y revisa `git diff --check`. No conecta ni modifica PostgreSQL y no inicia servidores.
 
@@ -51,7 +66,7 @@ Las contraseñas de aplicación se almacenan cifradas con Windows DPAPI en `%LOC
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\ops\Test-BioNexus-Ready.ps1"
 ```
 
-## 2. Script: `Run-BioNexus-Tenant-Test.ps1` — probar una base tenant aislada
+## 3. Script: `Run-BioNexus-Tenant-Test.ps1` — probar una base tenant aislada
 
 **Para qué sirve:** verifica una base desechable ya instalada con al menos un laboratorio y `access_slug`, y puede abrir Backend/Frontend en puertos separados para probarla. No crea datos ni ejecuta migraciones.
 
@@ -77,7 +92,7 @@ http://127.0.0.1:8082/l/<access_slug>/login
 
 El Frontend de prueba usa el puerto `8082`; abre la dirección indicada por el script con el slug existente. Detén las consolas con `Ctrl+C`. El script no cambia de rama, no modifica la base, no crea datos, no hace commits ni inicia migraciones.
 
-## 3. Script: `Install-BioNexus-Environment.ps1` — instalar desde cero
+## 4. Script: `Install-BioNexus-Environment.ps1` — instalar desde cero
 
 **Para qué sirve:** crea la base vacía, configura o actualiza el rol runtime sin privilegios administrativos, ejecuta `install:first`, concede permisos, valida el esquema tenant y guarda la contraseña elegida cifrada con DPAPI. La contraseña del propietario de plataforma es distinta de la contraseña del rol PostgreSQL.
 
@@ -99,7 +114,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\ops\Install-B
 
 Para reinstalar, es necesario que el nombre de base correspondiente no exista. Si solo borraste la base desde DBeaver, el instalador puede reutilizar el rol app existente, cambiar su contraseña por la nueva que indiques y reemplazar el archivo DPAPI. No se borran otras bases ni roles.
 
-## 4. Script: `Start-BioNexus-Development.ps1` — iniciar el entorno de desarrollo
+## 5. Script: `Start-BioNexus-Development.ps1` — iniciar el entorno de desarrollo
 
 **Para qué sirve:** valida de solo lectura que `bionexus_dev`, su rol runtime, el historial y los objetos de esquema tenant, lifecycle y billing requeridos estén presentes, luego abre Backend y Frontend en consolas separadas. Si falta alguno, no inicia servicios. Pasa al Backend las credenciales `bionexus_dev_app` desde el archivo DPAPI; no usa para la aplicación el usuario administrativo del `.env`. No modifica la base. Detén ambas consolas con `Ctrl+C`.
 
@@ -109,7 +124,7 @@ Para reinstalar, es necesario que el nombre de base correspondiente no exista. S
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\ops\Start-BioNexus-Development.ps1"
 ```
 
-## 5. Script: `Invoke-BioNexus-Migrations.ps1` — aplicar primero en Development y luego promover al ensayo local
+## 6. Script: `Invoke-BioNexus-Migrations.ps1` — aplicar primero en Development y luego promover al ensayo local
 
 **Para qué sirve:** aplica migraciones TypeORM al entorno local seleccionado usando la conexión administrativa del `.env`. En `Development` muestra las migraciones pendientes, las aplica y confirma que no quede ninguna. En `Production`, comprueba que Development esté al día y que cada migración pendiente de `bionexus_prod` ya esté aplicada allí; requiere escribir la confirmación exacta antes de modificar la base local de ensayo. No configura ni migra Railway.
 
@@ -145,7 +160,7 @@ ROLLBACK;
 
 Si `public.migrations` no existe o no es accesible, la consulta falla en vez de declarar la base lista. Una migración que TypeORM no carga no aparece como pendiente; si está registrada pero faltan objetos, puede existir una discrepancia entre historial y DDL (por ejemplo, ejecución simulada o cambios posteriores). Son hipótesis, no un diagnóstico de la base del usuario. No vuelvas a ejecutar `install:first` ni repares el historial sin investigar y respaldar primero.
 
-## 6. Script: `Remove-BioNexus-LegacyDatabase.ps1` — retirar solo `bionexus`
+## 7. Script: `Remove-BioNexus-LegacyDatabase.ps1` — retirar solo `bionexus`
 
 **Para qué sirve:** comprueba que `bionexus_dev` y `bionexus_prod` tengan esquema tenant y roles runtime válidos y, solo entonces, puede eliminar exclusivamente la base antigua `bionexus`. Se detiene si hay conexiones; no las termina. Exige confirmación de PowerShell y escribir `DESCARTAR bionexus`. No es necesario para una reinstalación normal de Dev/Prod.
 
@@ -159,7 +174,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\ops\Remove-Bi
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\ops\Remove-BioNexus-LegacyDatabase.ps1"
 ```
 
-## 7. Script: `Test-BioNexus-DatabaseState.ps1` — diagnóstico histórico de `bionexus`
+## 8. Script: `Test-BioNexus-DatabaseState.ps1` — diagnóstico histórico de `bionexus`
 
 **Para qué sirve:** ejecuta un diagnóstico PostgreSQL de solo lectura en la antigua base `bionexus`; aborta si el `DB_DATABASE` del `.env` no es exactamente `bionexus`. La base se encontró ausente en la última comprobación, así que este script solo será útil si se restaura o recrea intencionalmente esa base.
 
@@ -177,18 +192,18 @@ El diagnóstico histórico encontró una baseline registrada, una fila en `labor
 
 No vuelvas a ejecutar `install:first` contra una base ya instalada. Los cambios futuros de esquema requieren una migración incremental con timestamp nuevo, probada primero en `bionexus_dev` y luego aplicada a la base productiva real tras respaldo y revisión. La base local `bionexus_prod` es solo un ensayo; no es la base de producción de Railway.
 
-## 8. Script complementario: `BioNexus-Operations.Common.ps1`
+## 9. Script complementario: `BioNexus-Operations.Common.ps1`
 
 **Para qué sirve:** librería compartida que cargan los scripts para resolver carpetas relativas, leer `.env` sin mostrar secretos, preparar variables de proceso, comprobar puertos y escribir mensajes fechados. No se ejecuta manualmente.
 
-## 9. Flujo recomendado de ramas y worktrees
+## 10. Flujo recomendado de ramas y worktrees
 
 - Usa `development` como rama de trabajo y prueba en Backend y Frontend. Mantén ambas carpetas principales en esa rama para el trabajo diario.
 - Usa `main` como rama de promoción/producción: incorpora cambios desde `development` solo después de validarlos y revisarlos. No hagas `push` como parte de una prueba local.
 - Una rama es una línea de commits; un worktree es otra carpeta de trabajo que permite tener una rama distinta abierta al mismo tiempo. No necesitas un worktree para usar `development`; es opcional cuando realmente quieras trabajar en `development` y `main` simultáneamente.
 - Las carpetas bajo `.copilot\repos\copilot-worktrees` pueden estar enlazadas a sesiones de Copilot. Antes de borrar una rama `asifontes77-*`, verifica que su worktree esté retirado de forma segura, que la sesión esté terminada y que cualquier cambio útil esté preservado. No borres `origin/main`.
 
-## 10. Separar bases de datos de desarrollo y producción
+## 11. Separar bases de datos de desarrollo y producción
 
 Sí: lo recomendable es tener una base de desarrollo y otra de producción, en el mismo servidor PostgreSQL o en servidores separados, pero con nombres, credenciales y configuración claramente separados. Una base distinta evita que las pruebas o instalaciones iniciales alteren producción.
 
@@ -200,7 +215,7 @@ Sí: lo recomendable es tener una base de desarrollo y otra de producción, en e
 
 El 4 de noviembre de 2026, ambas bases locales se crearon con la baseline actual, cada una con un propietario de plataforma y sin laboratorios ni usuarios tenant. El instalador comprobó el esquema `access_slug` y el acceso de su rol runtime; el script de retiro volvió a validar ambos reemplazos. El estado observado al terminar fue: `bionexus_dev` y `bionexus_prod` disponibles, `bionexus` ausente. Las credenciales runtime están cifradas con DPAPI para el usuario Windows actual; no se pueden trasladar a otro equipo ni a Railway.
 
-## 11. Cloudflare y Railway: preparar subdominios de laboratorios
+## 12. Cloudflare y Railway: preparar subdominios de laboratorios
 
 El registro `*.bionexus.app` no aparece en la captura previa. La dirección del apex (`bionexus.app`) no permite deducir el destino del wildcard. Obtén los valores exactos desde Railway:
 
@@ -214,12 +229,3 @@ El registro `*.bionexus.app` no aparece en la captura previa. La dirección del 
 El apex `bionexus.app`, `www.bionexus.app` y `*.bionexus.app` son configuraciones distintas; `www` no es necesario para los laboratorios. El plan de Railway puede limitar el número de dominios personalizados por servicio; verifica el límite actual antes de añadir el wildcard junto al apex.
 
 Referencias: [dominios personalizados y wildcard en Railway](https://docs.railway.com/networking/domains/working-with-domains) y [registros wildcard en Cloudflare](https://developers.cloudflare.com/dns/manage-dns-records/reference/wildcard-dns-records/).
-## Menu interactivo y respaldo permanente
-
-Ejecuta `Start-BioNexus-Operations.ps1` para seleccionar operaciones sin memorizar parametros. El menu llama las herramientas especializadas y conserva sus confirmaciones.
-
-`Backup-BioNexus-Environment.ps1` crea un respaldo Plain SQL, resumen, log, SHA-256 e inventario read-only. Si no se indica `-OutputDirectory`, usa `<Escritorio real del usuario>\BioNexus Backup`. Nunca guardes respaldos dentro de Git. El menu interactivo permite usar esa carpeta detectada, escribir otra ruta absoluta o cancelar; pasa la seleccion como `-OutputDirectory` tanto a `WhatIf` como al respaldo real.
-
-`Promote-BioNexus-Database.ps1` promueve el esquema a `bionexus_prod` local mediante migraciones committed. No copia laboratorios ni datos transaccionales desde Development y no incluye Railway.
-
-Todas las herramientas muestran mensajes en espanol y configuran UTF-8 centralmente mediante `BioNexus-Operations.Common.ps1`.
