@@ -56,6 +56,35 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\ops\Start-Bio
 
 Todas las herramientas muestran mensajes en espanol y configuran UTF-8 centralmente mediante `BioNexus-Operations.Common.ps1`.
 
+### Opciones del menú
+
+| Opción | Acción real | Efecto sobre PostgreSQL |
+|---:|---|---|
+| `1` | Ejecuta `Test-BioNexus-Ready.ps1`. | No consulta ni modifica bases. |
+| `2` | Simula el respaldo de Development mediante `Run-BioNexusDevelopmentBackup -WhatIfMode`. | No consulta ni modifica bases. |
+| `3` | Crea el respaldo real de `bionexus_dev`; permite usar el Escritorio detectado, escribir otra ruta absoluta o cancelar. | Consulta la base mediante `pg_dump`; no modifica datos. |
+| `4` | Simula `Invoke-BioNexus-Migrations.ps1 -EnvironmentName Development -WhatIf`. | No ejecuta migraciones. |
+| `5` | Ejecuta migraciones committed en Development con confirmación explícita. | Puede modificar el esquema de `bionexus_dev`. |
+| `6` | Instala un entorno limpio permitido, `Development` o `Production`, con confirmación explícita. | Crea o prepara la base seleccionada y aplica su esquema. |
+| `7` | Simula la promoción hacia `bionexus_prod` local. | No modifica la base de Production local. |
+| `8` | Promueve el esquema hacia `bionexus_prod` local con confirmación explícita. | Puede modificar el esquema de `bionexus_prod`; no copia datos tenant. |
+| `0` | Sale del menú. | Ninguno. |
+
+Las opciones `2` y `3` abren además un selector de destino: `1` usa `<Escritorio real del usuario>\BioNexus Backup`, `2` permite escribir otra ruta absoluta y `0` cancela la operación.
+
+### Secuencia recomendada
+
+1. Selecciona `1` para validar código, contratos, builds y estado general antes de operar.
+2. Selecciona `2` para simular el respaldo de Development y confirmar entorno, base y destino.
+3. Selecciona `3` para crear el respaldo real de `bionexus_dev`; conserva el SQL, inventario y SHA-256.
+4. Selecciona `4` para simular las migraciones de Development y revisar el estado pendiente.
+5. Revisa la salida de `migration:show` y confirma que solo estén pendientes las migraciones aprobadas.
+6. Selecciona `5` únicamente después de aprobar el respaldo y la simulación; confirma la ejecución de `migration:run` sobre `bionexus_dev`.
+7. Vuelve a seleccionar `1` para validar la aplicación, el historial de migraciones y `SchemaReadiness` después del cambio.
+8. Usa `7` antes de cualquier operación sobre `bionexus_prod` local. Ejecuta `8` solo después de aprobar la simulación y contar con un respaldo independiente de Production local.
+
+La opción `6` es para instalaciones limpias permitidas, no para actualizar una base existente. Railway permanece fuera de este menú y requiere su propio respaldo, variables y despliegue controlado.
+
 ## 2. Script: `Test-BioNexus-Ready.ps1` — comprobar antes de probar
 
 **Para qué sirve:** valida que las bitácoras sean JSON válido e idénticas, ejecuta el contrato tenant Frontend y las pruebas tenant Backend, compila ambas aplicaciones y revisa `git diff --check`. No conecta ni modifica PostgreSQL y no inicia servidores.

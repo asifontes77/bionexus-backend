@@ -14621,6 +14621,25 @@
         "headBeforeCommit": "a26ece55333b69b11549e75b9f0c58acde7c0a67"
       },
       "nextAction": "Publicar y continuar el flujo manual desde el menu interactivo."
+    },
+    {
+      "id": "ops-readme-menu-options-sequence-20261109",
+      "at": "2026-11-09T19:24:14.275075-04:00",
+      "type": "operations-documentation",
+      "status": "validated-not-published",
+      "summary": "README del menu interactivo ampliado con las nueve opciones reales, sus efectos sobre PostgreSQL y la secuencia operativa recomendada.",
+      "validation": {
+        "menuAstInspected": true,
+        "menuLogicChanged": false,
+        "readmeStructure": "passed",
+        "gitDiffCheck": "passed",
+        "databaseQueried": false
+      },
+      "repository": {
+        "branch": "feature/commercial-plans-model",
+        "headBeforeCommit": "2f4f05c6c78a8dcf3f7f72660d08fd9aa50746d0"
+      },
+      "nextAction": "Publicar y continuar manualmente con la simulacion del respaldo de Development desde el menu."
     }
   ],
   "stateReplication": {
