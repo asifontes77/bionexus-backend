@@ -40,7 +40,7 @@ function Run-BioNexusDevelopmentBackup {
 }
 do {
     cls; Write-Host 'BIO NEXUS - HERRAMIENTAS OPERATIVAS' -ForegroundColor Cyan
-    Write-Host '1. Validar preparacion del codigo'; Write-Host '2. Simular respaldo Development'; Write-Host '3. Crear respaldo Development'; Write-Host '4. Simular migraciones Development'; Write-Host '5. Aplicar migraciones Development'; Write-Host '6. Instalar entorno limpio permitido'; Write-Host '7. Simular promocion a Production local'; Write-Host '8. Promover esquema a Production local'; Write-Host '0. Salir'
+    Write-Host '1. Validar preparacion del codigo'; Write-Host '2. Simular respaldo Development'; Write-Host '3. Crear respaldo Development'; Write-Host '4. Consultar estado y simular migraciones Development'; Write-Host '5. Aplicar migraciones Development'; Write-Host '6. Instalar entorno limpio permitido'; Write-Host '7. Simular promocion a Production local'; Write-Host '8. Promover esquema a Production local'; Write-Host '0. Salir'
     $choice = Read-Host 'Selecciona una opcion'
     switch ($choice) {
         '1' {

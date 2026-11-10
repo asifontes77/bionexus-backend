@@ -64,7 +64,7 @@ Todas las herramientas muestran mensajes en espanol y configuran UTF-8 centralme
 | `1` | Ejecuta `Test-BioNexus-Ready.ps1`. | No consulta ni modifica bases. |
 | `2` | Simula el respaldo de Development mediante `Run-BioNexusDevelopmentBackup -WhatIfMode`. | No consulta ni modifica bases. |
 | `3` | Crea el respaldo real de `bionexus_dev`; permite usar el Escritorio detectado, escribir otra ruta absoluta o cancelar. | Consulta la base mediante `pg_dump`; no modifica datos. |
-| `4` | Simula `Invoke-BioNexus-Migrations.ps1 -EnvironmentName Development -WhatIf`. | No ejecuta migraciones. |
+| `4` | Consulta `migration:show` y `SchemaReadiness` de `bionexus_dev` y simula la ejecución. | Consulta PostgreSQL en modo de solo lectura; no ejecuta `migration:run` ni modifica la base. |
 | `5` | Ejecuta migraciones committed en Development con confirmación explícita. | Puede modificar el esquema de `bionexus_dev`. |
 | `6` | Instala un entorno limpio permitido, `Development` o `Production`, con confirmación explícita. | Crea o prepara la base seleccionada y aplica su esquema. |
 | `7` | Simula la promoción hacia `bionexus_prod` local. | No modifica la base de Production local. |

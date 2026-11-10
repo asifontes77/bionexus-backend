@@ -125,6 +125,27 @@ try {
         'DB_PASSWORD'
     )
 
+    if ($WhatIfPreference -and $EnvironmentName -eq 'Development') {
+        Write-BioNexusLog "Consultando migration:show y SchemaReadiness de '$targetDatabase' en modo de solo lectura."
+        $status = Get-BioNexusMigrationStatus -Database $targetDatabase
+        $appliedNames = @($status.Applied | ForEach-Object { $_.Name })
+        $pendingNames = @($status.Pending | ForEach-Object { $_.Name })
+        Write-BioNexusLog "Migraciones aplicadas en '$targetDatabase' ($($appliedNames.Count)): $($appliedNames -join ', ')" 'OK'
+        if ($pendingNames.Count -gt 0) {
+            Write-BioNexusLog "Migraciones pendientes en '$targetDatabase' ($($pendingNames.Count)): $($pendingNames -join ', ')" 'WARN'
+        }
+        else {
+            Write-BioNexusLog "No hay migraciones pendientes en '$targetDatabase'." 'OK'
+        }
+        if ($status.Schema.ready) {
+            Write-BioNexusLog "SchemaReadiness de '$targetDatabase': READY." 'OK'
+        }
+        else {
+            Write-BioNexusLog "SchemaReadiness de '$targetDatabase': NOT READY. Hallazgos: $($status.Schema.issues -join ', ')" 'WARN'
+        }
+        Write-BioNexusLog 'Consulta read-only completada. No se ejecutó migration:run ni se modificó ninguna base.' 'WARN'
+        return
+    }
     $action = if ($EnvironmentName -eq 'Development') {
         "Apply committed migrations to local development database '$targetDatabase'"
     } else {

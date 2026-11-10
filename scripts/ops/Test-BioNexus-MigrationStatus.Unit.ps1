@@ -144,3 +144,16 @@ try { Invoke-MockedMigrationWorkflow -EnvironmentName Production -Confirm:$false
 catch { $failed = $_.Exception.Message -match 'platform_subscription_plans' }
 Assert-True ($failed -and $script:runs -eq 0) 'No debe promoverse si development tiene esquema incompleto.'
 Write-Host 'Migration status unit tests: PASS'
+
+
+$migrationScriptContent = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'Invoke-BioNexus-Migrations.ps1') -Raw
+$readOnlyMarker = '$WhatIfPreference -and $EnvironmentName -eq ''Development'''
+$readOnlyPosition = $migrationScriptContent.IndexOf($readOnlyMarker)
+$shouldProcessPosition = $migrationScriptContent.IndexOf('$PSCmdlet.ShouldProcess')
+$runPosition = $migrationScriptContent.IndexOf('Invoke-BioNexusMigrationRun -Database $targetDatabase')
+if ($readOnlyPosition -lt 0 -or $shouldProcessPosition -lt 0 -or $runPosition -lt 0) { throw 'No se localizaron los contratos de consulta y ejecución de migraciones.' }
+if ($readOnlyPosition -gt $shouldProcessPosition) { throw 'La consulta read-only debe ejecutarse antes de ShouldProcess.' }
+if ($runPosition -lt $shouldProcessPosition) { throw 'migration:run debe permanecer detrás de ShouldProcess.' }
+foreach ($expected in @('Consultando migration:show', 'Consulta read-only completada', 'SchemaReadiness', 'No se ejecutó migration:run')) {
+    if ($migrationScriptContent -notlike "*$expected*") { throw "Falta el contrato de simulación read-only: $expected" }
+}

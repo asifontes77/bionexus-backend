@@ -14679,6 +14679,27 @@
         "headBeforeCommit": "7e452e83cdce6917d2a7f0aac0f805c83c9448de"
       },
       "nextAction": "Publicar y repetir manualmente la opcion 3 para crear el respaldo real de bionexus_dev."
+    },
+    {
+      "id": "ops-development-migration-readonly-preview-20261110",
+      "at": "2026-11-10T14:04:49.776290-04:00",
+      "type": "operations-tooling",
+      "status": "validated-not-published",
+      "summary": "La opcion 4 consulta migration:show y SchemaReadiness en modo read-only; migration:run permanece detras de ShouldProcess y confirmacion.",
+      "validation": {
+        "migrationStatusUnit": "passed",
+        "operationsUnit": "passed",
+        "schemaReadinessTests": "passed",
+        "readOnlyBeforeShouldProcess": "passed",
+        "migrationRunBehindShouldProcess": "passed",
+        "gitDiffCheck": "passed",
+        "databaseQueried": false
+      },
+      "repository": {
+        "branch": "feature/commercial-plans-model",
+        "headBeforeCommit": "12ef0ed3666990df7b29a5eccf763087750508d6"
+      },
+      "nextAction": "Publicar y repetir opcion 4 para revisar migraciones aplicadas, pendientes y SchemaReadiness."
     }
   ],
   "stateReplication": {
