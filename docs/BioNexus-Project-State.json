@@ -14700,6 +14700,37 @@
         "headBeforeCommit": "12ef0ed3666990df7b29a5eccf763087750508d6"
       },
       "nextAction": "Publicar y repetir opcion 4 para revisar migraciones aplicadas, pendientes y SchemaReadiness."
+    },
+    {
+      "id": "commercial-plan-migration-applied-verified-20261110",
+      "at": "2026-11-10T14:51:26.378557-04:00",
+      "type": "database-migration",
+      "status": "applied-and-verified",
+      "summary": "La migracion comercial fue aplicada en bionexus_dev y la verificacion read-only posterior confirmo cuatro migraciones aplicadas, cero pendientes y SchemaReadiness READY.",
+      "migration": {
+        "database": "bionexus_dev",
+        "name": "AddCommercialPlanModel1793862001000",
+        "appliedMigrations": 4,
+        "pendingMigrations": 0,
+        "schemaReadiness": "READY",
+        "transactionCommitted": true
+      },
+      "backup": {
+        "path": "C:\\Users\\Alexis\\Desktop\\BioNexus Backup\\3-backup-20261109-210754.sql",
+        "sha256": "FEE88E1427E8339E35D4999BB1C4D0F9E3434B84D36F65FDC369B66AEED1B14A",
+        "validatedBeforeMigration": true
+      },
+      "verification": {
+        "migrationShow": "passed",
+        "schemaReadiness": "passed",
+        "migrationRunRepeatedDuringVerification": false,
+        "databaseModifiedDuringVerification": false
+      },
+      "repository": {
+        "branch": "feature/commercial-plans-model",
+        "headBeforeCommit": "9c643d72b561e52400ea9e03563607ffb29548e9"
+      },
+      "nextAction": "Continuar con el siguiente bloque funcional aprobado; no repetir migration:run ni usar las opciones de instalacion limpia o promocion."
     }
   ],
   "stateReplication": {
