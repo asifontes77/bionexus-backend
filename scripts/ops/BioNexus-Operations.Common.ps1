@@ -266,30 +266,47 @@ function Find-BioNexusPostgresTool([string]$Name) {
 function Get-BioNexusDatabaseUrl([string]$BackendRoot, [string]$DatabaseName) {
     foreach ($file in @('.env', '.env.development', '.env.local')) {
         $path = Join-Path $BackendRoot $file
-        if (Test-Path $path) {
-            foreach ($line in Get-Content $path -Encoding UTF8) {
-                if ($line -match '^\s*(DATABASE_URL|BIONEXUS_DATABASE_URL)\s*=\s*(.+?)\s*$') {
-                    $value = $Matches[2].Trim().Trim('"').Trim("'")
-                    try {
-                        $uri = [Uri]$value
-                    }
-                    catch {
-                        continue
-                    }
-                    if ($uri.AbsolutePath.TrimStart('/') -eq $DatabaseName) {
-                        return $value
-                    }
-                }
+        if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
+            continue
+        }
+        $environment = Get-BioNexusBackendEnvironment -EnvironmentFile $path
+        foreach ($name in @('DATABASE_URL', 'BIONEXUS_DATABASE_URL')) {
+            $value = [string]$environment[$name]
+            if ($value -ne '') {
+                try { $uri = [Uri]$value } catch { continue }
+                if ($uri.AbsolutePath.TrimStart('/') -eq $DatabaseName) { return $value }
             }
+        }
+        $required = @('DB_HOST', 'DB_PORT', 'DB_USER', 'DB_PASSWORD')
+        $missing = @($required | Where-Object { [string]$environment[$_] -eq '' })
+        if ($missing.Count -eq 0) {
+            $hostValue = [Uri]::EscapeDataString([string]$environment['DB_HOST'])
+            $portValue = [Uri]::EscapeDataString([string]$environment['DB_PORT'])
+            $userValue = [Uri]::EscapeDataString([string]$environment['DB_USER'])
+            $passwordValue = [Uri]::EscapeDataString([string]$environment['DB_PASSWORD'])
+            $databaseValue = [Uri]::EscapeDataString($DatabaseName)
+            return "postgresql://${userValue}:${passwordValue}@${hostValue}:${portValue}/${databaseValue}"
         }
     }
     foreach ($name in @('DATABASE_URL', 'BIONEXUS_DATABASE_URL')) {
         $value = [Environment]::GetEnvironmentVariable($name, 'Process')
         if ($value) {
-            $uri = [Uri]$value; if ($uri.AbsolutePath.TrimStart('/') -eq $DatabaseName) {
-                return $value
-            }
+            try { $uri = [Uri]$value } catch { continue }
+            if ($uri.AbsolutePath.TrimStart('/') -eq $DatabaseName) { return $value }
         }
     }
-    throw "No se encontro una conexion administrativa para $DatabaseName."
+    $processValues = @{}
+    foreach ($name in @('DB_HOST', 'DB_PORT', 'DB_USER', 'DB_PASSWORD')) {
+        $processValues[$name] = [Environment]::GetEnvironmentVariable($name, 'Process')
+    }
+    $missing = @($processValues.Keys | Where-Object { [string]$processValues[$_] -eq '' })
+    if ($missing.Count -eq 0) {
+        $hostValue = [Uri]::EscapeDataString([string]$processValues['DB_HOST'])
+        $portValue = [Uri]::EscapeDataString([string]$processValues['DB_PORT'])
+        $userValue = [Uri]::EscapeDataString([string]$processValues['DB_USER'])
+        $passwordValue = [Uri]::EscapeDataString([string]$processValues['DB_PASSWORD'])
+        $databaseValue = [Uri]::EscapeDataString($DatabaseName)
+        return "postgresql://${userValue}:${passwordValue}@${hostValue}:${portValue}/${databaseValue}"
+    }
+    throw "No se encontro una conexion administrativa para $DatabaseName. Configura DATABASE_URL/BIONEXUS_DATABASE_URL o DB_HOST, DB_PORT, DB_USER y DB_PASSWORD."
 }

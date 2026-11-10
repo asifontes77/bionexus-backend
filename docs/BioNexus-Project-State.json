@@ -14660,6 +14660,25 @@
         "headBeforeCommit": "4202b51b2648706360a51c6e0df341d7ca133b4e"
       },
       "nextAction": "Publicar y repetir la opcion 1 del menu para verificar la consola interactiva."
+    },
+    {
+      "id": "ops-admin-connection-db-vars-fallback-20261109",
+      "at": "2026-11-09T20:58:33.208906-04:00",
+      "type": "operations-tooling",
+      "status": "validated-not-published",
+      "summary": "La conexion administrativa admite URLs explicitas y fallback central desde DB_HOST, DB_PORT, DB_USER y DB_PASSWORD del .env, sustituyendo la base destino.",
+      "validation": {
+        "offlineTests": "passed",
+        "connectionResolutionProbe": "passed",
+        "postgresqlConnected": false,
+        "secretsExposed": false,
+        "gitDiffCheck": "passed"
+      },
+      "repository": {
+        "branch": "feature/commercial-plans-model",
+        "headBeforeCommit": "7e452e83cdce6917d2a7f0aac0f805c83c9448de"
+      },
+      "nextAction": "Publicar y repetir manualmente la opcion 3 para crear el respaldo real de bionexus_dev."
     }
   ],
   "stateReplication": {

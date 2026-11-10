@@ -75,3 +75,10 @@ foreach ($expected in @('Select-BioNexusBackupDirectory', 'Run-BioNexusDevelopme
         throw "El menu debe conservar el contrato de destino: $expected"
     }
 }
+
+
+$commonScript = Join-Path $PSScriptRoot 'BioNexus-Operations.Common.ps1'
+$commonContent = Get-Content -LiteralPath $commonScript -Raw
+foreach ($expected in @("Get-BioNexusBackendEnvironment -EnvironmentFile `$path", "DB_HOST", "DB_PORT", "DB_USER", "DB_PASSWORD", "EscapeDataString", "postgresql://")) {
+    if ($commonContent -notlike "*$expected*") { throw "El modulo comun debe conservar el fallback administrativo: $expected" }
+}
