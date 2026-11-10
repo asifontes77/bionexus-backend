@@ -1,4 +1,4 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param()
 . (Join-Path $PSScriptRoot 'BioNexus-Operations.Common.ps1')
 function Run([string]$File, [hashtable]$Arguments = @{}) {

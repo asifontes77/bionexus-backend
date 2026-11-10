@@ -14640,6 +14640,26 @@
         "headBeforeCommit": "2f4f05c6c78a8dcf3f7f72660d08fd9aa50746d0"
       },
       "nextAction": "Publicar y continuar manualmente con la simulacion del respaldo de Development desde el menu."
+    },
+    {
+      "id": "ops-windows-powershell-utf8-centralization-20261109",
+      "at": "2026-11-09T20:32:40.142003-04:00",
+      "type": "operations-tooling",
+      "status": "validated-not-published",
+      "summary": "Codificacion UTF-8 centralizada en BioNexus-Operations.Common.ps1 y scripts ops guardados con BOM UTF-8 para Windows PowerShell 5.1.",
+      "cause": "Windows PowerShell 5.1 interpretaba scripts UTF-8 sin BOM usando la pagina ANSI antes de ejecutar el modulo comun.",
+      "validation": {
+        "utf8BomAllPowerShellScripts": "passed",
+        "windowsPowerShellByteProbe": "passed",
+        "operationsOfflineTests": "passed",
+        "gitDiffCheck": "passed",
+        "databaseQueried": false
+      },
+      "repository": {
+        "branch": "feature/commercial-plans-model",
+        "headBeforeCommit": "4202b51b2648706360a51c6e0df341d7ca133b4e"
+      },
+      "nextAction": "Publicar y repetir la opcion 1 del menu para verificar la consola interactiva."
     }
   ],
   "stateReplication": {

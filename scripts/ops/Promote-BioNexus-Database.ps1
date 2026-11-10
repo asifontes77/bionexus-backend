@@ -1,4 +1,4 @@
-[CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'High')]
+﻿[CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'High')]
 param([string]$OutputDirectory)
 . (Join-Path $PSScriptRoot 'BioNexus-Operations.Common.ps1')
 Write-BioNexusMessage INFO 'Promocion local: esquema y seeds versionados; no copia datos transaccionales de Development.'

@@ -1,4 +1,4 @@
-$ErrorActionPreference = 'Stop'; $ops = $PSScriptRoot
+﻿$ErrorActionPreference = 'Stop'; $ops = $PSScriptRoot
 foreach ($name in @('BioNexus-Operations.Common.ps1', 'Backup-BioNexus-Environment.ps1', 'Promote-BioNexus-Database.ps1', 'Start-BioNexus-Operations.ps1')) {
     if (-not(Test-Path (Join-Path $ops $name))) {
         throw "Falta $name"

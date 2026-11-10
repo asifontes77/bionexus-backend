@@ -1,4 +1,4 @@
-$ErrorActionPreference = 'Stop'
+﻿$ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'BioNexus-Operations.Common.ps1')
 
 $source = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'Invoke-BioNexus-Migrations.ps1') -Raw

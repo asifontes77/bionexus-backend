@@ -1,4 +1,4 @@
-Set-StrictMode -Version Latest
+﻿Set-StrictMode -Version Latest
 $script:BioNexusBackendRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $script:BioNexusWorkspaceRoot = Split-Path -Parent $script:BioNexusBackendRoot
 $script:BioNexusFrontendRoot = Join-Path $script:BioNexusWorkspaceRoot 'Bio Nexus Frontend'
@@ -199,15 +199,20 @@ function Start-BioNexusConsole {
     }
 }
 
+function Initialize-BioNexusConsoleEncoding {
+    $utf8 = [Text.UTF8Encoding]::new($false)
+    [Console]::InputEncoding = $utf8
+    [Console]::OutputEncoding = $utf8
+    $global:OutputEncoding = $utf8
+    try {
+        & chcp.com 65001 > $null
+    }
+    catch {
+    }
+}
+
 $ErrorActionPreference = 'Stop'
-[Console]::InputEncoding = [Text.UTF8Encoding]::new($false)
-[Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
-$global:OutputEncoding = [Console]::OutputEncoding
-try {
-    & chcp.com 65001 > $null
-}
-catch {
-}
+Initialize-BioNexusConsoleEncoding
 
 function Write-BioNexusMessage {
     param([ValidateSet('INFO', 'OK', 'WARN', 'ERROR')][string]$Level, [string]$Message)

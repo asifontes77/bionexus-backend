@@ -72,6 +72,8 @@ Todas las herramientas muestran mensajes en espanol y configuran UTF-8 centralme
 
 Las opciones `2` y `3` abren además un selector de destino: `1` usa `<Escritorio real del usuario>\BioNexus Backup`, `2` permite escribir otra ruta absoluta y `0` cancela la operación.
 
+**Codificación de consola:** `BioNexus-Operations.Common.ps1` centraliza UTF-8 para entrada, salida y procesos externos. Los scripts `.ps1` se guardan con BOM UTF-8 para que Windows PowerShell 5.1 interprete correctamente los literales con acentos antes de cargar el módulo común.
+
 ### Secuencia recomendada
 
 1. Selecciona `1` para validar código, contratos, builds y estado general antes de operar.
