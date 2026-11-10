@@ -14731,6 +14731,50 @@
         "headBeforeCommit": "9c643d72b561e52400ea9e03563607ffb29548e9"
       },
       "nextAction": "Continuar con el siguiente bloque funcional aprobado; no repetir migration:run ni usar las opciones de instalacion limpia o promocion."
+    },
+    {
+      "id": "platform-laboratory-registration-visual-functional-approved-20261110",
+      "at": "2026-11-10T19:58:29.448803-04:00",
+      "type": "visual-functional-approval",
+      "status": "approved-not-published",
+      "summary": "Registrar laboratorio aprobado visual y funcionalmente. Los cuatro BioNexusSectionPanel integran icono, titulo y descripcion en el encabezado; se eliminaron descripciones sueltas y se preservaron campos, paquetes, validaciones, cierre protegido y aprovisionamiento.",
+      "scope": {
+        "view": "PlatformLaboratoryDialog.vue",
+        "sections": [
+          "Laboratorio y sucursal",
+          "Plan y vigencia de la suscripción",
+          "Paquetes de datos iniciales (catálogos)",
+          "Administrador inicial"
+        ]
+      },
+      "visualValidation": {
+        "sectionHeaders": "approved",
+        "sharedIcons": "approved",
+        "descriptionsInHeaders": "approved",
+        "responsiveLayout": "approved",
+        "fixedFooter": "approved"
+      },
+      "functionalValidation": {
+        "packageSelectAll": "approved",
+        "packageClear": "approved",
+        "packageIndeterminateState": "approved",
+        "scrollPreservation": "approved",
+        "escapeXCancelDirtyProtection": "approved",
+        "fieldErrors": "approved",
+        "browserConsole": "approved"
+      },
+      "technicalValidation": {
+        "frontendBuild": "passed",
+        "gitDiffCheck": "passed",
+        "databaseQueried": false
+      },
+      "repository": {
+        "backendBranch": "feature/commercial-plans-model",
+        "backendHeadBeforeCommit": "53dd706213a93c25d58dbf544518740d4c487fc5",
+        "frontendBranch": "feature/commercial-plans-model",
+        "frontendHeadBeforeCommit": "2a6065b3992c8404a3b0a1f16e28fbf9a4a9cb91"
+      },
+      "nextAction": "Revisar visualmente Planes administrativos y luego Pagos, preservando el patrón aprobado de BioNexusSectionPanel."
     }
   ],
   "stateReplication": {
