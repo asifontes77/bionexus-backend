@@ -14931,6 +14931,179 @@
       "databaseQueried": false,
       "databaseModified": false,
       "serversManaged": false
+    },
+    {
+      "id": "sdd-cdd-monorepo-adoption-approved-20261111",
+      "at": "2026-11-11T19:33:55.073128-04:00",
+      "type": "architecture-and-delivery-decision",
+      "status": "approved-pending-execution",
+      "summary": "Bio Nexus adoptará SDD + CDD y consolidará Backend y Frontend en un único repositorio monorepo, preservando límites, builds, variables, despliegues e historiales independientes dentro de una sola fuente de verdad.",
+      "methodology": {
+        "sdd": "Specification-Driven Development",
+        "cdd": "Contract-Driven Development",
+        "flow": [
+          "Discovery",
+          "Specify",
+          "Clarify",
+          "Plan",
+          "ScenariosAndTests",
+          "Tasks",
+          "Analyze",
+          "Implement",
+          "Converge",
+          "Close"
+        ],
+        "sourceOfTruth": "Repositorio versionado: constitución, especificaciones, contratos, tareas, estado y evidencia.",
+        "providerNeutral": true,
+        "tokenEfficiencyGoal": "Reducir contexto conversacional repetido y cargar solo constitución, especificación delta, contratos y archivos estrictamente necesarios."
+      },
+      "monorepo": {
+        "approved": true,
+        "targetStructure": [
+          "apps/backend",
+          "apps/frontend",
+          "specs",
+          "contracts",
+          "docs",
+          "scripts/ops",
+          "tests/contracts",
+          ".github"
+        ],
+        "independentBuilds": true,
+        "independentDeployments": true,
+        "independentEnvironmentFiles": true,
+        "coordinatedChangesOneBranchOnePullRequest": true,
+        "preserveGitHistoryRequired": true,
+        "archiveOldRepositoriesAfterValidation": true,
+        "deleteOldRepositoriesImmediately": false
+      },
+      "executionPhases": [
+        "Auditoría no destructiva de ambos repositorios y sus remotos.",
+        "Diseño exacto del monorepo y selección del remoto principal.",
+        "Consolidación preservando historiales Git.",
+        "Centralización de BioNexus-Project-State.json.",
+        "Validación coordinada de builds, pruebas y herramientas operativas.",
+        "Publicación del monorepo y archivo controlado de repositorios anteriores.",
+        "Constitución SDD/CDD e inventario funcional real.",
+        "Inicialización de Spec Kit después de estabilizar la fuente de verdad.",
+        "Primera especificación formal: baseline funcional Admin y rediseño visual integral."
+      ],
+      "constraints": {
+        "adminGeneralStillOpen": true,
+        "phase3Closed": false,
+        "visualRedesignStarted": false,
+        "functionalAdvancePaused": true,
+        "databaseQueried": false,
+        "databaseModified": false,
+        "serversManaged": false,
+        "repositoryConsolidationExecuted": false,
+        "specKitInitialized": false
+      },
+      "auditSnapshot": {
+        "backend": {
+          "root": "C:\\Users\\Alexis\\Documents\\Bio Nexus\\Aplicacion\\Bio Nexus Backend",
+          "branch": "feature/commercial-plans-model",
+          "head": "37d759099810a08e1df095f55d67e129ad43391a",
+          "remote": "https://github.com/asifontes77/bionexus-backend.git",
+          "rootFiles": [
+            ".git",
+            "dist",
+            "docs",
+            "node_modules",
+            "public",
+            "scripts",
+            "src",
+            "test",
+            ".env",
+            ".env.example",
+            ".gitattributes",
+            ".gitignore",
+            ".prettierrc",
+            "eslint.config.mjs",
+            "nest-cli.json",
+            "package-lock.json",
+            "package.json",
+            "README.md",
+            "tsconfig.build.json",
+            "tsconfig.json"
+          ],
+          "tags": [],
+          "recentCommits": [
+            "37d759099810a08e1df095f55d67e129ad43391a|2026-11-11T19:18:58-04:00|asifontes77|docs(state): record pending admin functional review",
+            "4e7d79f40bf136ab24f9929fa916507f74f0b5cd|2026-11-11T18:47:29-04:00|asifontes77|feat(platform): validate plan currencies from global catalog",
+            "20de39f1fa158adaeecd21997f3c1686b8a792f9|2026-11-10T20:38:59-04:00|asifontes77|docs(state): record platform plan currency decision",
+            "9824fd6dfa3e3263d1cb7baf9e7438d8095bab39|2026-11-10T19:58:29-04:00|asifontes77|docs(state): approve laboratory registration review",
+            "53dd706213a93c25d58dbf544518740d4c487fc5|2026-11-10T14:51:26-04:00|asifontes77|docs(state): record commercial migration verification",
+            "9c643d72b561e52400ea9e03563607ffb29548e9|2026-11-10T14:04:50-04:00|asifontes77|fix(ops): show migration status in Development preview",
+            "12ef0ed3666990df7b29a5eccf763087750508d6|2026-11-09T20:58:33-04:00|asifontes77|fix(ops): resolve admin connection from DB variables",
+            "7e452e83cdce6917d2a7f0aac0f805c83c9448de|2026-11-09T20:32:40-04:00|asifontes77|fix(ops): normalize Windows PowerShell UTF-8",
+            "4202b51b2648706360a51c6e0df341d7ca133b4e|2026-11-09T19:24:14-04:00|asifontes77|docs(ops): document menu options and sequence",
+            "2f4f05c6c78a8dcf3f7f72660d08fd9aa50746d0|2026-11-09T07:25:21-04:00|asifontes77|docs(ops): make interactive menu the primary workflow",
+            "a26ece55333b69b11549e75b9f0c58acde7c0a67|2026-11-08T14:28:27-04:00|asifontes77|fix(ops): prompt for backup destination",
+            "179703fdd209aeae6126a01d8025fe5c83fde74f|2026-11-08T13:35:59-04:00|asifontes77|docs(state): close commercial plans publication",
+            "0e415de47e6f99bd3995dfffa2f0a937e57297a6|2026-11-08T12:42:05-04:00|asifontes77|docs(state): record commercial plans validation",
+            "9a0eea20107ab7ed3a21e91ced0dfd3b83495b08|2026-11-08T12:42:05-04:00|asifontes77|fix(ops): restore shared tooling and migration contracts",
+            "bb503593fcc0370bd5c050e2abc6605c89283330|2026-11-07T21:03:16-04:00|asifontes77|feat(ops): add protected database operations tools",
+            "5ac16a4f14aa99571c1d1dfba34aa84bc8754b59|2026-11-07T19:24:34-04:00|asifontes77|docs: planificar orquestador interactivo ops",
+            "c43738e68a671121e44dbea5a55b5ada72ccceab|2026-11-07T19:12:47-04:00|asifontes77|docs: planificar herramientas operativas de BD",
+            "b4ffa863cc742e320a62c30150925d933a9f7443|2026-11-07T15:00:33-04:00|asifontes77|test: aislar dominio tenant del entorno",
+            "f462a1706c0770fbbde184fa8d184702198fd206|2026-11-07T09:20:13-04:00|asifontes77|docs: registrar Frontend tipado de planes",
+            "98cb90d0e1cfca98f9b8d890173cd86b7deeb048|2026-11-07T08:58:43-04:00|asifontes77|docs: registrar auditoria Frontend de planes"
+          ],
+          "trackedFiles": 528
+        },
+        "frontend": {
+          "root": "C:\\Users\\Alexis\\Documents\\Bio Nexus\\Aplicacion\\Bio Nexus Frontend",
+          "branch": "feature/commercial-plans-model",
+          "head": "d87172932e47058878c4b70a15dc4146e40cd773",
+          "remote": "https://github.com/asifontes77/bionexus-frontend.git",
+          "rootFiles": [
+            ".git",
+            "dist",
+            "docs",
+            "node_modules",
+            "src",
+            ".gitignore",
+            "index.html",
+            "package-lock.json",
+            "package.json",
+            "README.md",
+            "vite.config.js",
+            "yarn.lock"
+          ],
+          "tags": [],
+          "recentCommits": [
+            "d87172932e47058878c4b70a15dc4146e40cd773|2026-11-11T19:18:58-04:00|asifontes77|docs(state): record pending admin functional review",
+            "313ebbf3ac0c593ffc978437ea1252685f7278a6|2026-11-11T18:47:30-04:00|asifontes77|fix(platform): refine plans and laboratory actions",
+            "5f96ea1eb6ca5d85ca380ac5b30e3fa93737f388|2026-11-10T20:38:59-04:00|asifontes77|docs(state): record platform plan currency decision",
+            "37b0566716226e4c1b2d41712f32bf6cff77ce18|2026-11-10T19:58:29-04:00|asifontes77|fix(platform): align laboratory registration sections",
+            "2a6065b3992c8404a3b0a1f16e28fbf9a4a9cb91|2026-11-10T14:51:26-04:00|asifontes77|docs(state): record commercial migration verification",
+            "9f55da43ebcd55ce873155fad991e431f016fa71|2026-11-10T14:04:50-04:00|asifontes77|docs(state): record migration read-only preview",
+            "655c65217bf69eebbcc8cf27904afb0e1b28d3c2|2026-11-09T20:58:33-04:00|asifontes77|docs(state): record admin connection fallback",
+            "e0a573eb536ff662f254fa037369e45502f94628|2026-11-09T20:32:40-04:00|asifontes77|docs(state): record ops UTF-8 normalization",
+            "5cd8fc52634631025e3212970eca543d76241331|2026-11-09T19:24:15-04:00|asifontes77|docs(state): record ops menu sequence",
+            "b7c86ca7fb18eab32c6a2d69ec1b802d40f499ea|2026-11-09T07:25:22-04:00|asifontes77|docs(state): record ops readme normalization",
+            "96e09580b71e2600ac1544e074afc0a3b4e2b6eb|2026-11-08T14:28:28-04:00|asifontes77|docs(state): record backup destination selector",
+            "216052f632d440cf24719e7a2cd5eb5525089154|2026-11-08T13:35:59-04:00|asifontes77|docs(state): close commercial plans publication",
+            "b5303ce2f50ddad15781af795fa4b10a0ba26e4e|2026-11-08T12:42:06-04:00|asifontes77|docs(state): record commercial plans validation",
+            "5b359a77228d453033677b988a29864e62266c37|2026-11-07T19:24:32-04:00|asifontes77|docs: planificar orquestador interactivo ops",
+            "a76b17927560537113ef6d44ce48ab9d46f48d24|2026-11-07T19:12:44-04:00|asifontes77|docs: planificar herramientas operativas de BD",
+            "9e75f70e7948e27b82f3e7ecf96f0da345fac359|2026-11-07T09:40:07-04:00|asifontes77|test: alinear contrato de acceso canonico",
+            "a7bdba28c69a25db377b975af765397450e4b7de|2026-11-07T09:20:11-04:00|asifontes77|feat: tipar administracion comercial de planes",
+            "64f9897af5481bc54d93b45d917785a7f7df3d84|2026-11-07T08:58:39-04:00|asifontes77|docs: registrar auditoria Frontend de planes",
+            "0eab67ea1cef9e969239cfdd947e8b47a9fe2b2e|2026-11-07T01:47:41-04:00|asifontes77|feat: simplificar alta segun vigencia del plan",
+            "25b612906ffefaffd301ad7450e6786d75aca45b|2026-11-06T18:29:33-04:00|asifontes77|docs: auditar provisionamiento inicial de planes"
+          ],
+          "trackedFiles": 402
+        }
+      },
+      "repository": {
+        "backendBranch": "feature/commercial-plans-model",
+        "backendHeadBeforeCommit": "37d759099810a08e1df095f55d67e129ad43391a",
+        "frontendBranch": "feature/commercial-plans-model",
+        "frontendHeadBeforeCommit": "d87172932e47058878c4b70a15dc4146e40cd773"
+      },
+      "nextAction": "Revisar la auditoría no destructiva y definir explícitamente el remoto principal, nombre final y estrategia de importación de historiales antes de mover archivos o inicializar Spec Kit."
     }
   ],
   "stateReplication": {
@@ -30871,33 +31044,27 @@
   "primaryObjective": "Estabilizar y completar Bio Nexus Cloud; alinear PostgreSQL real con la baseline y cerrar el provisionamiento funcional antes de otros modos.",
   "currentWorkstream": "platform-laboratory-administration-cloud",
   "currentCheckpoint": {
-    "id": "admin-general-functional-review-pending-redesign-checkpoint-20261111",
-    "at": "2026-11-11T19:18:58.210293-04:00",
-    "status": "paused-awaiting-user-direction",
+    "id": "sdd-cdd-monorepo-adoption-approved-20261111",
+    "at": "2026-11-11T19:33:55.073128-04:00",
+    "status": "sdd-cdd-monorepo-preparation",
     "completed": [
-      "Laboratorio piloto y aprovisionamiento validados en los alcances ya registrados.",
-      "Registrar laboratorio revisado visual y funcionalmente.",
-      "Modelo comercial y Planes revisados en los alcances ya aprobados.",
-      "Selector administrativo de monedas globales aprobado.",
-      "plan_free eliminado y laboratorio piloto convertido a perpetual_free.",
-      "Columna Acciones de Laboratorios y DÍAS DE GRACIA aprobados.",
-      "Backend y Frontend publicados, limpios y sincronizados."
+      "Checkpoint funcional corregido: Admin general pendiente y Fase 3 abierta.",
+      "Decisión SDD + CDD recuperada y formalizada.",
+      "Decisión de repositorio unificado formalizada.",
+      "Auditoría no destructiva inicial de ambos repositorios completada."
     ],
     "current": [
-      "Revisión funcional integral de la parte Admin en general.",
-      "Validar cada flujo administrativo real, no solo build, contratos o apariencia visual.",
-      "Confirmar altas, ediciones, estados, acciones, permisos, validaciones, errores, cierres protegidos e integración Backend de cada vista Admin.",
-      "Determinar con Alexis qué funciones administrativas se revisan y en qué orden.",
-      "Confirmar el cierre completo de la Fase 3 antes de iniciar formalmente el rediseño visual integral de alto impacto."
+      "Definir estrategia exacta de consolidación del monorepo.",
+      "Preservar historiales Git, remotos anteriores y capacidad de rollback.",
+      "No iniciar todavía Spec Kit ni rediseño visual."
     ],
     "pending": [
-      "Pagos administrativos como siguiente módulo funcional.",
-      "Tarifas y Admisión.",
-      "Maestros y módulos funcionales restantes.",
-      "Documentos, formatos, impresión y plantillas.",
-      "Edge Sync, modalidad Private y License Manager."
+      "Consolidación física del repositorio.",
+      "Constitución SDD/CDD.",
+      "Inventario funcional Admin.",
+      "Primera especificación formal del baseline Admin y rediseño integral."
     ],
-    "nextAction": "Esperar la instrucción de Alexis sobre la revisión funcional pendiente del panel Admin. No iniciar Pagos ni el rediseño integral hasta que Alexis defina el siguiente bloque inmediato.",
+    "nextAction": "Revisar la auditoría no destructiva y definir explícitamente el remoto principal, nombre final y estrategia de importación de historiales antes de mover archivos o inicializar Spec Kit.",
     "databaseQueried": false,
     "databaseModified": false,
     "serversManaged": false
