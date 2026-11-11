@@ -15104,6 +15104,44 @@
         "frontendHeadBeforeCommit": "d87172932e47058878c4b70a15dc4146e40cd773"
       },
       "nextAction": "Revisar la auditoría no destructiva y definir explícitamente el remoto principal, nombre final y estrategia de importación de historiales antes de mover archivos o inicializar Spec Kit."
+    },
+    {
+      "id": "monorepo-new-path-and-legacy-retention-approved-20261111",
+      "at": "2026-11-11T19:48:09.194903-04:00",
+      "type": "repository-consolidation-decision",
+      "status": "monorepo-execution-started",
+      "summary": "El monorepo Bio Nexus se creará en C:\\Users\\Alexis\\Documents\\Proyectos\\Bio Nexus. La ruta y los repositorios anteriores permanecerán intactos hasta que el monorepo esté completamente validado, publicado y aprobado; solo entonces podrán eliminarse.",
+      "targetLocalPath": "C:\\Users\\Alexis\\Documents\\Proyectos\\Bio Nexus",
+      "retentionPolicy": {
+        "oldBackendPreserved": true,
+        "oldFrontendPreserved": true,
+        "oldApplicationPathPreserved": true,
+        "deleteOnlyAfterFinalApproval": true
+      },
+      "executionOrder": [
+        "Crear monorepo local",
+        "Preservar historiales",
+        "Ordenar y embellecer estructura",
+        "Centralizar bitácora y herramientas",
+        "Validar builds y pruebas",
+        "Publicar monorepo",
+        "Archivar o eliminar ruta anterior tras aprobación final",
+        "Implementar SDD/CDD y Spec Kit al final"
+      ],
+      "constraints": {
+        "sddCddImplementationDeferred": true,
+        "specKitInitialized": false,
+        "databaseQueried": false,
+        "databaseModified": false,
+        "serversManaged": false
+      },
+      "repository": {
+        "backendBranch": "feature/commercial-plans-model",
+        "backendHeadBeforeCommit": "a083ab72c26e46f291180740f1206238227e1cae",
+        "frontendBranch": "feature/commercial-plans-model",
+        "frontendHeadBeforeCommit": "a8c3f15671bf86fd0167dd166423c48f7e177c61"
+      },
+      "nextAction": "Crear el monorepo local en la nueva ruta mediante git subtree, sin publicar y sin alterar la ruta anterior."
     }
   ],
   "stateReplication": {
@@ -31044,27 +31082,26 @@
   "primaryObjective": "Estabilizar y completar Bio Nexus Cloud; alinear PostgreSQL real con la baseline y cerrar el provisionamiento funcional antes de otros modos.",
   "currentWorkstream": "platform-laboratory-administration-cloud",
   "currentCheckpoint": {
-    "id": "sdd-cdd-monorepo-adoption-approved-20261111",
-    "at": "2026-11-11T19:33:55.073128-04:00",
-    "status": "sdd-cdd-monorepo-preparation",
+    "id": "monorepo-new-path-and-legacy-retention-approved-20261111",
+    "at": "2026-11-11T19:48:09.194903-04:00",
+    "status": "monorepo-consolidation-in-progress",
     "completed": [
-      "Checkpoint funcional corregido: Admin general pendiente y Fase 3 abierta.",
-      "Decisión SDD + CDD recuperada y formalizada.",
-      "Decisión de repositorio unificado formalizada.",
-      "Auditoría no destructiva inicial de ambos repositorios completada."
+      "Nueva ruta aprobada",
+      "Retención de repositorios y ruta anterior aprobada"
     ],
     "current": [
-      "Definir estrategia exacta de consolidación del monorepo.",
-      "Preservar historiales Git, remotos anteriores y capacidad de rollback.",
-      "No iniciar todavía Spec Kit ni rediseño visual."
+      "Crear monorepo local en la nueva ruta",
+      "Preservar ambos historiales Git"
     ],
     "pending": [
-      "Consolidación física del repositorio.",
-      "Constitución SDD/CDD.",
-      "Inventario funcional Admin.",
-      "Primera especificación formal del baseline Admin y rediseño integral."
+      "Embellecer y normalizar raíz",
+      "Centralizar bitácora y scripts",
+      "Validar builds y pruebas",
+      "Publicar monorepo",
+      "Eliminar ruta anterior solo tras aprobación final",
+      "Implementar SDD/CDD y Spec Kit al final"
     ],
-    "nextAction": "Revisar la auditoría no destructiva y definir explícitamente el remoto principal, nombre final y estrategia de importación de historiales antes de mover archivos o inicializar Spec Kit.",
+    "nextAction": "Crear el monorepo local en la nueva ruta mediante git subtree, sin publicar y sin alterar la ruta anterior.",
     "databaseQueried": false,
     "databaseModified": false,
     "serversManaged": false
