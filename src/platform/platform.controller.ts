@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, ForbiddenException, Get, Param, Patch, Post, Query, Req, StreamableFile, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+﻿import { BadRequestException, Body, Controller, Delete, ForbiddenException, Get, Param, Patch, Post, Query, Req, StreamableFile, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { DataSource } from 'typeorm';
@@ -22,6 +22,10 @@ export class PlatformController {
   @Post('laboratories') createLaboratory(@Req() request:{user?:{id?:number;userId?:number;identityType?:string}},@Body() body:CreatePlatformLaboratoryDto){const platformOwnerId=Number(request.user?.userId ?? request.user?.id);if(!Number.isInteger(platformOwnerId)||platformOwnerId<=0)throw new BadRequestException('PLATFORM_OWNER_CONTEXT_REQUIRED');return this.provisioning.provision(body,platformOwnerId);}
   @Get('laboratories') async laboratories(){return this.dataSource.query(`SELECT l.id,l.rif,l.name,l.business_name AS "businessName",l.address,(SELECT COUNT(*)::int FROM laboratory_branches b WHERE b.laboratory_id=l.id) AS "branchCount",(SELECT COUNT(*)::int FROM laboratory_modules m WHERE m.laboratory_id=l.id AND m.is_enabled=true) AS "moduleCount",(SELECT COUNT(*)::int FROM laboratory_catalog_packages cp WHERE cp.laboratory_id=l.id) AS "catalogPackageCount" FROM laboratory l ORDER BY upper(btrim(l.name)),l.id`);}
 
+  @Get('currencies/active')
+  async listGlobalActiveCurrencies() {
+    return { currencies: await this.subscriptionBilling.listGlobalActiveCurrencies() };
+  }
   @Get('plans')
   async listSubscriptionPlans(@Query('includeInactive') includeInactive?: string) {
     const includeAll = includeInactive == null || includeInactive === 'true';

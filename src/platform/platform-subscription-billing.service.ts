@@ -1,4 +1,4 @@
-import {
+﻿import {
   BadRequestException,
   ConflictException,
   InternalServerErrorException,
@@ -69,6 +69,19 @@ export class PlatformSubscriptionBillingService {
     private readonly proofStorage: PlatformPaymentProofStorageService,
   ) {}
 
+  async listGlobalActiveCurrencies() {
+    return this.dataSource.query(`SELECT id,upper(btrim(code)) AS code,name,symbol,is_active AS "isActive"
+      FROM currencies WHERE laboratory_id IS NULL AND is_platform_managed=true AND is_active=true
+      ORDER BY display_order,name,id`);
+  }
+
+  private async assertGlobalActiveCurrency(currency: string) {
+    const rows = await this.dataSource.query(`SELECT id FROM currencies
+      WHERE laboratory_id IS NULL AND is_platform_managed=true AND is_active=true
+        AND upper(btrim(code))=$1 LIMIT 1`, [currency]);
+    if (!rows[0]) throw new BadRequestException('PLATFORM_SUBSCRIPTION_PLAN_CURRENCY_NOT_FOUND_OR_INACTIVE');
+  }
+
   async listPlans(includeInactive = true) {
     return this.dataSource.query(
       `SELECT id AS "planId",code,name,description,price,currency,billing_interval AS "billingInterval",plan_type AS "planType",interval_unit AS "intervalUnit",interval_count AS "intervalCount",
@@ -83,6 +96,7 @@ export class PlatformSubscriptionBillingService {
   async createPlan(input: SubscriptionPlanInput, ownerId: number) {
     this.validateOwnerId(ownerId);
     const plan = this.validatePlan(input, false);
+    await this.assertGlobalActiveCurrency(plan.currency);
     try {
       return await this.dataSource.transaction(async (manager) => {
         const rows = await manager.query(
@@ -131,6 +145,7 @@ export class PlatformSubscriptionBillingService {
       throw new BadRequestException('PLATFORM_SUBSCRIPTION_PLAN_FIELDS_INVALID');
     }
     const patch = this.validatePlan(input, true);
+    if (patch.currency !== undefined) await this.assertGlobalActiveCurrency(patch.currency);
     try {
       return await this.dataSource.transaction(async (manager) => {
         const existingRows = await manager.query(

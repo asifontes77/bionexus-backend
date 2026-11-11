@@ -14812,6 +14812,80 @@
         "frontendHead": "37b0566716226e4c1b2d41712f32bf6cff77ce18"
       },
       "nextAction": "Implementar directamente Backend, Frontend y pruebas del selector administrativo de monedas, sin repetir la investigacion arquitectonica y sin crear migracion."
+    },
+    {
+      "id": "remove-plan-free-convert-test-lab-perpetual-free-20261111",
+      "at": "2026-11-11T00:10:48.444873-04:00",
+      "type": "development-data-adjustment",
+      "status": "applied-and-verified",
+      "summary": "Se eliminó el plan legacy plan_free y el único laboratorio de prueba quedó con subscription_status perpetual_free y metadatos completos.",
+      "database": {
+        "name": "bionexus_dev",
+        "planFreeCount": 0,
+        "perpetualFreeLaboratories": 1,
+        "transaction": "COMMIT",
+        "backupCreated": false,
+        "migrationsExecuted": false
+      },
+      "verification": {
+        "planFreeRemoved": true,
+        "perpetualFreeMetadataComplete": true,
+        "reasonRecorded": true,
+        "grantedAtRecorded": true,
+        "grantedByRecorded": true
+      },
+      "repository": {
+        "backendBranch": "feature/commercial-plans-model",
+        "backendHead": "20de39f1fa158adaeecd21997f3c1686b8a792f9",
+        "frontendBranch": "feature/commercial-plans-model",
+        "frontendHead": "5f96ea1eb6ca5d85ca380ac5b30e3fa93737f388"
+      },
+      "nextAction": "Completar revisión visual de Planes, cerrar selector administrativo de monedas y ampliar columna Acciones de Laboratorios."
+    },
+    {
+      "id": "platform-plan-currency-selector-approved-20261111",
+      "type": "visual-functional-approval",
+      "status": "approved-not-published",
+      "summary": "Planes usa selector administrativo de monedas globales activas con etiqueta Código · Nombre; Backend valida existencia, alcance global, administración de plataforma y estado activo. Encabezado DÍAS DE GRACIA aprobado.",
+      "validation": {
+        "currencySelector": "approved",
+        "currencySearch": "approved",
+        "historicalEdit": "approved",
+        "daysOfGraceHeader": "approved",
+        "backendBuild": "passed",
+        "frontendBuild": "passed",
+        "databaseQueried": false
+      },
+      "nextAction": "Cerrar y publicar junto con la columna Acciones de Laboratorios.",
+      "at": "2026-11-11T18:47:29.115172-04:00",
+      "repository": {
+        "backendBranch": "feature/commercial-plans-model",
+        "backendHeadBeforeCommit": "20de39f1fa158adaeecd21997f3c1686b8a792f9",
+        "frontendBranch": "feature/commercial-plans-model",
+        "frontendHeadBeforeCommit": "5f96ea1eb6ca5d85ca380ac5b30e3fa93737f388"
+      }
+    },
+    {
+      "id": "platform-laboratories-actions-column-approved-20261111",
+      "type": "visual-functional-approval",
+      "status": "approved-not-published",
+      "summary": "Columna Acciones de Laboratorios aprobada con seis botones completos, ancho fijo de 270 px, separación de 6 px y fijación a la derecha.",
+      "validation": {
+        "visualReview": "approved",
+        "actions": 6,
+        "width": 270,
+        "pinned": "right",
+        "frontendBuild": "passed",
+        "gitDiffCheck": "passed"
+      },
+      "nextAction": "Publicar y continuar con Pagos según el orden aprobado del plan.",
+      "at": "2026-11-11T18:47:29.115172-04:00",
+      "repository": {
+        "backendBranch": "feature/commercial-plans-model",
+        "backendHeadBeforeCommit": "20de39f1fa158adaeecd21997f3c1686b8a792f9",
+        "frontendBranch": "feature/commercial-plans-model",
+        "frontendHeadBeforeCommit": "5f96ea1eb6ca5d85ca380ac5b30e3fa93737f388"
+      }
     }
   ],
   "stateReplication": {
