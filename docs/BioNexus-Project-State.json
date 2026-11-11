@@ -14775,6 +14775,43 @@
         "frontendHeadBeforeCommit": "2a6065b3992c8404a3b0a1f16e28fbf9a4a9cb91"
       },
       "nextAction": "Revisar visualmente Planes administrativos y luego Pagos, preservando el patrón aprobado de BioNexusSectionPanel."
+    },
+    {
+      "id": "platform-plans-global-currency-catalog-decision-20261110",
+      "at": "2026-11-10T20:38:59.415803-04:00",
+      "type": "architecture-decision",
+      "status": "approved-pending-implementation",
+      "summary": "Planes comerciales de Administracion central deben seleccionar monedas globales activas mediante un endpoint protegido por JwtUserGuard y PlatformOwnerGuard; no deben reutilizar el catalogo tenant /api/currencies/active ni aceptar texto libre.",
+      "confirmedExistingArchitecture": {
+        "hybridCurrencyScope": true,
+        "globalPredicate": "laboratory_id IS NULL AND is_platform_managed=true",
+        "tenantMaterializationUsesSourceGlobalId": true,
+        "platformPlansPersistIsoCode": true,
+        "platformOwnerGuard": "JwtUserGuard + PlatformOwnerGuard"
+      },
+      "implementationContract": {
+        "endpoint": "GET /api/platform/currencies/active",
+        "query": "laboratory_id IS NULL AND is_platform_managed=true AND is_active=true ORDER BY display_order,name,id",
+        "frontendControl": "BioNexusSearchableSelect",
+        "frontendLabel": "Codigo · Nombre",
+        "persistedValue": "code",
+        "backendWriteValidation": "existencia, alcance global, administrada por plataforma y activa",
+        "historicalInactiveEdit": "visible como no disponible; no seleccionable para nuevas asignaciones",
+        "schemaMigrationRequired": false
+      },
+      "evidence": {
+        "tenantCurrenciesEndpointNotSuitable": true,
+        "planCurrencyCurrentlyFreeText": true,
+        "backendCurrentlyValidatesOnlyIsoFormat": true,
+        "databaseQueried": false
+      },
+      "repository": {
+        "backendBranch": "feature/commercial-plans-model",
+        "backendHead": "9824fd6dfa3e3263d1cb7baf9e7438d8095bab39",
+        "frontendBranch": "feature/commercial-plans-model",
+        "frontendHead": "37b0566716226e4c1b2d41712f32bf6cff77ce18"
+      },
+      "nextAction": "Implementar directamente Backend, Frontend y pruebas del selector administrativo de monedas, sin repetir la investigacion arquitectonica y sin crear migracion."
     }
   ],
   "stateReplication": {
