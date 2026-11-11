@@ -14886,6 +14886,51 @@
         "frontendBranch": "feature/commercial-plans-model",
         "frontendHeadBeforeCommit": "5f96ea1eb6ca5d85ca380ac5b30e3fa93737f388"
       }
+    },
+    {
+      "id": "admin-general-functional-review-pending-redesign-checkpoint-20261111",
+      "at": "2026-11-11T19:18:58.210293-04:00",
+      "type": "project-checkpoint",
+      "status": "paused-awaiting-user-direction",
+      "summary": "Checkpoint corregido: Laboratorios y Planes tienen cierres recientes, pero la parte administrativa general no está cerrada. Aún falta revisar integralmente funcionalidades del panel Admin antes de declarar completada la Fase 3 o iniciar el rediseño visual integral.",
+      "confirmedCompleted": [
+        "Laboratorio piloto y aprovisionamiento validados en los alcances ya registrados.",
+        "Registrar laboratorio revisado visual y funcionalmente.",
+        "Modelo comercial y Planes revisados en los alcances ya aprobados.",
+        "Selector administrativo de monedas globales aprobado.",
+        "plan_free eliminado y laboratorio piloto convertido a perpetual_free.",
+        "Columna Acciones de Laboratorios y DÍAS DE GRACIA aprobados.",
+        "Backend y Frontend publicados, limpios y sincronizados."
+      ],
+      "stillOpen": [
+        "Revisión funcional integral de la parte Admin en general.",
+        "Validar cada flujo administrativo real, no solo build, contratos o apariencia visual.",
+        "Confirmar altas, ediciones, estados, acciones, permisos, validaciones, errores, cierres protegidos e integración Backend de cada vista Admin.",
+        "Determinar con Alexis qué funciones administrativas se revisan y en qué orden.",
+        "Confirmar el cierre completo de la Fase 3 antes de iniciar formalmente el rediseño visual integral de alto impacto."
+      ],
+      "approvedDesignGate": {
+        "decisionId": "post-pilot-visual-redesign-and-final-deployment-modes-approved",
+        "rule": "Después de cerrar completamente la Fase 3 se inicia una fase exclusiva de revisión y rediseño visual integral; no avanzar con módulos funcionales mientras ese rediseño no esté definido, implementado y aprobado.",
+        "status": "pending-phase-3-functional-closure"
+      },
+      "pausedScope": [
+        "Pagos administrativos como siguiente módulo funcional.",
+        "Tarifas y Admisión.",
+        "Maestros y módulos funcionales restantes.",
+        "Documentos, formatos, impresión y plantillas.",
+        "Edge Sync, modalidad Private y License Manager."
+      ],
+      "nextAction": "Esperar la instrucción de Alexis sobre la revisión funcional pendiente del panel Admin. No iniciar Pagos ni el rediseño integral hasta que Alexis defina el siguiente bloque inmediato.",
+      "repository": {
+        "backendBranch": "feature/commercial-plans-model",
+        "backendHeadBeforeCommit": "4e7d79f40bf136ab24f9929fa916507f74f0b5cd",
+        "frontendBranch": "feature/commercial-plans-model",
+        "frontendHeadBeforeCommit": "313ebbf3ac0c593ffc978437ea1252685f7278a6"
+      },
+      "databaseQueried": false,
+      "databaseModified": false,
+      "serversManaged": false
     }
   ],
   "stateReplication": {
@@ -30826,32 +30871,33 @@
   "primaryObjective": "Estabilizar y completar Bio Nexus Cloud; alinear PostgreSQL real con la baseline y cerrar el provisionamiento funcional antes de otros modos.",
   "currentWorkstream": "platform-laboratory-administration-cloud",
   "currentCheckpoint": {
-    "id": "commercial-plan-visual-review-20261107",
-    "at": "2026-11-07T09:20:00-04:00",
-    "status": "typed-frontend-published;visual-review-next",
+    "id": "admin-general-functional-review-pending-redesign-checkpoint-20261111",
+    "at": "2026-11-11T19:18:58.210293-04:00",
+    "status": "paused-awaiting-user-direction",
     "completed": [
-      "Migracion comercial publicada sin aplicar.",
-      "Backend y provisionamiento derivados publicados.",
-      "Frontend tipado de Planes implementado y validado.",
-      "Editor JSON libre de limitsBenefits oculto.",
-      "Plan operativo aprobado para respaldo configurable, promocion protegida de BD y mensajes en espanol UTF-8."
+      "Laboratorio piloto y aprovisionamiento validados en los alcances ya registrados.",
+      "Registrar laboratorio revisado visual y funcionalmente.",
+      "Modelo comercial y Planes revisados en los alcances ya aprobados.",
+      "Selector administrativo de monedas globales aprobado.",
+      "plan_free eliminado y laboratorio piloto convertido a perpetual_free.",
+      "Columna Acciones de Laboratorios y DÍAS DE GRACIA aprobados.",
+      "Backend y Frontend publicados, limpios y sincronizados."
     ],
     "current": [
-      "Realizar revision visual del modulo Planes antes de aplicar la migracion."
+      "Revisión funcional integral de la parte Admin en general.",
+      "Validar cada flujo administrativo real, no solo build, contratos o apariencia visual.",
+      "Confirmar altas, ediciones, estados, acciones, permisos, validaciones, errores, cierres protegidos e integración Backend de cada vista Admin.",
+      "Determinar con Alexis qué funciones administrativas se revisan y en qué orden.",
+      "Confirmar el cierre completo de la Fase 3 antes de iniciar formalmente el rediseño visual integral de alto impacto."
     ],
     "pending": [
-      "Corregir hallazgos visuales si existen.",
-      "Aplicar migracion mediante scripts/ops en bionexus_dev.",
-      "Validar datos, Trial 15 dias y esquema.",
-      "Publicar cierre, integrar en development y eliminar feature.",
-      "Implementar Backup-BioNexus-Environment.ps1 con carpeta predeterminada resuelta desde el Escritorio real del usuario y parametro OutputDirectory.",
-      "Centralizar UTF-8 y mensajes en espanol en BioNexus-Operations.Common.ps1 y documentarlo en README.md.",
-      "Implementar Promote-BioNexus-Database.ps1 como orquestador seguro de migraciones a bionexus_prod local, sin copiar datos transaccionales de Development.",
-      "Crear pruebas unitarias y contratos para las nuevas herramientas antes de usarlas.",
-      "Implementar Start-BioNexus-Operations.ps1 como menu interactivo que orquesta las herramientas ops sin modificar las existentes."
+      "Pagos administrativos como siguiente módulo funcional.",
+      "Tarifas y Admisión.",
+      "Maestros y módulos funcionales restantes.",
+      "Documentos, formatos, impresión y plantillas.",
+      "Edge Sync, modalidad Private y License Manager."
     ],
-    "nextAction": "Implementar primero UTF-8 centralizado, Backup-BioNexus-Environment.ps1 y sus pruebas; luego agregar Start-BioNexus-Operations.ps1 y finalmente Promote-BioNexus-Database.ps1.",
-    "migrationApplied": false,
+    "nextAction": "Esperar la instrucción de Alexis sobre la revisión funcional pendiente del panel Admin. No iniciar Pagos ni el rediseño integral hasta que Alexis defina el siguiente bloque inmediato.",
     "databaseQueried": false,
     "databaseModified": false,
     "serversManaged": false
